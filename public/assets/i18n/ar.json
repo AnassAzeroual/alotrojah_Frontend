@@ -1,0 +1,62 @@
+{
+  "app": { "title": "العُروة", "subtitle": "متابعة حفظ القرآن الكريم" },
+  "nav": {
+    "dashboard": "الرئيسية",
+    "entry": "إدخال اليوم",
+    "students": "الطلاب",
+    "groups": "الحلقات",
+    "planning": "التخطيط",
+    "exams": "الاختبارات",
+    "reviews": "المراجعة",
+    "results": "النتائج",
+    "news": "الأخبار",
+    "account": "الحساب"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "submit": "دخول",
+    "logout": "خروج",
+    "invalid": "بيانات الدخول غير صحيحة",
+    "language": "اللغة"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "search": "بحث",
+    "loading": "جارٍ التحميل…",
+    "empty": "لا توجد بيانات",
+    "total": "المجموع",
+    "actions": "إجراءات",
+    "retry": "إعادة المحاولة",
+    "from": "من",
+    "to": "إلى",
+    "week": "الأسبوع",
+    "session": "الحصة",
+    "score": "النقطة",
+    "of20": "/ 20"
+  },
+  "role": {
+    "admin": "مدير",
+    "supervisor": "ناظر",
+    "teacher": "معلم",
+    "guardian": "ولي",
+    "student": "طالب",
+    "board": "مجلس الإدارة"
+  },
+  "teacherType": { "hifz": "تحفيظ", "murajaa": "مراجعة", "both": "كلاهما" },
+  "attendance": { "present": "حاضر", "absent": "غائب", "late": "متأخر", "excused": "معذور" },
+  "audience": { "all": "عام", "teachers": "المعلمون", "manager": "المدير", "my_students": "طلابي" },
+  "honor": { "none": "—", "tashji3": "تشجيع", "intibah": "انتبه" },
+  "weekType": { "study": "دراسة", "review": "مراجعة" },
+  "sessionType": { "memorization": "حفظ", "revision": "مراجعة", "exam": "اختبار" },
+  "mode": { "surah": "بالسورة", "thumn": "بالثمن" },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "min": "القيمة أصغر من المسموح",
+    "max": "القيمة أكبر من المسموح (الحد: {{max}})",
+    "range": "يجب أن تكون النهاية بعد البداية"
+  }
+}

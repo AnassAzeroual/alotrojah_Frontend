@@ -1,0 +1,62 @@
+{
+  "app": { "title": "Al-Urwah", "subtitle": "Quran memorization tracking" },
+  "nav": {
+    "dashboard": "Home",
+    "entry": "Daily entry",
+    "students": "Students",
+    "groups": "Circles",
+    "planning": "Planning",
+    "exams": "Exams",
+    "reviews": "Review",
+    "results": "Results",
+    "news": "News",
+    "account": "Account"
+  },
+  "auth": {
+    "login": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "logout": "Sign out",
+    "invalid": "Invalid credentials",
+    "language": "Language"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "search": "Search",
+    "loading": "Loading…",
+    "empty": "No data",
+    "total": "Total",
+    "actions": "Actions",
+    "retry": "Retry",
+    "from": "From",
+    "to": "To",
+    "week": "Week",
+    "session": "Session",
+    "score": "Score",
+    "of20": "/ 20"
+  },
+  "role": {
+    "admin": "Admin",
+    "supervisor": "Supervisor",
+    "teacher": "Teacher",
+    "guardian": "Guardian",
+    "student": "Student",
+    "board": "Board"
+  },
+  "teacherType": { "hifz": "Memorization", "murajaa": "Review", "both": "Both" },
+  "attendance": { "present": "Present", "absent": "Absent", "late": "Late", "excused": "Excused" },
+  "audience": { "all": "General", "teachers": "Teachers", "manager": "Management", "my_students": "My students" },
+  "honor": { "none": "—", "tashji3": "Praise", "intibah": "Warning" },
+  "weekType": { "study": "Study", "review": "Review" },
+  "sessionType": { "memorization": "Memorization", "revision": "Revision", "exam": "Exam" },
+  "mode": { "surah": "By surah", "thumn": "By thumn" },
+  "validation": {
+    "required": "Field is required",
+    "min": "Value too small",
+    "max": "Value too large (max: {{max}})",
+    "range": "End must follow start"
+  }
+}

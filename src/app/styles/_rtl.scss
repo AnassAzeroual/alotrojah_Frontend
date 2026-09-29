@@ -1,0 +1,27 @@
+// RTL-first: Arabic is the default language. Logical properties everywhere;
+// this file only holds the exceptions that need explicit direction handling.
+
+[dir='rtl'] {
+  .ltr-num {
+    direction: ltr;
+    unicode-bidi: embed;
+  }
+
+  input[type='number'],
+  input[type='tel'],
+  input[type='email'] {
+    text-align: right;
+  }
+
+  .score-input {
+    text-align: center;
+  }
+}
+
+[dir='ltr'] {
+  input[type='number'],
+  input[type='tel'],
+  input[type='email'] {
+    text-align: left;
+  }
+}

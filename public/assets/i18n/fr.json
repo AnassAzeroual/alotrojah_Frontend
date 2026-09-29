@@ -1,0 +1,62 @@
+{
+  "app": { "title": "Al-Urwah", "subtitle": "Suivi de la mémorisation du Coran" },
+  "nav": {
+    "dashboard": "Accueil",
+    "entry": "Saisie du jour",
+    "students": "Élèves",
+    "groups": "Cercles",
+    "planning": "Planification",
+    "exams": "Examens",
+    "reviews": "Révision",
+    "results": "Résultats",
+    "news": "Annonces",
+    "account": "Compte"
+  },
+  "auth": {
+    "login": "Connexion",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "submit": "Entrer",
+    "logout": "Déconnexion",
+    "invalid": "Identifiants invalides",
+    "language": "Langue"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "search": "Rechercher",
+    "loading": "Chargement…",
+    "empty": "Aucune donnée",
+    "total": "Total",
+    "actions": "Actions",
+    "retry": "Réessayer",
+    "from": "De",
+    "to": "À",
+    "week": "Semaine",
+    "session": "Séance",
+    "score": "Note",
+    "of20": "/ 20"
+  },
+  "role": {
+    "admin": "Directeur",
+    "supervisor": "Superviseur",
+    "teacher": "Enseignant",
+    "guardian": "Parent",
+    "student": "Élève",
+    "board": "Conseil"
+  },
+  "teacherType": { "hifz": "Mémorisation", "murajaa": "Révision", "both": "Les deux" },
+  "attendance": { "present": "Présent", "absent": "Absent", "late": "En retard", "excused": "Excusé" },
+  "audience": { "all": "Général", "teachers": "Enseignants", "manager": "Direction", "my_students": "Mes élèves" },
+  "honor": { "none": "—", "tashji3": "Encouragement", "intibah": "Attention" },
+  "weekType": { "study": "Étude", "review": "Révision" },
+  "sessionType": { "memorization": "Mémorisation", "revision": "Révision", "exam": "Examen" },
+  "mode": { "surah": "Par sourate", "thumn": "Par thoumn" },
+  "validation": {
+    "required": "Champ obligatoire",
+    "min": "Valeur trop petite",
+    "max": "Valeur trop grande (max : {{max}})",
+    "range": "La fin doit suivre le début"
+  }
+}

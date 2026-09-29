@@ -86,7 +86,8 @@
 
 ## 10. Frontend build log (F1 → …)
 - **F1 (done):** Node 25.9 default too new (CLI warns/refuses odd versions) → installed Node **24.21.0 LTS** via existing nvm-windows, CLI **22.2.0** global under the 24 install. Project commands use the v24 paths explicitly; user default stays 25.
-- **F2 (done):** `ng new` (SCSS, routing, zoneless, strict) moved into `alotrojah_Frontend` preserving `.git`/`docs`. Fixes: CLI did not write `strict`/`strictTemplates`, added explicitly; renamed project `alotrojah_new` to `alotrojah`. Verified: no `zone.js` dep, dev build green. Angular standards (signals, standalone, zoneless, @if/@for, OnPush, lazy routes, typed forms) from this file § developments — treat as law.
+- **F2 (done):** `ng new` (SCSS, routing, zoneless, strict) moved into `alotrojah_Frontend` preserving `.git`/`docs`. Fixes: CLI did not write `strict`/`strictTemplates`, added explicitly; renamed project `alotrojah_new` to `alotrojah`. Verified: no `zone.js` dep, dev build green.
+- **F3 (done, verified live):** `@ngx-translate/core@18` + http-loader + `chart.js` (no ng2-charts wrapper — version risk, own thin chart component later). `ar`/`fr`/`en` JSON under `public/assets/i18n` (shell/auth/nav/roles/status keys). Design system: `_tokens.scss` (green/gold, spacing, radius, mobile-first `min-width` breakpoints + `up()` mixin), `_rtl.scss`, `_print.scss` (book-faithful reports). `index.html` ar/rtl + Cairo font. `environments.{ts,prod.ts}` + prod fileReplacements. Gotchas: `provideTranslateLoader` is exported from CORE not the loader package; loader needs `() => new TranslateHttpLoader()` factory; launch dev-server via `cmd /c` wrapper (direct ng.cmd Start-Process fails silently). Verified: build green, serve 200, ar.json served with title. Angular standards (signals, standalone, zoneless, @if/@for, OnPush, lazy routes, typed forms) from this file § developments — treat as law.
 
 ---
 

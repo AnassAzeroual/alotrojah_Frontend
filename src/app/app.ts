@@ -1,12 +1,19 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, TranslatePipe],
   selector: 'app-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',
 })
 export class App {
-  protected readonly title = signal('alotrojah_new');
+  private readonly translate = inject(TranslateService);
+
+  constructor() {
+    this.translate.use('ar');
+    document.documentElement.lang = 'ar';
+    document.documentElement.dir = 'rtl';
+  }
 }

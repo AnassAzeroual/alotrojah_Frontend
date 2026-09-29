@@ -1,0 +1,40 @@
+// Design tokens — single source of truth for the whole app.
+// Mobile-first: base = 360px phone, scale up with min-width.
+
+:root {
+  --color-primary: #0e7c5b;       // Islamic green
+  --color-primary-dark: #0a5c44;
+  --color-gold: #c9a227;
+  --color-bg: #f6f8f6;
+  --color-surface: #ffffff;
+  --color-text: #1c2420;
+  --color-muted: #6b7671;
+  --color-danger: #c0392b;
+  --color-warn: #d48806;
+  --color-ok: #0e7c5b;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --nav-height: 64px;
+  --font-stack: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+
+  --shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+// Breakpoints (use min-width only — mobile first)
+$bp-sm: 480px;
+$bp-md: 768px;
+$bp-lg: 1024px;
+$bp-xl: 1280px;
+
+@mixin up($bp) {
+  @media (min-width: $bp) { @content; }
+}

@@ -1,0 +1,33 @@
+// Print: book-faithful reports (weekly follow-up, term/season reports).
+// Pages opt in with class="print-sheet".
+
+@media print {
+  .app-nav,
+  .app-header,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .print-sheet {
+    box-shadow: none;
+    border: 1px solid #000;
+    border-radius: 0;
+    break-inside: avoid;
+  }
+
+  .print-sheet table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .print-sheet th,
+  .print-sheet td {
+    border: 1px solid #000;
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+}
