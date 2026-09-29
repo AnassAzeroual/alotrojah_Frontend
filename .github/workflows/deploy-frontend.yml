@@ -52,6 +52,13 @@ jobs:
           code=$(curl -s -o /dev/null -w '%{http_code}' https://alotrojah.ma/); test "$code" = "200"
           curl -s https://alotrojah.ma/assets/i18n/ar.json | grep -q '"app"'
           code=$(curl -s -o /dev/null -w '%{http_code}' https://alotrojah.ma/students); test "$code" = "200"
-          js=$(curl -s https://alotrojah.ma/ | grep -o 'main\.[A-Za-z0-9_-]*\.js' | head -1)
-          curl -s "https://alotrojah.ma/$js" | grep -q 'api.alotrojah.ma'
+          html=$(curl -sL https://alotrojah.ma/)
+          echo "HTML bytes: ${#html}"
+          js=$(printf '%s' "$html" | grep -o 'main\.[A-Za-z0-9_-]*\.js' | head -1)
+          echo "JS bundle: [$js]"
+          test -n "$js"
+          bcode=$(curl -s -o /tmp/bundle.js -w '%{http_code}' "https://alotrojah.ma/$js")
+          echo "bundle http: $bcode"; test "$bcode" = "200"
+          grep -q 'api.alotrojah.ma' /tmp/bundle.js
+          if grep -q 'localhost:8000' /tmp/bundle.js; then echo 'DEV URL LEAKED INTO PROD'; exit 1; fi
           echo 'PROD VERIFIED'
