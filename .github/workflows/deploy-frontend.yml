@@ -56,13 +56,12 @@ jobs:
           code=$(curl -s -A "$UA" -o /dev/null -w '%{http_code}' https://alotrojah.ma/students); test "$code" = "200"
           html=$(curl -sL -A "$UA" https://alotrojah.ma/)
           echo "HTML bytes: ${#html}"
-          echo "HTML head: $(printf '%s' "$html" | head -c 300)"
-          echo "Headers:"; curl -sIL -A "$UA" https://alotrojah.ma/ | head -12
-          js=$(printf '%s' "$html" | grep -o 'main\.[A-Za-z0-9_-]*\.js' | head -1)
-          echo "JS bundle: [$js]"
-          test -n "$js"
-          bcode=$(curl -s -A "$UA" -o /tmp/bundle.js -w '%{http_code}' "https://alotrojah.ma/$js")
-          echo "bundle http: $bcode"; test "$bcode" = "200"
-          grep -q 'api.alotrojah.ma' /tmp/bundle.js
-          if grep -q 'localhost:8000' /tmp/bundle.js; then echo 'DEV URL LEAKED INTO PROD'; exit 1; fi
+          mkdir -p /tmp/bundles && rm -f /tmp/bundles/*.js
+          for f in $(printf '%s' "$html" | grep -o '[A-Za-z0-9_.-]*\.js' | sort -u); do
+            code=$(curl -s -A "$UA" -o "/tmp/bundles/$f" -w '%{http_code}' "https://alotrojah.ma/$f")
+            echo "$f -> $code"
+            test "$code" = "200"
+          done
+          grep -q 'api.alotrojah.ma' /tmp/bundles/*.js
+          if grep -q 'localhost:8000' /tmp/bundles/*.js; then echo 'DEV URL LEAKED INTO PROD'; exit 1; fi
           echo 'PROD VERIFIED'
