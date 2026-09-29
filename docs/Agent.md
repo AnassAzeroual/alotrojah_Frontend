@@ -6,7 +6,7 @@
 ## 1. What this is
 - App for a **non-profit Quran memorization association in Morocco** (one association, currently one center; DB supports many).
 - Digitizes a paper **memorization logbook** ("البرنامج المقترح لحفظ القرآن الكريم — فئة غير المتفرغ").
-- Reference inspiration: `https://ahlquran.com/`. Domain bought: **`https://alotrojah.ma/`**.
+- Reference inspiration: `https://ahlquran.com/`. Domains: app **`https://alotrojah.ma/`**, API **`https://api.alotrojah.ma/api/v1`** (subdomain, not subfolder — CORS `FRONTEND_URLS` must list the app origin on host).
 - Users: association **manager** (PC), **3+ teachers** (smartphones only, 3G/4G + *6 social pack), **students + guardians share ONE account** (same interface).
 - Maintainer after delivery: the developer (me). MVP deadline: **1 month**.
 
@@ -15,6 +15,7 @@
 - **DB: MySQL 8**, `utf8mb4 / utf8mb4_unicode_ci`. Import: `quran_memorization_db.sql` then `quran_seed_data.sql`, verify with `quran_check_queries.sql`.
 - **i18n: ngx-translate**, 3 JSON files `ar` (default first), `fr`, `en`.
 - **No paid WhatsApp API.** Use `wa.me/<phone>` deep links with guardian/student numbers from DB (WhatsApp is effectively free for them).
+- CORS: `FRONTEND_URLS` env (comma-separated, supports dev ports + prod domains). Verified live: `https://alotrojah.ma` and `https://www.alotrojah.ma` echoed, unknown origins rejected. On host set it to exactly the app origin(s).
 - Future Laravel work goes in **Laravel migrations** (the SQL migration chain v1→v5 was consolidated away; do NOT recreate/delete those files).
 
 ## 3. Pedagogy model (from manager + teachers — do not re-ask)
