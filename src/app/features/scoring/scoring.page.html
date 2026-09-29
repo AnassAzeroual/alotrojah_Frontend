@@ -1,0 +1,65 @@
+<section>
+  <h1>{{ 'scoring.title' | translate }}</h1>
+
+  <p class="card sum" [class.bad]="liveSum() !== 20">
+    {{ 'scoring.sum' | translate }}: <strong class="ltr-num">{{ liveSum() }} / 20</strong>
+    @if (liveSum() !== 20) {
+      <small>{{ 'scoring.sum_bad' | translate }}</small>
+    }
+  </p>
+
+  @for (m of modules.value() ?? []; track m.code) {
+    <div class="card mod">
+      <strong>{{ m.name_ar }}</strong>
+      <small class="muted ltr-num">{{ m.code }} · {{ m.scope }}</small>
+      <label>{{ 'scoring.max' | translate }}
+        <input
+          type="number" class="ltr-num" [value]="m.max_points" min="0" max="20" step="0.5"
+          (change)="edit(m.code, { max: +$any($event.target).value }, { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total })"
+        />
+      </label>
+      <label class="chk">
+        <input
+          type="checkbox" [checked]="m.is_active"
+          (change)="edit(m.code, { active: $any($event.target).checked }, { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total })"
+        />
+        {{ 'scoring.active' | translate }}
+      </label>
+      @if (m.scope === 'weekly') {
+        <label class="chk">
+          <input
+            type="checkbox" [checked]="m.is_in_weekly_total"
+            (change)="edit(m.code, { inTotal: $any($event.target).checked }, { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total })"
+          />
+          {{ 'scoring.in_total' | translate }}
+        </label>
+      }
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <button type="button" class="primary" [disabled]="saving()" (click)="save()">
+    @if (saving()) {
+      <app-spinner />
+    } @else {
+      {{ 'common.save' | translate }}
+    }
+  </button>
+
+  <form class="card" [formGroup]="addForm" (ngSubmit)="addBook()">
+    <h2>{{ 'scoring.add_book' | translate }}</h2>
+    <label>{{ 'scoring.code' | translate }}<input formControlName="code" dir="ltr" /></label>
+    <label>{{ 'scoring.name' | translate }}<input formControlName="name_ar" /></label>
+    <label>{{ 'scoring.max' | translate }}<input type="number" class="ltr-num" formControlName="max_points" min="0" max="20" /></label>
+    <label>{{ 'scoring.scope' | translate }}
+      <select formControlName="scope">
+        <option value="weekly">weekly</option>
+        <option value="murajaa">murajaa</option>
+      </select>
+    </label>
+    <button type="submit" [disabled]="addForm.invalid || saving()">{{ 'scoring.add_book' | translate }}</button>
+  </form>
+</section>

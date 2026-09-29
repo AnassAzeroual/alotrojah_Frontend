@@ -1,0 +1,39 @@
+<section class="card form">
+  <h1>{{ 'planning.new_season' | translate }}</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label>{{ 'planning.name' | translate }}<input formControlName="name" /></label>
+    <label>{{ 'planning.start_date' | translate }}<input type="date" formControlName="start_date" /></label>
+    <label>{{ 'planning.hijri' | translate }}<input formControlName="hijri_year" /></label>
+    <label>{{ 'planning.sessions_per_week' | translate }}
+      <input type="number" formControlName="sessions_per_week" min="1" max="7" />
+    </label>
+    <label>{{ 'planning.review_weeks' | translate }}
+      <input type="number" formControlName="review_weeks_per_term" min="0" max="3" />
+    </label>
+
+    <h2>{{ 'planning.terms' | translate }}</h2>
+    <div formArrayName="terms">
+      @for (row of form.controls.terms.controls; track $index) {
+        <div class="term-row" [formGroupName]="$index">
+          <input formControlName="name" [placeholder]="'planning.name' | translate" />
+          <input type="number" formControlName="weeks" min="1" max="12" class="ltr-num" />
+          <button type="button" (click)="removeTerm($index)">×</button>
+        </div>
+      }
+    </div>
+    <button type="button" (click)="addTerm()">+ {{ 'planning.terms' | translate }}</button>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button type="submit" class="primary" [disabled]="form.invalid || saving()">
+      @if (saving()) {
+        <app-spinner />
+      } @else {
+        {{ 'planning.create' | translate }}
+      }
+    </button>
+  </form>
+</section>

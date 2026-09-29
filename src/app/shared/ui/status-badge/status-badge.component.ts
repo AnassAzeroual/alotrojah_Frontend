@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
-export type BadgeKind = 'attendance' | 'honor' | 'generic';
+export type BadgeKind = 'attendance' | 'honor' | 'week' | 'generic';
 
 @Component({
   selector: 'app-status-badge',
@@ -37,7 +37,11 @@ export class StatusBadgeComponent {
   readonly kind = input<BadgeKind>('generic');
   readonly value = input.required<string>();
 
-  readonly labelKey = computed(() => `${this.kind() === 'generic' ? 'common' : this.kind()}.${this.value()}`);
+  readonly labelKey = computed(() => {
+    const k = this.kind();
+    if (k === 'week') return `weekType.${this.value()}`;
+    return `${k === 'generic' ? 'common' : k}.${this.value()}`;
+  });
   readonly badgeClass = computed(() => {
     const v = this.value();
     if (['present', 'tashji3'].includes(v)) return 'badge ok';

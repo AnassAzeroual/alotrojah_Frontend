@@ -1,0 +1,31 @@
+﻿import { Routes } from '@angular/router';
+import { roleGuard } from '../../core/auth/role.guard';
+
+const MANAGER: ('admin' | 'supervisor')[] = ['admin', 'supervisor'];
+
+export const PLANNING_ROUTES: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./seasons-list.page').then((m) => m.SeasonsListPage),
+    canActivate: [roleGuard],
+    data: { roles: MANAGER },
+  },
+  {
+    path: 'new',
+    loadComponent: () => import('./season-create.page').then((m) => m.SeasonCreatePage),
+    canActivate: [roleGuard],
+    data: { roles: MANAGER },
+  },
+  {
+    path: 'terms/:id',
+    loadComponent: () => import('./term-detail.page').then((m) => m.TermDetailPage),
+    canActivate: [roleGuard],
+    data: { roles: MANAGER },
+  },
+  {
+    path: 'plans',
+    loadComponent: () => import('./plans.page').then((m) => m.PlansPage),
+    canActivate: [roleGuard],
+    data: { roles: MANAGER },
+  },
+];

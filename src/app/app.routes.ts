@@ -31,7 +31,15 @@ export const routes: Routes = [
         path: 'guardians',
         loadChildren: () => import('./features/guardians/guardians.routes').then((m) => m.GUARDIANS_ROUTES),
       },
-      // F8+ append feature routes here
+      {
+        path: 'planning',
+        loadChildren: () => import('./features/planning/planning.routes').then((m) => m.PLANNING_ROUTES),
+      },
+      {
+        path: 'scoring',
+        loadChildren: () => import('./features/scoring/scoring.routes').then((m) => m.SCORING_ROUTES),
+      },
+      // F9+ append feature routes here
     ],
   },
   { path: '**', redirectTo: '' },

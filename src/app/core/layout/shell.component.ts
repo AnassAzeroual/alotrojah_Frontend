@@ -17,7 +17,9 @@ const ITEMS: readonly NavItem[] = [
   { path: '/students', key: 'nav.students', roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student'] },
   { path: '/groups', key: 'nav.groups', roles: ['admin', 'supervisor', 'teacher'] },
   { path: '/guardians', key: 'nav.guardians', roles: ['admin', 'supervisor', 'teacher', 'guardian'] },
-  // F8+ append: planning, results, news
+  { path: '/planning', key: 'nav.planning', roles: ['admin', 'supervisor'] },
+  { path: '/scoring', key: 'nav.scoring', roles: ['admin', 'supervisor'] },
+  // F9+ append: results, news
 ];
 
 @Component({
