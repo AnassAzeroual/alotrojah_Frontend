@@ -8,6 +8,10 @@
     "guardians": "Parents",
     "planning": "Planification",
     "scoring": "Notation",
+    "exams": "Examens",
+    "reviews": "Révision",
+    "results": "Résultats",
+    "reports": "Rapports",
     "planning": "Planification",
     "exams": "Examens",
     "reviews": "Révision",
@@ -59,6 +63,46 @@
   "studentStatus": { "active": "Actif", "paused": "En pause", "graduated": "Diplômé", "left": "Parti" },
   "results": { "season": "Saison", "memorized": "Mémorisé (thoumns)", "average": "Moyenne", "attendance": "Présence", "final": "Note finale" },
   "list": { "search": "Rechercher par nom", "group": "Cercle", "level": "Niveau", "status": "Statut", "mode": "Mode", "all": "Tous" },
+  "exam": {
+    "title": "Examens",
+    "new": "Nouvel examen",
+    "filter_type": "Type",
+    "type": "Type",
+    "date": "Date",
+    "average": "Moyenne",
+    "questions": "Questions",
+    "add_question": "Ajouter une question",
+    "q_no": "N°",
+    "prompt": "Énoncé"
+  },
+  "review": {
+    "title": "Révision",
+    "cycles": "Cycles",
+    "new_cycle": "Nouveau cycle",
+    "week_from": "Semaine de",
+    "week_to": "Semaine à"
+  },
+  "result": {
+    "term_title": "Résultats du trimestre",
+    "season_title": "Résultats de la saison",
+    "hifz_total": "Mémorisation",
+    "murajaa_total": "Révision",
+    "exam_score": "Examen",
+    "general_avg": "Moyenne",
+    "teacher_notes": "Enseignant",
+    "guardian_notes": "Parent",
+    "supervisor_note": "Superviseur",
+    "honor": "Tableau d'honneur",
+    "memorized_label": "Mémorisé",
+    "overall": "Moyenne",
+    "board": "Conseil"
+  },
+  "report": {
+    "term_title": "Rapport du trimestre",
+    "season_title": "Rapport de la saison",
+    "print": "Imprimer",
+    "term": "Trimestre"
+  },
   "sessionStatus": { "planned": "Planifiée", "done": "Terminée", "cancelled": "Annulée" },
   "planning": {
     "title": "Planification",

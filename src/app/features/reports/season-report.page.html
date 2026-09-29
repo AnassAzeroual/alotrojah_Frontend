@@ -1,0 +1,46 @@
+<section>
+  <h1 class="no-print">{{ 'report.season_title' | translate }}</h1>
+
+  <div class="card no-print">
+    <label>{{ 'planning.pick_student' | translate }}
+      <input type="search" [value]="search()" (change)="search.set($any($event.target).value)" [placeholder]="'list.search' | translate" />
+    </label>
+    @for (s of found.value() ?? []; track s.id) {
+      <button type="button" class="pick" [class.on]="pickedStudent() === s.id" (click)="pickedStudent.set(s.id)">
+        {{ s.full_name }}
+      </button>
+    }
+    @if (report.value()) {
+      <button type="button" class="primary" (click)="print()">{{ 'report.print' | translate }}</button>
+    }
+  </div>
+
+  @if (report.isLoading()) {
+    <app-spinner />
+  } @else if (report.value(); as r) {
+    <article class="print-sheet card">
+      <h2>{{ r.student.full_name }}</h2>
+      @if (r.result) {
+        <p>{{ r.result.total_memorized_label ?? '' }}</p>
+        <p>
+          <app-status-badge kind="honor" [value]="r.result.honor_flag" />
+          <strong class="ltr-num">{{ r.result.overall_avg ?? '—' }}{{ 'common.of20' | translate }}</strong>
+        </p>
+      }
+      <table>
+        <tr><th>{{ 'report.term' | translate }}</th><th>{{ 'results.average' | translate }}</th></tr>
+        @for (t of r.term_results; track t.term_id) {
+          <tr>
+            <td class="ltr-num">T{{ t.term_id }}</td>
+            <td class="ltr-num">{{ t.general_avg ?? '—' }}</td>
+          </tr>
+        }
+      </table>
+      <p class="muted ltr-num">
+        murajaa {{ r.inputs.avg_murajaa ?? '—' }} · weekly {{ r.inputs.avg_weekly ?? '—' }} · final {{ r.final ?? '—' }}
+      </p>
+    </article>
+  } @else if (pickedStudent() !== null) {
+    <app-empty-state />
+  }
+</section>

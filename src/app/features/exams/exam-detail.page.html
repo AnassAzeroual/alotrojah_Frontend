@@ -1,0 +1,46 @@
+@if (exam.isLoading()) {
+  <app-spinner />
+} @else if (!exam.value()) {
+  <app-empty-state />
+} @else {
+  <section class="card">
+    <h1>#{{ exam.value()!.id }} · {{ exam.value()!.exam_type }}</h1>
+    <p>
+      {{ 'exam.average' | translate }}:
+      <strong class="ltr-num">{{ exam.value()!.overall_avg ?? '—' }}{{ 'common.of20' | translate }}</strong>
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>{{ 'exam.questions' | translate }}</h2>
+    @for (q of exam.value()!.questions ?? []; track q.id) {
+      <div class="line">
+        <span><strong class="ltr-num">{{ q.question_no }}.</strong> {{ q.prompt_text ?? '—' }}</span>
+        <app-score-input
+          [max]="20"
+          [value]="q.score"
+          (valueChange)="setScore(q.id, $event)"
+        />
+        <button type="button" (click)="deleteQuestion(q.id)">×</button>
+      </div>
+    }
+  </section>
+
+  <form class="card" [formGroup]="addForm" (ngSubmit)="addQuestion()">
+    <h2>{{ 'exam.add_question' | translate }}</h2>
+    <label>{{ 'exam.q_no' | translate }}
+      <input type="number" class="ltr-num" formControlName="question_no" min="1" />
+    </label>
+    <label>{{ 'exam.prompt' | translate }}<input formControlName="prompt_text" /></label>
+    <label>{{ 'common.score' | translate }}
+      <input type="number" class="ltr-num" formControlName="score" min="0" max="20" />
+    </label>
+    <button type="submit" [disabled]="addForm.invalid || saving()">
+      @if (saving()) {
+        <app-spinner />
+      } @else {
+        {{ 'common.save' | translate }}
+      }
+    </button>
+  </form>
+}

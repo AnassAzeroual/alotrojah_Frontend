@@ -39,7 +39,23 @@ export const routes: Routes = [
         path: 'scoring',
         loadChildren: () => import('./features/scoring/scoring.routes').then((m) => m.SCORING_ROUTES),
       },
-      // F9+ append feature routes here
+      {
+        path: 'exams',
+        loadChildren: () => import('./features/exams/exams.routes').then((m) => m.EXAMS_ROUTES),
+      },
+      {
+        path: 'reviews',
+        loadChildren: () => import('./features/reviews/reviews.routes').then((m) => m.REVIEWS_ROUTES),
+      },
+      {
+        path: 'results',
+        loadChildren: () => import('./features/results/results.routes').then((m) => m.RESULTS_ROUTES),
+      },
+      {
+        path: 'reports',
+        loadChildren: () => import('./features/reports/reports.routes').then((m) => m.REPORTS_ROUTES),
+      },
+      // F10 append feature routes here
     ],
   },
   { path: '**', redirectTo: '' },

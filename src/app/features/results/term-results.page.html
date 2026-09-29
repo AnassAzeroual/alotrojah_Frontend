@@ -1,0 +1,56 @@
+<section>
+  <h1>{{ 'result.term_title' | translate }}</h1>
+
+  <div class="card">
+    <label>{{ 'planning.pick_student' | translate }}
+      <input type="search" [value]="search()" (change)="search.set($any($event.target).value)" [placeholder]="'list.search' | translate" />
+    </label>
+    @for (s of found.value() ?? []; track s.id) {
+      <button type="button" class="pick" [class.on]="pickedStudent() === s.id" (click)="pickedStudent.set(s.id)">
+        {{ s.full_name }}
+      </button>
+    }
+    <label>{{ 'planning.pick_term' | translate }}
+      <select [value]="pickedTerm() ?? ''" (change)="pickedTerm.set($any($event.target).value ? +$any($event.target).value : null)">
+        <option value="">—</option>
+        @for (t of terms.value() ?? []; track t.id) {
+          <option [value]="t.id">{{ t.name_ar }}</option>
+        }
+      </select>
+    </label>
+    @if (existing.value()) {
+      <button type="button" (click)="fill()">{{ 'planning.load_existing' | translate }}</button>
+      <p>
+        <app-status-badge kind="honor" [value]="existing.value()!.honor_flag" />
+        <strong class="ltr-num">{{ existing.value()!.general_avg ?? '—' }}</strong>
+      </p>
+    }
+  </div>
+
+  @if (pickedStudent() !== null && pickedTerm() !== null) {
+    <form class="card" [formGroup]="form" (ngSubmit)="submit()">
+      @for (f of scoreFields; track f) {
+        <label>{{ ('result.' + f) | translate }}
+          <input type="number" class="ltr-num" [formControlName]="f" min="0" max="20" step="0.5" />
+        </label>
+      }
+      <label>{{ 'result.teacher_notes' | translate }}<input formControlName="teacher_notes" /></label>
+      <label>{{ 'result.guardian_notes' | translate }}<input formControlName="guardian_notes" /></label>
+      <label>{{ 'result.supervisor_note' | translate }}<input formControlName="supervisor_note" /></label>
+      <label>{{ 'result.honor' | translate }}
+        <select formControlName="honor_flag">
+          <option value="none">{{ 'honor.none' | translate }}</option>
+          <option value="tashji3">{{ 'honor.tashji3' | translate }}</option>
+          <option value="intibah">{{ 'honor.intibah' | translate }}</option>
+        </select>
+      </label>
+      <button type="submit" class="primary" [disabled]="saving()">
+        @if (saving()) {
+          <app-spinner />
+        } @else {
+          {{ 'common.save' | translate }}
+        }
+      </button>
+    </form>
+  }
+</section>

@@ -8,6 +8,10 @@
     "guardians": "Guardians",
     "planning": "Planning",
     "scoring": "Scoring",
+    "exams": "Exams",
+    "reviews": "Review",
+    "results": "Results",
+    "reports": "Reports",
     "planning": "Planning",
     "exams": "Exams",
     "reviews": "Review",
@@ -59,6 +63,46 @@
   "studentStatus": { "active": "Active", "paused": "Paused", "graduated": "Graduated", "left": "Left" },
   "results": { "season": "Season", "memorized": "Memorized (thumns)", "average": "Average", "attendance": "Attendance", "final": "Final score" },
   "list": { "search": "Search by name", "group": "Circle", "level": "Level", "status": "Status", "mode": "Mode", "all": "All" },
+  "exam": {
+    "title": "Exams",
+    "new": "New exam",
+    "filter_type": "Type",
+    "type": "Type",
+    "date": "Date",
+    "average": "Average",
+    "questions": "Questions",
+    "add_question": "Add question",
+    "q_no": "No.",
+    "prompt": "Prompt"
+  },
+  "review": {
+    "title": "Review",
+    "cycles": "Cycles",
+    "new_cycle": "New cycle",
+    "week_from": "From week",
+    "week_to": "To week"
+  },
+  "result": {
+    "term_title": "Term results",
+    "season_title": "Season results",
+    "hifz_total": "Memorization",
+    "murajaa_total": "Review",
+    "exam_score": "Exam",
+    "general_avg": "Average",
+    "teacher_notes": "Teacher",
+    "guardian_notes": "Guardian",
+    "supervisor_note": "Supervisor",
+    "honor": "Honor board",
+    "memorized_label": "Memorized",
+    "overall": "Average",
+    "board": "Board"
+  },
+  "report": {
+    "term_title": "Term report",
+    "season_title": "Season report",
+    "print": "Print",
+    "term": "Term"
+  },
   "sessionStatus": { "planned": "Planned", "done": "Done", "cancelled": "Cancelled" },
   "planning": {
     "title": "Planning",
