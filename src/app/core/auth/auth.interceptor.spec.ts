@@ -56,13 +56,13 @@ describe('authInterceptor', () => {
     auth.token.set('T');
     auth.currentUser.set(USER);
     http.get('/auth/me').subscribe();
-    expect(tester.expectOne((r) => r.url.endsWith('/auth/me')).request.headers.get('Authorization')).toBe(
-      'Bearer T',
-    );
+    expect(
+      tester.expectOne((r) => r.url.endsWith('/auth/me')).request.headers.get('Authorization'),
+    ).toBe('Bearer T');
     auth.refreshOnce().subscribe();
-    expect(tester.expectOne((r) => r.url.endsWith('/auth/refresh')).request.headers.get('Authorization')).toBe(
-      'Bearer T',
-    );
+    expect(
+      tester.expectOne((r) => r.url.endsWith('/auth/refresh')).request.headers.get('Authorization'),
+    ).toBe('Bearer T');
   });
 
   it('refreshes once on 401 then retries', () => {
