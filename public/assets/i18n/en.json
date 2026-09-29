@@ -5,6 +5,7 @@
     "entry": "Daily entry",
     "students": "Students",
     "groups": "Circles",
+    "guardians": "Guardians",
     "planning": "Planning",
     "exams": "Exams",
     "reviews": "Review",
@@ -53,6 +54,9 @@
   "weekType": { "study": "Study", "review": "Review" },
   "sessionType": { "memorization": "Memorization", "revision": "Revision", "exam": "Exam" },
   "mode": { "surah": "By surah", "thumn": "By thumn" },
+  "studentStatus": { "active": "Active", "paused": "Paused", "graduated": "Graduated", "left": "Left" },
+  "results": { "season": "Season", "memorized": "Memorized (thumns)", "average": "Average", "attendance": "Attendance", "final": "Final score" },
+  "list": { "search": "Search by name", "group": "Circle", "level": "Level", "status": "Status", "mode": "Mode", "all": "All" },
   "entry": {
     "title": "Daily entry",
     "pick_group": "Circle",

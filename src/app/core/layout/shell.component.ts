@@ -14,7 +14,10 @@ interface NavItem {
 const ITEMS: readonly NavItem[] = [
   { path: '/', key: 'nav.dashboard', roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student', 'board'] },
   { path: '/entry', key: 'nav.entry', roles: ['admin', 'supervisor', 'teacher'] },
-  // F7+ append: students, planning, results, news
+  { path: '/students', key: 'nav.students', roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student'] },
+  { path: '/groups', key: 'nav.groups', roles: ['admin', 'supervisor', 'teacher'] },
+  { path: '/guardians', key: 'nav.guardians', roles: ['admin', 'supervisor', 'teacher', 'guardian'] },
+  // F8+ append: planning, results, news
 ];
 
 @Component({

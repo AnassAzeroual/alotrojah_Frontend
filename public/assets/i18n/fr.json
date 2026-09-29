@@ -5,6 +5,7 @@
     "entry": "Saisie du jour",
     "students": "Élèves",
     "groups": "Cercles",
+    "guardians": "Parents",
     "planning": "Planification",
     "exams": "Examens",
     "reviews": "Révision",
@@ -53,6 +54,9 @@
   "weekType": { "study": "Étude", "review": "Révision" },
   "sessionType": { "memorization": "Mémorisation", "revision": "Révision", "exam": "Examen" },
   "mode": { "surah": "Par sourate", "thumn": "Par thoumn" },
+  "studentStatus": { "active": "Actif", "paused": "En pause", "graduated": "Diplômé", "left": "Parti" },
+  "results": { "season": "Saison", "memorized": "Mémorisé (thoumns)", "average": "Moyenne", "attendance": "Présence", "final": "Note finale" },
+  "list": { "search": "Rechercher par nom", "group": "Cercle", "level": "Niveau", "status": "Statut", "mode": "Mode", "all": "Tous" },
   "entry": {
     "title": "Saisie du jour",
     "pick_group": "Cercle",

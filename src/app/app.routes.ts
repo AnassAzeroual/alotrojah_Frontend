@@ -19,7 +19,19 @@ export const routes: Routes = [
         path: 'entry',
         loadChildren: () => import('./features/entry/entry.routes').then((m) => m.ENTRY_ROUTES),
       },
-      // F7+ append feature routes here
+      {
+        path: 'students',
+        loadChildren: () => import('./features/students/students.routes').then((m) => m.STUDENTS_ROUTES),
+      },
+      {
+        path: 'groups',
+        loadChildren: () => import('./features/groups/groups.routes').then((m) => m.GROUPS_ROUTES),
+      },
+      {
+        path: 'guardians',
+        loadChildren: () => import('./features/guardians/guardians.routes').then((m) => m.GUARDIANS_ROUTES),
+      },
+      // F8+ append feature routes here
     ],
   },
   { path: '**', redirectTo: '' },
