@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, finalize, map, shareReplay, tap } from 'rxjs';
 import { ApiClient } from '../api/api-client';
 import { CurrentUser, LoginData } from '../api/api-models';
 
@@ -48,22 +48,18 @@ export class AuthService {
   /** Single-flight refresh: concurrent 401s share one call. */
   refreshOnce(): Observable<string> {
     if (!this.inflightRefresh) {
-      this.inflightRefresh = new Observable<string>((sub) => {
-        this.api.post<LoginData>('/auth/refresh', {}).subscribe({
-          next: (d) => {
-            localStorage.setItem(TOKEN_KEY, d.access_token);
-            this.token.set(d.access_token);
-            this.currentUser.set(d.user);
-            this.inflightRefresh = null;
-            sub.next(d.access_token);
-            sub.complete();
-          },
-          error: (e) => {
-            this.inflightRefresh = null;
-            sub.error(e);
-          },
-        });
-      });
+      this.inflightRefresh = this.api.post<LoginData>('/auth/refresh', {}).pipe(
+        map((d) => {
+          localStorage.setItem(TOKEN_KEY, d.access_token);
+          this.token.set(d.access_token);
+          this.currentUser.set(d.user);
+          return d.access_token;
+        }),
+        finalize(() => {
+          this.inflightRefresh = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
     }
     return this.inflightRefresh;
   }

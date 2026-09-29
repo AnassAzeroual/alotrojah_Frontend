@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://alotrojah.ma/api/v1',
+  apiUrl: 'https://api.alotrojah.ma/api/v1',
 };

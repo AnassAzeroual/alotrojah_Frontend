@@ -3,12 +3,14 @@
 
   <div class="card">
     <h2>{{ 'dash.by_center' | translate }}</h2>
-    <select [value]="pickedCenter() ?? ''" (change)="pickedCenter.set($any($event.target).value ? +$any($event.target).value : null)">
-      <option value="">—</option>
-      @for (c of centers(); track c.id) {
-        <option [value]="c.id">{{ c.name }}</option>
-      }
-    </select>
+    <label>{{ 'dash.by_center' | translate }}
+      <select [value]="pickedCenter() ?? ''" (change)="pickedCenter.set($any($event.target).value ? +$any($event.target).value : null)">
+        <option value="">—</option>
+        @for (c of centers(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+        }
+      </select>
+    </label>
 
     @if (centerData.value(); as d) {
       <p class="ltr-num">
@@ -21,7 +23,9 @@
 
   <div class="card">
     <h2>{{ 'dash.by_student' | translate }}</h2>
-    <input type="search" [value]="search()" (change)="search.set($any($event.target).value)" [placeholder]="'list.search' | translate" />
+    <label>{{ 'list.search' | translate }}
+      <input type="search" [value]="search()" (change)="search.set($any($event.target).value)" [placeholder]="'list.search' | translate" />
+    </label>
     @for (s of found.value() ?? []; track s.id) {
       <button type="button" class="pick" [class.on]="pickedStudent() === s.id" (click)="pickedStudent.set(s.id)">
         {{ s.full_name }}
