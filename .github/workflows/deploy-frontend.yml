@@ -1,0 +1,56 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: FTP deploy to public_html/
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: dist/alotrojah/browser/
+          server-dir: public_html/
+          dangerous-clean-slate: false
+
+      - name: Verify production
+        run: |
+          set -e
+          code=$(curl -s -o /dev/null -w '%{http_code}' https://alotrojah.ma/); test "$code" = "200"
+          curl -s https://alotrojah.ma/assets/i18n/ar.json | grep -q '"app"'
+          code=$(curl -s -o /dev/null -w '%{http_code}' https://alotrojah.ma/students); test "$code" = "200"
+          js=$(curl -s https://alotrojah.ma/ | grep -o 'main\.[A-Za-z0-9_-]*\.js' | head -1)
+          curl -s "https://alotrojah.ma/$js" | grep -q 'api.alotrojah.ma'
+          echo 'PROD VERIFIED'
