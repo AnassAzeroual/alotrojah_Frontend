@@ -56,6 +56,8 @@ jobs:
           code=$(curl -s -A "$UA" -o /dev/null -w '%{http_code}' https://alotrojah.ma/students); test "$code" = "200"
           html=$(curl -sL -A "$UA" https://alotrojah.ma/)
           echo "HTML bytes: ${#html}"
+          echo "HTML head: $(printf '%s' "$html" | head -c 300)"
+          echo "Headers:"; curl -sIL -A "$UA" https://alotrojah.ma/ | head -12
           js=$(printf '%s' "$html" | grep -o 'main\.[A-Za-z0-9_-]*\.js' | head -1)
           echo "JS bundle: [$js]"
           test -n "$js"
