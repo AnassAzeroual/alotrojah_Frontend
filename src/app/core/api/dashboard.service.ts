@@ -13,6 +13,25 @@ export interface SeasonDashboard {
   honor_flag: string | null;
 }
 
+export interface WeeklyPoint {
+  week_id: number;
+  total_thumn: number;
+  avg_score: number | null;
+}
+
+export interface CenterCards {
+  students: number;
+  avg_score: number | null;
+  avg_sarraj: number | null;
+  avg_attendance: number | null;
+}
+
+export interface CenterDashboard {
+  cards: CenterCards;
+  honors: { honor_flag: string; n: number }[];
+  attendance: { status: string; n: number }[];
+}
+
 export interface FinalData {
   inputs: { avg_murajaa: number | null; avg_weekly: number | null; avg_sarraj: number | null };
   quizzes: { term_id: number | null; exam_type: string; avg_score: number }[];
@@ -30,5 +49,13 @@ export class DashboardService {
 
   final(studentId: number, seasonId: number): Observable<FinalData> {
     return this.api.get<FinalData>('/dashboard/final', { student_id: studentId, season_id: seasonId });
+  }
+
+  weekly(studentId: number, seasonId: number): Observable<WeeklyPoint[]> {
+    return this.api.get<WeeklyPoint[]>('/dashboard/weekly', { student_id: studentId, season_id: seasonId });
+  }
+
+  center(centerId: number, seasonId: number): Observable<CenterDashboard> {
+    return this.api.get<CenterDashboard>('/dashboard/center', { center_id: centerId, season_id: seasonId });
   }
 }

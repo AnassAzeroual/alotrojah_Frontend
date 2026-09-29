@@ -12,6 +12,9 @@
     "reviews": "Review",
     "results": "Results",
     "reports": "Reports",
+    "news": "News",
+    "delegate": "Delegation",
+    "notifications": "Messages",
     "planning": "Planning",
     "exams": "Exams",
     "reviews": "Review",
@@ -102,6 +105,38 @@
     "season_title": "Season report",
     "print": "Print",
     "term": "Term"
+  },
+  "news": {
+    "audience": "Audience",
+    "title": "Title",
+    "body": "Body",
+    "publish": "Publish"
+  },
+  "delegation": {
+    "title": "Delegation",
+    "minutes": "Minutes",
+    "generate": "Generate link",
+    "share_once": "Copy and send via WhatsApp — shown once",
+    "send_wa": "Send WhatsApp",
+    "copy": "Copy",
+    "revoke": "Revoke",
+    "revoked": "Revoked",
+    "granted": "Access granted to circle",
+    "invalid": "Invalid or expired link"
+  },
+  "notif": {
+    "title": "Messages",
+    "phone": "Phone",
+    "message": "Message",
+    "queue": "Add",
+    "send": "Send WhatsApp",
+    "sent": "Sent",
+    "failed": "Failed"
+  },
+  "dash": {
+    "title": "Dashboard",
+    "by_center": "By center",
+    "by_student": "By student"
   },
   "sessionStatus": { "planned": "Planned", "done": "Done", "cancelled": "Cancelled" },
   "planning": {

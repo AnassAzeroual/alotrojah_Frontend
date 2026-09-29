@@ -12,6 +12,9 @@
     "reviews": "Révision",
     "results": "Résultats",
     "reports": "Rapports",
+    "news": "Annonces",
+    "delegate": "Délégation",
+    "notifications": "Messages",
     "planning": "Planification",
     "exams": "Examens",
     "reviews": "Révision",
@@ -102,6 +105,38 @@
     "season_title": "Rapport de la saison",
     "print": "Imprimer",
     "term": "Trimestre"
+  },
+  "news": {
+    "audience": "Public",
+    "title": "Titre",
+    "body": "Texte",
+    "publish": "Publier"
+  },
+  "delegation": {
+    "title": "Délégation",
+    "minutes": "Durée (minutes)",
+    "generate": "Générer le lien",
+    "share_once": "Copiez et envoyez via WhatsApp — affiché une seule fois",
+    "send_wa": "Envoyer WhatsApp",
+    "copy": "Copier",
+    "revoke": "Révoquer",
+    "revoked": "Révoqué",
+    "granted": "Accès accordé au cercle",
+    "invalid": "Lien invalide ou expiré"
+  },
+  "notif": {
+    "title": "Messages",
+    "phone": "Téléphone",
+    "message": "Message",
+    "queue": "Ajouter",
+    "send": "Envoyer WhatsApp",
+    "sent": "Envoyé",
+    "failed": "Échoué"
+  },
+  "dash": {
+    "title": "Tableau de bord",
+    "by_center": "Par centre",
+    "by_student": "Par élève"
   },
   "sessionStatus": { "planned": "Planifiée", "done": "Terminée", "cancelled": "Annulée" },
   "planning": {

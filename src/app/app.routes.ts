@@ -13,7 +13,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./features/dashboard/home.page').then((m) => m.HomePage),
+        loadChildren: () => import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
       },
       {
         path: 'entry',
@@ -55,7 +55,23 @@ export const routes: Routes = [
         path: 'reports',
         loadChildren: () => import('./features/reports/reports.routes').then((m) => m.REPORTS_ROUTES),
       },
-      // F10 append feature routes here
+      {
+        path: 'news',
+        loadChildren: () => import('./features/news/news.routes').then((m) => m.NEWS_ROUTES),
+      },
+      {
+        path: 'delegate',
+        loadChildren: () => import('./features/delegate/delegate.routes').then((m) => m.DELEGATE_ROUTES),
+      },
+      {
+        path: 'notifications',
+        loadChildren: () => import('./features/notifications/notifications.routes').then((m) => m.NOTIFICATIONS_ROUTES),
+      },
+      {
+        path: 'dashboard',
+        loadChildren: () => import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
+      },
+      // F11+ append feature routes here
     ],
   },
   { path: '**', redirectTo: '' },

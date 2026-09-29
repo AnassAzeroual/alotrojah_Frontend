@@ -1,0 +1,52 @@
+<section>
+  <h1>{{ 'nav.news' | translate }}</h1>
+
+  @if (canPost()) {
+    <form class="card" [formGroup]="form" (ngSubmit)="submit()">
+      <label>{{ 'news.audience' | translate }}
+        <select formControlName="audience">
+          <option value="all">{{ 'audience.all' | translate }}</option>
+          <option value="teachers">{{ 'audience.teachers' | translate }}</option>
+          <option value="manager">{{ 'audience.manager' | translate }}</option>
+          <option value="my_students">{{ 'audience.my_students' | translate }}</option>
+        </select>
+      </label>
+      @if (form.controls.audience.value === 'my_students') {
+        <label>{{ 'entry.pick_group' | translate }}
+          <select [formControl]="form.controls.group_id">
+            <option [ngValue]="null">—</option>
+            @for (g of groups.value() ?? []; track g.id) {
+              <option [ngValue]="g.id">{{ g.name }}</option>
+            }
+          </select>
+        </label>
+      }
+      <label>{{ 'news.title' | translate }}<input formControlName="title" /></label>
+      <label>{{ 'news.body' | translate }}<textarea formControlName="body" rows="3"></textarea></label>
+      <button type="submit" class="primary" [disabled]="form.invalid || saving()">
+        @if (saving()) {
+          <app-spinner />
+        } @else {
+          {{ 'news.publish' | translate }}
+        }
+      </button>
+    </form>
+  }
+
+  @if (items.isLoading()) {
+    <app-spinner />
+  } @else if ((items.value() ?? []).length === 0) {
+    <app-empty-state />
+  } @else {
+    @for (a of items.value() ?? []; track a.id) {
+      <article class="card">
+        <h2>{{ a.title }}</h2>
+        <p>{{ a.body }}</p>
+        <small class="muted">{{ ('audience.' + a.audience) | translate }} · {{ a.author?.full_name ?? '' }}</small>
+        @if (canPost()) {
+          <button type="button" (click)="remove(a.id)">×</button>
+        }
+      </article>
+    }
+  }
+</section>

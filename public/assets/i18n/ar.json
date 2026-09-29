@@ -12,6 +12,9 @@
     "reviews": "المراجعة",
     "results": "النتائج",
     "reports": "التقارير",
+    "news": "الأخبار",
+    "delegate": "التفويض",
+    "notifications": "المراسلات",
     "planning": "التخطيط",
     "exams": "الاختبارات",
     "reviews": "المراجعة",
@@ -102,6 +105,38 @@
     "season_title": "تقرير الموسم",
     "print": "طباعة",
     "term": "الفصل"
+  },
+  "news": {
+    "audience": "الجمهور",
+    "title": "العنوان",
+    "body": "النص",
+    "publish": "نشر"
+  },
+  "delegation": {
+    "title": "التفويض",
+    "minutes": "المدة (دقائق)",
+    "generate": "توليد الرابط",
+    "share_once": "انسخ وأرسل عبر واتساب — يظهر مرة واحدة",
+    "send_wa": "إرسال واتساب",
+    "copy": "نسخ",
+    "revoke": "إلغاء",
+    "revoked": "ملغي",
+    "granted": "تم منح الدخول للمجموعة",
+    "invalid": "الرابط غير صالح أو منتهي"
+  },
+  "notif": {
+    "title": "المراسلات",
+    "phone": "رقم الهاتف",
+    "message": "الرسالة",
+    "queue": "إضافة",
+    "send": "إرسال واتساب",
+    "sent": "أُرسلت",
+    "failed": "فشلت"
+  },
+  "dash": {
+    "title": "لوحة المتابعة",
+    "by_center": "حسب المركز",
+    "by_student": "حسب الطالب"
   },
   "sessionStatus": { "planned": "مبرمجة", "done": "منجزة", "cancelled": "ملغاة" },
   "planning": {
