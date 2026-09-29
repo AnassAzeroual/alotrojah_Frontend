@@ -14,13 +14,12 @@ import { CentersService } from '../../core/api/centers.service';
 import { CenterDashboard, DashboardService } from '../../core/api/dashboard.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
-import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { ChartComponent } from '../../shared/ui/chart/chart.component';
 
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [TranslatePipe, SpinnerComponent, ChartComponent],
+  imports: [TranslatePipe, ChartComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.page.html',
 })

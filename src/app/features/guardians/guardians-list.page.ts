@@ -31,13 +31,10 @@ import { GuardiansService } from './guardians.service';
   `,
 })
 export class GuardiansListPage {
+  private readonly guardiansSvc = inject(GuardiansService);
+
   protected readonly guardians = resource({
     params: () => ({}),
-    loader: () =>
-      firstValueFrom(
-        inject(GuardiansService)
-          .list()
-          .pipe(map((p) => p.data)),
-      ),
+    loader: () => firstValueFrom(this.guardiansSvc.list().pipe(map((p) => p.data))),
   });
 }

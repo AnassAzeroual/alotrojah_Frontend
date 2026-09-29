@@ -24,6 +24,14 @@ test('admin logs in, sees dashboard and students', async ({ page }) => {
   const rows = page.locator('.rows .row');
   await expect(rows).toHaveCount(7);
 
+  // groups + guardians lists render (regression: NG0203 loader bug spun forever)
+  await page.getByRole('link', { name: /الحلقات/ }).click();
+  await expect(page).toHaveURL(/\/groups$/);
+  await expect(page.locator('.rows .row')).toHaveCount(5);
+  await page.getByRole('link', { name: /الأولياء/ }).click();
+  await expect(page).toHaveURL(/\/guardians$/);
+  await expect(page.locator('.rows .row')).toHaveCount(7);
+
   // dashboard loads charts for center 1
   await page.getByRole('link', { name: /الرئيسية/ }).click();
   await page.getByLabel(/حسب المركز/).selectOption({ index: 1 });

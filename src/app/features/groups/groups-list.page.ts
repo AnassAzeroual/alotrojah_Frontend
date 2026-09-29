@@ -34,13 +34,10 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
   `,
 })
 export class GroupsListPage {
+  private readonly groupsSvc = inject(GroupsService);
+
   protected readonly groups = resource({
     params: () => ({}),
-    loader: () =>
-      firstValueFrom(
-        inject(GroupsService)
-          .list()
-          .pipe(map((p) => p.data)),
-      ),
+    loader: () => firstValueFrom(this.groupsSvc.list().pipe(map((p) => p.data))),
   });
 }

@@ -6,7 +6,7 @@
   <section>
     <h1>{{ term.value()!.name_ar }}</h1>
 
-    @for (w of term.value()!.weeks ?? []; track w.id) {
+    @for (w of term.value()!.weeks; track w.id) {
       <div class="card week">
         <button type="button" class="whead" (click)="toggleWeek(w.id)">
           <strong>{{ 'common.week' | translate }} {{ w.week_number_global }}</strong>
