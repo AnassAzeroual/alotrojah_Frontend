@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-score-input',
   standalone: true,
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <label class="score">
@@ -12,6 +14,7 @@ import { ChangeDetectionStrategy, Component, input, model } from '@angular/core'
         inputmode="decimal"
         [min]="0"
         [max]="max()"
+        [attr.aria-label]="'common.score' | translate"
         step="0.5"
         [value]="value() ?? ''"
         [disabled]="disabled()"

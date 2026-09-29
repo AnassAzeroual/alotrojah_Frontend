@@ -30,7 +30,7 @@
             <button type="button" (click)="mark(m.id, 'sent')">{{ 'notif.sent' | translate }}</button>
             <button type="button" (click)="mark(m.id, 'failed')">{{ 'notif.failed' | translate }}</button>
           }
-          <button type="button" (click)="remove(m.id)">×</button>
+          <button type="button" [attr.aria-label]="'common.delete' | translate" (click)="remove(m.id)">×</button>
         </div>
       </div>
     }

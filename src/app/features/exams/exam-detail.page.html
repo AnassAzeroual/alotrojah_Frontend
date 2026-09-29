@@ -21,7 +21,7 @@
           [value]="q.score"
           (valueChange)="setScore(q.id, $event)"
         />
-        <button type="button" (click)="deleteQuestion(q.id)">×</button>
+        <button type="button" [attr.aria-label]="'common.delete' | translate" (click)="deleteQuestion(q.id)">×</button>
       </div>
     }
   </section>

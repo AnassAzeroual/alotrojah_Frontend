@@ -29,6 +29,11 @@ button {
   min-height: 44px; // touch target
 }
 
+:focus-visible {
+  outline: 3px solid var(--color-gold-dark);
+  outline-offset: 2px;
+}
+
 input,
 select,
 textarea {

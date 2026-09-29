@@ -44,7 +44,7 @@
         <p>{{ a.body }}</p>
         <small class="muted">{{ ('audience.' + a.audience) | translate }} · {{ a.author?.full_name ?? '' }}</small>
         @if (canPost()) {
-          <button type="button" (click)="remove(a.id)">×</button>
+          <button type="button" [attr.aria-label]="'common.delete' | translate" (click)="remove(a.id)">×</button>
         }
       </article>
     }

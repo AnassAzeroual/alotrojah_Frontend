@@ -19,7 +19,7 @@
         <div class="line">
           <span class="ltr-num">W{{ c.week_from }}–W{{ c.week_to }} ({{ c.weeks_covered }})</span>
           <strong class="ltr-num">{{ c.score }}{{ 'common.of20' | translate }}</strong>
-          <button type="button" (click)="remove(c.id)">×</button>
+          <button type="button" [attr.aria-label]="'common.delete' | translate" (click)="remove(c.id)">×</button>
         </div>
       } @empty {
         <app-empty-state />

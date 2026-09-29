@@ -16,8 +16,8 @@
       <p class="ltr-num">
         {{ d.cards.students }} · {{ d.cards.avg_score ?? '—' }} · {{ d.cards.avg_attendance ?? '—' }}%
       </p>
-      <app-chart type="bar" [data]="honorsChart()" />
-      <app-chart type="doughnut" [data]="attendanceChart()" />
+      <app-chart type="bar" [data]="honorsChart()" label="honors" />
+      <app-chart type="doughnut" [data]="attendanceChart()" label="attendance" />
     }
   </div>
 
@@ -32,7 +32,7 @@
       </button>
     }
     @if ((weekly.value() ?? []).length > 0) {
-      <app-chart type="bar" [data]="weeklyChart()" />
+      <app-chart type="bar" [data]="weeklyChart()" label="weekly" />
     }
   </div>
 </section>

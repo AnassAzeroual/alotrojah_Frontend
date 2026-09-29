@@ -17,12 +17,13 @@ Chart.register(...registerables);
   selector: 'app-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<canvas #chartCanvas></canvas>`,
+  template: `<canvas #chartCanvas role="img" [attr.aria-label]="label()"></canvas>`,
 })
 export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   readonly type = input.required<ChartType>();
   readonly data = input.required<ChartData>();
   readonly options = input<ChartOptions | undefined>(undefined);
+  readonly label = input('chart');
 
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('chartCanvas');
   private chart: Chart | null = null;
