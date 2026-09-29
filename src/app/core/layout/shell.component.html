@@ -1,0 +1,23 @@
+<header class="app-header">
+  <strong>{{ 'app.title' | translate }}</strong>
+  <span class="user">
+    {{ user()?.full_name }}
+    @if (user()?.role) {
+      <small class="muted">({{ ('role.' + user()?.role) | translate }})</small>
+    }
+  </span>
+  <app-language-switcher />
+  <button type="button" (click)="logout()">{{ 'auth.logout' | translate }}</button>
+</header>
+
+<main class="content">
+  <router-outlet />
+</main>
+
+<nav class="app-nav">
+  @for (item of items(); track item.path) {
+    <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.path === '/' }">
+      {{ item.key | translate }}
+    </a>
+  }
+</nav>
