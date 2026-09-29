@@ -41,3 +41,15 @@ test('admin logs in, sees dashboard and students', async ({ page }) => {
   await page.getByRole('button', { name: /خروج/ }).click();
   await expect(page).toHaveURL(/\/login$/);
 });
+
+test('session survives reload', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByLabel(/البريد/).fill('admin@example.org');
+  await page.getByLabel(/كلمة المرور/).fill('password123');
+  await page.getByRole('button', { name: /دخول/ }).click();
+  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
+  await page.reload();
+  // still logged in: shell (logout button) visible, no redirect to login
+  await expect(page.getByRole('button', { name: /خروج/ })).toBeVisible();
+  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
+});
