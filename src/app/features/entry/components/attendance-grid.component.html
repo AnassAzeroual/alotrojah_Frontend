@@ -12,7 +12,7 @@
             [attr.data-state]="st"
             (click)="setStatus(row.student.id, $any(st))"
           >
-            {{ ('attendance.' + st) | translate }}
+            {{ 'attendance.' + st | translate }}
           </button>
         }
       </div>

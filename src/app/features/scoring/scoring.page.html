@@ -12,24 +12,50 @@
     <div class="card mod">
       <strong>{{ m.name_ar }}</strong>
       <small class="muted ltr-num">{{ m.code }} · {{ m.scope }}</small>
-      <label>{{ 'scoring.max' | translate }}
+      <label
+        >{{ 'scoring.max' | translate }}
         <input
-          type="number" class="ltr-num" [value]="m.max_points" min="0" max="20" step="0.5"
-          (change)="edit(m.code, { max: +$any($event.target).value }, { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total })"
+          type="number"
+          class="ltr-num"
+          [value]="m.max_points"
+          min="0"
+          max="20"
+          step="0.5"
+          (change)="
+            edit(
+              m.code,
+              { max: +$any($event.target).value },
+              { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
+            )
+          "
         />
       </label>
       <label class="chk">
         <input
-          type="checkbox" [checked]="m.is_active"
-          (change)="edit(m.code, { active: $any($event.target).checked }, { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total })"
+          type="checkbox"
+          [checked]="m.is_active"
+          (change)="
+            edit(
+              m.code,
+              { active: $any($event.target).checked },
+              { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
+            )
+          "
         />
         {{ 'scoring.active' | translate }}
       </label>
       @if (m.scope === 'weekly') {
         <label class="chk">
           <input
-            type="checkbox" [checked]="m.is_in_weekly_total"
-            (change)="edit(m.code, { inTotal: $any($event.target).checked }, { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total })"
+            type="checkbox"
+            [checked]="m.is_in_weekly_total"
+            (change)="
+              edit(
+                m.code,
+                { inTotal: $any($event.target).checked },
+                { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
+              )
+            "
           />
           {{ 'scoring.in_total' | translate }}
         </label>
@@ -53,13 +79,19 @@
     <h2>{{ 'scoring.add_book' | translate }}</h2>
     <label>{{ 'scoring.code' | translate }}<input formControlName="code" dir="ltr" /></label>
     <label>{{ 'scoring.name' | translate }}<input formControlName="name_ar" /></label>
-    <label>{{ 'scoring.max' | translate }}<input type="number" class="ltr-num" formControlName="max_points" min="0" max="20" /></label>
-    <label>{{ 'scoring.scope' | translate }}
+    <label
+      >{{ 'scoring.max' | translate
+      }}<input type="number" class="ltr-num" formControlName="max_points" min="0" max="20"
+    /></label>
+    <label
+      >{{ 'scoring.scope' | translate }}
       <select formControlName="scope">
         <option value="weekly">weekly</option>
         <option value="murajaa">murajaa</option>
       </select>
     </label>
-    <button type="submit" [disabled]="addForm.invalid || saving()">{{ 'scoring.add_book' | translate }}</button>
+    <button type="submit" [disabled]="addForm.invalid || saving()">
+      {{ 'scoring.add_book' | translate }}
+    </button>
   </form>
 </section>

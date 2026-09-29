@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  output,
+  signal,
+  computed,
+} from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { EntryService, AttendanceRow } from '../../../core/api/entry.service';
 import { Student } from '../../../core/api/api-models';
@@ -55,7 +63,10 @@ export class AttendanceGridComponent {
     if (sid === null || this.saving()) return;
     this.saving.set(true);
     this.entry
-      .attendanceBulk(sid, this.rows().map((r) => ({ student_id: r.student.id, status: r.status })))
+      .attendanceBulk(
+        sid,
+        this.rows().map((r) => ({ student_id: r.student.id, status: r.status })),
+      )
       .subscribe({
         next: () => {
           this.edits.set(new Map());

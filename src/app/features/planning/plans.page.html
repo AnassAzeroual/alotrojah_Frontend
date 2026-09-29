@@ -2,19 +2,37 @@
   <h1>{{ 'planning.plans_title' | translate }}</h1>
 
   <div class="card">
-    <label>{{ 'planning.pick_student' | translate }}
-      <input type="search" [value]="search()" (change)="search.set($any($event.target).value)" [placeholder]="'list.search' | translate" />
+    <label
+      >{{ 'planning.pick_student' | translate }}
+      <input
+        type="search"
+        [value]="search()"
+        (change)="search.set($any($event.target).value)"
+        [placeholder]="'list.search' | translate"
+      />
     </label>
     @for (s of found.value() ?? []; track s.id) {
-      <button type="button" class="pick" [class.on]="pickedStudent() === s.id" (click)="pickedStudent.set(s.id)">
+      <button
+        type="button"
+        class="pick"
+        [class.on]="pickedStudent() === s.id"
+        (click)="pickedStudent.set(s.id)"
+      >
         {{ s.full_name }}
       </button>
     }
   </div>
 
   <div class="card">
-    <label>{{ 'planning.pick_term' | translate }}
-      <select [value]="pickedTerm() ?? ''" (change)="pickedTerm.set($any($event.target).value ? +$any($event.target).value : null); loadIntoForm()">
+    <label
+      >{{ 'planning.pick_term' | translate }}
+      <select
+        [value]="pickedTerm() ?? ''"
+        (change)="
+          pickedTerm.set($any($event.target).value ? +$any($event.target).value : null);
+          loadIntoForm()
+        "
+      >
         <option value="">—</option>
         @for (t of terms.value() ?? []; track t.id) {
           <option [value]="t.id">{{ t.name_ar }}</option>
@@ -22,30 +40,57 @@
       </select>
     </label>
     @if (plan.value()) {
-      <button type="button" (click)="loadIntoForm()">{{ 'planning.load_existing' | translate }}</button>
+      <button type="button" (click)="loadIntoForm()">
+        {{ 'planning.load_existing' | translate }}
+      </button>
     }
   </div>
 
   @if (pickedStudent() !== null && pickedTerm() !== null) {
     <form class="card form" (ngSubmit)="submit()">
       <div class="modes">
-        <button type="button" [class.on]="form.controls.plan_mode.value === 'thumn'" (click)="form.controls.plan_mode.setValue('thumn')">
+        <button
+          type="button"
+          [class.on]="form.controls.plan_mode.value === 'thumn'"
+          (click)="form.controls.plan_mode.setValue('thumn')"
+        >
           {{ 'mode.thumn' | translate }}
         </button>
-        <button type="button" [class.on]="form.controls.plan_mode.value === 'surah'" (click)="form.controls.plan_mode.setValue('surah')">
+        <button
+          type="button"
+          [class.on]="form.controls.plan_mode.value === 'surah'"
+          (click)="form.controls.plan_mode.setValue('surah')"
+        >
           {{ 'mode.surah' | translate }}
         </button>
       </div>
 
       @if (form.controls.plan_mode.value === 'thumn') {
-        <label>{{ 'planning.from_hizb' | translate }}
-          <input type="number" class="ltr-num" [formControl]="form.controls.start_hizb" min="1" max="60" step="0.5" />
+        <label
+          >{{ 'planning.from_hizb' | translate }}
+          <input
+            type="number"
+            class="ltr-num"
+            [formControl]="form.controls.start_hizb"
+            min="1"
+            max="60"
+            step="0.5"
+          />
         </label>
-        <label>{{ 'planning.to_hizb' | translate }}
-          <input type="number" class="ltr-num" [formControl]="form.controls.end_hizb" min="1" max="60" step="0.5" />
+        <label
+          >{{ 'planning.to_hizb' | translate }}
+          <input
+            type="number"
+            class="ltr-num"
+            [formControl]="form.controls.end_hizb"
+            min="1"
+            max="60"
+            step="0.5"
+          />
         </label>
       } @else {
-        <label>{{ 'planning.from_surah' | translate }}
+        <label
+          >{{ 'planning.from_surah' | translate }}
           <select [formControl]="form.controls.plan_surah_from">
             <option [ngValue]="null">—</option>
             @for (s of surahs.value() ?? []; track s.id) {
@@ -53,10 +98,18 @@
             }
           </select>
         </label>
-        <label>{{ 'planning.from_ayah' | translate }}
-          <input type="number" class="ltr-num" [formControl]="form.controls.plan_ayah_from" min="1" [max]="ayahMax(form.controls.plan_surah_from.value)" />
+        <label
+          >{{ 'planning.from_ayah' | translate }}
+          <input
+            type="number"
+            class="ltr-num"
+            [formControl]="form.controls.plan_ayah_from"
+            min="1"
+            [max]="ayahMax(form.controls.plan_surah_from.value)"
+          />
         </label>
-        <label>{{ 'planning.to_surah' | translate }}
+        <label
+          >{{ 'planning.to_surah' | translate }}
           <select [formControl]="form.controls.plan_surah_to">
             <option [ngValue]="null">—</option>
             @for (s of surahs.value() ?? []; track s.id) {
@@ -64,19 +117,44 @@
             }
           </select>
         </label>
-        <label>{{ 'planning.to_ayah' | translate }}
-          <input type="number" class="ltr-num" [formControl]="form.controls.plan_ayah_to" min="1" [max]="ayahMax(form.controls.plan_surah_to.value)" />
+        <label
+          >{{ 'planning.to_ayah' | translate }}
+          <input
+            type="number"
+            class="ltr-num"
+            [formControl]="form.controls.plan_ayah_to"
+            min="1"
+            [max]="ayahMax(form.controls.plan_surah_to.value)"
+          />
         </label>
       }
 
-      <label>{{ 'planning.goal' | translate }}<input [formControl]="form.controls.goal_text" /></label>
-      <label>{{ 'planning.expected_week' | translate }}
-        <input type="number" class="ltr-num" [formControl]="form.controls.expected_hifz_week_thumn" min="0" step="0.5" />
+      <label
+        >{{ 'planning.goal' | translate }}<input [formControl]="form.controls.goal_text"
+      /></label>
+      <label
+        >{{ 'planning.expected_week' | translate }}
+        <input
+          type="number"
+          class="ltr-num"
+          [formControl]="form.controls.expected_hifz_week_thumn"
+          min="0"
+          step="0.5"
+        />
       </label>
-      <label>{{ 'planning.expected_term' | translate }}
-        <input type="number" class="ltr-num" [formControl]="form.controls.expected_hifz_term_ahzab" min="0" step="0.5" />
+      <label
+        >{{ 'planning.expected_term' | translate }}
+        <input
+          type="number"
+          class="ltr-num"
+          [formControl]="form.controls.expected_hifz_term_ahzab"
+          min="0"
+          step="0.5"
+        />
       </label>
-      <label>{{ 'planning.khatm' | translate }}<input [formControl]="form.controls.khatm_expected_at" /></label>
+      <label
+        >{{ 'planning.khatm' | translate }}<input [formControl]="form.controls.khatm_expected_at"
+      /></label>
 
       @if (error()) {
         <p class="error">{{ error()! | translate }}</p>

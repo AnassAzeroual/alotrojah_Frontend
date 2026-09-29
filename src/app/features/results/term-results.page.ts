@@ -59,7 +59,9 @@ export class TermResultsPage {
     loader: ({ params }) => {
       if (params.st === null || params.t === null) return Promise.resolve(null);
       return firstValueFrom(
-        this.results.termResults({ student_id: params.st, term_id: params.t }).pipe(map((p) => p.data[0] ?? null)),
+        this.results
+          .termResults({ student_id: params.st, term_id: params.t })
+          .pipe(map((p) => p.data[0] ?? null)),
       );
     },
   });

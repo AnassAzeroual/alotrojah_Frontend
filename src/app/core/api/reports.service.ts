@@ -58,6 +58,9 @@ export class ReportsService {
   }
 
   season(studentId: number, seasonId: number): Observable<SeasonReport> {
-    return this.api.get<SeasonReport>('/reports/season', { student_id: studentId, season_id: seasonId });
+    return this.api.get<SeasonReport>('/reports/season', {
+      student_id: studentId,
+      season_id: seasonId,
+    });
   }
 }

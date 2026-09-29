@@ -2,11 +2,22 @@
   <h1>{{ 'review.title' | translate }}</h1>
 
   <div class="card">
-    <label>{{ 'planning.pick_student' | translate }}
-      <input type="search" [value]="search()" (change)="search.set($any($event.target).value)" [placeholder]="'list.search' | translate" />
+    <label
+      >{{ 'planning.pick_student' | translate }}
+      <input
+        type="search"
+        [value]="search()"
+        (change)="search.set($any($event.target).value)"
+        [placeholder]="'list.search' | translate"
+      />
     </label>
     @for (s of found.value() ?? []; track s.id) {
-      <button type="button" class="pick" [class.on]="pickedStudent() === s.id" (click)="pickedStudent.set(s.id)">
+      <button
+        type="button"
+        class="pick"
+        [class.on]="pickedStudent() === s.id"
+        (click)="pickedStudent.set(s.id)"
+      >
         {{ s.full_name }}
       </button>
     }
@@ -19,7 +30,13 @@
         <div class="line">
           <span class="ltr-num">W{{ c.week_from }}–W{{ c.week_to }} ({{ c.weeks_covered }})</span>
           <strong class="ltr-num">{{ c.score }}{{ 'common.of20' | translate }}</strong>
-          <button type="button" [attr.aria-label]="'common.delete' | translate" (click)="remove(c.id)">×</button>
+          <button
+            type="button"
+            [attr.aria-label]="'common.delete' | translate"
+            (click)="remove(c.id)"
+          >
+            ×
+          </button>
         </div>
       } @empty {
         <app-empty-state />
@@ -29,7 +46,8 @@
     @if (canEnter()) {
       <form class="card" [formGroup]="form" (ngSubmit)="submit()">
         <h2>{{ 'review.new_cycle' | translate }}</h2>
-        <label>{{ 'planning.pick_term' | translate }}
+        <label
+          >{{ 'planning.pick_term' | translate }}
           <select formControlName="term_id">
             <option [ngValue]="null">—</option>
             @for (t of terms.value() ?? []; track t.id) {
@@ -37,13 +55,16 @@
             }
           </select>
         </label>
-        <label>{{ 'review.week_from' | translate }}
+        <label
+          >{{ 'review.week_from' | translate }}
           <input type="number" class="ltr-num" formControlName="week_from" min="1" />
         </label>
-        <label>{{ 'review.week_to' | translate }}
+        <label
+          >{{ 'review.week_to' | translate }}
           <input type="number" class="ltr-num" formControlName="week_to" min="1" />
         </label>
-        <label>{{ 'common.score' | translate }}
+        <label
+          >{{ 'common.score' | translate }}
           <input type="number" class="ltr-num" formControlName="score" min="0" max="20" />
         </label>
         <button type="submit" class="primary" [disabled]="form.invalid || saving()">

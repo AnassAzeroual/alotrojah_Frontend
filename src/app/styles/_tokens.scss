@@ -2,10 +2,10 @@
 // Mobile-first: base = 360px phone, scale up with min-width.
 
 :root {
-  --color-primary: #0e7c5b;       // Islamic green
+  --color-primary: #0e7c5b; // Islamic green
   --color-primary-dark: #0a5c44;
   --color-gold: #c9a227;
-  --color-gold-dark: #7a5f16;     // small text on white (contrast-safe)
+  --color-gold-dark: #7a5f16; // small text on white (contrast-safe)
   --color-bg: #f6f8f6;
   --color-surface: #ffffff;
   --color-text: #1c2420;
@@ -37,5 +37,7 @@ $bp-lg: 1024px;
 $bp-xl: 1280px;
 
 @mixin up($bp) {
-  @media (min-width: $bp) { @content; }
+  @media (min-width: $bp) {
+    @content;
+  }
 }

@@ -6,7 +6,11 @@ import { LanguageService, AppLang } from '../i18n/language.service';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <select [value]="lang.current()" (change)="onChange($event)" [attr.aria-label]="'auth.language'">
+    <select
+      [value]="lang.current()"
+      (change)="onChange($event)"
+      [attr.aria-label]="'auth.language'"
+    >
       @for (l of lang.langs; track l) {
         <option [value]="l">{{ label(l) }}</option>
       }

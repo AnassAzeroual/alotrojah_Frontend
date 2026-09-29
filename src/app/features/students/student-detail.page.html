@@ -5,7 +5,10 @@
 } @else {
   <section class="card">
     <h1>{{ studentVal()?.full_name }}</h1>
-    <p class="muted">{{ studentVal()?.group?.name ?? '—' }} · {{ studentVal() ? ('mode.' + studentVal()!.memorization_mode | translate) : '' }}</p>
+    <p class="muted">
+      {{ studentVal()?.group?.name ?? '—' }} ·
+      {{ studentVal() ? ('mode.' + studentVal()!.memorization_mode | translate) : '' }}
+    </p>
     <p>
       <app-status-badge kind="generic" [value]="studentVal()!.status" />
       @if (summaryVal()?.honor_flag && summaryVal()!.honor_flag !== 'none') {
@@ -18,10 +21,22 @@
     <section class="card">
       <h2>{{ 'results.season' | translate }}</h2>
       <dl>
-        <div><dt>{{ 'results.memorized' | translate }}</dt><dd class="ltr-num">{{ summaryVal()!.season_thumn }}</dd></div>
-        <div><dt>{{ 'results.average' | translate }}</dt><dd class="ltr-num">{{ summaryVal()!.season_avg_score ?? '—' }}</dd></div>
-        <div><dt>{{ 'results.attendance' | translate }}</dt><dd class="ltr-num">{{ summaryVal()!.season_attendance_pct ?? '—' }}%</dd></div>
-        <div><dt>{{ 'results.final' | translate }}</dt><dd class="ltr-num">{{ finalVal()?.final ?? '—' }}</dd></div>
+        <div>
+          <dt>{{ 'results.memorized' | translate }}</dt>
+          <dd class="ltr-num">{{ summaryVal()!.season_thumn }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'results.average' | translate }}</dt>
+          <dd class="ltr-num">{{ summaryVal()!.season_avg_score ?? '—' }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'results.attendance' | translate }}</dt>
+          <dd class="ltr-num">{{ summaryVal()!.season_attendance_pct ?? '—' }}%</dd>
+        </div>
+        <div>
+          <dt>{{ 'results.final' | translate }}</dt>
+          <dd class="ltr-num">{{ finalVal()?.final ?? '—' }}</dd>
+        </div>
       </dl>
     </section>
   }

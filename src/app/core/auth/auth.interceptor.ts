@@ -11,7 +11,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = auth.token();
   const isAuthRoute = req.url.includes('/auth/');
 
-  const out = token && !isAuthRoute ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
+  const out =
+    token && !isAuthRoute ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 
   return next(out).pipe(
     catchError((err: unknown) => {
@@ -28,4 +29,4 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       );
     }),
   );
-}
+};

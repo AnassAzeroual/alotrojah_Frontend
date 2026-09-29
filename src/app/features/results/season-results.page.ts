@@ -49,7 +49,9 @@ export class SeasonResultsPage {
       const season = this.currentSeasonId();
       if (params.st === null || season === null) return Promise.resolve(null);
       return firstValueFrom(
-        this.results.seasonResults({ student_id: params.st, season_id: season }).pipe(map((p) => p.data[0] ?? null)),
+        this.results
+          .seasonResults({ student_id: params.st, season_id: season })
+          .pipe(map((p) => p.data[0] ?? null)),
       );
     },
   });

@@ -60,7 +60,9 @@ export class PlansPage {
     loader: ({ params }) => {
       if (params.st === null || params.t === null) return Promise.resolve(null);
       return firstValueFrom(
-        this.planning.plans({ student_id: params.st, term_id: params.t }).pipe(map((p) => p.data[0] ?? null)),
+        this.planning
+          .plans({ student_id: params.st, term_id: params.t })
+          .pipe(map((p) => p.data[0] ?? null)),
       );
     },
   });
@@ -108,7 +110,12 @@ export class PlansPage {
     if (st === null || t === null || this.saving()) return;
     const v = this.form.getRawValue();
     this.error.set(null);
-    if (v.plan_mode === 'thumn' && v.start_hizb !== null && v.end_hizb !== null && v.end_hizb < v.start_hizb) {
+    if (
+      v.plan_mode === 'thumn' &&
+      v.start_hizb !== null &&
+      v.end_hizb !== null &&
+      v.end_hizb < v.start_hizb
+    ) {
       this.error.set('validation.range');
       return;
     }

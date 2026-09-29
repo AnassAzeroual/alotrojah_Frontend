@@ -2,10 +2,13 @@
   <h1>{{ 'notif.title' | translate }}</h1>
 
   <form class="card" [formGroup]="form" (ngSubmit)="queue()">
-    <label>{{ 'notif.phone' | translate }}
+    <label
+      >{{ 'notif.phone' | translate }}
       <input formControlName="recipient_phone" inputmode="tel" dir="ltr" />
     </label>
-    <label>{{ 'notif.message' | translate }}<textarea formControlName="message" rows="3"></textarea></label>
+    <label
+      >{{ 'notif.message' | translate }}<textarea formControlName="message" rows="3"></textarea>
+    </label>
     <button type="submit" class="primary" [disabled]="form.invalid || saving()">
       @if (saving()) {
         <app-spinner />
@@ -27,10 +30,20 @@
         <div class="row">
           <a [href]="m.wa_link" target="_blank" rel="noopener">{{ 'notif.send' | translate }}</a>
           @if (m.status === 'queued') {
-            <button type="button" (click)="mark(m.id, 'sent')">{{ 'notif.sent' | translate }}</button>
-            <button type="button" (click)="mark(m.id, 'failed')">{{ 'notif.failed' | translate }}</button>
+            <button type="button" (click)="mark(m.id, 'sent')">
+              {{ 'notif.sent' | translate }}
+            </button>
+            <button type="button" (click)="mark(m.id, 'failed')">
+              {{ 'notif.failed' | translate }}
+            </button>
           }
-          <button type="button" [attr.aria-label]="'common.delete' | translate" (click)="remove(m.id)">×</button>
+          <button
+            type="button"
+            [attr.aria-label]="'common.delete' | translate"
+            (click)="remove(m.id)"
+          >
+            ×
+          </button>
         </div>
       </div>
     }

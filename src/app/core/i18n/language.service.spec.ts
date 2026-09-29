@@ -9,7 +9,11 @@ describe('LanguageService', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      providers: [provideTranslateService({ loader: provideTranslateLoader(() => new TranslateNoOpLoader()) })],
+      providers: [
+        provideTranslateService({
+          loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
+        }),
+      ],
     });
     lang = TestBed.inject(LanguageService);
   });
@@ -32,7 +36,11 @@ describe('LanguageService', () => {
     localStorage.setItem('alotrojah_lang', 'en');
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideTranslateService({ loader: provideTranslateLoader(() => new TranslateNoOpLoader()) })],
+      providers: [
+        provideTranslateService({
+          loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
+        }),
+      ],
     });
     const fresh = TestBed.inject(LanguageService);
     expect(fresh.current()).toBe('en');

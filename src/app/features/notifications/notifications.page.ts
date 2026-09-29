@@ -24,8 +24,14 @@ export class NotificationsPage {
   });
 
   readonly form = new FormGroup({
-    recipient_phone: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(30)] }),
-    message: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(2000)] }),
+    recipient_phone: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(30)],
+    }),
+    message: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(2000)],
+    }),
   });
 
   queue(): void {

@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideTranslateLoader, provideTranslateService, TranslateNoOpLoader } from '@ngx-translate/core';
+import {
+  provideTranslateLoader,
+  provideTranslateService,
+  TranslateNoOpLoader,
+} from '@ngx-translate/core';
 import { ScoreInputComponent } from './score-input.component';
 
 describe('ScoreInputComponent', () => {
@@ -9,7 +13,11 @@ describe('ScoreInputComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ScoreInputComponent],
-      providers: [provideTranslateService({ loader: provideTranslateLoader(() => new TranslateNoOpLoader()) })],
+      providers: [
+        provideTranslateService({
+          loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
+        }),
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(ScoreInputComponent);
     cmp = fixture.componentInstance;

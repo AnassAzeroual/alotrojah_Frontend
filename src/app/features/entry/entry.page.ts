@@ -1,4 +1,11 @@
-﻿import { ChangeDetectionStrategy, Component, computed, inject, resource, signal } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, forkJoin, map } from 'rxjs';
@@ -16,7 +23,14 @@ import { ScoreSheetComponent } from './components/score-sheet.component';
 @Component({
   selector: 'app-entry-page',
   standalone: true,
-  imports: [TranslatePipe, SpinnerComponent, EmptyStateComponent, AttendanceGridComponent, ScoreSheetComponent, GoalListComponent],
+  imports: [
+    TranslatePipe,
+    SpinnerComponent,
+    EmptyStateComponent,
+    AttendanceGridComponent,
+    ScoreSheetComponent,
+    GoalListComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './entry.page.html',
   styleUrl: './entry.page.scss',
@@ -30,7 +44,9 @@ export class EntryPage {
 
   readonly groups = toSignal(this.groupsSvc.list().pipe(map((p) => p.data)), { initialValue: [] });
   readonly modules = toSignal(this.entry.modules(), { initialValue: [] });
-  readonly weeks = toSignal(this.calendarSvc.weeks().pipe(map((p) => p.data)), { initialValue: [] });
+  readonly weeks = toSignal(this.calendarSvc.weeks().pipe(map((p) => p.data)), {
+    initialValue: [],
+  });
 
   readonly selectedGroup = signal<number | null>(null);
   readonly selectedWeek = signal<number | null>(null);
@@ -69,7 +85,9 @@ export class EntryPage {
   });
 
   readonly scoreRows = computed((): SessionStudentScores[] => this.existing.value()?.scores ?? []);
-  readonly attendanceRows = computed((): AttendanceRow[] => this.existing.value()?.attendance ?? []);
+  readonly attendanceRows = computed(
+    (): AttendanceRow[] => this.existing.value()?.attendance ?? [],
+  );
   readonly ready = computed(() => this.selectedGroup() !== null && this.selectedSession() !== null);
 
   onGroup(id: number | null): void {

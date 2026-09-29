@@ -3,7 +3,7 @@
   <span class="user">
     {{ user()?.full_name }}
     @if (user()?.role) {
-      <small class="muted">({{ ('role.' + user()?.role) | translate }})</small>
+      <small class="muted">({{ 'role.' + user()?.role | translate }})</small>
     }
   </span>
   <app-language-switcher />
@@ -16,7 +16,11 @@
 
 <nav class="app-nav">
   @for (item of items(); track item.path) {
-    <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.path === '/' }">
+    <a
+      [routerLink]="item.path"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+    >
       {{ item.key | translate }}
     </a>
   }

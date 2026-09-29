@@ -12,18 +12,34 @@ interface NavItem {
 }
 
 const ITEMS: readonly NavItem[] = [
-  { path: '/', key: 'nav.dashboard', roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student', 'board'] },
+  {
+    path: '/',
+    key: 'nav.dashboard',
+    roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student', 'board'],
+  },
   { path: '/entry', key: 'nav.entry', roles: ['admin', 'supervisor', 'teacher'] },
-  { path: '/students', key: 'nav.students', roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student'] },
+  {
+    path: '/students',
+    key: 'nav.students',
+    roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student'],
+  },
   { path: '/groups', key: 'nav.groups', roles: ['admin', 'supervisor', 'teacher'] },
-  { path: '/guardians', key: 'nav.guardians', roles: ['admin', 'supervisor', 'teacher', 'guardian'] },
+  {
+    path: '/guardians',
+    key: 'nav.guardians',
+    roles: ['admin', 'supervisor', 'teacher', 'guardian'],
+  },
   { path: '/planning', key: 'nav.planning', roles: ['admin', 'supervisor'] },
   { path: '/scoring', key: 'nav.scoring', roles: ['admin', 'supervisor'] },
   { path: '/exams', key: 'nav.exams', roles: ['admin', 'supervisor', 'teacher'] },
   { path: '/reviews', key: 'nav.reviews', roles: ['admin', 'supervisor', 'teacher'] },
   { path: '/results/term', key: 'nav.results', roles: ['admin', 'supervisor', 'teacher'] },
   { path: '/reports/term', key: 'nav.reports', roles: ['admin', 'supervisor', 'teacher'] },
-  { path: '/news', key: 'nav.news', roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student', 'board'] },
+  {
+    path: '/news',
+    key: 'nav.news',
+    roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student', 'board'],
+  },
   { path: '/delegate', key: 'nav.delegate', roles: ['admin', 'supervisor', 'teacher'] },
   { path: '/notifications', key: 'nav.notifications', roles: ['admin', 'supervisor', 'teacher'] },
   // F11+ append: account

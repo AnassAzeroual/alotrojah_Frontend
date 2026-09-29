@@ -19,7 +19,14 @@ interface SeasonForm {
   terms: FormArray<FormGroup<TermRow>>;
 }
 
-const DEFAULT_TERMS = ['Ø§Ù„ÙØµÙ„ Ø§Ù„Ø£ÙˆÙ„', 'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø«Ø§Ù†ÙŠ', 'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø«Ø§Ù„Ø«', 'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø±Ø§Ø¨Ø¹', 'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø®Ø§Ù…Ø³', 'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø³Ø§Ø¯Ø³'];
+const DEFAULT_TERMS = [
+  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø£ÙˆÙ„',
+  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø«Ø§Ù†ÙŠ',
+  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø«Ø§Ù„Ø«',
+  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø±Ø§Ø¨Ø¹',
+  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø®Ø§Ù…Ø³',
+  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø³Ø§Ø¯Ø³',
+];
 
 @Component({
   selector: 'app-season-create-page',
@@ -36,18 +43,30 @@ export class SeasonCreatePage {
   readonly error = signal<string | null>(null);
 
   readonly form = new FormGroup<SeasonForm>({
-    name: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(50)] }),
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(50)],
+    }),
     start_date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     hijri_year: new FormControl('', { nonNullable: true }),
-    sessions_per_week: new FormControl(3, { nonNullable: true, validators: [Validators.min(1), Validators.max(7)] }),
-    review_weeks_per_term: new FormControl(1, { nonNullable: true, validators: [Validators.min(0), Validators.max(3)] }),
+    sessions_per_week: new FormControl(3, {
+      nonNullable: true,
+      validators: [Validators.min(1), Validators.max(7)],
+    }),
+    review_weeks_per_term: new FormControl(1, {
+      nonNullable: true,
+      validators: [Validators.min(0), Validators.max(3)],
+    }),
     terms: new FormArray<FormGroup<TermRow>>(DEFAULT_TERMS.map((n) => this.row(n, 7))),
   });
 
   private row(name: string, weeks: number): FormGroup<TermRow> {
     return new FormGroup<TermRow>({
       name: new FormControl(name, { nonNullable: true, validators: [Validators.required] }),
-      weeks: new FormControl(weeks, { nonNullable: true, validators: [Validators.min(1), Validators.max(12)] }),
+      weeks: new FormControl(weeks, {
+        nonNullable: true,
+        validators: [Validators.min(1), Validators.max(12)],
+      }),
     });
   }
 

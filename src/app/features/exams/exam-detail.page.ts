@@ -10,7 +10,13 @@ import { ScoreInputComponent } from '../../shared/ui/score-input/score-input.com
 @Component({
   selector: 'app-exam-detail-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent, EmptyStateComponent, ScoreInputComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslatePipe,
+    SpinnerComponent,
+    EmptyStateComponent,
+    ScoreInputComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './exam-detail.page.html',
 })
@@ -27,9 +33,13 @@ export class ExamDetailPage {
   });
 
   readonly addForm = new FormGroup({
-    question_no: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
+    question_no: new FormControl<number | null>(null, {
+      validators: [Validators.required, Validators.min(1)],
+    }),
     prompt_text: new FormControl('', { nonNullable: true }),
-    score: new FormControl<number | null>(null, { validators: [Validators.min(0), Validators.max(20)] }),
+    score: new FormControl<number | null>(null, {
+      validators: [Validators.min(0), Validators.max(20)],
+    }),
   });
 
   setScore(qid: number, score: number | null): void {
@@ -47,7 +57,13 @@ export class ExamDetailPage {
     if (v.question_no === null) return;
     this.saving.set(true);
     this.examsSvc
-      .addQuestions(this.id(), [{ question_no: v.question_no, prompt_text: v.prompt_text || undefined, score: v.score ?? undefined }])
+      .addQuestions(this.id(), [
+        {
+          question_no: v.question_no,
+          prompt_text: v.prompt_text || undefined,
+          score: v.score ?? undefined,
+        },
+      ])
       .subscribe({
         next: () => {
           this.saving.set(false);

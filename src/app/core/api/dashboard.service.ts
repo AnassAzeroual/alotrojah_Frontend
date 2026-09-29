@@ -44,18 +44,30 @@ export class DashboardService {
   private readonly api = inject(ApiClient);
 
   season(studentId: number, seasonId: number): Observable<SeasonDashboard> {
-    return this.api.get<SeasonDashboard>('/dashboard/season', { student_id: studentId, season_id: seasonId });
+    return this.api.get<SeasonDashboard>('/dashboard/season', {
+      student_id: studentId,
+      season_id: seasonId,
+    });
   }
 
   final(studentId: number, seasonId: number): Observable<FinalData> {
-    return this.api.get<FinalData>('/dashboard/final', { student_id: studentId, season_id: seasonId });
+    return this.api.get<FinalData>('/dashboard/final', {
+      student_id: studentId,
+      season_id: seasonId,
+    });
   }
 
   weekly(studentId: number, seasonId: number): Observable<WeeklyPoint[]> {
-    return this.api.get<WeeklyPoint[]>('/dashboard/weekly', { student_id: studentId, season_id: seasonId });
+    return this.api.get<WeeklyPoint[]>('/dashboard/weekly', {
+      student_id: studentId,
+      season_id: seasonId,
+    });
   }
 
   center(centerId: number, seasonId: number): Observable<CenterDashboard> {
-    return this.api.get<CenterDashboard>('/dashboard/center', { center_id: centerId, season_id: seasonId });
+    return this.api.get<CenterDashboard>('/dashboard/center', {
+      center_id: centerId,
+      season_id: seasonId,
+    });
   }
 }

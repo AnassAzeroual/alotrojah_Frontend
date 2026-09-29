@@ -52,7 +52,10 @@ export class ExamNewPage {
   }
 
   readonly form = new FormGroup({
-    exam_type: new FormControl<'hizb_completion' | 'term_batch' | 'final_season'>('term_batch', { nonNullable: true, validators: [Validators.required] }),
+    exam_type: new FormControl<'hizb_completion' | 'term_batch' | 'final_season'>('term_batch', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     term_id: new FormControl<number | null>(null),
     exam_date: new FormControl('', { nonNullable: true }),
   });
@@ -68,7 +71,8 @@ export class ExamNewPage {
         student_id: st,
         exam_type: v.exam_type,
         term_id: v.exam_type === 'final_season' ? undefined : (v.term_id ?? undefined),
-        season_id: v.exam_type === 'final_season' ? this.currentSeasonId() ?? undefined : undefined,
+        season_id:
+          v.exam_type === 'final_season' ? (this.currentSeasonId() ?? undefined) : undefined,
         exam_date: v.exam_date || undefined,
       })
       .subscribe({

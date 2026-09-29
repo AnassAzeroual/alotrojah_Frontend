@@ -13,7 +13,11 @@
       </div>
       <div class="cells">
         @for (cell of row.cells; track cell.module.code) {
-          <div class="cell" [class.off]="!cell.module.is_active" [class.separate]="!cell.module.is_in_weekly_total">
+          <div
+            class="cell"
+            [class.off]="!cell.module.is_active"
+            [class.separate]="!cell.module.is_in_weekly_total"
+          >
             <small>{{ cell.module.name_ar }}</small>
             <app-score-input
               [max]="cell.module.max_points"
@@ -29,7 +33,12 @@
 
   <p class="muted small">{{ 'entry.separate_note' | translate }}</p>
 
-  <button type="button" class="save" [disabled]="!dirty() || saving() || disabledAll()" (click)="save()">
+  <button
+    type="button"
+    class="save"
+    [disabled]="!dirty() || saving() || disabledAll()"
+    (click)="save()"
+  >
     @if (saving()) {
       <app-spinner />
     } @else {

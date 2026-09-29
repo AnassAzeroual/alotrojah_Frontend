@@ -2,8 +2,15 @@
   <h1>{{ 'delegation.title' | translate }}</h1>
 
   <div class="card">
-    <label>{{ 'entry.pick_group' | translate }}
-      <select [value]="pickedGroup() ?? ''" (change)="pickedGroup.set($any($event.target).value ? +$any($event.target).value : null); generated.set(null)">
+    <label
+      >{{ 'entry.pick_group' | translate }}
+      <select
+        [value]="pickedGroup() ?? ''"
+        (change)="
+          pickedGroup.set($any($event.target).value ? +$any($event.target).value : null);
+          generated.set(null)
+        "
+      >
         <option value="">—</option>
         @for (g of groups.value() ?? []; track g.id) {
           <option [value]="g.id">{{ g.name }}</option>
@@ -13,7 +20,8 @@
 
     @if (pickedGroup() !== null) {
       <form [formGroup]="form" (ngSubmit)="generate()">
-        <label>{{ 'delegation.minutes' | translate }}
+        <label
+          >{{ 'delegation.minutes' | translate }}
           <select formControlName="minutes">
             <option [ngValue]="15">15</option>
             <option [ngValue]="30">30</option>
@@ -34,10 +42,14 @@
 
   @if (generated(); as gen) {
     <div class="card once">
-      <p><strong>{{ 'delegation.share_once' | translate }}</strong></p>
+      <p>
+        <strong>{{ 'delegation.share_once' | translate }}</strong>
+      </p>
       <p class="ltr-num link">{{ gen.link }}</p>
       <div class="row">
-        <a [href]="waLink(gen.link)" target="_blank" rel="noopener">{{ 'delegation.send_wa' | translate }}</a>
+        <a [href]="waLink(gen.link)" target="_blank" rel="noopener">{{
+          'delegation.send_wa' | translate
+        }}</a>
         <button type="button" (click)="copy(gen.link)">{{ 'delegation.copy' | translate }}</button>
       </div>
     </div>

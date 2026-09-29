@@ -15,7 +15,8 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
     <section class="list">
       <h1>{{ 'exam.title' | translate }}</h1>
       <a class="card row" routerLink="/exams/new">{{ 'exam.new' | translate }}</a>
-      <label>{{ 'exam.filter_type' | translate }}
+      <label
+        >{{ 'exam.filter_type' | translate }}
         <select [value]="type() ?? ''" (change)="type.set($any($event.target).value || null)">
           <option value="">{{ 'list.all' | translate }}</option>
           <option value="hizb_completion">hizb_completion</option>
@@ -32,7 +33,10 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
           @for (e of exams.value() ?? []; track e.id) {
             <a class="card row" [routerLink]="['/exams', e.id]">
               <strong>#{{ e.id }} Â· {{ e.exam_type }}</strong>
-              <small class="muted ltr-num">{{ e.exam_date ?? 'â€”' }} Â· {{ e.overall_avg ?? 'â€”' }}{{ 'common.of20' | translate }}</small>
+              <small class="muted ltr-num"
+                >{{ e.exam_date ?? 'â€”' }} Â· {{ e.overall_avg ?? 'â€”'
+                }}{{ 'common.of20' | translate }}</small
+              >
             </a>
           }
         </div>

@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideTranslateLoader, provideTranslateService, TranslateNoOpLoader } from '@ngx-translate/core';
+import {
+  provideTranslateLoader,
+  provideTranslateService,
+  TranslateNoOpLoader,
+} from '@ngx-translate/core';
 import { StatusBadgeComponent } from './status-badge.component';
 
 describe('StatusBadgeComponent', () => {
@@ -9,7 +13,11 @@ describe('StatusBadgeComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [StatusBadgeComponent],
-      providers: [provideTranslateService({ loader: provideTranslateLoader(() => new TranslateNoOpLoader()) })],
+      providers: [
+        provideTranslateService({
+          loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
+        }),
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(StatusBadgeComponent);
     cmp = fixture.componentInstance;

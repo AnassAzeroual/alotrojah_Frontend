@@ -22,7 +22,9 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
           @for (g of groups.value() ?? []; track g.id) {
             <div class="card row">
               <strong>{{ g.name }}</strong>
-              <small class="muted">{{ g.teacher?.full_name ?? 'â€”' }} Â· {{ g.students_count ?? 0 }}</small>
+              <small class="muted"
+                >{{ g.teacher?.full_name ?? 'â€”' }} Â· {{ g.students_count ?? 0 }}</small
+              >
               <small class="muted ltr-num">{{ g.schedule_days }}</small>
             </div>
           }
@@ -34,6 +36,11 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 export class GroupsListPage {
   protected readonly groups = resource({
     params: () => ({}),
-    loader: () => firstValueFrom(inject(GroupsService).list().pipe(map((p) => p.data))),
+    loader: () =>
+      firstValueFrom(
+        inject(GroupsService)
+          .list()
+          .pipe(map((p) => p.data)),
+      ),
   });
 }

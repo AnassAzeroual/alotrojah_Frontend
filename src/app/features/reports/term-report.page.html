@@ -2,16 +2,31 @@
   <h1 class="no-print">{{ 'report.term_title' | translate }}</h1>
 
   <div class="card no-print">
-    <label>{{ 'planning.pick_student' | translate }}
-      <input type="search" [value]="search()" (change)="search.set($any($event.target).value)" [placeholder]="'list.search' | translate" />
+    <label
+      >{{ 'planning.pick_student' | translate }}
+      <input
+        type="search"
+        [value]="search()"
+        (change)="search.set($any($event.target).value)"
+        [placeholder]="'list.search' | translate"
+      />
     </label>
     @for (s of found.value() ?? []; track s.id) {
-      <button type="button" class="pick" [class.on]="pickedStudent() === s.id" (click)="pickedStudent.set(s.id)">
+      <button
+        type="button"
+        class="pick"
+        [class.on]="pickedStudent() === s.id"
+        (click)="pickedStudent.set(s.id)"
+      >
         {{ s.full_name }}
       </button>
     }
-    <label>{{ 'planning.pick_term' | translate }}
-      <select [value]="pickedTerm() ?? ''" (change)="pickedTerm.set($any($event.target).value ? +$any($event.target).value : null)">
+    <label
+      >{{ 'planning.pick_term' | translate }}
+      <select
+        [value]="pickedTerm() ?? ''"
+        (change)="pickedTerm.set($any($event.target).value ? +$any($event.target).value : null)"
+      >
         <option value="">—</option>
         @for (t of terms.value() ?? []; track t.id) {
           <option [value]="t.id">{{ t.name_ar }}</option>
@@ -19,7 +34,9 @@
       </select>
     </label>
     @if (report.value()) {
-      <button type="button" class="primary" (click)="print()">{{ 'report.print' | translate }}</button>
+      <button type="button" class="primary" (click)="print()">
+        {{ 'report.print' | translate }}
+      </button>
     }
   </div>
 
@@ -31,7 +48,9 @@
       @if (r.result) {
         <p>
           <app-status-badge kind="honor" [value]="r.result.honor_flag" />
-          <strong class="ltr-num">{{ r.result.general_avg ?? '—' }}{{ 'common.of20' | translate }}</strong>
+          <strong class="ltr-num"
+            >{{ r.result.general_avg ?? '—' }}{{ 'common.of20' | translate }}</strong
+          >
         </p>
         <table>
           <tr>

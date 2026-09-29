@@ -6,7 +6,13 @@ import { AuthService } from './auth.service';
 import { authInterceptor } from './auth.interceptor';
 import { CurrentUser } from '../api/api-models';
 
-const USER: CurrentUser = { id: 3, full_name: 'T', role: 'teacher', center_id: 1, teacher_type: 'hifz' };
+const USER: CurrentUser = {
+  id: 3,
+  full_name: 'T',
+  role: 'teacher',
+  center_id: 1,
+  teacher_type: 'hifz',
+};
 
 describe('authInterceptor', () => {
   let http: HttpClient;
@@ -16,7 +22,11 @@ describe('authInterceptor', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(withInterceptors([authInterceptor])), provideHttpClientTesting(), provideRouter([])],
+      providers: [
+        provideHttpClient(withInterceptors([authInterceptor])),
+        provideHttpClientTesting(),
+        provideRouter([]),
+      ],
     });
     http = TestBed.inject(HttpClient);
     tester = TestBed.inject(HttpTestingController);

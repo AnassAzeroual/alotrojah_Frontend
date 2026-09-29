@@ -28,7 +28,9 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
               @if (s.is_current) {
                 <small class="cur">{{ 'planning.current' | translate }}</small>
               } @else {
-                <button type="button" (click)="activate(s.id)">{{ 'planning.activate' | translate }}</button>
+                <button type="button" (click)="activate(s.id)">
+                  {{ 'planning.activate' | translate }}
+                </button>
               }
               <a [routerLink]="['/planning/terms', s.id]">{{ 'planning.terms' | translate }}</a>
             </div>

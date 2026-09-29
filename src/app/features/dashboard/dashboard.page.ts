@@ -1,4 +1,11 @@
-﻿import { ChangeDetectionStrategy, Component, computed, inject, resource, signal } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ChartData } from 'chart.js';
@@ -23,7 +30,9 @@ export class DashboardPage {
   private readonly studentsSvc = inject(StudentsService);
   private readonly ref = inject(ReferenceService);
 
-  readonly centers = toSignal(this.centersSvc.list().pipe(map((p) => p.data)), { initialValue: [] });
+  readonly centers = toSignal(this.centersSvc.list().pipe(map((p) => p.data)), {
+    initialValue: [],
+  });
   readonly pickedCenter = signal<number | null>(null);
   readonly search = signal('');
   readonly pickedStudent = signal<number | null>(null);
@@ -31,7 +40,9 @@ export class DashboardPage {
   readonly seasonId = resource({
     params: () => ({}),
     loader: () =>
-      firstValueFrom(this.ref.seasons()).then((r) => r.data.find((s) => s.is_current)?.id ?? r.data[0]?.id ?? 1),
+      firstValueFrom(this.ref.seasons()).then(
+        (r) => r.data.find((s) => s.is_current)?.id ?? r.data[0]?.id ?? 1,
+      ),
   });
 
   readonly centerData = resource({

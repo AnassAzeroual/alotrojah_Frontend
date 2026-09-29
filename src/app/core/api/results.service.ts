@@ -38,7 +38,9 @@ export class ResultsService {
     return this.api.get<{ data: TermResult[] }>('/term-results', params);
   }
 
-  upsertTerm(payload: Partial<TermResult> & { student_id: number; term_id: number }): Observable<TermResult> {
+  upsertTerm(
+    payload: Partial<TermResult> & { student_id: number; term_id: number },
+  ): Observable<TermResult> {
     return this.api.put<TermResult>('/term-results', payload);
   }
 
@@ -46,7 +48,9 @@ export class ResultsService {
     return this.api.get<{ data: SeasonResult[] }>('/season-results', params);
   }
 
-  upsertSeason(payload: Partial<SeasonResult> & { student_id: number; season_id: number }): Observable<SeasonResult> {
+  upsertSeason(
+    payload: Partial<SeasonResult> & { student_id: number; season_id: number },
+  ): Observable<SeasonResult> {
     return this.api.put<SeasonResult>('/season-results', payload);
   }
 }

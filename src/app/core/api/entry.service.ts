@@ -46,7 +46,10 @@ export class EntryService {
     return this.api.get<ScoringModule[]>('/scoring-modules');
   }
 
-  attendanceBulk(sessionId: number, records: AttendanceRecord[]): Observable<{ attendance_ids: number[] }> {
+  attendanceBulk(
+    sessionId: number,
+    records: AttendanceRecord[],
+  ): Observable<{ attendance_ids: number[] }> {
     return this.api.post<{ attendance_ids: number[] }>('/attendance/bulk', {
       session_id: sessionId,
       records,
@@ -57,7 +60,10 @@ export class EntryService {
     return this.api.get<Paginated<AttendanceRow>>('/attendance', params);
   }
 
-  scoresBulk(sessionId: number, records: ScoreRecord[]): Observable<{ weekly_totals: Record<string, number> }> {
+  scoresBulk(
+    sessionId: number,
+    records: ScoreRecord[],
+  ): Observable<{ weekly_totals: Record<string, number> }> {
     return this.api.post<{ weekly_totals: Record<string, number> }>('/scores/bulk', {
       session_id: sessionId,
       records,
@@ -72,7 +78,12 @@ export class EntryService {
     return this.api.get<Paginated<WeeklyGoal>>('/weekly-goals', params);
   }
 
-  upsertGoal(studentId: number, weekId: number, targetText: string | null, completed: boolean | null): Observable<WeeklyGoal> {
+  upsertGoal(
+    studentId: number,
+    weekId: number,
+    targetText: string | null,
+    completed: boolean | null,
+  ): Observable<WeeklyGoal> {
     return this.api.put<WeeklyGoal>('/weekly-goals', {
       student_id: studentId,
       week_id: weekId,

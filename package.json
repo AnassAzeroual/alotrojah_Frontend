@@ -4,9 +4,21 @@
     "scripts": {
         "ng": "ng",
         "start": "ng serve",
+        "start:prod": "ng serve --configuration production",
         "build": "ng build",
+        "build:dev": "ng build --configuration development",
         "watch": "ng build --watch --configuration development",
-        "test": "ng test"
+        "test": "ng test --watch=false",
+        "test:watch": "ng test --watch",
+        "test:cov": "ng test --watch=false --code-coverage",
+        "e2e": "playwright test",
+        "e2e:ui": "playwright test --ui",
+        "format": "prettier --write \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\" playwright.config.ts",
+        "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\" playwright.config.ts",
+        "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    },
+    "engines": {
+        "node": "^24"
     },
     "private": true,
     "packageManager": "npm@11.19.0",

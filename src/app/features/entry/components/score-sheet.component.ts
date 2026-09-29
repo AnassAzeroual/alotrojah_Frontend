@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ScoringModule, SessionScore, Student } from '../../../core/api/api-models';
 import { EntryService, SessionStudentScores } from '../../../core/api/entry.service';
@@ -40,12 +48,15 @@ export class ScoreSheetComponent {
 
   /** Weekly-scope modules only; murajaa module lives in review cycles. Inactive = grayed. */
   readonly sheetModules = computed(() => this.modules().filter((m) => m.scope === 'weekly'));
-  readonly inTotalModules = computed(() => this.sheetModules().filter((m) => m.is_active && m.is_in_weekly_total));
+  readonly inTotalModules = computed(() =>
+    this.sheetModules().filter((m) => m.is_active && m.is_in_weekly_total),
+  );
 
   private readonly existingMap = computed(() => {
     const m = new Map<string, number>();
     for (const row of this.scoreRows()) {
-      for (const s of row.scores as SessionScore[]) m.set(`${row.student_id}:${s.module.code}`, s.score);
+      for (const s of row.scores as SessionScore[])
+        m.set(`${row.student_id}:${s.module.code}`, s.score);
     }
     return m;
   });
@@ -55,13 +66,21 @@ export class ScoreSheetComponent {
       const cells = this.sheetModules().map((mod) => {
         const key = `${st.id}:${mod.code}`;
         const edited = this.edits().get(key);
-        return { module: mod, current: edited !== undefined ? edited : (this.existingMap().get(key) ?? null) };
+        return {
+          module: mod,
+          current: edited !== undefined ? edited : (this.existingMap().get(key) ?? null),
+        };
       });
-      const counted = cells.filter((c) => c.module.is_active && c.module.is_in_weekly_total && c.current !== null);
+      const counted = cells.filter(
+        (c) => c.module.is_active && c.module.is_in_weekly_total && c.current !== null,
+      );
       return {
         student: st,
         cells,
-        total: counted.length > 0 ? Math.round(counted.reduce((a, c) => a + (c.current ?? 0), 0) * 10) / 10 : null,
+        total:
+          counted.length > 0
+            ? Math.round(counted.reduce((a, c) => a + (c.current ?? 0), 0) * 10) / 10
+            : null,
       };
     }),
   );

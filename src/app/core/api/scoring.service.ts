@@ -25,7 +25,9 @@ export class ScoringService {
   }
 
   bulk(patches: ModulePatch[]): Observable<{ modules: ScoringModule[]; check: ScoringCheck }> {
-    return this.api.put<{ modules: ScoringModule[]; check: ScoringCheck }>('/scoring-modules', { modules: patches });
+    return this.api.put<{ modules: ScoringModule[]; check: ScoringCheck }>('/scoring-modules', {
+      modules: patches,
+    });
   }
 
   create(payload: {

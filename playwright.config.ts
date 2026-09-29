@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-const PHP = 'C:\\Users\\devtips\\AppData\\Local\\Microsoft\\WinGet\\Packages\\PHP.PHP.8.4_Microsoft.Winget.Source_8wekyb3d8bbwe\\php.exe';
+const PHP =
+  'C:\\Users\\devtips\\AppData\\Local\\Microsoft\\WinGet\\Packages\\PHP.PHP.8.4_Microsoft.Winget.Source_8wekyb3d8bbwe\\php.exe';
 const NG = 'C:\\Users\\devtips\\AppData\\Local\\Author Software\\nvm\\installs\\v24.21.0\\ng.cmd';
 
 export default defineConfig({

@@ -1,20 +1,80 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideTranslateLoader, provideTranslateService, TranslateNoOpLoader } from '@ngx-translate/core';
+import {
+  provideTranslateLoader,
+  provideTranslateService,
+  TranslateNoOpLoader,
+} from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { ScoringModule, Student } from '../../../core/api/api-models';
 import { EntryService } from '../../../core/api/entry.service';
 import { ScoreSheetComponent } from './score-sheet.component';
 
 const STUDENTS: Student[] = [
-  { id: 1, full_name: 'A', center_id: 1, level_id: 1, gender: null, status: 'active', student_type: 'child', memorization_mode: 'thumn', start_hizb: 1 },
-  { id: 2, full_name: 'B', center_id: 1, level_id: 1, gender: null, status: 'active', student_type: 'child', memorization_mode: 'thumn', start_hizb: 1 },
+  {
+    id: 1,
+    full_name: 'A',
+    center_id: 1,
+    level_id: 1,
+    gender: null,
+    status: 'active',
+    student_type: 'child',
+    memorization_mode: 'thumn',
+    start_hizb: 1,
+  },
+  {
+    id: 2,
+    full_name: 'B',
+    center_id: 1,
+    level_id: 1,
+    gender: null,
+    status: 'active',
+    student_type: 'child',
+    memorization_mode: 'thumn',
+    start_hizb: 1,
+  },
 ];
 
 const MODULES: ScoringModule[] = [
-  { id: 1, code: 'hifz', name_ar: 'h', max_points: 14, scope: 'weekly', is_active: true, is_in_weekly_total: true, sort_order: 1 },
-  { id: 2, code: 'mowathaba', name_ar: 'm', max_points: 4, scope: 'weekly', is_active: true, is_in_weekly_total: true, sort_order: 2 },
-  { id: 3, code: 'tajwid', name_ar: 't', max_points: 2, scope: 'weekly', is_active: true, is_in_weekly_total: true, sort_order: 3 },
-  { id: 5, code: 'sarraj', name_ar: 's', max_points: 20, scope: 'weekly', is_active: true, is_in_weekly_total: false, sort_order: 5 },
+  {
+    id: 1,
+    code: 'hifz',
+    name_ar: 'h',
+    max_points: 14,
+    scope: 'weekly',
+    is_active: true,
+    is_in_weekly_total: true,
+    sort_order: 1,
+  },
+  {
+    id: 2,
+    code: 'mowathaba',
+    name_ar: 'm',
+    max_points: 4,
+    scope: 'weekly',
+    is_active: true,
+    is_in_weekly_total: true,
+    sort_order: 2,
+  },
+  {
+    id: 3,
+    code: 'tajwid',
+    name_ar: 't',
+    max_points: 2,
+    scope: 'weekly',
+    is_active: true,
+    is_in_weekly_total: true,
+    sort_order: 3,
+  },
+  {
+    id: 5,
+    code: 'sarraj',
+    name_ar: 's',
+    max_points: 20,
+    scope: 'weekly',
+    is_active: true,
+    is_in_weekly_total: false,
+    sort_order: 5,
+  },
 ];
 
 describe('ScoreSheetComponent', () => {
@@ -34,7 +94,9 @@ describe('ScoreSheetComponent', () => {
       imports: [ScoreSheetComponent],
       providers: [
         { provide: EntryService, useValue: entryMock },
-        provideTranslateService({ loader: provideTranslateLoader(() => new TranslateNoOpLoader()) }),
+        provideTranslateService({
+          loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
+        }),
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(ScoreSheetComponent);
@@ -58,7 +120,19 @@ describe('ScoreSheetComponent', () => {
 
   it('shows existing values and clears edits on save', () => {
     fixture.componentRef.setInput('scoreRows', [
-      { student_id: 2, scores: [{ id: 1, student_id: 2, session_id: 9, module: { code: 'hifz', name_ar: 'h', max_points: 14 }, score: 10 }], weekly_total: 10 },
+      {
+        student_id: 2,
+        scores: [
+          {
+            id: 1,
+            student_id: 2,
+            session_id: 9,
+            module: { code: 'hifz', name_ar: 'h', max_points: 14 },
+            score: 10,
+          },
+        ],
+        weekly_total: 10,
+      },
     ]);
     fixture.detectChanges();
     const row = cmp.rows().find((r) => r.student.id === 2);

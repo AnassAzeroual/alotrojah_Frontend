@@ -1,17 +1,29 @@
 <section class="card">
   <h1>{{ 'exam.new' | translate }}</h1>
 
-  <label>{{ 'planning.pick_student' | translate }}
-    <input type="search" [value]="search()" (change)="search.set($any($event.target).value)" [placeholder]="'list.search' | translate" />
+  <label
+    >{{ 'planning.pick_student' | translate }}
+    <input
+      type="search"
+      [value]="search()"
+      (change)="search.set($any($event.target).value)"
+      [placeholder]="'list.search' | translate"
+    />
   </label>
   @for (s of found.value() ?? []; track s.id) {
-    <button type="button" class="pick" [class.on]="pickedStudent() === s.id" (click)="pickedStudent.set(s.id)">
+    <button
+      type="button"
+      class="pick"
+      [class.on]="pickedStudent() === s.id"
+      (click)="pickedStudent.set(s.id)"
+    >
       {{ s.full_name }}
     </button>
   }
 
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <label>{{ 'exam.type' | translate }}
+    <label
+      >{{ 'exam.type' | translate }}
       <select formControlName="exam_type">
         <option value="hizb_completion">hizb_completion</option>
         <option value="term_batch">term_batch</option>
@@ -19,7 +31,8 @@
       </select>
     </label>
     @if (form.controls.exam_type.value !== 'final_season') {
-      <label>{{ 'planning.pick_term' | translate }}
+      <label
+        >{{ 'planning.pick_term' | translate }}
         <select [formControl]="form.controls.term_id">
           <option [ngValue]="null">—</option>
           @for (t of terms.value() ?? []; track t.id) {

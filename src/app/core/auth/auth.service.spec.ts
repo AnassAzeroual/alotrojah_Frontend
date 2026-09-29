@@ -9,7 +9,13 @@ import { CurrentUser } from '../api/api-models';
 @Component({ template: '', standalone: true })
 class DummyComponent {}
 
-const USER: CurrentUser = { id: 1, full_name: 'Admin', role: 'admin', center_id: null, teacher_type: 'both' };
+const USER: CurrentUser = {
+  id: 1,
+  full_name: 'Admin',
+  role: 'admin',
+  center_id: null,
+  teacher_type: 'both',
+};
 
 describe('AuthService', () => {
   let auth: AuthService;
@@ -18,7 +24,11 @@ describe('AuthService', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([{ path: 'login', component: DummyComponent }])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', component: DummyComponent }]),
+      ],
     });
     auth = TestBed.inject(AuthService);
     http = TestBed.inject(HttpTestingController);
@@ -29,7 +39,11 @@ describe('AuthService', () => {
   it('login stores token and user', () => {
     auth.login('a@b.c', 'password123').subscribe();
     const req = http.expectOne((r) => r.url.endsWith('/auth/login'));
-    req.flush({ success: true, message: null, data: { access_token: 'T', token_type: 'bearer', expires_in: 3600, user: USER } });
+    req.flush({
+      success: true,
+      message: null,
+      data: { access_token: 'T', token_type: 'bearer', expires_in: 3600, user: USER },
+    });
     expect(auth.token()).toBe('T');
     expect(auth.currentUser()).toEqual(USER);
     expect(auth.isLoggedIn()).toBe(true);
@@ -53,7 +67,11 @@ describe('AuthService', () => {
     auth.refreshOnce().subscribe((t) => results.push(t));
     const reqs = http.match((r) => r.url.endsWith('/auth/refresh'));
     expect(reqs.length).toBe(1);
-    reqs[0].flush({ success: true, message: null, data: { access_token: 'N', token_type: 'bearer', expires_in: 3600, user: USER } });
+    reqs[0].flush({
+      success: true,
+      message: null,
+      data: { access_token: 'N', token_type: 'bearer', expires_in: 3600, user: USER },
+    });
     expect(results).toEqual(['N', 'N']);
   });
 });

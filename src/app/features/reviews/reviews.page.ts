@@ -1,4 +1,11 @@
-﻿import { ChangeDetectionStrategy, Component, computed, inject, resource, signal } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
@@ -69,21 +76,34 @@ export class ReviewsPage {
 
   readonly form = new FormGroup({
     term_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
-    week_from: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
-    week_to: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
-    score: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(20)] }),
+    week_from: new FormControl<number | null>(null, {
+      validators: [Validators.required, Validators.min(1)],
+    }),
+    week_to: new FormControl<number | null>(null, {
+      validators: [Validators.required, Validators.min(1)],
+    }),
+    score: new FormControl<number | null>(null, {
+      validators: [Validators.required, Validators.min(0), Validators.max(20)],
+    }),
   });
 
   submit(): void {
     const st = this.pickedStudent();
     const v = this.form.getRawValue();
     if (st === null || this.form.invalid || this.saving()) return;
-    if (v.term_id === null || v.week_from === null || v.week_to === null || v.score === null) return;
+    if (v.term_id === null || v.week_from === null || v.week_to === null || v.score === null)
+      return;
     const span = v.week_to - v.week_from + 1;
     if (span < 1 || span > 3) return; // backend enforces too (422)
     this.saving.set(true);
     this.reviews
-      .createCycle({ student_id: st, term_id: v.term_id, week_from: v.week_from, week_to: v.week_to, score: v.score })
+      .createCycle({
+        student_id: st,
+        term_id: v.term_id,
+        week_from: v.week_from,
+        week_to: v.week_to,
+        score: v.score,
+      })
       .subscribe({
         next: () => {
           this.saving.set(false);

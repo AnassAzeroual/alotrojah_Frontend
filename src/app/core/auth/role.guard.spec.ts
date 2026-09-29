@@ -20,10 +20,18 @@ function runGuard(user: CurrentUser | null, data: Record<string, unknown>): bool
 describe('roleGuard', () => {
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideRouter([{ path: 'login', component: DummyComponent }])] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter([{ path: 'login', component: DummyComponent }])],
+    });
   });
 
-  const teacher: CurrentUser = { id: 3, full_name: 'T', role: 'teacher', center_id: 1, teacher_type: 'hifz' };
+  const teacher: CurrentUser = {
+    id: 3,
+    full_name: 'T',
+    role: 'teacher',
+    center_id: 1,
+    teacher_type: 'hifz',
+  };
   const murajaa: CurrentUser = { ...teacher, id: 19, teacher_type: 'murajaa' };
 
   it('redirects guests', () => {

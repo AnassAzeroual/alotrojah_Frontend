@@ -8,7 +8,9 @@ describe('ApiClient', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     client = TestBed.inject(ApiClient);
     http = TestBed.inject(HttpTestingController);
   });
@@ -24,7 +26,9 @@ describe('ApiClient', () => {
 
   it('serializes query params as strings', () => {
     client.get('/y', { a: 1, b: 'x', c: true }).subscribe();
-    const req = http.expectOne((r) => r.params.get('a') === '1' && r.params.get('b') === 'x' && r.params.get('c') === 'true');
+    const req = http.expectOne(
+      (r) => r.params.get('a') === '1' && r.params.get('b') === 'x' && r.params.get('c') === 'true',
+    );
     req.flush({ success: true, message: null, data: [] });
   });
 

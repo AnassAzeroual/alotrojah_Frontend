@@ -21,7 +21,12 @@ export class AnnouncementsService {
     return this.api.get<Paginated<Announcement>>('/announcements', params);
   }
 
-  create(payload: { audience: string; group_id?: number; title: string; body: string }): Observable<Announcement> {
+  create(payload: {
+    audience: string;
+    group_id?: number;
+    title: string;
+    body: string;
+  }): Observable<Announcement> {
     return this.api.post<Announcement>('/announcements', payload);
   }
 

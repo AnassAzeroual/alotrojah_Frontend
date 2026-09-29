@@ -1,4 +1,11 @@
-﻿import { ChangeDetectionStrategy, Component, computed, inject, resource, signal } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
@@ -41,7 +48,10 @@ export class NewsPage {
   readonly form = new FormGroup({
     audience: new FormControl('all', { nonNullable: true, validators: [Validators.required] }),
     group_id: new FormControl<number | null>(null),
-    title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(200)] }),
+    title: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(200)],
+    }),
     body: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
@@ -50,7 +60,12 @@ export class NewsPage {
     const v = this.form.getRawValue();
     this.saving.set(true);
     this.news
-      .create({ audience: v.audience, group_id: v.audience === 'my_students' ? (v.group_id ?? undefined) : undefined, title: v.title, body: v.body })
+      .create({
+        audience: v.audience,
+        group_id: v.audience === 'my_students' ? (v.group_id ?? undefined) : undefined,
+        title: v.title,
+        body: v.body,
+      })
       .subscribe({
         next: () => {
           this.saving.set(false);

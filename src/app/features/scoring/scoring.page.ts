@@ -1,4 +1,11 @@
-﻿import { ChangeDetectionStrategy, Component, computed, inject, resource, signal } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -34,10 +41,24 @@ export class ScoringPage {
   /** Live sum of active weekly-total modules â€” must stay 20. */
   readonly liveSum = computed(() => {
     const rows = this.modules.value() ?? [];
-    return Math.round(rows.reduce((a, m) => a + this.effMax(m.code, m.max_points, m.is_active, m.is_in_weekly_total, m.scope), 0) * 10) / 10;
+    return (
+      Math.round(
+        rows.reduce(
+          (a, m) =>
+            a + this.effMax(m.code, m.max_points, m.is_active, m.is_in_weekly_total, m.scope),
+          0,
+        ) * 10,
+      ) / 10
+    );
   });
 
-  private effMax(code: string, max: number, active: boolean, inTotal: boolean, scope: string): number {
+  private effMax(
+    code: string,
+    max: number,
+    active: boolean,
+    inTotal: boolean,
+    scope: string,
+  ): number {
     const d = this.drafts().get(code);
     const a = d ? d.active : active;
     const t = d ? d.inTotal : inTotal;
@@ -74,9 +95,14 @@ export class ScoringPage {
   }
 
   readonly addForm = new FormGroup({
-    code: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^[a-z0-9_]+$/)] }),
+    code: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/^[a-z0-9_]+$/)],
+    }),
     name_ar: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    max_points: new FormControl<number | null>(20, { validators: [Validators.min(0), Validators.max(20)] }),
+    max_points: new FormControl<number | null>(20, {
+      validators: [Validators.min(0), Validators.max(20)],
+    }),
     scope: new FormControl<'weekly' | 'murajaa'>('weekly', { nonNullable: true }),
     is_in_weekly_total: new FormControl(false, { nonNullable: true }),
   });
@@ -98,7 +124,13 @@ export class ScoringPage {
       .subscribe({
         next: () => {
           this.saving.set(false);
-          this.addForm.reset({ code: '', name_ar: '', max_points: 20, scope: 'weekly', is_in_weekly_total: false });
+          this.addForm.reset({
+            code: '',
+            name_ar: '',
+            max_points: 20,
+            scope: 'weekly',
+            is_in_weekly_total: false,
+          });
           this.tick.update((n) => n + 1);
         },
         error: (e) => {

@@ -14,10 +14,18 @@
         </button>
 
         <div class="wtype">
-          <button type="button" [disabled]="w.week_type === 'study'" (click)="setWeekType(w.id, 'study')">
+          <button
+            type="button"
+            [disabled]="w.week_type === 'study'"
+            (click)="setWeekType(w.id, 'study')"
+          >
             {{ 'weekType.study' | translate }}
           </button>
-          <button type="button" [disabled]="w.week_type === 'review'" (click)="setWeekType(w.id, 'review')">
+          <button
+            type="button"
+            [disabled]="w.week_type === 'review'"
+            (click)="setWeekType(w.id, 'review')"
+          >
             {{ 'weekType.review' | translate }}
           </button>
         </div>
@@ -26,7 +34,10 @@
           @for (s of w.sessions ?? []; track s.id) {
             <div class="sess">
               <span class="ltr-num">#{{ s.session_number_global }}</span>
-              <select [value]="s.session_type" (change)="setSession(s.id, { session_type: sessVal($event) })">
+              <select
+                [value]="s.session_type"
+                (change)="setSession(s.id, { session_type: sessVal($event) })"
+              >
                 <option value="memorization">{{ 'sessionType.memorization' | translate }}</option>
                 <option value="revision">{{ 'sessionType.revision' | translate }}</option>
                 <option value="exam">{{ 'sessionType.exam' | translate }}</option>
@@ -36,7 +47,11 @@
                 <option value="done">{{ 'sessionStatus.done' | translate }}</option>
                 <option value="cancelled">{{ 'sessionStatus.cancelled' | translate }}</option>
               </select>
-              <input type="date" [value]="s.planned_date ?? ''" (change)="setSession(s.id, { planned_date: sessVal($event) })" />
+              <input
+                type="date"
+                [value]="s.planned_date ?? ''"
+                (change)="setSession(s.id, { planned_date: sessVal($event) })"
+              />
             </div>
           }
         }

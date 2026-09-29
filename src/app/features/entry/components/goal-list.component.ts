@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, resource, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  resource,
+  signal,
+} from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { EntryService, WeeklyGoal } from '../../../core/api/entry.service';
@@ -33,24 +41,25 @@ export class GoalListComponent {
     loader: () => firstValueFrom(this.entry.goals({}).pipe(map((p) => p.data))),
   });
 
-  private readonly drafts = signal<ReadonlyMap<number, { target: string; done: boolean; saving: boolean }>>(new Map());
+  private readonly drafts = signal<
+    ReadonlyMap<number, { target: string; done: boolean; saving: boolean }>
+  >(new Map());
 
   readonly rows = computed((): GoalRow[] => {
     const byStudent = new Map((this.goals.value() ?? []).map((g) => [g.student_id, g]));
     const wid = this.weekId();
-    return this.students()
-      .map((st) => {
-        const existing = byStudent.get(st.id) ?? null;
-        const matchesWeek = existing?.week_id === wid;
-        const d = this.drafts().get(st.id);
-        return {
-          student: st,
-          goal: matchesWeek ? existing : null,
-          target: d?.target ?? (matchesWeek ? (existing?.target_text ?? '') : ''),
-          done: d?.done ?? (matchesWeek ? (existing?.is_completed ?? false) : false),
-          saving: d?.saving ?? false,
-        };
-      });
+    return this.students().map((st) => {
+      const existing = byStudent.get(st.id) ?? null;
+      const matchesWeek = existing?.week_id === wid;
+      const d = this.drafts().get(st.id);
+      return {
+        student: st,
+        goal: matchesWeek ? existing : null,
+        target: d?.target ?? (matchesWeek ? (existing?.target_text ?? '') : ''),
+        done: d?.done ?? (matchesWeek ? (existing?.is_completed ?? false) : false),
+        saving: d?.saving ?? false,
+      };
+    });
   });
 
   edit(id: number, patch: Partial<{ target: string; done: boolean }>): void {
@@ -82,7 +91,8 @@ export class GoalListComponent {
       },
       error: () => {
         const cur = this.drafts().get(row.student.id);
-        if (cur) this.drafts.update((m) => new Map(m).set(row.student.id, { ...cur, saving: false }));
+        if (cur)
+          this.drafts.update((m) => new Map(m).set(row.student.id, { ...cur, saving: false }));
       },
     });
   }

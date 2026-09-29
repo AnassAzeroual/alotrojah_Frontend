@@ -3,8 +3,12 @@
 
   <div class="card">
     <h2>{{ 'dash.by_center' | translate }}</h2>
-    <label>{{ 'dash.by_center' | translate }}
-      <select [value]="pickedCenter() ?? ''" (change)="pickedCenter.set($any($event.target).value ? +$any($event.target).value : null)">
+    <label
+      >{{ 'dash.by_center' | translate }}
+      <select
+        [value]="pickedCenter() ?? ''"
+        (change)="pickedCenter.set($any($event.target).value ? +$any($event.target).value : null)"
+      >
         <option value="">—</option>
         @for (c of centers(); track c.id) {
           <option [value]="c.id">{{ c.name }}</option>
@@ -14,7 +18,8 @@
 
     @if (centerData.value(); as d) {
       <p class="ltr-num">
-        {{ d.cards.students }} · {{ d.cards.avg_score ?? '—' }} · {{ d.cards.avg_attendance ?? '—' }}%
+        {{ d.cards.students }} · {{ d.cards.avg_score ?? '—' }} ·
+        {{ d.cards.avg_attendance ?? '—' }}%
       </p>
       <app-chart type="bar" [data]="honorsChart()" label="honors" />
       <app-chart type="doughnut" [data]="attendanceChart()" label="attendance" />
@@ -23,11 +28,22 @@
 
   <div class="card">
     <h2>{{ 'dash.by_student' | translate }}</h2>
-    <label>{{ 'list.search' | translate }}
-      <input type="search" [value]="search()" (change)="search.set($any($event.target).value)" [placeholder]="'list.search' | translate" />
+    <label
+      >{{ 'list.search' | translate }}
+      <input
+        type="search"
+        [value]="search()"
+        (change)="search.set($any($event.target).value)"
+        [placeholder]="'list.search' | translate"
+      />
     </label>
     @for (s of found.value() ?? []; track s.id) {
-      <button type="button" class="pick" [class.on]="pickedStudent() === s.id" (click)="pickedStudent.set(s.id)">
+      <button
+        type="button"
+        class="pick"
+        [class.on]="pickedStudent() === s.id"
+        (click)="pickedStudent.set(s.id)"
+      >
         {{ s.full_name }}
       </button>
     }

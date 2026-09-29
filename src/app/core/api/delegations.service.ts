@@ -31,7 +31,9 @@ export class DelegationsService {
   }
 
   redeem(token: string): Observable<{ group_id: number; expires_at: string }> {
-    return this.api.post<{ group_id: number; expires_at: string }>('/delegations/redeem', { token });
+    return this.api.post<{ group_id: number; expires_at: string }>('/delegations/redeem', {
+      token,
+    });
   }
 
   revoke(id: number): Observable<null> {

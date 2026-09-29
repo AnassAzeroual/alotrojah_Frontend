@@ -66,7 +66,13 @@ export class PlanningService {
     return this.api.get<{ data: TermPlan[] }>('/term-plans', params);
   }
 
-  upsertPlan(payload: Partial<TermPlan> & { student_id: number; term_id: number; plan_mode: 'thumn' | 'surah' }): Observable<TermPlan> {
+  upsertPlan(
+    payload: Partial<TermPlan> & {
+      student_id: number;
+      term_id: number;
+      plan_mode: 'thumn' | 'surah';
+    },
+  ): Observable<TermPlan> {
     return this.api.put<TermPlan>('/term-plans', payload);
   }
 }
