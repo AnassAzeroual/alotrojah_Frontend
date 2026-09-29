@@ -53,6 +53,22 @@
   "weekType": { "study": "Study", "review": "Review" },
   "sessionType": { "memorization": "Memorization", "revision": "Revision", "exam": "Exam" },
   "mode": { "surah": "By surah", "thumn": "By thumn" },
+  "entry": {
+    "title": "Daily entry",
+    "pick_group": "Circle",
+    "pick_week": "Week",
+    "pick_session": "Session",
+    "pick_hint": "Pick a circle, week and session to start",
+    "attendance": "Attendance",
+    "save_attendance": "Save attendance",
+    "scores": "Scores",
+    "save_scores": "Save scores",
+    "separate_note": "Sarraj is a separate /20 total, outside the weekly total",
+    "review_only_notice": "Review teacher: weekly scores disabled here",
+    "goal": "Weekly goal",
+    "target_hint": "E.g. memorize two thumns",
+    "done": "Done"
+  },
   "validation": {
     "required": "Field is required",
     "min": "Value too small",

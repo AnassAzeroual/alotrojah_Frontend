@@ -1,0 +1,30 @@
+<section class="card">
+  <h2>{{ 'entry.goal' | translate }}</h2>
+
+  @for (row of rows(); track row.student.id) {
+    <div class="line">
+      <span class="name">{{ row.student.full_name }}</span>
+      <input
+        type="text"
+        [value]="row.target"
+        [placeholder]="'entry.target_hint' | translate"
+        (input)="edit(row.student.id, { target: trackInput($event) })"
+      />
+      <label class="done">
+        <input
+          type="checkbox"
+          [checked]="row.done"
+          (change)="edit(row.student.id, { done: trackCheck($event) })"
+        />
+        {{ 'entry.done' | translate }}
+      </label>
+      <button type="button" [disabled]="row.saving" (click)="save(row)">
+        @if (row.saving) {
+          <app-spinner />
+        } @else {
+          {{ 'common.save' | translate }}
+        }
+      </button>
+    </div>
+  }
+</section>

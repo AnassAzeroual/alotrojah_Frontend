@@ -53,6 +53,22 @@
   "weekType": { "study": "دراسة", "review": "مراجعة" },
   "sessionType": { "memorization": "حفظ", "revision": "مراجعة", "exam": "اختبار" },
   "mode": { "surah": "بالسورة", "thumn": "بالثمن" },
+  "entry": {
+    "title": "إدخال اليوم",
+    "pick_group": "الحلقة",
+    "pick_week": "الأسبوع",
+    "pick_session": "الحصة",
+    "pick_hint": "اختر الحلقة والأسبوع والحصة للبدء",
+    "attendance": "الحضور",
+    "save_attendance": "حفظ الحضور",
+    "scores": "النقاط",
+    "save_scores": "حفظ النقاط",
+    "separate_note": "السراج مجموع مستقل /20 ولا يدخل في المجموع الأسبوعي",
+    "review_only_notice": "معلم المراجعة: النقاط الأسبوعية معطلة هنا",
+    "goal": "هدف الأسبوع",
+    "target_hint": "مثال: حفظ ثمنين",
+    "done": "تم"
+  },
   "validation": {
     "required": "هذا الحقل مطلوب",
     "min": "القيمة أصغر من المسموح",

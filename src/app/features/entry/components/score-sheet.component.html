@@ -1,0 +1,39 @@
+<section class="card">
+  <h2>{{ 'entry.scores' | translate }}</h2>
+
+  @if (disabledAll()) {
+    <p class="muted">{{ 'entry.review_only_notice' | translate }}</p>
+  }
+
+  @for (row of rows(); track row.student.id) {
+    <div class="line">
+      <div class="head">
+        <span class="name">{{ row.student.full_name }}</span>
+        <strong class="ltr-num">{{ row.total ?? '—' }}{{ 'common.of20' | translate }}</strong>
+      </div>
+      <div class="cells">
+        @for (cell of row.cells; track cell.module.code) {
+          <div class="cell" [class.off]="!cell.module.is_active" [class.separate]="!cell.module.is_in_weekly_total">
+            <small>{{ cell.module.name_ar }}</small>
+            <app-score-input
+              [max]="cell.module.max_points"
+              [disabled]="disabledAll() || !cell.module.is_active"
+              [value]="cell.current"
+              (valueChange)="setScore(row.student.id, cell.module.code, $event)"
+            />
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <p class="muted small">{{ 'entry.separate_note' | translate }}</p>
+
+  <button type="button" class="save" [disabled]="!dirty() || saving() || disabledAll()" (click)="save()">
+    @if (saving()) {
+      <app-spinner />
+    } @else {
+      {{ 'entry.save_scores' | translate }}
+    }
+  </button>
+</section>

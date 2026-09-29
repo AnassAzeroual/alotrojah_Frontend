@@ -15,7 +15,11 @@ export const routes: Routes = [
         path: '',
         loadComponent: () => import('./features/dashboard/home.page').then((m) => m.HomePage),
       },
-      // F6–F10 append feature routes here
+      {
+        path: 'entry',
+        loadChildren: () => import('./features/entry/entry.routes').then((m) => m.ENTRY_ROUTES),
+      },
+      // F7+ append feature routes here
     ],
   },
   { path: '**', redirectTo: '' },

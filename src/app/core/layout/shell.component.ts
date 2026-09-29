@@ -13,7 +13,8 @@ interface NavItem {
 
 const ITEMS: readonly NavItem[] = [
   { path: '/', key: 'nav.dashboard', roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student', 'board'] },
-  // F6–F10 append: entry, students, planning, results, news
+  { path: '/entry', key: 'nav.entry', roles: ['admin', 'supervisor', 'teacher'] },
+  // F7+ append: students, planning, results, news
 ];
 
 @Component({

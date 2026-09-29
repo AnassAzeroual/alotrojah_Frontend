@@ -53,6 +53,22 @@
   "weekType": { "study": "Étude", "review": "Révision" },
   "sessionType": { "memorization": "Mémorisation", "revision": "Révision", "exam": "Examen" },
   "mode": { "surah": "Par sourate", "thumn": "Par thoumn" },
+  "entry": {
+    "title": "Saisie du jour",
+    "pick_group": "Cercle",
+    "pick_week": "Semaine",
+    "pick_session": "Séance",
+    "pick_hint": "Choisissez le cercle, la semaine et la séance",
+    "attendance": "Présence",
+    "save_attendance": "Enregistrer la présence",
+    "scores": "Notes",
+    "save_scores": "Enregistrer les notes",
+    "separate_note": "Sarraj : total séparé /20, hors total hebdomadaire",
+    "review_only_notice": "Enseignant révision : notes hebdomadaires désactivées ici",
+    "goal": "Objectif de la semaine",
+    "target_hint": "Ex : mémoriser deux thumns",
+    "done": "Fait"
+  },
   "validation": {
     "required": "Champ obligatoire",
     "min": "Valeur trop petite",

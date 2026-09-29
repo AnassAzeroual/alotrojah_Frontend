@@ -1,0 +1,62 @@
+<section class="entry">
+  <h1>{{ 'entry.title' | translate }}</h1>
+
+  <div class="pickers card">
+    <label>
+      {{ 'entry.pick_group' | translate }}
+      <select [value]="selectedGroup() ?? ''" (change)="onGroup($any($event.target).value ? +$any($event.target).value : null)">
+        <option value="">—</option>
+        @for (g of groups(); track g.id) {
+          <option [value]="g.id">{{ g.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      {{ 'entry.pick_week' | translate }}
+      <select [value]="selectedWeek() ?? ''" (change)="onWeek($any($event.target).value ? +$any($event.target).value : null)">
+        <option value="">—</option>
+        @for (w of weeks(); track w.id) {
+          <option [value]="w.id">{{ 'common.week' | translate }} {{ w.week_number_global }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      {{ 'entry.pick_session' | translate }}
+      <select [value]="selectedSession() ?? ''" (change)="selectedSession.set($any($event.target).value ? +$any($event.target).value : null)">
+        <option value="">—</option>
+        @for (s of sessions.value() ?? []; track s.id) {
+          <option [value]="s.id">{{ 'common.session' | translate }} {{ s.session_number_global }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (ready()) {
+    @if (existing.isLoading()) {
+      <app-spinner />
+    } @else {
+      <app-attendance-grid
+        [students]="students.value() ?? []"
+        [existing]="attendanceRows()"
+        [sessionId]="selectedSession()"
+        (saved)="onSaved()"
+      />
+      <app-score-sheet
+        [students]="students.value() ?? []"
+        [modules]="modules()"
+        [scoreRows]="scoreRows()"
+        [sessionId]="selectedSession()"
+        [disabledAll]="isMurajaa()"
+        (saved)="onSaved()"
+      />
+      <app-goal-list
+        [students]="students.value() ?? []"
+        [weekId]="selectedWeek()"
+      />
+    }
+  } @else {
+    <app-empty-state messageKey="entry.pick_hint" />
+  }
+</section>
