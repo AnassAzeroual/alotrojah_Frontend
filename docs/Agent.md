@@ -316,3 +316,7 @@ g build); FTP transfer with excludes; .env uploaded once via file manager then E
 - **D1 (workflows live, first runs debugging):** `deploy-backend.yml` (PHP 8.4 + MariaDB service + canonical SQL import + PHPUnit gate → FTP `api/`, `.env` from secrets, verify incl. docs-403) + `deploy-frontend.yml` (format/typecheck/Vitest/build gates → FTP dist + committed `.htaccess` SPA fallback → verify incl. bundle API URL). Fixed: `ubuntu-24.04` pin (26 migration notice), `checkout@v5` (node20 warning; setup-node has no v5 — warning stays, cosmetic), frontend `format:check` failure on interceptor spec (normalized). Pushed from local clones directly (remote auth works). OPEN: backend `test` job's real error unknown — awaiting failing-step log from user if the new run still fails.
 
 - Deploy verify iteration: frontend verify now prints HTML bytes + bundle name + bundle HTTP code, and fails if dev URL leaks into prod. GitHub AI suggestions are generic - diagnose from live bytes instead.
+
+- Deploy verify lesson: grep ALL script bundles, not just main-*.js - tree-shaken shared code (ApiClient + env URL) lives in chunk-*.js. Read live bytes (fetched the actual bundle) instead of trusting pattern theories.
+
+- CI import lesson: never rely on CREATE/USE inside SQL files in CI - pass the DB explicitly (mysql db < file + pre-CREATE). Fixes the ERROR 1046 No database selected class regardless of cause.
