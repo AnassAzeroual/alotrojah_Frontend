@@ -3,104 +3,73 @@
     <h1>{{ 'scoring.title' | translate }}</h1>
   </div>
 
-  <p class="card sum anim-rise" style="--i: 1" [class.bad]="liveSum() !== 20">
+  <p class="sum anim-rise" style="--i: 1" [class.bad]="liveSum() !== 20">
     {{ 'scoring.sum' | translate }}: <strong class="ltr-num">{{ liveSum() }} / 20</strong>
     @if (liveSum() !== 20) {
-      <small>{{ 'scoring.sum_bad' | translate }}</small>
+    <small>{{ 'scoring.sum_bad' | translate }}</small>
     }
   </p>
 
   @for (m of modules.value() ?? []; track m.code) {
-    <div class="card mod anim-rise" [style.--i]="$index + 2">
-      <span class="row-top">
-        <strong>{{ m.name_ar }}</strong>
-      </span>
-      <small class="muted ltr-num">{{ m.code }} · {{ 'scopeType.' + m.scope | translate }}</small>
-      <label class="field"
-        ><span>{{ 'scoring.max' | translate }}</span>
-        <input
-          type="number"
-          class="ltr-num"
-          [value]="m.max_points"
-          min="0"
-          max="20"
-          step="0.5"
-          (change)="
+  <div class="card mod anim-rise" [style.--i]="$index + 2">
+    <span class="row-top">
+      <strong>{{ m.name_ar }}</strong>
+    </span>
+    <small class="muted">{{ 'scopeType.' + m.scope | translate }}</small>
+    <label class="field"><span>{{ 'scoring.max' | translate }}</span>
+      <input type="number" class="ltr-num" [value]="m.max_points" min="0" max="20" step="0.5" (change)="
             edit(
               m.code,
               { max: +$any($event.target).value },
               { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
             )
-          "
-        />
-      </label>
-      <label class="chk">
-        <input
-          type="checkbox"
-          [checked]="m.is_active"
-          (change)="
+          " />
+    </label>
+    <label class="chk">
+      <input type="checkbox" [checked]="m.is_active" (change)="
             edit(
               m.code,
               { active: $any($event.target).checked },
               { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
             )
-          "
-        />
-        {{ 'scoring.active' | translate }}
-      </label>
-      @if (m.scope === 'weekly') {
-        <label class="chk">
-          <input
-            type="checkbox"
-            [checked]="m.is_in_weekly_total"
-            (change)="
+          " />
+      {{ 'scoring.active' | translate }}
+    </label>
+    @if (m.scope === 'weekly') {
+    <label class="chk">
+      <input type="checkbox" [checked]="m.is_in_weekly_total" (change)="
               edit(
                 m.code,
                 { inTotal: $any($event.target).checked },
                 { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
               )
-            "
-          />
-          {{ 'scoring.in_total' | translate }}
-        </label>
-      }
-    </div>
+            " />
+      {{ 'scoring.in_total' | translate }}
+    </label>
+    }
+  </div>
   }
 
   @if (error()) {
-    <p class="field-error">{{ error() }}</p>
+  <p class="field-error">{{ error() }}</p>
   }
 
-  <button
-    type="button"
-    class="btn btn-primary btn-block"
-    [class.is-loading]="saving()"
-    [disabled]="saving()"
-    (click)="save()"
-  >
+  <button type="button" class="btn btn-primary btn-block" [class.is-loading]="saving()" [disabled]="saving()"
+    (click)="save()">
     @if (saving()) {
-      <app-spinner />
+    <app-spinner />
     } @else {
-      {{ 'common.save' | translate }}
+    {{ 'common.save' | translate }}
     }
   </button>
 
   <form class="card" [formGroup]="addForm" (ngSubmit)="addBook()">
     <h2>{{ 'scoring.add_book' | translate }}</h2>
-    <label class="field"
-      ><span>{{ 'scoring.code' | translate }}</span
-      ><input formControlName="code" dir="ltr"
-    /></label>
-    <label class="field"
-      ><span>{{ 'scoring.name' | translate }}</span
-      ><input formControlName="name_ar"
-    /></label>
-    <label class="field"
-      ><span>{{ 'scoring.max' | translate }}</span
-      ><input type="number" class="ltr-num" formControlName="max_points" min="0" max="20"
-    /></label>
-    <label class="field"
-      ><span>{{ 'scoring.scope' | translate }}</span>
+    <label class="field"><span>{{ 'scoring.code' | translate }}</span><input formControlName="code" dir="ltr" /></label>
+    <label class="field"><span>{{ 'scoring.name' | translate }}</span><input formControlName="name_ar" /></label>
+    <label class="field"><span>{{ 'scoring.max' | translate }}</span><input type="number" class="ltr-num"
+        formControlName="max_points" min="0" max="20" /></label>
+    <label class="field"><span>{{ 'scoring.scope' | translate }}</span>
       <select formControlName="scope">
         <option value="weekly">{{ 'scopeType.weekly' | translate }}</option>
         <option value="murajaa">{{ 'scopeType.murajaa' | translate }}</option>
