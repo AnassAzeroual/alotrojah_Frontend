@@ -1,58 +1,52 @@
-// Design tokens — single source of truth for the whole app.
-// Mobile-first: base = 360px phone, scale up with min-width.
-// Rule: nothing outside this file hardcodes palette, spacing, radius,
-// shadow, motion, or z-index.
-
+// Design tokens — single source of truth. Teal enterprise dashboard, RTL-first.
+// Light default on :root, dark overrides on [data-theme='dark'].
 :root {
-  // Brand: light-green family (primary kept)
-  --color-primary: #0e7c5b; // Islamic green (locked)
-  --color-primary-dark: #0a5c44;
-  --color-primary-deep: #084434;
+  --color-primary: #00b8a9;
+  --color-primary-dark: #0e9f6e;
+  --color-primary-deep: #0a7a56;
+  --color-accent: #8b5cf6;
+  --color-accent-2: #06b6d4;
 
-  // Light-green scale
-  --green-50: #eef7f2;
-  --green-100: #eaf5f0; // app tinted background wash
-  --green-200: #cde9da;
-  --green-300: #a3d7bd;
-  --green-400: #6fbf97;
-  --green-500: #2f9e73;
-  --green-600: #0e7c5b;
-  --green-700: #0a5c44;
+  --green-50: #effdf9;
+  --green-100: #d7f7ec;
+  --green-200: #b0eee0;
+  --green-300: #7de2cb;
+  --green-400: #3ecfb3;
+  --green-500: #00b8a9;
+  --green-600: #0e9f6e;
+  --green-700: #0a7a56;
   --green-800: #084434;
   --green-900: #063325;
 
-  // Gold (kept) + soft variant
   --color-gold: #c9a227;
   --color-gold-soft: #f4e9c8;
-  --color-gold-dark: #7a5f16; // small text on white (contrast-safe)
+  --color-gold-dark: #7a5f16;
 
-  // Surfaces + text
-  --color-bg: #f6f8f6;
+  --color-bg: #f8fafc;
+  --color-bg-soft: #eef4f2;
   --color-surface: #ffffff;
-  --color-text: #1c2420;
-  --color-muted: #6b7671;
-  --color-border: #e2e7e4;
-  --color-border-strong: #cfd6d2;
+  --color-surface-2: #f1f5f9;
+  --color-text: #101c19;
+  --color-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
 
-  // Semantic
-  --color-danger: #c0392b;
-  --color-danger-soft: #fbe7e3;
-  --color-warn: #d48806;
-  --color-warn-soft: #faf0d7;
-  --color-ok: #0e7c5b;
-  --color-ok-soft: #e6f3ec;
-  --color-info: #2471a3;
-  --color-info-soft: #e3eff7;
+  --color-danger: #e11d48;
+  --color-danger-soft: #ffe4e6;
+  --color-warn: #d97706;
+  --color-warn-soft: #fef3c7;
+  --color-ok: #0e9f6e;
+  --color-ok-soft: #d1fae5;
+  --color-info: #0284c7;
+  --color-info-soft: #e0f2fe;
 
-  // Radius
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 26px;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
   --radius-full: 999px;
 
-  // Spacing
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -61,39 +55,65 @@
   --space-6: 32px;
   --space-7: 48px;
 
-  // Elevation
-  --shadow-1: 0 1px 2px rgb(8 68 52 / 0.06);
-  --shadow-2: 0 1px 3px rgb(8 68 52 / 0.08), 0 4px 14px rgb(8 68 52 / 0.07);
-  --shadow-3: 0 6px 24px rgb(8 68 52 / 0.12);
-  --shadow-4: 0 12px 40px rgb(8 68 52 / 0.16);
-  --shadow-5: 0 20px 64px rgb(8 68 52 / 0.22);
-  --shadow: var(--shadow-2); // legacy alias (kept)
+  --shadow-1: 0 1px 2px rgb(16 28 25 / 0.05);
+  --shadow-2: 0 4px 16px rgb(16 28 25 / 0.06), 0 1px 3px rgb(0 184 169 / 0.08);
+  --shadow-3: 0 12px 32px rgb(16 28 25 / 0.1), 0 4px 12px rgb(0 184 169 / 0.1);
+  --shadow-4: 0 20px 48px rgb(16 28 25 / 0.14);
+  --shadow-5: 0 28px 72px rgb(16 28 25 / 0.18);
+  --shadow: var(--shadow-2);
+  --glow-teal: 0 0 0 4px rgb(0 184 169 / 0.14), 0 8px 24px rgb(0 184 169 / 0.28);
 
-  // Motion
   --ease-out: cubic-bezier(0.22, 0.9, 0.28, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.4, 1);
   --dur-1: 120ms;
   --dur-2: 220ms;
   --dur-3: 380ms;
-  --motion: 1; // 0 under prefers-reduced-motion
+  --motion: 1;
 
-  // Z scale
-  --z-nav: 10;
-  --z-header: 20;
+  --z-nav: 30;
+  --z-header: 40;
   --z-toolbar: 15;
   --z-toast: 50;
+  --z-fab: 45;
 
   --nav-height: 64px;
-  --font-stack: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
-  --font-quran: 'Amiri', 'Cairo', 'Segoe UI', serif; // Quranic/verse text (naskh)
+  --sidebar-w: 268px;
+  --sidebar-w-collapsed: 84px;
+  --font-stack: 'Readex Pro', 'Tajawal', 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+  --font-quran: 'Amiri', 'Cairo', 'Segoe UI', serif;
 
-  // Fluid type
   --text-xs: clamp(0.72rem, 0.68rem + 0.2vw, 0.78rem);
   --text-sm: clamp(0.82rem, 0.78rem + 0.2vw, 0.88rem);
   --text-md: 1rem;
   --text-lg: clamp(1.1rem, 1rem + 0.5vw, 1.25rem);
   --text-xl: clamp(1.3rem, 1.1rem + 1vw, 1.6rem);
   --text-2xl: clamp(1.6rem, 1.3rem + 1.6vw, 2.1rem);
+
+  --bg-pattern-opacity: 0.5;
+  --card-border: rgb(16 28 25 / 0.06);
+}
+
+[data-theme='dark'] {
+  --color-bg: #0b1512;
+  --color-bg-soft: #0f1e1a;
+  --color-surface: #12211d;
+  --color-surface-2: #162825;
+  --color-text: #eaf4f1;
+  --color-muted: #94b3ad;
+  --color-border: rgb(255 255 255 / 0.08);
+  --color-border-strong: rgb(255 255 255 / 0.14);
+  --card-border: rgb(255 255 255 / 0.08);
+
+  --green-50: #0f2a24;
+  --green-100: #14352d;
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 8px 24px rgb(0 0 0 / 0.45), 0 2px 8px rgb(0 184 169 / 0.12);
+  --shadow-3: 0 16px 48px rgb(0 0 0 / 0.5);
+  --shadow: var(--shadow-2);
+
+  --color-gold-dark: #e8c84a;
+  --bg-pattern-opacity: 0.16;
 }
 
 @media (prefers-reduced-motion: reduce) {

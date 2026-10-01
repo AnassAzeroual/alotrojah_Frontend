@@ -1,5 +1,8 @@
 {
-  "app": { "title": "الأترجة", "subtitle": "متابعة حفظ القرآن الكريم" },
+  "app": {
+    "title": "الأترجة",
+    "subtitle": "متابعة حفظ القرآن الكريم"
+  },
   "nav": {
     "dashboard": "الرئيسية",
     "entry": "إدخال اليوم",
@@ -15,7 +18,12 @@
     "news": "الأخبار",
     "delegate": "التفويض",
     "notifications": "المراسلات",
-    "account": "الحساب"
+    "account": "الحساب",
+    "main": "الرئيسية",
+    "menu": "القائمة",
+    "theme": "المظهر",
+    "light": "فاتح",
+    "dark": "داكن"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -59,18 +67,71 @@
     "student": "طالب",
     "board": "مجلس الإدارة"
   },
-  "teacherType": { "hifz": "تحفيظ", "murajaa": "مراجعة", "both": "كلاهما" },
-  "attendance": { "present": "حاضر", "absent": "غائب", "late": "متأخر", "excused": "معذور" },
-  "audience": { "all": "عام", "teachers": "المعلمون", "manager": "المدير", "my_students": "الطلاب" },
-  "honor": { "none": "—", "tashji3": "تشجيع", "intibah": "انتبه" },
-  "weekType": { "study": "دراسة", "review": "مراجعة" },
-  "sessionType": { "memorization": "حفظ", "revision": "مراجعة", "exam": "اختبار" },
-  "examType": { "hizb_completion": "إتمام حزب", "term_batch": "اختبار الفصل", "final_season": "الاختبار النهائي" },
-  "scopeType": { "weekly": "أسبوعي", "murajaa": "مراجعة" },
-  "mode": { "surah": "بالسورة", "thumn": "بالثمن" },
-  "studentStatus": { "active": "نشط", "paused": "موقوف", "graduated": "متخرج", "left": "مغادر" },
-  "results": { "season": "الموسم", "memorized": "المحفوظ (أثمان)", "average": "المعدل", "attendance": "المواظبة", "final": "المعدل النهائي" },
-  "list": { "search": "بحث بالاسم", "group": "الحلقة", "level": "المستوى", "status": "الحالة", "mode": "النمط", "all": "الكل" },
+  "teacherType": {
+    "hifz": "تحفيظ",
+    "murajaa": "مراجعة",
+    "both": "كلاهما"
+  },
+  "attendance": {
+    "present": "حاضر",
+    "absent": "غائب",
+    "late": "متأخر",
+    "excused": "معذور"
+  },
+  "audience": {
+    "all": "عام",
+    "teachers": "المعلمون",
+    "manager": "المدير",
+    "my_students": "الطلاب"
+  },
+  "honor": {
+    "none": "—",
+    "tashji3": "تشجيع",
+    "intibah": "انتبه"
+  },
+  "weekType": {
+    "study": "دراسة",
+    "review": "مراجعة"
+  },
+  "sessionType": {
+    "memorization": "حفظ",
+    "revision": "مراجعة",
+    "exam": "اختبار"
+  },
+  "examType": {
+    "hizb_completion": "إتمام حزب",
+    "term_batch": "اختبار الفصل",
+    "final_season": "الاختبار النهائي"
+  },
+  "scopeType": {
+    "weekly": "أسبوعي",
+    "murajaa": "مراجعة"
+  },
+  "mode": {
+    "surah": "بالسورة",
+    "thumn": "بالثمن"
+  },
+  "studentStatus": {
+    "active": "نشط",
+    "paused": "موقوف",
+    "graduated": "متخرج",
+    "left": "مغادر"
+  },
+  "results": {
+    "season": "الموسم",
+    "memorized": "المحفوظ (أثمان)",
+    "average": "المعدل",
+    "attendance": "المواظبة",
+    "final": "المعدل النهائي"
+  },
+  "list": {
+    "search": "بحث بالاسم",
+    "group": "الحلقة",
+    "level": "المستوى",
+    "status": "الحالة",
+    "mode": "النمط",
+    "all": "الكل"
+  },
   "exam": {
     "title": "الاختبارات",
     "new": "اختبار جديد",
@@ -145,9 +206,36 @@
     "by_student": "حسب الطالب",
     "students": "الطلاب",
     "avg_score": "المعدل",
-    "attendance": "الحضور"
+    "attendance": "الحضور",
+    "studentsTitle": "الطلاب",
+    "subtitle": "متابعة حفظ القرآن الكريم",
+    "newMessage": "مواسلة جديد",
+    "totalStudents": "اجمالي الطلاب",
+    "activeGroups": "مجموعات النشطة",
+    "quranSessions": "اجتماعات القرآن",
+    "commitRate": "معدل الالتزام",
+    "thisMonth": "هذا الشهر",
+    "studentName": "اسم الطالب",
+    "currentSurah": "السورة الحالية",
+    "progress": "مقدم الحفظ",
+    "status": "الحالة",
+    "lastExam": "اخر اختبار",
+    "resultsOf": "من",
+    "monthlyEval": "تقييم التحفيظ الشهري",
+    "last6": "اخر 6 اشهر",
+    "distribution": "توزيع الحفظ",
+    "excellent": "ممتاز",
+    "good": "جيد",
+    "support": "يحتاج دعم",
+    "today": "اليوم",
+    "level": "المستوى",
+    "center": "المركز"
   },
-  "sessionStatus": { "planned": "مبرمجة", "done": "منجزة", "cancelled": "ملغاة" },
+  "sessionStatus": {
+    "planned": "مبرمجة",
+    "done": "منجزة",
+    "cancelled": "ملغاة"
+  },
   "planning": {
     "title": "التخطيط",
     "new_season": "موسم جديد",

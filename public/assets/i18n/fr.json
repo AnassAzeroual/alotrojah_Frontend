@@ -1,5 +1,8 @@
 {
-  "app": { "title": "AlOtrojah", "subtitle": "Suivi de la mémorisation du Coran" },
+  "app": {
+    "title": "AlOtrojah",
+    "subtitle": "Suivi de la mémorisation du Coran"
+  },
   "nav": {
     "dashboard": "Accueil",
     "entry": "Saisie du jour",
@@ -15,7 +18,12 @@
     "news": "Annonces",
     "delegate": "Délégation",
     "notifications": "Messages",
-    "account": "Compte"
+    "account": "Compte",
+    "main": "Principal",
+    "menu": "Menu",
+    "theme": "Theme",
+    "light": "Clair",
+    "dark": "Sombre"
   },
   "auth": {
     "login": "Connexion",
@@ -59,18 +67,71 @@
     "student": "Élève",
     "board": "Conseil"
   },
-  "teacherType": { "hifz": "Mémorisation", "murajaa": "Révision", "both": "Les deux" },
-  "attendance": { "present": "Présent", "absent": "Absent", "late": "En retard", "excused": "Excusé" },
-  "audience": { "all": "Général", "teachers": "Enseignants", "manager": "Direction", "my_students": "Mes élèves" },
-  "honor": { "none": "—", "tashji3": "Encouragement", "intibah": "Attention" },
-  "weekType": { "study": "Étude", "review": "Révision" },
-  "sessionType": { "memorization": "Mémorisation", "revision": "Révision", "exam": "Examen" },
-  "mode": { "surah": "Par sourate", "thumn": "Par thoumn" },
-  "examType": { "hizb_completion": "Validation de hizb", "term_batch": "Examen du trimestre", "final_season": "Examen final" },
-  "scopeType": { "weekly": "Hebdomadaire", "murajaa": "Murajaa" },
-  "studentStatus": { "active": "Actif", "paused": "En pause", "graduated": "Diplômé", "left": "Parti" },
-  "results": { "season": "Saison", "memorized": "Mémorisé (thoumns)", "average": "Moyenne", "attendance": "Présence", "final": "Note finale" },
-  "list": { "search": "Rechercher par nom", "group": "Cercle", "level": "Niveau", "status": "Statut", "mode": "Mode", "all": "Tous" },
+  "teacherType": {
+    "hifz": "Mémorisation",
+    "murajaa": "Révision",
+    "both": "Les deux"
+  },
+  "attendance": {
+    "present": "Présent",
+    "absent": "Absent",
+    "late": "En retard",
+    "excused": "Excusé"
+  },
+  "audience": {
+    "all": "Général",
+    "teachers": "Enseignants",
+    "manager": "Direction",
+    "my_students": "Mes élèves"
+  },
+  "honor": {
+    "none": "—",
+    "tashji3": "Encouragement",
+    "intibah": "Attention"
+  },
+  "weekType": {
+    "study": "Étude",
+    "review": "Révision"
+  },
+  "sessionType": {
+    "memorization": "Mémorisation",
+    "revision": "Révision",
+    "exam": "Examen"
+  },
+  "mode": {
+    "surah": "Par sourate",
+    "thumn": "Par thoumn"
+  },
+  "examType": {
+    "hizb_completion": "Validation de hizb",
+    "term_batch": "Examen du trimestre",
+    "final_season": "Examen final"
+  },
+  "scopeType": {
+    "weekly": "Hebdomadaire",
+    "murajaa": "Murajaa"
+  },
+  "studentStatus": {
+    "active": "Actif",
+    "paused": "En pause",
+    "graduated": "Diplômé",
+    "left": "Parti"
+  },
+  "results": {
+    "season": "Saison",
+    "memorized": "Mémorisé (thoumns)",
+    "average": "Moyenne",
+    "attendance": "Présence",
+    "final": "Note finale"
+  },
+  "list": {
+    "search": "Rechercher par nom",
+    "group": "Cercle",
+    "level": "Niveau",
+    "status": "Statut",
+    "mode": "Mode",
+    "all": "Tous"
+  },
   "exam": {
     "title": "Examens",
     "new": "Nouvel examen",
@@ -145,9 +206,36 @@
     "by_student": "Par élève",
     "students": "Élèves",
     "avg_score": "Moyenne",
-    "attendance": "Présence"
+    "attendance": "Présence",
+    "studentsTitle": "Eleves",
+    "subtitle": "Apercu",
+    "newMessage": "Nouveau message",
+    "totalStudents": "Total",
+    "activeGroups": "Groupes actifs",
+    "quranSessions": "Sessions",
+    "commitRate": "Assiduite",
+    "thisMonth": "ce mois",
+    "studentName": "Nom",
+    "currentSurah": "Sourate",
+    "progress": "Progres",
+    "status": "Statut",
+    "lastExam": "Dernier examen",
+    "resultsOf": "sur",
+    "monthlyEval": "Mensuelle",
+    "last6": "6 mois",
+    "distribution": "Repartition",
+    "excellent": "Excellent",
+    "good": "Bien",
+    "support": "Soutien",
+    "today": "hui",
+    "level": "Niveau",
+    "center": "Centre"
   },
-  "sessionStatus": { "planned": "Planifiée", "done": "Terminée", "cancelled": "Annulée" },
+  "sessionStatus": {
+    "planned": "Planifiée",
+    "done": "Terminée",
+    "cancelled": "Annulée"
+  },
   "planning": {
     "title": "Planification",
     "new_season": "Nouvelle saison",
