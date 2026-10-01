@@ -11,112 +11,152 @@
   <p class="sum anim-rise" style="--i: 1" [class.bad]="liveSum() !== 20">
     {{ 'scoring.sum' | translate }}: <strong class="ltr-num">{{ liveSum() }} / 20</strong>
     @if (liveSum() !== 20) {
-    <small>{{ 'scoring.sum_bad' | translate }}</small>
+      <small>{{ 'scoring.sum_bad' | translate }}</small>
     }
   </p>
 
   @for (m of modules.value() ?? []; track m.code) {
-  <div class="card mod anim-rise" [style.--i]="$index + 2">
-    <span class="row-top">
-      <strong>{{ m.name_ar }}</strong>
-    </span>
-    <small class="muted">{{ 'scopeType.' + m.scope | translate }}</small>
-    <label class="field"><span>{{ 'scoring.max' | translate }}</span>
-      <input type="number" class="ltr-num" [value]="m.max_points" min="0" max="20" step="0.5" (change)="
+    <div class="card mod anim-rise" [style.--i]="$index + 2">
+      <span class="row-top">
+        <strong>{{ m.name_ar }}</strong>
+      </span>
+      <small class="muted">{{ 'scopeType.' + m.scope | translate }}</small>
+      <label class="field"
+        ><span>{{ 'scoring.max' | translate }}</span>
+        <input
+          type="number"
+          class="ltr-num"
+          [value]="m.max_points"
+          min="0"
+          max="20"
+          step="0.5"
+          (change)="
             edit(
               m.code,
               { max: +$any($event.target).value },
               { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
             )
-          " />
-    </label>
-    <label class="chk">
-      <input type="checkbox" [checked]="m.is_active" (change)="
+          "
+        />
+      </label>
+      <label class="chk">
+        <input
+          type="checkbox"
+          [checked]="m.is_active"
+          (change)="
             edit(
               m.code,
               { active: $any($event.target).checked },
               { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
             )
-          " />
-      {{ 'scoring.active' | translate }}
-    </label>
-    @if (m.scope === 'weekly') {
-    <label class="chk">
-      <input type="checkbox" [checked]="m.is_in_weekly_total" (change)="
+          "
+        />
+        {{ 'scoring.active' | translate }}
+      </label>
+      @if (m.scope === 'weekly') {
+        <label class="chk">
+          <input
+            type="checkbox"
+            [checked]="m.is_in_weekly_total"
+            (change)="
               edit(
                 m.code,
                 { inTotal: $any($event.target).checked },
                 { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
               )
-            " />
-      {{ 'scoring.in_total' | translate }}
-    </label>
-    }
-  </div>
+            "
+          />
+          {{ 'scoring.in_total' | translate }}
+        </label>
+      }
+    </div>
   }
 
   @if (error(); as e) {
-  <p class="field-error">{{ e.key | translate: e.params }}</p>
+    <p class="field-error">{{ e.key | translate: e.params }}</p>
   }
 
-  <button type="button" class="btn btn-primary btn-block" [class.is-loading]="saving()" [disabled]="saving()"
-    (click)="save()">
+  <button
+    type="button"
+    class="btn btn-primary btn-block"
+    [class.is-loading]="saving()"
+    [disabled]="saving()"
+    (click)="save()"
+  >
     @if (saving()) {
-    <app-spinner />
+      <app-spinner />
     } @else {
-    {{ 'common.save' | translate }}
+      {{ 'common.save' | translate }}
     }
   </button>
 
   @if (showAdd()) {
-  <div class="modal-backdrop" (click)="showAdd.set(false)">
-    <div class="card modal anim-pop" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-      <form [formGroup]="addForm" (ngSubmit)="addBook()" class="stack">
-        <h2>{{ 'scoring.add_book' | translate }}</h2>
-        <label class="field"><span>{{ 'scoring.code' | translate }}</span>
-          <input formControlName="code" dir="ltr" />
-          @if (addForm.controls.code.touched && addForm.controls.code.hasError('required')) {
-          <small class="field-error">{{ 'validation.required' | translate }}</small>
-          }
-          @if (addForm.controls.code.touched && addForm.controls.code.hasError('pattern')) {
-          <small class="field-error">{{ 'validation.code_pattern' | translate }}</small>
-          }
-        </label>
-        <label class="field"><span>{{ 'scoring.name' | translate }}</span>
-          <input formControlName="name_ar" />
-          @if (addForm.controls.name_ar.touched && addForm.controls.name_ar.invalid) {
-          <small class="field-error">{{ 'validation.required' | translate }}</small>
-          }
-        </label>
-        <label class="field"><span>{{ 'scoring.max' | translate }}</span><input type="number" class="ltr-num"
-            formControlName="max_points" min="0" max="20" />
-          @if (addForm.controls.max_points.touched && addForm.controls.max_points.hasError('min')) {
-          <small class="field-error">{{ 'validation.min' | translate }}</small>
-          }
-          @if (addForm.controls.max_points.touched && addForm.controls.max_points.hasError('max')) {
-          <small class="field-error">{{ 'validation.max' | translate: { max: 20 } }}</small>
-          }
-        </label>
-        <label class="field"><span>{{ 'scoring.scope' | translate }}</span>
-          <select formControlName="scope">
-            <option value="weekly">{{ 'scopeType.weekly' | translate }}</option>
-            <option value="murajaa">{{ 'scopeType.murajaa' | translate }}</option>
-          </select>
-        </label>
-        <div class="cluster">
-          <button type="submit" class="btn btn-primary" [class.is-loading]="saving()" [disabled]="saving()">
-            @if (saving()) {
-            <app-spinner />
-            } @else {
-            {{ 'scoring.add_book' | translate }}
+    <div class="modal-backdrop" (click)="showAdd.set(false)">
+      <div
+        class="card modal anim-pop"
+        (click)="$event.stopPropagation()"
+        role="dialog"
+        aria-modal="true"
+      >
+        <form [formGroup]="addForm" (ngSubmit)="addBook()" class="stack">
+          <h2>{{ 'scoring.add_book' | translate }}</h2>
+          <label class="field"
+            ><span>{{ 'scoring.code' | translate }}</span>
+            <input formControlName="code" dir="ltr" />
+            @if (addForm.controls.code.touched && addForm.controls.code.hasError('required')) {
+              <small class="field-error">{{ 'validation.required' | translate }}</small>
             }
-          </button>
-          <button type="button" class="btn btn-ghost" (click)="showAdd.set(false)">
-            {{ 'common.cancel' | translate }}
-          </button>
-        </div>
-      </form>
+            @if (addForm.controls.code.touched && addForm.controls.code.hasError('pattern')) {
+              <small class="field-error">{{ 'validation.code_pattern' | translate }}</small>
+            }
+          </label>
+          <label class="field"
+            ><span>{{ 'scoring.name' | translate }}</span>
+            <input formControlName="name_ar" />
+            @if (addForm.controls.name_ar.touched && addForm.controls.name_ar.invalid) {
+              <small class="field-error">{{ 'validation.required' | translate }}</small>
+            }
+          </label>
+          <label class="field"
+            ><span>{{ 'scoring.max' | translate }}</span
+            ><input type="number" class="ltr-num" formControlName="max_points" min="0" max="20" />
+            @if (
+              addForm.controls.max_points.touched && addForm.controls.max_points.hasError('min')
+            ) {
+              <small class="field-error">{{ 'validation.min' | translate }}</small>
+            }
+            @if (
+              addForm.controls.max_points.touched && addForm.controls.max_points.hasError('max')
+            ) {
+              <small class="field-error">{{ 'validation.max' | translate: { max: 20 } }}</small>
+            }
+          </label>
+          <label class="field"
+            ><span>{{ 'scoring.scope' | translate }}</span>
+            <select formControlName="scope">
+              <option value="weekly">{{ 'scopeType.weekly' | translate }}</option>
+              <option value="murajaa">{{ 'scopeType.murajaa' | translate }}</option>
+            </select>
+          </label>
+          <div class="cluster">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [class.is-loading]="saving()"
+              [disabled]="saving()"
+            >
+              @if (saving()) {
+                <app-spinner />
+              } @else {
+                {{ 'scoring.add_book' | translate }}
+              }
+            </button>
+            <button type="button" class="btn btn-ghost" (click)="showAdd.set(false)">
+              {{ 'common.cancel' | translate }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
   }
 </section>
