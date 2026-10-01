@@ -5,7 +5,7 @@ import { DelegationsService } from '../../core/api/delegations.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
-/** Opened from the WhatsApp link: /delegate/redeem?token=â€¦ (public route, token IS the credential). */
+/** Opened from the WhatsApp link: /delegate/redeem?token=… (public route, token IS the credential). */
 @Component({
   selector: 'app-redeem-page',
   standalone: true,

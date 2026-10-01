@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
@@ -40,9 +40,9 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
         <div class="grid-auto">
           @for (e of exams.value() ?? []; track e.id) {
             <a class="card anim-rise" [style.--i]="$index + 2" [routerLink]="['/exams', e.id]">
-              <strong>#{{ e.id }} Â· {{ e.exam_type }}</strong>
+              <strong>#{{ e.id }} · {{ e.exam_type }}</strong>
               <small class="muted ltr-num"
-                >{{ e.exam_date ?? 'â€”' }} Â· {{ e.overall_avg ?? 'â€”'
+                >{{ e.exam_date ?? '—' }} · {{ e.overall_avg ?? '—'
                 }}{{ 'common.of20' | translate }}</small
               >
             </a>

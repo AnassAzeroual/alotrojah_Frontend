@@ -146,6 +146,7 @@
   "planning": {
     "title": "Planning",
     "new_season": "New season",
+    "use_template": "Use template",
     "name": "Name",
     "start_date": "Start date",
     "hijri": "Hijri year",

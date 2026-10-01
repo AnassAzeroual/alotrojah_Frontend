@@ -38,7 +38,7 @@ export class ScoringPage {
     loader: () => firstValueFrom(this.scoring.modules()),
   });
 
-  /** Live sum of active weekly-total modules â€” must stay 20. */
+  /** Live sum of active weekly-total modules — must stay 20. */
   readonly liveSum = computed(() => {
     const rows = this.modules.value() ?? [];
     return (

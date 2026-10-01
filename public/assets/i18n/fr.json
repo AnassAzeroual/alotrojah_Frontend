@@ -146,6 +146,7 @@
   "planning": {
     "title": "Planification",
     "new_season": "Nouvelle saison",
+    "use_template": "Utiliser le modèle",
     "name": "Nom",
     "start_date": "Date de début",
     "hijri": "Année hégirienne",

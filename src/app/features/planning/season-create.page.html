@@ -1,6 +1,11 @@
 <section class="page">
   <div class="page-head anim-rise">
     <h1>{{ 'planning.new_season' | translate }}</h1>
+    <div class="actions">
+      <button type="button" class="btn btn-ghost" (click)="fillTemplate()">
+        {{ 'planning.use_template' | translate }}
+      </button>
+    </div>
   </div>
 
   <section class="card anim-rise" style="--i: 1">

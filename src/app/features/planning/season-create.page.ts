@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -20,13 +20,34 @@ interface SeasonForm {
 }
 
 const DEFAULT_TERMS = [
-  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø£ÙˆÙ„',
-  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø«Ø§Ù†ÙŠ',
-  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø«Ø§Ù„Ø«',
-  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø±Ø§Ø¨Ø¹',
-  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø®Ø§Ù…Ø³',
-  'Ø§Ù„ÙØµÙ„ Ø§Ù„Ø³Ø§Ø¯Ø³',
+  'الفصل الأول',
+  'الفصل الثاني',
+  'الفصل الثالث',
+  'الفصل الرابع',
+  'الفصل الخامس',
+  'الفصل السادس',
 ];
+
+function todayLocal(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+function currentHijriYear(): number {
+  const d = new Date();
+  for (const cal of ['islamic-umalqura', 'islamic']) {
+    try {
+      const parts = new Intl.DateTimeFormat(`en-u-ca-${cal}`, { year: 'numeric' }).formatToParts(d);
+      const y = Number(parts.find((p) => p.type === 'year')?.value);
+      if (Number.isFinite(y) && y > 1300 && y < 1700) return y;
+    } catch {
+      // try next calendar
+    }
+  }
+  return d.getFullYear() - 579; // rough fallback, editable
+}
 
 @Component({
   selector: 'app-season-create-page',
@@ -47,7 +68,10 @@ export class SeasonCreatePage {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(50)],
     }),
-    start_date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    start_date: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     hijri_year: new FormControl('', { nonNullable: true }),
     sessions_per_week: new FormControl(3, {
       nonNullable: true,
@@ -57,8 +81,17 @@ export class SeasonCreatePage {
       nonNullable: true,
       validators: [Validators.min(0), Validators.max(3)],
     }),
-    terms: new FormArray<FormGroup<TermRow>>(DEFAULT_TERMS.map((n) => this.row(n, 7))),
+    terms: new FormArray<FormGroup<TermRow>>([]),
   });
+
+  fillTemplate(): void {
+    const hijri = currentHijriYear();
+    this.form.controls.name.setValue(`موسم ${hijri}`);
+    this.form.controls.start_date.setValue(todayLocal());
+    this.form.controls.hijri_year.setValue(String(hijri));
+    this.form.controls.terms.clear();
+    for (const n of DEFAULT_TERMS) this.form.controls.terms.push(this.row(n, 7));
+  }
 
   private row(name: string, weeks: number): FormGroup<TermRow> {
     return new FormGroup<TermRow>({
