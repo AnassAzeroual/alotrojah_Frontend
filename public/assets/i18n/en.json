@@ -43,6 +43,7 @@
     "session": "Session",
     "score": "Score",
     "of20": "/ 20",
+    "error": "An unexpected error occurred",
     "active": "Active",
     "paused": "Paused",
     "graduated": "Graduated",
@@ -181,6 +182,7 @@
     "in_total": "In total",
     "sum": "Weekly total",
     "sum_bad": "Must equal 20",
+    "sum_bad_server": "Weekly total would be {{total}}, must stay 20",
     "add_book": "Add subject",
     "code": "Code",
     "name": "Name",
@@ -204,6 +206,7 @@
   },
   "validation": {
     "required": "Field is required",
+    "code_pattern": "Code allows lowercase latin letters, numbers and underscores only",
     "min": "Value too small",
     "max": "Value too large (max: {{max}})",
     "range": "End must follow start"

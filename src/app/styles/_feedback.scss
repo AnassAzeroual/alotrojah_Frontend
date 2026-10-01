@@ -1,4 +1,5 @@
-// Feedback: spinner, skeletons, empty states, toasts.
+// Feedback: spinner, skeletons, empty states, toasts, modals.
+@use 'tokens' as *;
 
 .spinner-ring {
   width: 22px;
@@ -85,4 +86,29 @@
   font-weight: 700;
   box-shadow: var(--shadow-4);
   animation: toast-in calc(var(--dur-3) * var(--motion)) var(--ease-spring) both;
+}
+
+// Modal overlay (add-book dialog)
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  background: rgb(6 51 37 / 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: fade calc(var(--dur-2) * var(--motion)) var(--ease-out) both;
+
+  @include up($bp-md) {
+    align-items: center;
+  }
+}
+
+.modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 88dvh;
+  overflow-y: auto;
 }

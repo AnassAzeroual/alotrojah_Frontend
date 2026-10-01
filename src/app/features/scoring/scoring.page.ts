@@ -30,8 +30,9 @@ export class ScoringPage {
 
   private readonly tick = signal(0);
   readonly saving = signal(false);
-  readonly error = signal<string | null>(null);
+  readonly error = signal<{ key: string; params?: Record<string, string | number> } | null>(null);
   readonly drafts = signal<ReadonlyMap<string, Draft>>(new Map());
+  readonly showAdd = signal(false);
 
   readonly modules = resource({
     params: () => ({ t: this.tick() }),
@@ -66,6 +67,15 @@ export class ScoringPage {
     return a && t && scope === 'weekly' ? v : 0;
   }
 
+  /** Maps known backend messages to i18n keys so errors follow the app language. */
+  private mapError(message: unknown): { key: string; params?: Record<string, string | number> } {
+    if (typeof message === 'string') {
+      const m = message.match(/Weekly total would be ([\d.]+)/);
+      if (m) return { key: 'scoring.sum_bad_server', params: { total: m[1] } };
+    }
+    return { key: 'common.error' };
+  }
+
   edit(code: string, patch: Partial<Draft>, fallback: Draft): void {
     const cur = this.drafts().get(code) ?? fallback;
     this.drafts.update((m) => new Map(m).set(code, { ...cur, ...patch }));
@@ -89,7 +99,7 @@ export class ScoringPage {
       },
       error: (e) => {
         this.saving.set(false);
-        this.error.set(typeof e?.error?.message === 'string' ? e.error.message : 'error');
+        this.error.set(this.mapError(e?.error?.message));
       },
     });
   }
@@ -108,7 +118,10 @@ export class ScoringPage {
   });
 
   addBook(): void {
-    if (this.addForm.invalid || this.saving()) return;
+    if (this.addForm.invalid || this.saving()) {
+      this.addForm.markAllAsTouched();
+      return;
+    }
     const v = this.addForm.getRawValue();
     this.saving.set(true);
     this.error.set(null);
@@ -124,6 +137,7 @@ export class ScoringPage {
       .subscribe({
         next: () => {
           this.saving.set(false);
+          this.showAdd.set(false);
           this.addForm.reset({
             code: '',
             name_ar: '',
@@ -135,7 +149,7 @@ export class ScoringPage {
         },
         error: (e) => {
           this.saving.set(false);
-          this.error.set(typeof e?.error?.message === 'string' ? e.error.message : 'error');
+          this.error.set(this.mapError(e?.error?.message));
         },
       });
   }

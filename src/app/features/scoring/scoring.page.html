@@ -1,6 +1,11 @@
 <section class="page">
   <div class="page-head anim-rise">
     <h1>{{ 'scoring.title' | translate }}</h1>
+    <div class="actions">
+      <button type="button" class="btn btn-primary" (click)="showAdd.set(true)">
+        {{ 'scoring.add_book' | translate }}
+      </button>
+    </div>
   </div>
 
   <p class="sum anim-rise" style="--i: 1" [class.bad]="liveSum() !== 20">
@@ -50,8 +55,8 @@
   </div>
   }
 
-  @if (error()) {
-  <p class="field-error">{{ error() }}</p>
+  @if (error(); as e) {
+  <p class="field-error">{{ e.key | translate: e.params }}</p>
   }
 
   <button type="button" class="btn btn-primary btn-block" [class.is-loading]="saving()" [disabled]="saving()"
@@ -63,20 +68,55 @@
     }
   </button>
 
-  <form class="card" [formGroup]="addForm" (ngSubmit)="addBook()">
-    <h2>{{ 'scoring.add_book' | translate }}</h2>
-    <label class="field"><span>{{ 'scoring.code' | translate }}</span><input formControlName="code" dir="ltr" /></label>
-    <label class="field"><span>{{ 'scoring.name' | translate }}</span><input formControlName="name_ar" /></label>
-    <label class="field"><span>{{ 'scoring.max' | translate }}</span><input type="number" class="ltr-num"
-        formControlName="max_points" min="0" max="20" /></label>
-    <label class="field"><span>{{ 'scoring.scope' | translate }}</span>
-      <select formControlName="scope">
-        <option value="weekly">{{ 'scopeType.weekly' | translate }}</option>
-        <option value="murajaa">{{ 'scopeType.murajaa' | translate }}</option>
-      </select>
-    </label>
-    <button type="submit" class="btn btn-ghost" [disabled]="addForm.invalid || saving()">
-      {{ 'scoring.add_book' | translate }}
-    </button>
-  </form>
+  @if (showAdd()) {
+  <div class="modal-backdrop" (click)="showAdd.set(false)">
+    <div class="card modal anim-pop" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <form [formGroup]="addForm" (ngSubmit)="addBook()" class="stack">
+        <h2>{{ 'scoring.add_book' | translate }}</h2>
+        <label class="field"><span>{{ 'scoring.code' | translate }}</span>
+          <input formControlName="code" dir="ltr" />
+          @if (addForm.controls.code.touched && addForm.controls.code.hasError('required')) {
+          <small class="field-error">{{ 'validation.required' | translate }}</small>
+          }
+          @if (addForm.controls.code.touched && addForm.controls.code.hasError('pattern')) {
+          <small class="field-error">{{ 'validation.code_pattern' | translate }}</small>
+          }
+        </label>
+        <label class="field"><span>{{ 'scoring.name' | translate }}</span>
+          <input formControlName="name_ar" />
+          @if (addForm.controls.name_ar.touched && addForm.controls.name_ar.invalid) {
+          <small class="field-error">{{ 'validation.required' | translate }}</small>
+          }
+        </label>
+        <label class="field"><span>{{ 'scoring.max' | translate }}</span><input type="number" class="ltr-num"
+            formControlName="max_points" min="0" max="20" />
+          @if (addForm.controls.max_points.touched && addForm.controls.max_points.hasError('min')) {
+          <small class="field-error">{{ 'validation.min' | translate }}</small>
+          }
+          @if (addForm.controls.max_points.touched && addForm.controls.max_points.hasError('max')) {
+          <small class="field-error">{{ 'validation.max' | translate: { max: 20 } }}</small>
+          }
+        </label>
+        <label class="field"><span>{{ 'scoring.scope' | translate }}</span>
+          <select formControlName="scope">
+            <option value="weekly">{{ 'scopeType.weekly' | translate }}</option>
+            <option value="murajaa">{{ 'scopeType.murajaa' | translate }}</option>
+          </select>
+        </label>
+        <div class="cluster">
+          <button type="submit" class="btn btn-primary" [class.is-loading]="saving()" [disabled]="saving()">
+            @if (saving()) {
+            <app-spinner />
+            } @else {
+            {{ 'scoring.add_book' | translate }}
+            }
+          </button>
+          <button type="button" class="btn btn-ghost" (click)="showAdd.set(false)">
+            {{ 'common.cancel' | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
 </section>

@@ -83,6 +83,15 @@
   animation: shake calc(var(--dur-3) * var(--motion)) var(--ease-out);
 }
 
+// Reactive-forms invalid state: red border once touched
+.field input.ng-touched.ng-invalid,
+.field select.ng-touched.ng-invalid,
+.field textarea.ng-touched.ng-invalid,
+.term-row input.ng-touched.ng-invalid {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 18%, transparent);
+}
+
 // Inline checkbox row (module toggles, goal done)
 .chk {
   display: flex;
