@@ -15,11 +15,6 @@
     "news": "الأخبار",
     "delegate": "التفويض",
     "notifications": "المراسلات",
-    "planning": "التخطيط",
-    "exams": "الاختبارات",
-    "reviews": "المراجعة",
-    "results": "النتائج",
-    "news": "الأخبار",
     "account": "الحساب"
   },
   "auth": {
@@ -59,7 +54,7 @@
   },
   "teacherType": { "hifz": "تحفيظ", "murajaa": "مراجعة", "both": "كلاهما" },
   "attendance": { "present": "حاضر", "absent": "غائب", "late": "متأخر", "excused": "معذور" },
-  "audience": { "all": "عام", "teachers": "المعلمون", "manager": "المدير", "my_students": "طلابي" },
+  "audience": { "all": "عام", "teachers": "المعلمون", "manager": "المدير", "my_students": "الطلاب" },
   "honor": { "none": "—", "tashji3": "تشجيع", "intibah": "انتبه" },
   "weekType": { "study": "دراسة", "review": "مراجعة" },
   "sessionType": { "memorization": "حفظ", "revision": "مراجعة", "exam": "اختبار" },
@@ -183,13 +178,6 @@
     "code": "الرمز",
     "name": "الاسم",
     "scope": "النطاق"
-  },
-  "common": {
-    "save": "حفظ",
-    "active": "نشط",
-    "paused": "موقوف",
-    "graduated": "متخرج",
-    "left": "مغادر"
   },
   "entry": {
     "title": "إدخال اليوم",
