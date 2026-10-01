@@ -1,60 +1,84 @@
-<section class="list">
-  <h1>{{ 'nav.students' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'nav.students' | translate }}</h1>
+  </div>
 
-  <div class="filters card">
-    <input
-      type="search"
-      [placeholder]="'list.search' | translate"
-      [value]="q()"
-      (change)="q.set($any($event.target).value); resetPage()"
-    />
-    <select
-      [value]="groupId() ?? ''"
-      (change)="groupId.set(num($any($event.target).value)); resetPage()"
-    >
-      <option value="">{{ 'list.group' | translate }}: {{ 'list.all' | translate }}</option>
-      @for (g of groups(); track g.id) {
-        <option [value]="g.id">{{ g.name }}</option>
-      }
-    </select>
-    <select
-      [value]="levelId() ?? ''"
-      (change)="levelId.set(num($any($event.target).value)); resetPage()"
-    >
-      <option value="">{{ 'list.level' | translate }}: {{ 'list.all' | translate }}</option>
-      @for (l of levels(); track l.id) {
-        <option [value]="l.id">{{ l.name_ar }}</option>
-      }
-    </select>
-    <select
-      [value]="status() ?? ''"
-      (change)="status.set($any($event.target).value || null); resetPage()"
-    >
-      <option value="">{{ 'list.status' | translate }}: {{ 'list.all' | translate }}</option>
-      @for (s of statuses; track s) {
-        <option [value]="s">{{ 'studentStatus.' + s | translate }}</option>
-      }
-    </select>
-    <select
-      [value]="mode() ?? ''"
-      (change)="mode.set($any($event.target).value || null); resetPage()"
-    >
-      <option value="">{{ 'list.mode' | translate }}: {{ 'list.all' | translate }}</option>
-      @for (m of modes; track m) {
-        <option [value]="m">{{ 'mode.' + m | translate }}</option>
-      }
-    </select>
+  <div class="toolbar card anim-rise" style="--i: 1">
+    <label class="field search grow">
+      <span class="sr-only">{{ 'list.search' | translate }}</span>
+      <input
+        type="search"
+        [placeholder]="'list.search' | translate"
+        [value]="q()"
+        (change)="q.set($any($event.target).value); resetPage()"
+      />
+    </label>
+    <label class="field">
+      <span class="sr-only">{{ 'list.group' | translate }}</span>
+      <select
+        [value]="groupId() ?? ''"
+        (change)="groupId.set(num($any($event.target).value)); resetPage()"
+      >
+        <option value="">{{ 'list.group' | translate }}: {{ 'list.all' | translate }}</option>
+        @for (g of groups(); track g.id) {
+          <option [value]="g.id">{{ g.name }}</option>
+        }
+      </select>
+    </label>
+    <label class="field">
+      <span class="sr-only">{{ 'list.level' | translate }}</span>
+      <select
+        [value]="levelId() ?? ''"
+        (change)="levelId.set(num($any($event.target).value)); resetPage()"
+      >
+        <option value="">{{ 'list.level' | translate }}: {{ 'list.all' | translate }}</option>
+        @for (l of levels(); track l.id) {
+          <option [value]="l.id">{{ l.name_ar }}</option>
+        }
+      </select>
+    </label>
+    <label class="field">
+      <span class="sr-only">{{ 'list.status' | translate }}</span>
+      <select
+        [value]="status() ?? ''"
+        (change)="status.set($any($event.target).value || null); resetPage()"
+      >
+        <option value="">{{ 'list.status' | translate }}: {{ 'list.all' | translate }}</option>
+        @for (s of statuses; track s) {
+          <option [value]="s">{{ 'studentStatus.' + s | translate }}</option>
+        }
+      </select>
+    </label>
+    <label class="field">
+      <span class="sr-only">{{ 'list.mode' | translate }}</span>
+      <select
+        [value]="mode() ?? ''"
+        (change)="mode.set($any($event.target).value || null); resetPage()"
+      >
+        <option value="">{{ 'list.mode' | translate }}: {{ 'list.all' | translate }}</option>
+        @for (m of modes; track m) {
+          <option [value]="m">{{ 'mode.' + m | translate }}</option>
+        }
+      </select>
+    </label>
   </div>
 
   @if (loading()) {
-    <app-spinner />
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
   } @else if (rows().length === 0) {
     <app-empty-state />
   } @else {
-    <div class="rows">
+    <div class="grid-auto">
       @for (s of rows(); track s.id) {
-        <a class="card row" [routerLink]="['/students', s.id]">
-          <strong>{{ s.full_name }}</strong>
+        <a class="card anim-rise" [style.--i]="$index" [routerLink]="['/students', s.id]">
+          <span class="row-top">
+            <span class="avatar-sm" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span>
+            <strong>{{ s.full_name }}</strong>
+          </span>
           <small class="muted"
             >{{ s.group?.name ?? '—' }} · {{ 'mode.' + s.memorization_mode | translate }}</small
           >

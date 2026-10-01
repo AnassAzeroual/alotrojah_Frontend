@@ -1,10 +1,12 @@
-<section>
-  <h1>{{ 'nav.news' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'nav.news' | translate }}</h1>
+  </div>
 
   @if (canPost()) {
-    <form class="card" [formGroup]="form" (ngSubmit)="submit()">
-      <label
-        >{{ 'news.audience' | translate }}
+    <form class="card anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="submit()">
+      <label class="field"
+        ><span>{{ 'news.audience' | translate }}</span>
         <select formControlName="audience">
           <option value="all">{{ 'audience.all' | translate }}</option>
           <option value="teachers">{{ 'audience.teachers' | translate }}</option>
@@ -13,8 +15,8 @@
         </select>
       </label>
       @if (form.controls.audience.value === 'my_students') {
-        <label
-          >{{ 'entry.pick_group' | translate }}
+        <label class="field"
+          ><span>{{ 'entry.pick_group' | translate }}</span>
           <select [formControl]="form.controls.group_id">
             <option [ngValue]="null">—</option>
             @for (g of groups.value() ?? []; track g.id) {
@@ -23,11 +25,20 @@
           </select>
         </label>
       }
-      <label>{{ 'news.title' | translate }}<input formControlName="title" /></label>
-      <label
-        >{{ 'news.body' | translate }}<textarea formControlName="body" rows="3"></textarea>
+      <label class="field"
+        ><span>{{ 'news.title' | translate }}</span
+        ><input formControlName="title"
+      /></label>
+      <label class="field"
+        ><span>{{ 'news.body' | translate }}</span
+        ><textarea formControlName="body" rows="3"></textarea>
       </label>
-      <button type="submit" class="primary" [disabled]="form.invalid || saving()">
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        [class.is-loading]="saving()"
+        [disabled]="form.invalid || saving()"
+      >
         @if (saving()) {
           <app-spinner />
         } @else {
@@ -38,12 +49,15 @@
   }
 
   @if (items.isLoading()) {
-    <app-spinner />
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
   } @else if ((items.value() ?? []).length === 0) {
     <app-empty-state />
   } @else {
     @for (a of items.value() ?? []; track a.id) {
-      <article class="card">
+      <article class="card anim-rise" [style.--i]="$index + 2">
         <h2>{{ a.title }}</h2>
         <p>{{ a.body }}</p>
         <small class="muted"
@@ -52,10 +66,11 @@
         @if (canPost()) {
           <button
             type="button"
+            class="btn btn-danger-ghost"
             [attr.aria-label]="'common.delete' | translate"
             (click)="remove(a.id)"
           >
-            ×
+            {{ 'common.delete' | translate }}
           </button>
         }
       </article>

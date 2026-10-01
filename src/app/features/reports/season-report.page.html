@@ -1,9 +1,11 @@
-<section>
-  <h1 class="no-print">{{ 'report.season_title' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise no-print">
+    <h1>{{ 'report.season_title' | translate }}</h1>
+  </div>
 
-  <div class="card no-print">
-    <label
-      >{{ 'planning.pick_student' | translate }}
+  <div class="card anim-rise no-print" style="--i: 1">
+    <label class="field search"
+      ><span>{{ 'planning.pick_student' | translate }}</span>
       <input
         type="search"
         [value]="search()"
@@ -11,49 +13,55 @@
         [placeholder]="'list.search' | translate"
       />
     </label>
-    @for (s of found.value() ?? []; track s.id) {
-      <button
-        type="button"
-        class="pick"
-        [class.on]="pickedStudent() === s.id"
-        (click)="pickedStudent.set(s.id)"
-      >
-        {{ s.full_name }}
-      </button>
-    }
+    <div class="cluster">
+      @for (s of found.value() ?? []; track s.id) {
+        <button
+          type="button"
+          class="pick"
+          [class.on]="pickedStudent() === s.id"
+          (click)="pickedStudent.set(s.id)"
+        >
+          {{ s.full_name }}
+        </button>
+      }
+    </div>
     @if (report.value()) {
-      <button type="button" class="primary" (click)="print()">
+      <button type="button" class="btn btn-primary" (click)="print()">
         {{ 'report.print' | translate }}
       </button>
     }
   </div>
 
   @if (report.isLoading()) {
-    <app-spinner />
+    <div class="stack no-print" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+    </div>
   } @else if (report.value(); as r) {
     <article class="print-sheet card">
       <h2>{{ r.student.full_name }}</h2>
       @if (r.result) {
         <p>{{ r.result.total_memorized_label ?? '' }}</p>
-        <p>
+        <p class="cluster">
           <app-status-badge kind="honor" [value]="r.result.honor_flag" />
           <strong class="ltr-num"
             >{{ r.result.overall_avg ?? '—' }}{{ 'common.of20' | translate }}</strong
           >
         </p>
       }
-      <table>
-        <tr>
-          <th>{{ 'report.term' | translate }}</th>
-          <th>{{ 'results.average' | translate }}</th>
-        </tr>
-        @for (t of r.term_results; track t.term_id) {
+      <div class="table-wrap">
+        <table>
           <tr>
-            <td class="ltr-num">T{{ t.term_id }}</td>
-            <td class="ltr-num">{{ t.general_avg ?? '—' }}</td>
+            <th>{{ 'report.term' | translate }}</th>
+            <th>{{ 'results.average' | translate }}</th>
           </tr>
-        }
-      </table>
+          @for (t of r.term_results; track t.term_id) {
+            <tr>
+              <td class="ltr-num num">T{{ t.term_id }}</td>
+              <td class="ltr-num num">{{ t.general_avg ?? '—' }}</td>
+            </tr>
+          }
+        </table>
+      </div>
       <p class="muted ltr-num">
         murajaa {{ r.inputs.avg_murajaa ?? '—' }} · weekly {{ r.inputs.avg_weekly ?? '—' }} · final
         {{ r.final ?? '—' }}

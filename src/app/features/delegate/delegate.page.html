@@ -1,9 +1,11 @@
-<section>
-  <h1>{{ 'delegation.title' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'delegation.title' | translate }}</h1>
+  </div>
 
-  <div class="card">
-    <label
-      >{{ 'entry.pick_group' | translate }}
+  <div class="card anim-rise" style="--i: 1">
+    <label class="field"
+      ><span>{{ 'entry.pick_group' | translate }}</span>
       <select
         [value]="pickedGroup() ?? ''"
         (change)="
@@ -20,8 +22,8 @@
 
     @if (pickedGroup() !== null) {
       <form [formGroup]="form" (ngSubmit)="generate()">
-        <label
-          >{{ 'delegation.minutes' | translate }}
+        <label class="field"
+          ><span>{{ 'delegation.minutes' | translate }}</span>
           <select formControlName="minutes">
             <option [ngValue]="15">15</option>
             <option [ngValue]="30">30</option>
@@ -29,7 +31,12 @@
             <option [ngValue]="120">120</option>
           </select>
         </label>
-        <button type="submit" class="primary" [disabled]="saving()">
+        <button
+          type="submit"
+          class="btn btn-primary btn-block"
+          [class.is-loading]="saving()"
+          [disabled]="saving()"
+        >
           @if (saving()) {
             <app-spinner />
           } @else {
@@ -41,25 +48,29 @@
   </div>
 
   @if (generated(); as gen) {
-    <div class="card once">
+    <div class="card anim-pop">
       <p>
         <strong>{{ 'delegation.share_once' | translate }}</strong>
       </p>
       <p class="ltr-num link">{{ gen.link }}</p>
-      <div class="row">
-        <a [href]="waLink(gen.link)" target="_blank" rel="noopener">{{
+      <div class="cluster">
+        <a class="btn btn-gold" [href]="waLink(gen.link)" target="_blank" rel="noopener">{{
           'delegation.send_wa' | translate
         }}</a>
-        <button type="button" (click)="copy(gen.link)">{{ 'delegation.copy' | translate }}</button>
+        <button type="button" class="btn btn-ghost" (click)="copy(gen.link)">
+          {{ 'delegation.copy' | translate }}
+        </button>
       </div>
     </div>
   }
 
   @for (d of existing.value() ?? []; track d.id) {
-    <div class="card line">
+    <div class="card line anim-rise" [style.--i]="$index + 2">
       <span class="ltr-num">{{ d.expires_at }}</span>
       @if (!d.is_revoked) {
-        <button type="button" (click)="revoke(d.id)">{{ 'delegation.revoke' | translate }}</button>
+        <button type="button" class="btn btn-danger-ghost" (click)="revoke(d.id)">
+          {{ 'delegation.revoke' | translate }}
+        </button>
       } @else {
         <small class="muted">{{ 'delegation.revoked' | translate }}</small>
       }

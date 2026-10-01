@@ -1,0 +1,132 @@
+// Button system. Pair with .btn-block on mobile primaries.
+@use 'tokens' as *;
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform calc(var(--dur-1) * var(--motion)) var(--ease-out),
+    box-shadow calc(var(--dur-2) * var(--motion)) var(--ease-out),
+    background calc(var(--dur-1) * var(--motion));
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--green-500), var(--green-700));
+  color: #fff;
+  box-shadow: var(--shadow-2);
+
+  &:hover:not(:disabled) {
+    box-shadow: var(--shadow-3);
+    transform: translateY(-1px);
+  }
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--color-gold), #a8861d);
+  color: #fff;
+  box-shadow: var(--shadow-2);
+
+  &:hover:not(:disabled) {
+    box-shadow: var(--shadow-3);
+    transform: translateY(-1px);
+  }
+}
+
+.btn-ghost {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--green-800);
+
+  &:hover:not(:disabled) {
+    border-color: var(--green-500);
+  }
+}
+
+.btn-danger-ghost {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-danger);
+
+  &:hover:not(:disabled) {
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+  }
+}
+
+.icon-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--green-800);
+  cursor: pointer;
+  transition:
+    transform calc(var(--dur-1) * var(--motion)) var(--ease-out),
+    border-color calc(var(--dur-1) * var(--motion));
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &:hover {
+    border-color: var(--green-500);
+  }
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.btn-block {
+  width: 100%;
+
+  @include up($bp-md) {
+    width: auto;
+  }
+}
+
+.is-loading {
+  position: relative;
+  pointer-events: none;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgb(255 255 255 / 0.45) 50%,
+      transparent 80%
+    );
+    animation: shimmer calc(var(--dur-3) * 3 * var(--motion)) linear infinite;
+  }
+}

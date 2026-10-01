@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
@@ -6,13 +6,12 @@ import { ReferenceService } from '../../core/api/reference.service';
 import { ReportsService } from '../../core/api/reports.service';
 import { StudentsService } from '../../core/api/students.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
-import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
 
 @Component({
   selector: 'app-term-report-page',
   standalone: true,
-  imports: [TranslatePipe, SpinnerComponent, EmptyStateComponent, StatusBadgeComponent],
+  imports: [TranslatePipe, EmptyStateComponent, StatusBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './term-report.page.html',
 })

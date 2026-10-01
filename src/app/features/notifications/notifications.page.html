@@ -1,15 +1,23 @@
-<section>
-  <h1>{{ 'notif.title' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'notif.title' | translate }}</h1>
+  </div>
 
-  <form class="card" [formGroup]="form" (ngSubmit)="queue()">
-    <label
-      >{{ 'notif.phone' | translate }}
+  <form class="card anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="queue()">
+    <label class="field"
+      ><span>{{ 'notif.phone' | translate }}</span>
       <input formControlName="recipient_phone" inputmode="tel" dir="ltr" />
     </label>
-    <label
-      >{{ 'notif.message' | translate }}<textarea formControlName="message" rows="3"></textarea>
+    <label class="field"
+      ><span>{{ 'notif.message' | translate }}</span
+      ><textarea formControlName="message" rows="3"></textarea>
     </label>
-    <button type="submit" class="primary" [disabled]="form.invalid || saving()">
+    <button
+      type="submit"
+      class="btn btn-primary btn-block"
+      [class.is-loading]="saving()"
+      [disabled]="form.invalid || saving()"
+    >
       @if (saving()) {
         <app-spinner />
       } @else {
@@ -19,30 +27,36 @@
   </form>
 
   @if (items.isLoading()) {
-    <app-spinner />
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
   } @else if ((items.value() ?? []).length === 0) {
     <app-empty-state />
   } @else {
     @for (m of items.value() ?? []; track m.id) {
-      <div class="card line">
+      <div class="card line anim-rise" [style.--i]="$index + 2">
         <strong class="ltr-num">{{ m.recipient_phone }}</strong>
         <small class="muted">{{ m.status }}</small>
-        <div class="row">
-          <a [href]="m.wa_link" target="_blank" rel="noopener">{{ 'notif.send' | translate }}</a>
+        <div class="cluster">
+          <a class="btn btn-gold" [href]="m.wa_link" target="_blank" rel="noopener">{{
+            'notif.send' | translate
+          }}</a>
           @if (m.status === 'queued') {
-            <button type="button" (click)="mark(m.id, 'sent')">
+            <button type="button" class="btn btn-ghost" (click)="mark(m.id, 'sent')">
               {{ 'notif.sent' | translate }}
             </button>
-            <button type="button" (click)="mark(m.id, 'failed')">
+            <button type="button" class="btn btn-ghost" (click)="mark(m.id, 'failed')">
               {{ 'notif.failed' | translate }}
             </button>
           }
           <button
             type="button"
+            class="btn btn-danger-ghost"
             [attr.aria-label]="'common.delete' | translate"
             (click)="remove(m.id)"
           >
-            ×
+            {{ 'common.delete' | translate }}
           </button>
         </div>
       </div>

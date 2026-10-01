@@ -1,30 +1,35 @@
-<section class="card">
+<section class="card anim-rise" style="--i: 4">
   <h2>{{ 'entry.goal' | translate }}</h2>
 
   @for (row of rows(); track row.student.id) {
-    <div class="line">
+    <div class="line anim-rise" [style.--i]="$index + 5">
       <span class="name">{{ row.student.full_name }}</span>
-      <input
-        type="text"
-        [value]="row.target"
-        [placeholder]="'entry.target_hint' | translate"
-        (input)="edit(row.student.id, { target: trackInput($event) })"
-      />
-      <label class="done">
+      <label class="field">
+        <span class="sr-only">{{ row.student.full_name }}</span>
         <input
-          type="checkbox"
-          [checked]="row.done"
-          (change)="edit(row.student.id, { done: trackCheck($event) })"
+          type="text"
+          [value]="row.target"
+          [placeholder]="'entry.target_hint' | translate"
+          (input)="edit(row.student.id, { target: trackInput($event) })"
         />
-        {{ 'entry.done' | translate }}
       </label>
-      <button type="button" [disabled]="row.saving" (click)="save(row)">
-        @if (row.saving) {
-          <app-spinner />
-        } @else {
-          {{ 'common.save' | translate }}
-        }
-      </button>
+      <div class="cluster">
+        <label class="chk">
+          <input
+            type="checkbox"
+            [checked]="row.done"
+            (change)="edit(row.student.id, { done: trackCheck($event) })"
+          />
+          {{ 'entry.done' | translate }}
+        </label>
+        <button type="button" class="btn btn-ghost" [disabled]="row.saving" (click)="save(row)">
+          @if (row.saving) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+      </div>
     </div>
   }
 </section>

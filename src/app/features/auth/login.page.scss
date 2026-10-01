@@ -1,50 +1,82 @@
-.login {
-  max-width: 420px;
-  margin: var(--space-6) auto;
+@use '../../styles/tokens' as *;
+
+.login-page {
+  min-height: calc(100dvh - var(--nav-height) - 70px);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
+  max-width: 920px;
+  margin-inline: auto;
+  padding: var(--space-4);
+
+  @include up($bp-md) {
+    flex-direction: row;
+    align-items: stretch;
+    min-height: calc(100dvh - 120px);
+  }
+}
+
+.login-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-align: center;
+  color: #fff;
+  background:
+    radial-gradient(circle at 80% 10%, rgb(201 162 39 / 0.35), transparent 45%),
+    linear-gradient(150deg, var(--green-700), var(--green-900));
+  border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-4);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+
+  .hero-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: var(--radius-full);
+    background: rgb(255 255 255 / 0.12);
+    border: 1px solid rgb(255 255 255 / 0.3);
+
+    svg {
+      width: 40px;
+      height: 40px;
+      color: var(--color-gold);
+    }
+  }
+
+  strong {
+    font-size: var(--text-2xl);
+  }
+
+  p {
+    margin: 0;
+    color: rgb(255 255 255 / 0.8);
+    font-size: var(--text-sm);
+  }
+}
+
+.login {
+  flex: 1;
+  justify-content: center;
+  max-width: 420px;
+  width: 100%;
+  margin-inline: auto;
 
   h1 {
     margin: 0;
-    color: var(--color-primary-dark);
+    color: var(--green-800);
+    font-size: var(--text-xl);
   }
 
   form {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-  }
-
-  label {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  input {
-    padding: var(--space-3);
-    border: 1px solid #cfd6d2;
-    border-radius: var(--radius-sm);
-  }
-
-  button {
-    background: var(--color-primary);
-    color: #fff;
-    border: 0;
-    border-radius: var(--radius);
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  button:disabled {
-    opacity: 0.6;
-  }
-
-  .error {
-    color: var(--color-danger);
-    margin: 0;
   }
 }

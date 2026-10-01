@@ -1,21 +1,28 @@
 @if (term.isLoading()) {
-  <app-spinner />
+  <div class="page stack" aria-hidden="true">
+    <div class="skeleton sk-title"></div>
+    <div class="skeleton sk-card"></div>
+    <div class="skeleton sk-card"></div>
+  </div>
 } @else if (!term.value()) {
   <app-empty-state />
 } @else {
-  <section>
-    <h1>{{ term.value()!.name_ar }}</h1>
+  <section class="page">
+    <div class="page-head anim-rise">
+      <h1>{{ term.value()!.name_ar }}</h1>
+    </div>
 
     @for (w of term.value()!.weeks; track w.id) {
-      <div class="card week">
+      <div class="card week anim-rise" [style.--i]="$index">
         <button type="button" class="whead" (click)="toggleWeek(w.id)">
           <strong>{{ 'common.week' | translate }} {{ w.week_number_global }}</strong>
           <app-status-badge kind="week" [value]="w.week_type" />
         </button>
 
-        <div class="wtype">
+        <div class="segmented" role="group">
           <button
             type="button"
+            [class.on]="w.week_type === 'study'"
             [disabled]="w.week_type === 'study'"
             (click)="setWeekType(w.id, 'study')"
           >
@@ -23,6 +30,7 @@
           </button>
           <button
             type="button"
+            [class.on]="w.week_type === 'review'"
             [disabled]="w.week_type === 'review'"
             (click)="setWeekType(w.id, 'review')"
           >
@@ -32,7 +40,7 @@
 
         @if (openWeek() === w.id) {
           @for (s of w.sessions ?? []; track s.id) {
-            <div class="sess">
+            <div class="sess anim-fade">
               <span class="ltr-num">#{{ s.session_number_global }}</span>
               <select
                 [value]="s.session_type"

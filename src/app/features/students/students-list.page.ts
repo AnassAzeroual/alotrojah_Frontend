@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -8,7 +8,6 @@ import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { PaginatorComponent } from '../../shared/ui/paginator/paginator.component';
-import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 const STATUSES = ['active', 'paused', 'graduated', 'left'] as const;
 const MODES = ['thumn', 'surah'] as const;
@@ -16,7 +15,7 @@ const MODES = ['thumn', 'surah'] as const;
 @Component({
   selector: 'app-students-list-page',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, SpinnerComponent, EmptyStateComponent, PaginatorComponent],
+  imports: [RouterLink, TranslatePipe, EmptyStateComponent, PaginatorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './students-list.page.html',
   styleUrl: './students-list.page.scss',

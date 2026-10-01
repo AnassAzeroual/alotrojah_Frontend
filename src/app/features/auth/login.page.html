@@ -1,28 +1,65 @@
-<main class="login card">
-  <h1>{{ 'auth.login' | translate }}</h1>
-  <p class="muted">{{ 'app.subtitle' | translate }}</p>
+<main class="login-page">
+  <section class="login-hero anim-rise" aria-hidden="true">
+    <span class="hero-mark">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 3c-4 2.5-6 6-6 10a6 6 0 0 0 12 0c0-4-2-7.5-6-10z" />
+        <path d="M12 8v7" />
+        <path d="M9.5 11.5h5" />
+      </svg>
+    </span>
+    <strong>{{ 'app.title' | translate }}</strong>
+    <p class="quran-text">{{ 'auth.tagline' | translate }}</p>
+  </section>
 
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <label>
-      {{ 'auth.email' | translate }}
-      <input type="email" formControlName="email" autocomplete="username" dir="ltr" />
-    </label>
+  <section class="login card anim-rise" style="--i: 1">
+    <h1>{{ 'auth.login' | translate }}</h1>
 
-    <label>
-      {{ 'auth.password' | translate }}
-      <input type="password" formControlName="password" autocomplete="current-password" dir="ltr" />
-    </label>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label class="field">
+        <span>{{ 'auth.email' | translate }}</span>
+        <input
+          type="email"
+          formControlName="email"
+          autocomplete="username"
+          dir="ltr"
+          placeholder=" "
+        />
+      </label>
 
-    @if (failed()) {
-      <p class="error">{{ 'auth.invalid' | translate }}</p>
-    }
+      <label class="field">
+        <span>{{ 'auth.password' | translate }}</span>
+        <input
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          dir="ltr"
+          placeholder=" "
+        />
+      </label>
 
-    <button type="submit" [disabled]="form.invalid || loading()">
-      @if (loading()) {
-        <app-spinner />
-      } @else {
-        {{ 'auth.submit' | translate }}
+      @if (failed()) {
+        <p class="field-error">{{ 'auth.invalid' | translate }}</p>
       }
-    </button>
-  </form>
+
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        [class.is-loading]="loading()"
+        [disabled]="form.invalid || loading()"
+      >
+        @if (loading()) {
+          <app-spinner />
+        } @else {
+          {{ 'auth.submit' | translate }}
+        }
+      </button>
+    </form>
+  </section>
 </main>

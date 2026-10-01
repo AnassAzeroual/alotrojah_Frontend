@@ -1,0 +1,198 @@
+// Form system: label > span + control pattern, gold focus ring, RTL-safe.
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--green-800);
+
+  input,
+  select {
+    font-family: inherit;
+    font-size: 16px; // prevents iOS zoom on focus
+    font-weight: 400;
+    color: var(--color-text);
+    padding: var(--space-3);
+    min-height: 48px;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    transition:
+      border-color calc(var(--dur-1) * var(--motion)),
+      box-shadow calc(var(--dur-1) * var(--motion));
+    width: 100%;
+
+    &::placeholder {
+      color: var(--color-muted);
+      opacity: 0.8;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-500) 22%, transparent);
+    }
+
+    &:disabled {
+      background: var(--green-50);
+      color: var(--color-muted);
+    }
+  }
+
+  select {
+    appearance: none;
+    padding-inline-end: var(--space-6);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%230e7c5b' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left var(--space-3) center;
+
+    [dir='ltr'] & {
+      background-position: right var(--space-3) center;
+    }
+  }
+}
+
+.search {
+  position: relative;
+
+  input {
+    padding-inline-start: var(--space-7);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: var(--space-4);
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    translate: 0 -50%;
+    background: var(--color-muted);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+}
+
+.field-error {
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin: 0;
+  animation: shake calc(var(--dur-3) * var(--motion)) var(--ease-out);
+}
+
+// Inline checkbox row (module toggles, goal done)
+.chk {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 48px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--green-800);
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    appearance: none;
+    width: 26px;
+    height: 26px;
+    flex: none;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--color-border-strong);
+    background: var(--color-surface);
+    display: inline-grid;
+    place-content: center;
+    cursor: pointer;
+    transition:
+      background calc(var(--dur-1) * var(--motion)),
+      border-color calc(var(--dur-1) * var(--motion)),
+      transform calc(var(--dur-1) * var(--motion)) var(--ease-spring);
+
+    &::before {
+      content: '';
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      transform: scale(0);
+      transition: transform calc(var(--dur-1) * var(--motion)) var(--ease-spring);
+      background: #fff;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    }
+
+    &:checked {
+      background: linear-gradient(135deg, var(--green-500), var(--green-700));
+      border-color: var(--green-600);
+    }
+
+    &:checked::before {
+      transform: scale(1);
+    }
+
+    &:active {
+      transform: scale(0.9);
+    }
+  }
+}
+
+// Dynamic form rows (season terms): inputs + delete share a row
+.term-row {
+  display: grid;
+  grid-template-columns: 1fr 90px auto;
+  gap: var(--space-2);
+  align-items: center;
+
+  input {
+    font-family: inherit;
+    font-size: 16px;
+    padding: var(--space-3);
+    min-height: 48px;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    min-width: 0;
+
+    &:focus {
+      outline: none;
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-500) 22%, transparent);
+    }
+  }
+}
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-1);
+  background: var(--green-50);
+  border-radius: var(--radius-full);
+  padding: var(--space-1);
+
+  button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    border-radius: var(--radius-full);
+    min-height: 44px;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+    cursor: pointer;
+    transition:
+      background calc(var(--dur-1) * var(--motion)),
+      color calc(var(--dur-1) * var(--motion)),
+      transform calc(var(--dur-1) * var(--motion)) var(--ease-spring);
+
+    &.on {
+      background: var(--color-surface);
+      color: var(--green-800);
+      box-shadow: var(--shadow-1);
+      transform: scale(1.03);
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+}

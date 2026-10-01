@@ -1,0 +1,98 @@
+// Responsive tables: scroll + sticky first col on desktop,
+// card-transform under 640px via data-label attributes.
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+    min-width: 560px;
+  }
+
+  thead th {
+    background: var(--green-50);
+    color: var(--green-800);
+    font-weight: 700;
+    text-align: start;
+    padding: var(--space-3);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+
+  tbody td {
+    padding: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background calc(var(--dur-1) * var(--motion));
+
+    &:hover {
+      background: var(--green-50);
+    }
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    unicode-bidi: embed;
+  }
+}
+
+@media (max-width: 639px) {
+  .table-wrap.card-list {
+    border: 0;
+    background: transparent;
+    overflow: visible;
+
+    table,
+    tbody,
+    tr,
+    td {
+      display: block;
+    }
+
+    thead {
+      display: none;
+    }
+
+    table {
+      min-width: 0;
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    tbody tr {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-1);
+      padding: var(--space-3);
+    }
+
+    tbody td {
+      border: 0;
+      padding: var(--space-1) 0;
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    tbody td::before {
+      content: attr(data-label);
+      font-weight: 700;
+      color: var(--color-muted);
+    }
+  }
+}

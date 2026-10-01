@@ -1,0 +1,88 @@
+// Feedback: spinner, skeletons, empty states, toasts.
+
+.spinner-ring {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  border: 3px solid color-mix(in srgb, var(--green-500) 25%, transparent);
+  border-top-color: var(--green-600);
+  animation: spin calc(var(--dur-3) * 2 * var(--motion, 1)) linear infinite;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--green-100);
+  border-radius: var(--radius-sm);
+  min-height: 20px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgb(255 255 255 / 0.7) 50%,
+      transparent 80%
+    );
+    animation: shimmer calc(var(--dur-3) * 4 * var(--motion)) linear infinite;
+  }
+}
+
+.sk-line {
+  height: 16px;
+}
+
+.sk-title {
+  height: 26px;
+  width: 45%;
+}
+
+.sk-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+}
+
+.sk-card {
+  height: 120px;
+  border-radius: var(--radius-lg);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.error {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.toast-stack {
+  position: fixed;
+  bottom: calc(var(--nav-height) + var(--space-3));
+  inset-inline: var(--space-4);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--green-900);
+  color: #fff;
+  border-radius: var(--radius-full);
+  padding: var(--space-3) var(--space-5);
+  font-weight: 700;
+  box-shadow: var(--shadow-4);
+  animation: toast-in calc(var(--dur-3) * var(--motion)) var(--ease-spring) both;
+}

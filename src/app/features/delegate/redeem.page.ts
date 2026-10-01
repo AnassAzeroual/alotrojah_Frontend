@@ -12,16 +12,18 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
   imports: [TranslatePipe, SpinnerComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="card">
-      <h1>{{ 'delegation.title' | translate }}</h1>
-      @if (result.isLoading()) {
-        <app-spinner />
-      } @else if (result.value(); as r) {
-        <p>{{ 'delegation.granted' | translate }} ({{ r.group_id }})</p>
-        <p class="muted ltr-num">{{ r.expires_at }}</p>
-      } @else {
-        <app-empty-state messageKey="delegation.invalid" />
-      }
+    <section class="page">
+      <div class="card hero anim-pop">
+        <h1>{{ 'delegation.title' | translate }}</h1>
+        @if (result.isLoading()) {
+          <app-spinner />
+        } @else if (result.value(); as r) {
+          <p>{{ 'delegation.granted' | translate }} ({{ r.group_id }})</p>
+          <p class="muted ltr-num">{{ r.expires_at }}</p>
+        } @else {
+          <app-empty-state messageKey="delegation.invalid" />
+        }
+      </div>
     </section>
   `,
 })

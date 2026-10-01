@@ -1,9 +1,11 @@
-<section class="entry">
-  <h1>{{ 'entry.title' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'entry.title' | translate }}</h1>
+  </div>
 
-  <div class="pickers card">
-    <label>
-      {{ 'entry.pick_group' | translate }}
+  <div class="toolbar card anim-rise" style="--i: 1">
+    <label class="field">
+      <span>{{ 'entry.pick_group' | translate }}</span>
       <select
         [value]="selectedGroup() ?? ''"
         (change)="onGroup($any($event.target).value ? +$any($event.target).value : null)"
@@ -15,8 +17,8 @@
       </select>
     </label>
 
-    <label>
-      {{ 'entry.pick_week' | translate }}
+    <label class="field">
+      <span>{{ 'entry.pick_week' | translate }}</span>
       <select
         [value]="selectedWeek() ?? ''"
         (change)="onWeek($any($event.target).value ? +$any($event.target).value : null)"
@@ -28,8 +30,8 @@
       </select>
     </label>
 
-    <label>
-      {{ 'entry.pick_session' | translate }}
+    <label class="field">
+      <span>{{ 'entry.pick_session' | translate }}</span>
       <select
         [value]="selectedSession() ?? ''"
         (change)="
@@ -48,7 +50,11 @@
 
   @if (ready()) {
     @if (existing.isLoading()) {
-      <app-spinner />
+      <div class="card anim-fade" aria-hidden="true">
+        <div class="skeleton sk-title"></div>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+      </div>
     } @else {
       <app-attendance-grid
         [students]="students.value() ?? []"

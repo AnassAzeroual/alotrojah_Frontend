@@ -1,4 +1,4 @@
-﻿import {
+import {
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -15,7 +15,6 @@ import { GroupsService } from '../../core/api/groups.service';
 import { StudentsService } from '../../core/api/students.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
-import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { AttendanceGridComponent } from './components/attendance-grid.component';
 import { GoalListComponent } from './components/goal-list.component';
 import { ScoreSheetComponent } from './components/score-sheet.component';
@@ -25,7 +24,6 @@ import { ScoreSheetComponent } from './components/score-sheet.component';
   standalone: true,
   imports: [
     TranslatePipe,
-    SpinnerComponent,
     EmptyStateComponent,
     AttendanceGridComponent,
     ScoreSheetComponent,

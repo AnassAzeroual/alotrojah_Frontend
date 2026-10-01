@@ -1,54 +1,72 @@
 @if (exam.isLoading()) {
-  <app-spinner />
+  <div class="page stack" aria-hidden="true">
+    <div class="skeleton sk-title"></div>
+    <div class="skeleton sk-card"></div>
+  </div>
 } @else if (!exam.value()) {
   <app-empty-state />
 } @else {
-  <section class="card">
-    <h1>#{{ exam.value()!.id }} · {{ exam.value()!.exam_type }}</h1>
-    <p>
-      {{ 'exam.average' | translate }}:
-      <strong class="ltr-num"
-        >{{ exam.value()!.overall_avg ?? '—' }}{{ 'common.of20' | translate }}</strong
-      >
-    </p>
-  </section>
-
-  <section class="card">
-    <h2>{{ 'exam.questions' | translate }}</h2>
-    @for (q of exam.value()!.questions ?? []; track q.id) {
-      <div class="line">
-        <span
-          ><strong class="ltr-num">{{ q.question_no }}.</strong> {{ q.prompt_text ?? '—' }}</span
-        >
-        <app-score-input [max]="20" [value]="q.score" (valueChange)="setScore(q.id, $event)" />
-        <button
-          type="button"
-          [attr.aria-label]="'common.delete' | translate"
-          (click)="deleteQuestion(q.id)"
-        >
-          ×
-        </button>
+  <section class="page">
+    <section class="card hero anim-rise">
+      <div>
+        <h1>#{{ exam.value()!.id }} · {{ exam.value()!.exam_type }}</h1>
+        <p class="cluster">
+          {{ 'exam.average' | translate }}:
+          <strong class="ltr-num"
+            >{{ exam.value()!.overall_avg ?? '—' }}{{ 'common.of20' | translate }}</strong
+          >
+        </p>
       </div>
-    }
-  </section>
+    </section>
 
-  <form class="card" [formGroup]="addForm" (ngSubmit)="addQuestion()">
-    <h2>{{ 'exam.add_question' | translate }}</h2>
-    <label
-      >{{ 'exam.q_no' | translate }}
-      <input type="number" class="ltr-num" formControlName="question_no" min="1" />
-    </label>
-    <label>{{ 'exam.prompt' | translate }}<input formControlName="prompt_text" /></label>
-    <label
-      >{{ 'common.score' | translate }}
-      <input type="number" class="ltr-num" formControlName="score" min="0" max="20" />
-    </label>
-    <button type="submit" [disabled]="addForm.invalid || saving()">
-      @if (saving()) {
-        <app-spinner />
-      } @else {
-        {{ 'common.save' | translate }}
+    <section class="card anim-rise" style="--i: 1">
+      <h2>{{ 'exam.questions' | translate }}</h2>
+      @for (q of exam.value()!.questions ?? []; track q.id) {
+        <div class="line anim-rise" [style.--i]="$index + 2">
+          <span
+            ><strong class="ltr-num">{{ q.question_no }}.</strong> {{ q.prompt_text ?? '—' }}</span
+          >
+          <div class="cluster">
+            <app-score-input [max]="20" [value]="q.score" (valueChange)="setScore(q.id, $event)" />
+            <button
+              type="button"
+              class="btn btn-danger-ghost"
+              [attr.aria-label]="'common.delete' | translate"
+              (click)="deleteQuestion(q.id)"
+            >
+              {{ 'common.delete' | translate }}
+            </button>
+          </div>
+        </div>
       }
-    </button>
-  </form>
+    </section>
+
+    <form class="card anim-rise" style="--i: 2" [formGroup]="addForm" (ngSubmit)="addQuestion()">
+      <h2>{{ 'exam.add_question' | translate }}</h2>
+      <label class="field"
+        ><span>{{ 'exam.q_no' | translate }}</span>
+        <input type="number" class="ltr-num" formControlName="question_no" min="1" />
+      </label>
+      <label class="field"
+        ><span>{{ 'exam.prompt' | translate }}</span
+        ><input formControlName="prompt_text"
+      /></label>
+      <label class="field"
+        ><span>{{ 'common.score' | translate }}</span>
+        <input type="number" class="ltr-num" formControlName="score" min="0" max="20" />
+      </label>
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        [class.is-loading]="saving()"
+        [disabled]="addForm.invalid || saving()"
+      >
+        @if (saving()) {
+          <app-spinner />
+        } @else {
+          {{ 'common.save' | translate }}
+        }
+      </button>
+    </form>
+  </section>
 }

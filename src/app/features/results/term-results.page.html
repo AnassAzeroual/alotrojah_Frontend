@@ -1,9 +1,11 @@
-<section>
-  <h1>{{ 'result.term_title' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'result.term_title' | translate }}</h1>
+  </div>
 
-  <div class="card">
-    <label
-      >{{ 'planning.pick_student' | translate }}
+  <div class="card anim-rise" style="--i: 1">
+    <label class="field search"
+      ><span>{{ 'planning.pick_student' | translate }}</span>
       <input
         type="search"
         [value]="search()"
@@ -11,18 +13,20 @@
         [placeholder]="'list.search' | translate"
       />
     </label>
-    @for (s of found.value() ?? []; track s.id) {
-      <button
-        type="button"
-        class="pick"
-        [class.on]="pickedStudent() === s.id"
-        (click)="pickedStudent.set(s.id)"
-      >
-        {{ s.full_name }}
-      </button>
-    }
-    <label
-      >{{ 'planning.pick_term' | translate }}
+    <div class="cluster">
+      @for (s of found.value() ?? []; track s.id) {
+        <button
+          type="button"
+          class="pick"
+          [class.on]="pickedStudent() === s.id"
+          (click)="pickedStudent.set(s.id)"
+        >
+          {{ s.full_name }}
+        </button>
+      }
+    </div>
+    <label class="field"
+      ><span>{{ 'planning.pick_term' | translate }}</span>
       <select
         [value]="pickedTerm() ?? ''"
         (change)="pickedTerm.set($any($event.target).value ? +$any($event.target).value : null)"
@@ -34,40 +38,50 @@
       </select>
     </label>
     @if (existing.value()) {
-      <button type="button" (click)="fill()">{{ 'planning.load_existing' | translate }}</button>
-      <p>
+      <div class="cluster">
+        <button type="button" class="btn btn-ghost" (click)="fill()">
+          {{ 'planning.load_existing' | translate }}
+        </button>
         <app-status-badge kind="honor" [value]="existing.value()!.honor_flag" />
         <strong class="ltr-num">{{ existing.value()!.general_avg ?? '—' }}</strong>
-      </p>
+      </div>
     }
   </div>
 
   @if (pickedStudent() !== null && pickedTerm() !== null) {
-    <form class="card" [formGroup]="form" (ngSubmit)="submit()">
+    <form class="card anim-rise" style="--i: 2" [formGroup]="form" (ngSubmit)="submit()">
       @for (f of scoreFields; track f) {
-        <label
-          >{{ 'result.' + f | translate }}
+        <label class="field"
+          ><span>{{ 'result.' + f | translate }}</span>
           <input type="number" class="ltr-num" [formControlName]="f" min="0" max="20" step="0.5" />
         </label>
       }
-      <label
-        >{{ 'result.teacher_notes' | translate }}<input formControlName="teacher_notes"
+      <label class="field"
+        ><span>{{ 'result.teacher_notes' | translate }}</span
+        ><input formControlName="teacher_notes"
       /></label>
-      <label
-        >{{ 'result.guardian_notes' | translate }}<input formControlName="guardian_notes"
+      <label class="field"
+        ><span>{{ 'result.guardian_notes' | translate }}</span
+        ><input formControlName="guardian_notes"
       /></label>
-      <label
-        >{{ 'result.supervisor_note' | translate }}<input formControlName="supervisor_note"
+      <label class="field"
+        ><span>{{ 'result.supervisor_note' | translate }}</span
+        ><input formControlName="supervisor_note"
       /></label>
-      <label
-        >{{ 'result.honor' | translate }}
+      <label class="field"
+        ><span>{{ 'result.honor' | translate }}</span>
         <select formControlName="honor_flag">
           <option value="none">{{ 'honor.none' | translate }}</option>
           <option value="tashji3">{{ 'honor.tashji3' | translate }}</option>
           <option value="intibah">{{ 'honor.intibah' | translate }}</option>
         </select>
       </label>
-      <button type="submit" class="primary" [disabled]="saving()">
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        [class.is-loading]="saving()"
+        [disabled]="saving()"
+      >
         @if (saving()) {
           <app-spinner />
         } @else {

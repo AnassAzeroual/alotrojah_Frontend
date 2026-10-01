@@ -1,9 +1,11 @@
-<section>
-  <h1>{{ 'review.title' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'review.title' | translate }}</h1>
+  </div>
 
-  <div class="card">
-    <label
-      >{{ 'planning.pick_student' | translate }}
+  <div class="card anim-rise" style="--i: 1">
+    <label class="field search"
+      ><span>{{ 'planning.pick_student' | translate }}</span>
       <input
         type="search"
         [value]="search()"
@@ -11,31 +13,34 @@
         [placeholder]="'list.search' | translate"
       />
     </label>
-    @for (s of found.value() ?? []; track s.id) {
-      <button
-        type="button"
-        class="pick"
-        [class.on]="pickedStudent() === s.id"
-        (click)="pickedStudent.set(s.id)"
-      >
-        {{ s.full_name }}
-      </button>
-    }
+    <div class="cluster">
+      @for (s of found.value() ?? []; track s.id) {
+        <button
+          type="button"
+          class="pick"
+          [class.on]="pickedStudent() === s.id"
+          (click)="pickedStudent.set(s.id)"
+        >
+          {{ s.full_name }}
+        </button>
+      }
+    </div>
   </div>
 
   @if (pickedStudent() !== null) {
-    <div class="card">
+    <div class="card anim-rise" style="--i: 2">
       <h2>{{ 'review.cycles' | translate }}</h2>
       @for (c of cycles.value() ?? []; track c.id) {
-        <div class="line">
+        <div class="line anim-rise" [style.--i]="$index + 3">
           <span class="ltr-num">W{{ c.week_from }}–W{{ c.week_to }} ({{ c.weeks_covered }})</span>
           <strong class="ltr-num">{{ c.score }}{{ 'common.of20' | translate }}</strong>
           <button
             type="button"
+            class="btn btn-danger-ghost"
             [attr.aria-label]="'common.delete' | translate"
             (click)="remove(c.id)"
           >
-            ×
+            {{ 'common.delete' | translate }}
           </button>
         </div>
       } @empty {
@@ -44,10 +49,10 @@
     </div>
 
     @if (canEnter()) {
-      <form class="card" [formGroup]="form" (ngSubmit)="submit()">
+      <form class="card anim-rise" style="--i: 3" [formGroup]="form" (ngSubmit)="submit()">
         <h2>{{ 'review.new_cycle' | translate }}</h2>
-        <label
-          >{{ 'planning.pick_term' | translate }}
+        <label class="field"
+          ><span>{{ 'planning.pick_term' | translate }}</span>
           <select formControlName="term_id">
             <option [ngValue]="null">—</option>
             @for (t of terms.value() ?? []; track t.id) {
@@ -55,19 +60,24 @@
             }
           </select>
         </label>
-        <label
-          >{{ 'review.week_from' | translate }}
+        <label class="field"
+          ><span>{{ 'review.week_from' | translate }}</span>
           <input type="number" class="ltr-num" formControlName="week_from" min="1" />
         </label>
-        <label
-          >{{ 'review.week_to' | translate }}
+        <label class="field"
+          ><span>{{ 'review.week_to' | translate }}</span>
           <input type="number" class="ltr-num" formControlName="week_to" min="1" />
         </label>
-        <label
-          >{{ 'common.score' | translate }}
+        <label class="field"
+          ><span>{{ 'common.score' | translate }}</span>
           <input type="number" class="ltr-num" formControlName="score" min="0" max="20" />
         </label>
-        <button type="submit" class="primary" [disabled]="form.invalid || saving()">
+        <button
+          type="submit"
+          class="btn btn-primary btn-block"
+          [class.is-loading]="saving()"
+          [disabled]="form.invalid || saving()"
+        >
           @if (saving()) {
             <app-spinner />
           } @else {

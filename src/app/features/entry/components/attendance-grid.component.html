@@ -1,10 +1,10 @@
-<section class="card">
+<section class="card anim-rise" style="--i: 2">
   <h2>{{ 'entry.attendance' | translate }}</h2>
 
   @for (row of rows(); track row.student.id) {
-    <div class="line">
+    <div class="line anim-rise" [style.--i]="$index + 3">
       <span class="name">{{ row.student.full_name }}</span>
-      <div class="states" role="group">
+      <div class="segmented" role="group">
         @for (st of ['present', 'late', 'absent', 'excused']; track st) {
           <button
             type="button"
@@ -19,7 +19,13 @@
     </div>
   }
 
-  <button type="button" class="save" [disabled]="!dirty() || saving()" (click)="save()">
+  <button
+    type="button"
+    class="btn btn-primary btn-block save"
+    [class.is-loading]="saving()"
+    [disabled]="!dirty() || saving()"
+    (click)="save()"
+  >
     @if (saving()) {
       <app-spinner />
     } @else {

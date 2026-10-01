@@ -1,5 +1,5 @@
 {
-  "app": { "title": "Al-Urwah", "subtitle": "Quran memorization tracking" },
+  "app": { "title": "AlOtrojah", "subtitle": "Quran memorization tracking" },
   "nav": {
     "dashboard": "Home",
     "entry": "Daily entry",
@@ -29,7 +29,8 @@
     "submit": "Sign in",
     "logout": "Sign out",
     "invalid": "Invalid credentials",
-    "language": "Language"
+    "language": "Language",
+    "tagline": "The example of the believer who recites the Qur'an is like that of a citron: its fragrance is sweet and its taste is sweet"
   },
   "common": {
     "save": "Save",
@@ -136,7 +137,10 @@
   "dash": {
     "title": "Dashboard",
     "by_center": "By center",
-    "by_student": "By student"
+    "by_student": "By student",
+    "students": "Students",
+    "avg_score": "Average",
+    "attendance": "Attendance"
   },
   "sessionStatus": { "planned": "Planned", "done": "Done", "cancelled": "Cancelled" },
   "planning": {

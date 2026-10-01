@@ -1,9 +1,11 @@
-<section class="plan">
-  <h1>{{ 'planning.plans_title' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'planning.plans_title' | translate }}</h1>
+  </div>
 
-  <div class="card">
-    <label
-      >{{ 'planning.pick_student' | translate }}
+  <div class="card anim-rise" style="--i: 1">
+    <label class="field search"
+      ><span>{{ 'planning.pick_student' | translate }}</span>
       <input
         type="search"
         [value]="search()"
@@ -11,21 +13,23 @@
         [placeholder]="'list.search' | translate"
       />
     </label>
-    @for (s of found.value() ?? []; track s.id) {
-      <button
-        type="button"
-        class="pick"
-        [class.on]="pickedStudent() === s.id"
-        (click)="pickedStudent.set(s.id)"
-      >
-        {{ s.full_name }}
-      </button>
-    }
+    <div class="cluster">
+      @for (s of found.value() ?? []; track s.id) {
+        <button
+          type="button"
+          class="pick"
+          [class.on]="pickedStudent() === s.id"
+          (click)="pickedStudent.set(s.id)"
+        >
+          {{ s.full_name }}
+        </button>
+      }
+    </div>
   </div>
 
-  <div class="card">
-    <label
-      >{{ 'planning.pick_term' | translate }}
+  <div class="card anim-rise" style="--i: 2">
+    <label class="field"
+      ><span>{{ 'planning.pick_term' | translate }}</span>
       <select
         [value]="pickedTerm() ?? ''"
         (change)="
@@ -40,15 +44,15 @@
       </select>
     </label>
     @if (plan.value()) {
-      <button type="button" (click)="loadIntoForm()">
+      <button type="button" class="btn btn-ghost" (click)="loadIntoForm()">
         {{ 'planning.load_existing' | translate }}
       </button>
     }
   </div>
 
   @if (pickedStudent() !== null && pickedTerm() !== null) {
-    <form class="card form" (ngSubmit)="submit()">
-      <div class="modes">
+    <form class="card anim-rise" style="--i: 3" (ngSubmit)="submit()">
+      <div class="segmented" role="group">
         <button
           type="button"
           [class.on]="form.controls.plan_mode.value === 'thumn'"
@@ -66,8 +70,8 @@
       </div>
 
       @if (form.controls.plan_mode.value === 'thumn') {
-        <label
-          >{{ 'planning.from_hizb' | translate }}
+        <label class="field"
+          ><span>{{ 'planning.from_hizb' | translate }}</span>
           <input
             type="number"
             class="ltr-num"
@@ -77,8 +81,8 @@
             step="0.5"
           />
         </label>
-        <label
-          >{{ 'planning.to_hizb' | translate }}
+        <label class="field"
+          ><span>{{ 'planning.to_hizb' | translate }}</span>
           <input
             type="number"
             class="ltr-num"
@@ -89,8 +93,8 @@
           />
         </label>
       } @else {
-        <label
-          >{{ 'planning.from_surah' | translate }}
+        <label class="field"
+          ><span>{{ 'planning.from_surah' | translate }}</span>
           <select [formControl]="form.controls.plan_surah_from">
             <option [ngValue]="null">—</option>
             @for (s of surahs.value() ?? []; track s.id) {
@@ -98,8 +102,8 @@
             }
           </select>
         </label>
-        <label
-          >{{ 'planning.from_ayah' | translate }}
+        <label class="field"
+          ><span>{{ 'planning.from_ayah' | translate }}</span>
           <input
             type="number"
             class="ltr-num"
@@ -108,8 +112,8 @@
             [max]="ayahMax(form.controls.plan_surah_from.value)"
           />
         </label>
-        <label
-          >{{ 'planning.to_surah' | translate }}
+        <label class="field"
+          ><span>{{ 'planning.to_surah' | translate }}</span>
           <select [formControl]="form.controls.plan_surah_to">
             <option [ngValue]="null">—</option>
             @for (s of surahs.value() ?? []; track s.id) {
@@ -117,8 +121,8 @@
             }
           </select>
         </label>
-        <label
-          >{{ 'planning.to_ayah' | translate }}
+        <label class="field"
+          ><span>{{ 'planning.to_ayah' | translate }}</span>
           <input
             type="number"
             class="ltr-num"
@@ -129,11 +133,12 @@
         </label>
       }
 
-      <label
-        >{{ 'planning.goal' | translate }}<input [formControl]="form.controls.goal_text"
+      <label class="field"
+        ><span>{{ 'planning.goal' | translate }}</span
+        ><input [formControl]="form.controls.goal_text"
       /></label>
-      <label
-        >{{ 'planning.expected_week' | translate }}
+      <label class="field"
+        ><span>{{ 'planning.expected_week' | translate }}</span>
         <input
           type="number"
           class="ltr-num"
@@ -142,8 +147,8 @@
           step="0.5"
         />
       </label>
-      <label
-        >{{ 'planning.expected_term' | translate }}
+      <label class="field"
+        ><span>{{ 'planning.expected_term' | translate }}</span>
         <input
           type="number"
           class="ltr-num"
@@ -152,15 +157,21 @@
           step="0.5"
         />
       </label>
-      <label
-        >{{ 'planning.khatm' | translate }}<input [formControl]="form.controls.khatm_expected_at"
+      <label class="field"
+        ><span>{{ 'planning.khatm' | translate }}</span
+        ><input [formControl]="form.controls.khatm_expected_at"
       /></label>
 
       @if (error()) {
-        <p class="error">{{ error()! | translate }}</p>
+        <p class="field-error">{{ error()! | translate }}</p>
       }
 
-      <button type="submit" class="primary" [disabled]="saving()">
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        [class.is-loading]="saving()"
+        [disabled]="saving()"
+      >
         @if (saving()) {
           <app-spinner />
         } @else {

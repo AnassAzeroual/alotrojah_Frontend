@@ -1,5 +1,5 @@
 {
-  "app": { "title": "Al-Urwah", "subtitle": "Suivi de la mémorisation du Coran" },
+  "app": { "title": "AlOtrojah", "subtitle": "Suivi de la mémorisation du Coran" },
   "nav": {
     "dashboard": "Accueil",
     "entry": "Saisie du jour",
@@ -29,7 +29,8 @@
     "submit": "Entrer",
     "logout": "Déconnexion",
     "invalid": "Identifiants invalides",
-    "language": "Langue"
+    "language": "Langue",
+    "tagline": "L'exemple du croyant qui récite le Coran est celui du cédrat : son parfum est agréable et son goût est agréable"
   },
   "common": {
     "save": "Enregistrer",
@@ -136,7 +137,10 @@
   "dash": {
     "title": "Tableau de bord",
     "by_center": "Par centre",
-    "by_student": "Par élève"
+    "by_student": "Par élève",
+    "students": "Élèves",
+    "avg_score": "Moyenne",
+    "attendance": "Présence"
   },
   "sessionStatus": { "planned": "Planifiée", "done": "Terminée", "cancelled": "Annulée" },
   "planning": {

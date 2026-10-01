@@ -1,43 +1,56 @@
 @if (loading()) {
-  <app-spinner />
+  <div class="page stack" aria-hidden="true">
+    <div class="skeleton sk-title"></div>
+    <div class="skeleton sk-card"></div>
+    <div class="skeleton sk-card"></div>
+  </div>
 } @else if (!studentVal()) {
   <app-empty-state />
 } @else {
-  <section class="card">
-    <h1>{{ studentVal()?.full_name }}</h1>
-    <p class="muted">
-      {{ studentVal()?.group?.name ?? '—' }} ·
-      {{ studentVal() ? ('mode.' + studentVal()!.memorization_mode | translate) : '' }}
-    </p>
-    <p>
-      <app-status-badge kind="generic" [value]="studentVal()!.status" />
-      @if (summaryVal()?.honor_flag && summaryVal()!.honor_flag !== 'none') {
-        <app-status-badge kind="honor" [value]="summaryVal()!.honor_flag!" />
-      }
-    </p>
-  </section>
+  <section class="page">
+    <div class="card hero anim-rise">
+      <span class="avatar-lg" aria-hidden="true">{{
+        (studentVal()?.full_name ?? '?').slice(0, 1)
+      }}</span>
+      <div>
+        <h1>{{ studentVal()?.full_name }}</h1>
+        <p class="muted">
+          {{ studentVal()?.group?.name ?? '—' }} ·
+          {{ studentVal() ? ('mode.' + studentVal()!.memorization_mode | translate) : '' }}
+        </p>
+        <p class="cluster">
+          <app-status-badge kind="generic" [value]="studentVal()!.status" />
+          @if (summaryVal()?.honor_flag && summaryVal()!.honor_flag !== 'none') {
+            <app-status-badge kind="honor" [value]="summaryVal()!.honor_flag!" />
+          }
+        </p>
+      </div>
+    </div>
 
-  @if (summaryVal()) {
-    <section class="card">
-      <h2>{{ 'results.season' | translate }}</h2>
-      <dl>
-        <div>
-          <dt>{{ 'results.memorized' | translate }}</dt>
-          <dd class="ltr-num">{{ summaryVal()!.season_thumn }}</dd>
+    @if (summaryVal()) {
+      <section class="card anim-rise" style="--i: 1">
+        <h2>{{ 'results.season' | translate }}</h2>
+        <div class="grid-auto">
+          <div class="stat-card">
+            <span class="stat-label">{{ 'results.memorized' | translate }}</span>
+            <span class="stat-value ltr-num">{{ summaryVal()!.season_thumn }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">{{ 'results.average' | translate }}</span>
+            <span class="stat-value ltr-num">{{ summaryVal()!.season_avg_score ?? '—' }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">{{ 'results.attendance' | translate }}</span>
+            <span class="stat-value ltr-num"
+              >{{ summaryVal()!.season_attendance_pct ?? '—' }}%</span
+            >
+          </div>
+          <div class="stat-card final">
+            <span class="stat-label">{{ 'results.final' | translate }}</span>
+            <span class="stat-value ltr-num">{{ finalVal()?.final ?? '—' }}</span>
+          </div>
         </div>
-        <div>
-          <dt>{{ 'results.average' | translate }}</dt>
-          <dd class="ltr-num">{{ summaryVal()!.season_avg_score ?? '—' }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'results.attendance' | translate }}</dt>
-          <dd class="ltr-num">{{ summaryVal()!.season_attendance_pct ?? '—' }}%</dd>
-        </div>
-        <div>
-          <dt>{{ 'results.final' | translate }}</dt>
-          <dd class="ltr-num">{{ finalVal()?.final ?? '—' }}</dd>
-        </div>
-      </dl>
-    </section>
-  }
+      </section>
+    }
+  </section>
 }

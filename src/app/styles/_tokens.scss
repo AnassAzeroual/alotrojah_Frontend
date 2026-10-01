@@ -1,33 +1,105 @@
 // Design tokens — single source of truth for the whole app.
 // Mobile-first: base = 360px phone, scale up with min-width.
+// Rule: nothing outside this file hardcodes palette, spacing, radius,
+// shadow, motion, or z-index.
 
 :root {
-  --color-primary: #0e7c5b; // Islamic green
+  // Brand: light-green family (primary kept)
+  --color-primary: #0e7c5b; // Islamic green (locked)
   --color-primary-dark: #0a5c44;
+  --color-primary-deep: #084434;
+
+  // Light-green scale
+  --green-50: #eef7f2;
+  --green-100: #eaf5f0; // app tinted background wash
+  --green-200: #cde9da;
+  --green-300: #a3d7bd;
+  --green-400: #6fbf97;
+  --green-500: #2f9e73;
+  --green-600: #0e7c5b;
+  --green-700: #0a5c44;
+  --green-800: #084434;
+  --green-900: #063325;
+
+  // Gold (kept) + soft variant
   --color-gold: #c9a227;
+  --color-gold-soft: #f4e9c8;
   --color-gold-dark: #7a5f16; // small text on white (contrast-safe)
+
+  // Surfaces + text
   --color-bg: #f6f8f6;
   --color-surface: #ffffff;
   --color-text: #1c2420;
   --color-muted: #6b7671;
-  --color-danger: #c0392b;
-  --color-warn: #d48806;
-  --color-ok: #0e7c5b;
+  --color-border: #e2e7e4;
+  --color-border-strong: #cfd6d2;
 
+  // Semantic
+  --color-danger: #c0392b;
+  --color-danger-soft: #fbe7e3;
+  --color-warn: #d48806;
+  --color-warn-soft: #faf0d7;
+  --color-ok: #0e7c5b;
+  --color-ok-soft: #e6f3ec;
+  --color-info: #2471a3;
+  --color-info-soft: #e3eff7;
+
+  // Radius
   --radius: 12px;
   --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
+  --radius-full: 999px;
 
+  // Spacing
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
+  --space-7: 48px;
+
+  // Elevation
+  --shadow-1: 0 1px 2px rgb(8 68 52 / 0.06);
+  --shadow-2: 0 1px 3px rgb(8 68 52 / 0.08), 0 4px 14px rgb(8 68 52 / 0.07);
+  --shadow-3: 0 6px 24px rgb(8 68 52 / 0.12);
+  --shadow-4: 0 12px 40px rgb(8 68 52 / 0.16);
+  --shadow-5: 0 20px 64px rgb(8 68 52 / 0.22);
+  --shadow: var(--shadow-2); // legacy alias (kept)
+
+  // Motion
+  --ease-out: cubic-bezier(0.22, 0.9, 0.28, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.4, 1);
+  --dur-1: 120ms;
+  --dur-2: 220ms;
+  --dur-3: 380ms;
+  --motion: 1; // 0 under prefers-reduced-motion
+
+  // Z scale
+  --z-nav: 10;
+  --z-header: 20;
+  --z-toolbar: 15;
+  --z-toast: 50;
 
   --nav-height: 64px;
   --font-stack: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+  --font-quran: 'Amiri', 'Cairo', 'Segoe UI', serif; // Quranic/verse text (naskh)
 
-  --shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+  // Fluid type
+  --text-xs: clamp(0.72rem, 0.68rem + 0.2vw, 0.78rem);
+  --text-sm: clamp(0.82rem, 0.78rem + 0.2vw, 0.88rem);
+  --text-md: 1rem;
+  --text-lg: clamp(1.1rem, 1rem + 0.5vw, 1.25rem);
+  --text-xl: clamp(1.3rem, 1.1rem + 1vw, 1.6rem);
+  --text-2xl: clamp(1.6rem, 1.3rem + 1.6vw, 2.1rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion: 0;
+  }
 }
 
 // Breakpoints (use min-width only — mobile first)

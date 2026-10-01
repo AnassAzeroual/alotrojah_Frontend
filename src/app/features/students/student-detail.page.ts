@@ -1,17 +1,16 @@
-﻿import { ChangeDetectionStrategy, Component, inject, input, resource } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, resource } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { DashboardService } from '../../core/api/dashboard.service';
 import { StudentsService } from '../../core/api/students.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
-import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
 
 @Component({
   selector: 'app-student-detail-page',
   standalone: true,
-  imports: [TranslatePipe, SpinnerComponent, EmptyStateComponent, StatusBadgeComponent],
+  imports: [TranslatePipe, EmptyStateComponent, StatusBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './student-detail.page.html',
 })

@@ -1,9 +1,11 @@
-<section>
-  <h1 class="no-print">{{ 'report.term_title' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise no-print">
+    <h1>{{ 'report.term_title' | translate }}</h1>
+  </div>
 
-  <div class="card no-print">
-    <label
-      >{{ 'planning.pick_student' | translate }}
+  <div class="card anim-rise no-print" style="--i: 1">
+    <label class="field search"
+      ><span>{{ 'planning.pick_student' | translate }}</span>
       <input
         type="search"
         [value]="search()"
@@ -11,18 +13,20 @@
         [placeholder]="'list.search' | translate"
       />
     </label>
-    @for (s of found.value() ?? []; track s.id) {
-      <button
-        type="button"
-        class="pick"
-        [class.on]="pickedStudent() === s.id"
-        (click)="pickedStudent.set(s.id)"
-      >
-        {{ s.full_name }}
-      </button>
-    }
-    <label
-      >{{ 'planning.pick_term' | translate }}
+    <div class="cluster">
+      @for (s of found.value() ?? []; track s.id) {
+        <button
+          type="button"
+          class="pick"
+          [class.on]="pickedStudent() === s.id"
+          (click)="pickedStudent.set(s.id)"
+        >
+          {{ s.full_name }}
+        </button>
+      }
+    </div>
+    <label class="field"
+      ><span>{{ 'planning.pick_term' | translate }}</span>
       <select
         [value]="pickedTerm() ?? ''"
         (change)="pickedTerm.set($any($event.target).value ? +$any($event.target).value : null)"
@@ -34,56 +38,65 @@
       </select>
     </label>
     @if (report.value()) {
-      <button type="button" class="primary" (click)="print()">
+      <button type="button" class="btn btn-primary" (click)="print()">
         {{ 'report.print' | translate }}
       </button>
     }
   </div>
 
   @if (report.isLoading()) {
-    <app-spinner />
+    <div class="stack no-print" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
   } @else if (report.value(); as r) {
     <article class="print-sheet card">
       <h2>{{ r.student.full_name }} — {{ r.term.name_ar }}</h2>
       @if (r.result) {
-        <p>
+        <p class="cluster">
           <app-status-badge kind="honor" [value]="r.result.honor_flag" />
           <strong class="ltr-num"
             >{{ r.result.general_avg ?? '—' }}{{ 'common.of20' | translate }}</strong
           >
         </p>
-        <table>
-          <tr>
-            <th>{{ 'result.hifz_total' | translate }}</th>
-            <th>{{ 'result.murajaa_total' | translate }}</th>
-            <th>{{ 'result.exam_score' | translate }}</th>
-          </tr>
-          <tr>
-            <td class="ltr-num">{{ r.result.hifz_total ?? '—' }}</td>
-            <td class="ltr-num">{{ r.result.murajaa_total ?? '—' }}</td>
-            <td class="ltr-num">{{ r.result.exam_score ?? '—' }}</td>
-          </tr>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <tr>
+              <th>{{ 'result.hifz_total' | translate }}</th>
+              <th>{{ 'result.murajaa_total' | translate }}</th>
+              <th>{{ 'result.exam_score' | translate }}</th>
+            </tr>
+            <tr>
+              <td class="ltr-num num">{{ r.result.hifz_total ?? '—' }}</td>
+              <td class="ltr-num num">{{ r.result.murajaa_total ?? '—' }}</td>
+              <td class="ltr-num num">{{ r.result.exam_score ?? '—' }}</td>
+            </tr>
+          </table>
+        </div>
       }
       <h3>{{ 'exam.title' | translate }}</h3>
-      <table>
-        @for (q of r.quizzes; track $index) {
-          <tr>
-            <td>{{ q.exam_type }}</td>
-            <td class="ltr-num">{{ q.avg_score }}</td>
-          </tr>
-        }
-      </table>
+      <div class="table-wrap">
+        <table>
+          @for (q of r.quizzes; track $index) {
+            <tr>
+              <td>{{ q.exam_type }}</td>
+              <td class="ltr-num num">{{ q.avg_score }}</td>
+            </tr>
+          }
+        </table>
+      </div>
       <h3>{{ 'entry.goal' | translate }} / {{ 'common.week' | translate }}</h3>
-      <table>
-        @for (w of r.weekly; track w.week_id) {
-          <tr>
-            <td class="ltr-num">W{{ w.week_id }}</td>
-            <td class="ltr-num">{{ w.total_thumn }}</td>
-            <td class="ltr-num">{{ w.avg_score ?? '—' }}</td>
-          </tr>
-        }
-      </table>
+      <div class="table-wrap">
+        <table>
+          @for (w of r.weekly; track w.week_id) {
+            <tr>
+              <td class="ltr-num num">W{{ w.week_id }}</td>
+              <td class="ltr-num num">{{ w.total_thumn }}</td>
+              <td class="ltr-num num">{{ w.avg_score ?? '—' }}</td>
+            </tr>
+          }
+        </table>
+      </div>
     </article>
   } @else if (pickedStudent() !== null && pickedTerm() !== null) {
     <app-empty-state />

@@ -1,10 +1,14 @@
-<section>
-  <h1>{{ 'dash.title' | translate }}</h1>
+<section class="page">
+  <div class="page-head anim-rise">
+    <div>
+      <h1>{{ 'dash.title' | translate }}</h1>
+    </div>
+  </div>
 
-  <div class="card">
+  <div class="card anim-rise" style="--i: 1">
     <h2>{{ 'dash.by_center' | translate }}</h2>
-    <label
-      >{{ 'dash.by_center' | translate }}
+    <label class="field"
+      ><span>{{ 'dash.by_center' | translate }}</span>
       <select
         [value]="pickedCenter() ?? ''"
         (change)="pickedCenter.set($any($event.target).value ? +$any($event.target).value : null)"
@@ -17,19 +21,29 @@
     </label>
 
     @if (centerData.value(); as d) {
-      <p class="ltr-num">
-        {{ d.cards.students }} · {{ d.cards.avg_score ?? '—' }} ·
-        {{ d.cards.avg_attendance ?? '—' }}%
-      </p>
+      <div class="grid-auto">
+        <div class="stat-card">
+          <span class="stat-label">{{ 'dash.students' | translate }}</span>
+          <span class="stat-value ltr-num">{{ d.cards.students }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">{{ 'dash.avg_score' | translate }}</span>
+          <span class="stat-value ltr-num">{{ d.cards.avg_score ?? '—' }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">{{ 'dash.attendance' | translate }}</span>
+          <span class="stat-value ltr-num">{{ d.cards.avg_attendance ?? '—' }}%</span>
+        </div>
+      </div>
       <app-chart type="bar" [data]="honorsChart()" label="honors" />
       <app-chart type="doughnut" [data]="attendanceChart()" label="attendance" />
     }
   </div>
 
-  <div class="card">
+  <div class="card anim-rise" style="--i: 2">
     <h2>{{ 'dash.by_student' | translate }}</h2>
-    <label
-      >{{ 'list.search' | translate }}
+    <label class="field search"
+      ><span>{{ 'list.search' | translate }}</span>
       <input
         type="search"
         [value]="search()"
@@ -37,16 +51,18 @@
         [placeholder]="'list.search' | translate"
       />
     </label>
-    @for (s of found.value() ?? []; track s.id) {
-      <button
-        type="button"
-        class="pick"
-        [class.on]="pickedStudent() === s.id"
-        (click)="pickedStudent.set(s.id)"
-      >
-        {{ s.full_name }}
-      </button>
-    }
+    <div class="cluster">
+      @for (s of found.value() ?? []; track s.id) {
+        <button
+          type="button"
+          class="pick"
+          [class.on]="pickedStudent() === s.id"
+          (click)="pickedStudent.set(s.id)"
+        >
+          {{ s.full_name }}
+        </button>
+      }
+    </div>
     @if ((weekly.value() ?? []).length > 0) {
       <app-chart type="bar" [data]="weeklyChart()" label="weekly" />
     }
