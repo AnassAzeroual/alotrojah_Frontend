@@ -23,6 +23,7 @@
     "e2e:ui": "playwright test --ui",
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\" playwright.config.ts",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\" playwright.config.ts",
+    "pretypecheck": "node scripts/set-version.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "engines": {
