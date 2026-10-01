@@ -1,3 +1,4 @@
+# AlOtrojah frontend — SPA fallback (as on host) + cache policy.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -5,4 +6,21 @@
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
+</IfModule>
+
+# index.html is the (unhashed) entry point: always revalidate so new
+# deploys (new hashed bundles) are picked up immediately.
+<IfModule mod_headers.c>
+  <FilesMatch "index\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  # Hashed Angular bundles (main-*.js, styles-*.css, chunk-*.js):
+  # content addressing makes them immutable.
+  <FilesMatch "\.[0-9A-Za-z_-]+\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # Runtime dictionaries: fresh-ish, but revalidated.
+  <FilesMatch "\.json$">
+    Header set Cache-Control "public, max-age=3600, must-revalidate"
+  </FilesMatch>
 </IfModule>

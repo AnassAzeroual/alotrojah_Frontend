@@ -13,10 +13,12 @@
       <path d="M9.5 11.5h5" />
     </svg>
   </span>
-  <span class="title-block">
+  <a class="title-block" routerLink="/" [attr.aria-label]="'app.title' | translate">
     <strong>{{ 'app.title' | translate }}</strong>
-    <small class="muted">{{ 'app.subtitle' | translate }}</small>
-  </span>
+    <small class="muted"
+      >{{ 'app.subtitle' | translate }} · <span class="ltr-num">v{{ version }}</span></small
+    >
+  </a>
   <span class="user-chip">
     <span class="avatar" aria-hidden="true">{{ (user()?.full_name ?? '?').slice(0, 1) }}</span>
     <span class="who">
