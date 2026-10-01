@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 
-/** Attaches JWT everywhere except login; on 401 tries one silent refresh, then logs out. */
+/** Attaches JWT everywhere except login (dual header: host strips Authorization, X-Auth-Token survives); on 401 tries one silent refresh, then logs out. */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);
@@ -12,8 +12,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isLogin = req.url.includes('/auth/login');
   const isRefresh = req.url.includes('/auth/refresh');
 
-  const out =
-    token && !isLogin ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
+  const withToken = (r: typeof req, t: string): typeof req =>
+    r.clone({ setHeaders: { Authorization: `Bearer ${t}`, 'X-Auth-Token': `Bearer ${t}` } });
+
+  const out = token && !isLogin ? withToken(req, token) : req;
 
   return next(out).pipe(
     catchError((err: unknown) => {
@@ -25,7 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => err);
       }
       return auth.refreshOnce().pipe(
-        switchMap((nt) => next(req.clone({ setHeaders: { Authorization: `Bearer ${nt}` } }))),
+        switchMap((nt) => next(withToken(req, nt))),
         catchError((refreshErr: unknown) => {
           auth.clearLocal();
           void router.navigate(['/login']);

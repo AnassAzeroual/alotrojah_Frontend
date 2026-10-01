@@ -35,12 +35,13 @@ describe('authInterceptor', () => {
 
   afterEach(() => tester.verify());
 
-  it('attaches the bearer token', () => {
+  it('attaches the bearer token on both headers', () => {
     auth.token.set('T');
     auth.currentUser.set(USER);
     http.get('/x').subscribe();
     const req = tester.expectOne('/x');
     expect(req.request.headers.get('Authorization')).toBe('Bearer T');
+    expect(req.request.headers.get('X-Auth-Token')).toBe('Bearer T');
     req.flush({});
   });
 
