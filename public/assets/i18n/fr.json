@@ -25,6 +25,8 @@
     "logout": "Déconnexion",
     "invalid": "Identifiants invalides",
     "language": "Langue",
+    "show_password": "Afficher le mot de passe",
+    "hide_password": "Masquer le mot de passe",
     "tagline": "L'exemple du croyant qui récite le Coran est celui du cédrat : son parfum est agréable et son goût est agréable"
   },
   "common": {

@@ -25,6 +25,8 @@
     "logout": "Sign out",
     "invalid": "Invalid credentials",
     "language": "Language",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "tagline": "The example of the believer who recites the Qur'an is like that of a citron: its fragrance is sweet and its taste is sweet"
   },
   "common": {

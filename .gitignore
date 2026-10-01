@@ -29,9 +29,8 @@ yarn-error.log
 !.vscode/mcp.json
 .history/*
 
-# Generated build version (npm pre* hook) — never commit
+# Generated build version (npm pre* hook, idempotent) — never commit
 /src/app/core/version.ts
-scripts/.version-counter
 
 # Miscellaneous
 /.angular/cache

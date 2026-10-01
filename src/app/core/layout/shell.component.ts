@@ -4,7 +4,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../auth/auth.service';
 import { LanguageSwitcherComponent } from './language-switcher.component';
 import { Role } from '../api/api-models';
-import { APP_VERSION } from '../version';
+import { APP_VERSION_SHORT } from '../version';
 
 interface NavItem {
   path: string;
@@ -58,7 +58,7 @@ export class ShellComponent {
   private readonly auth = inject(AuthService);
 
   readonly user = this.auth.currentUser;
-  readonly version = APP_VERSION;
+  readonly version = APP_VERSION_SHORT;
   readonly items = computed(() => {
     const role = this.user()?.role;
     return ITEMS.filter((i) => role !== undefined && i.roles.includes(role));

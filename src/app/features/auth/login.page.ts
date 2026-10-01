@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
-import { APP_VERSION } from '../../core/version';
+import { APP_VERSION_SHORT } from '../../core/version';
 
 interface LoginForm {
   email: FormControl<string>;
@@ -25,7 +25,8 @@ export class LoginPage {
 
   readonly loading = signal(false);
   readonly failed = signal(false);
-  readonly version = APP_VERSION;
+  readonly version = APP_VERSION_SHORT;
+  readonly showPw = signal(false);
 
   readonly form = new FormGroup<LoginForm>({
     email: new FormControl('', {
