@@ -37,7 +37,7 @@
     @for (m of items.value() ?? []; track m.id) {
       <div class="card line anim-rise" [style.--i]="$index + 2">
         <strong class="ltr-num">{{ m.recipient_phone }}</strong>
-        <small class="muted">{{ m.status }}</small>
+        <small class="muted">{{ 'notif.' + m.status | translate }}</small>
         <div class="cluster">
           <a class="btn btn-gold" [href]="m.wa_link" target="_blank" rel="noopener">{{
             'notif.send' | translate

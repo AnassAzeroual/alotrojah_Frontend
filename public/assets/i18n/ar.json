@@ -42,7 +42,11 @@
     "week": "الأسبوع",
     "session": "الحصة",
     "score": "النقطة",
-    "of20": "/ 20"
+    "of20": "/ 20",
+    "active": "نشط",
+    "paused": "موقوف",
+    "graduated": "متخرج",
+    "left": "مغادر"
   },
   "role": {
     "admin": "مدير",
@@ -58,6 +62,8 @@
   "honor": { "none": "—", "tashji3": "تشجيع", "intibah": "انتبه" },
   "weekType": { "study": "دراسة", "review": "مراجعة" },
   "sessionType": { "memorization": "حفظ", "revision": "مراجعة", "exam": "اختبار" },
+  "examType": { "hizb_completion": "إتمام حزب", "term_batch": "اختبار الفصل", "final_season": "الاختبار النهائي" },
+  "scopeType": { "weekly": "أسبوعي", "murajaa": "مراجعة" },
   "mode": { "surah": "بالسورة", "thumn": "بالثمن" },
   "studentStatus": { "active": "نشط", "paused": "موقوف", "graduated": "متخرج", "left": "مغادر" },
   "results": { "season": "الموسم", "memorized": "المحفوظ (أثمان)", "average": "المعدل", "attendance": "المواظبة", "final": "المعدل النهائي" },
@@ -125,6 +131,7 @@
     "phone": "رقم الهاتف",
     "message": "الرسالة",
     "queue": "إضافة",
+    "queued": "في الانتظار",
     "send": "إرسال واتساب",
     "sent": "أُرسلت",
     "failed": "فشلت"

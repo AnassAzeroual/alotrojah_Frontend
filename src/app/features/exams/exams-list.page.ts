@@ -23,9 +23,9 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
           ><span>{{ 'exam.filter_type' | translate }}</span>
           <select [value]="type() ?? ''" (change)="type.set($any($event.target).value || null)">
             <option value="">{{ 'list.all' | translate }}</option>
-            <option value="hizb_completion">hizb_completion</option>
-            <option value="term_batch">term_batch</option>
-            <option value="final_season">final_season</option>
+            <option value="hizb_completion">{{ 'examType.hizb_completion' | translate }}</option>
+            <option value="term_batch">{{ 'examType.term_batch' | translate }}</option>
+            <option value="final_season">{{ 'examType.final_season' | translate }}</option>
           </select>
         </label>
       </div>
@@ -40,7 +40,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
         <div class="grid-auto">
           @for (e of exams.value() ?? []; track e.id) {
             <a class="card anim-rise" [style.--i]="$index + 2" [routerLink]="['/exams', e.id]">
-              <strong>#{{ e.id }} · {{ e.exam_type }}</strong>
+              <strong>#{{ e.id }} · {{ 'examType.' + e.exam_type | translate }}</strong>
               <small class="muted ltr-num"
                 >{{ e.exam_date ?? '—' }} · {{ e.overall_avg ?? '—'
                 }}{{ 'common.of20' | translate }}</small

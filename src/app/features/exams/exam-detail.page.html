@@ -9,7 +9,7 @@
   <section class="page">
     <section class="card hero anim-rise">
       <div>
-        <h1>#{{ exam.value()!.id }} · {{ exam.value()!.exam_type }}</h1>
+        <h1>#{{ exam.value()!.id }} · {{ 'examType.' + exam.value()!.exam_type | translate }}</h1>
         <p class="cluster">
           {{ 'exam.average' | translate }}:
           <strong class="ltr-num"

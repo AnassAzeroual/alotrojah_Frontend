@@ -15,7 +15,7 @@
       <span class="row-top">
         <strong>{{ m.name_ar }}</strong>
       </span>
-      <small class="muted ltr-num">{{ m.code }} · {{ m.scope }}</small>
+      <small class="muted ltr-num">{{ m.code }} · {{ 'scopeType.' + m.scope | translate }}</small>
       <label class="field"
         ><span>{{ 'scoring.max' | translate }}</span>
         <input
@@ -102,8 +102,8 @@
     <label class="field"
       ><span>{{ 'scoring.scope' | translate }}</span>
       <select formControlName="scope">
-        <option value="weekly">weekly</option>
-        <option value="murajaa">murajaa</option>
+        <option value="weekly">{{ 'scopeType.weekly' | translate }}</option>
+        <option value="murajaa">{{ 'scopeType.murajaa' | translate }}</option>
       </select>
     </label>
     <button type="submit" class="btn btn-ghost" [disabled]="addForm.invalid || saving()">

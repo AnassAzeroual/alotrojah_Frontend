@@ -42,7 +42,11 @@
     "week": "Semaine",
     "session": "Séance",
     "score": "Note",
-    "of20": "/ 20"
+    "of20": "/ 20",
+    "active": "Actif",
+    "paused": "En pause",
+    "graduated": "Diplômé",
+    "left": "Parti"
   },
   "role": {
     "admin": "Directeur",
@@ -59,6 +63,8 @@
   "weekType": { "study": "Étude", "review": "Révision" },
   "sessionType": { "memorization": "Mémorisation", "revision": "Révision", "exam": "Examen" },
   "mode": { "surah": "Par sourate", "thumn": "Par thoumn" },
+  "examType": { "hizb_completion": "Validation de hizb", "term_batch": "Examen du trimestre", "final_season": "Examen final" },
+  "scopeType": { "weekly": "Hebdomadaire", "murajaa": "Murajaa" },
   "studentStatus": { "active": "Actif", "paused": "En pause", "graduated": "Diplômé", "left": "Parti" },
   "results": { "season": "Saison", "memorized": "Mémorisé (thoumns)", "average": "Moyenne", "attendance": "Présence", "final": "Note finale" },
   "list": { "search": "Rechercher par nom", "group": "Cercle", "level": "Niveau", "status": "Statut", "mode": "Mode", "all": "Tous" },
@@ -125,6 +131,7 @@
     "phone": "Téléphone",
     "message": "Message",
     "queue": "Ajouter",
+    "queued": "En attente",
     "send": "Envoyer WhatsApp",
     "sent": "Envoyé",
     "failed": "Échoué"

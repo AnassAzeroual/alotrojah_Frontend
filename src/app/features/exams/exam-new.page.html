@@ -31,9 +31,9 @@
     <label class="field"
       ><span>{{ 'exam.type' | translate }}</span>
       <select formControlName="exam_type">
-        <option value="hizb_completion">hizb_completion</option>
-        <option value="term_batch">term_batch</option>
-        <option value="final_season">final_season</option>
+        <option value="hizb_completion">{{ 'examType.hizb_completion' | translate }}</option>
+        <option value="term_batch">{{ 'examType.term_batch' | translate }}</option>
+        <option value="final_season">{{ 'examType.final_season' | translate }}</option>
       </select>
     </label>
     @if (form.controls.exam_type.value !== 'final_season') {

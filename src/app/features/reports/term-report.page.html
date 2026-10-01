@@ -79,7 +79,7 @@
         <table>
           @for (q of r.quizzes; track $index) {
             <tr>
-              <td>{{ q.exam_type }}</td>
+              <td>{{ 'examType.' + q.exam_type | translate }}</td>
               <td class="ltr-num num">{{ q.avg_score }}</td>
             </tr>
           }

@@ -42,7 +42,11 @@
     "week": "Week",
     "session": "Session",
     "score": "Score",
-    "of20": "/ 20"
+    "of20": "/ 20",
+    "active": "Active",
+    "paused": "Paused",
+    "graduated": "Graduated",
+    "left": "Left"
   },
   "role": {
     "admin": "Admin",
@@ -59,6 +63,8 @@
   "weekType": { "study": "Study", "review": "Review" },
   "sessionType": { "memorization": "Memorization", "revision": "Revision", "exam": "Exam" },
   "mode": { "surah": "By surah", "thumn": "By thumn" },
+  "examType": { "hizb_completion": "Hizb completion", "term_batch": "Term exam", "final_season": "Final exam" },
+  "scopeType": { "weekly": "Weekly", "murajaa": "Murajaa" },
   "studentStatus": { "active": "Active", "paused": "Paused", "graduated": "Graduated", "left": "Left" },
   "results": { "season": "Season", "memorized": "Memorized (thumns)", "average": "Average", "attendance": "Attendance", "final": "Final score" },
   "list": { "search": "Search by name", "group": "Circle", "level": "Level", "status": "Status", "mode": "Mode", "all": "All" },
@@ -125,6 +131,7 @@
     "phone": "Phone",
     "message": "Message",
     "queue": "Add",
+    "queued": "Queued",
     "send": "Send WhatsApp",
     "sent": "Sent",
     "failed": "Failed"

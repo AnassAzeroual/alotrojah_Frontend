@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 
@@ -96,5 +96,58 @@ describe('i18n dictionaries', () => {
       const extra = [...keys].filter((k) => !ar.has(k));
       expect({ locale, missing, extra }).toEqual({ locale, missing: [], extra: [] });
     }
+  });
+
+  it('covers every status-badge value union', () => {
+    // status-badge builds `prefix.value` at runtime, so static template
+    // scanning cannot see these — enumerate the unions instead.
+    // Value lists mirror the backend enums + api-models conventions.
+    const ar = JSON.parse(raw('ar')) as Record<string, Record<string, unknown>>;
+    const cases: Array<[string, string[]]> = [
+      ['attendance', ['present', 'late', 'absent', 'excused']],
+      ['honor', ['none', 'tashji3', 'intibah']],
+      ['weekType', ['study', 'review']],
+      ['common', ['active', 'paused', 'graduated', 'left']], // kind="generic" + status
+      ['role', ['admin', 'supervisor', 'teacher', 'guardian', 'student', 'board']],
+      ['mode', ['surah', 'thumn']],
+      ['examType', ['hizb_completion', 'term_batch', 'final_season']],
+      ['scopeType', ['weekly', 'murajaa']],
+      ['notif', ['queued', 'sent', 'failed']],
+    ];
+    for (const [prefix, values] of cases) {
+      const missing = values.filter((v) => !(prefix in ar) || !(v in (ar[prefix] as object)));
+      expect({ prefix, missing }).toEqual({ prefix, missing: [] });
+    }
+  });
+
+  it('covers every literal key used in templates', () => {
+    const ar = JSON.parse(raw('ar')) as unknown;
+    const resolve = (key: string): boolean => {
+      let node: unknown = ar;
+      for (const part of key.split('.')) {
+        if (typeof node !== 'object' || node === null || !(part in node)) return false;
+        node = (node as Record<string, unknown>)[part];
+      }
+      return typeof node === 'string';
+    };
+    const files: string[] = [];
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir)) {
+        const full = join(dir, entry);
+        if (statSync(full).isDirectory()) walk(full);
+        else if (/\.html$/.test(entry) || (/\.ts$/.test(entry) && !/\.spec\.ts$/.test(entry)))
+          files.push(full);
+      }
+    };
+    walk(join(cwd(), 'src'));
+    const pattern = /['"]([a-zA-Z][\w]*\.[\w.]+)['"]\s*\|\s*translate/g;
+    const missing = new Set<string>();
+    for (const file of files) {
+      const text = readFileSync(file, 'utf8');
+      for (const match of text.matchAll(pattern)) {
+        if (!resolve(match[1])) missing.add(`${match[1]} (${file.split('src')[1]})`);
+      }
+    }
+    expect([...missing]).toEqual([]);
   });
 });
