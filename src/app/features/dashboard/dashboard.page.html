@@ -11,7 +11,7 @@
       <input
         type="search"
         [value]="search()"
-        (input)="search.set($any($event.target).value)"
+        (change)="setSearch($any($event.target).value)"
         [placeholder]="'list.search' | translate"
         [attr.aria-label]="'list.search' | translate"
       />
@@ -20,7 +20,7 @@
       <app-dropdown
         [options]="statusOptions()"
         [value]="filterStatus()"
-        (valueChange)="filterStatus.set(txt($event))"
+        (valueChange)="setStatus(txt($event))"
         ariaLabelKey="list.status"
       />
     </div>
@@ -28,7 +28,7 @@
       <app-dropdown
         [options]="levelOptions()"
         [value]="filterLevel()"
-        (valueChange)="filterLevel.set(txt($event))"
+        (valueChange)="setLevel(txt($event))"
         ariaLabelKey="list.level"
       />
     </div>
@@ -36,7 +36,7 @@
       <app-dropdown
         [options]="centerOptions()"
         [value]="txt(pickedCenter())"
-        (valueChange)="pickedCenter.set(num($event))"
+        (valueChange)="pickCenter(num($event))"
         ariaLabelKey="dash.center"
       />
     </div>
@@ -46,100 +46,98 @@
     <div class="kpi card anim">
       <span class="kpi-ico">◉</span>
       <div class="kpi-txt">
-        <small>{{ 'dash.totalStudents' | translate }}</small
-        ><strong class="ltr-num">{{ kpis().students }}</strong
-        ><em>▲ {{ kpis().studentsDelta }} {{ 'dash.thisMonth' | translate }}</em>
+        <small>{{ 'dash.totalStudents' | translate }}</small>
+        <strong class="ltr-num">{{ kpis().students ?? '—' }}</strong>
       </div>
     </div>
     <div class="kpi card anim" style="--d: 60ms">
       <span class="kpi-ico">◎</span>
       <div class="kpi-txt">
-        <small>{{ 'dash.activeGroups' | translate }}</small
-        ><strong class="ltr-num">{{ kpis().groups }}</strong
-        ><em>▲ {{ kpis().groupsDelta }}</em>
+        <small>{{ 'dash.avgScore' | translate }}</small>
+        <strong class="ltr-num">{{ kpis().avgScore ?? '—' }}</strong>
       </div>
     </div>
     <div class="kpi card anim" style="--d: 120ms">
       <span class="kpi-ico">▣</span>
       <div class="kpi-txt">
-        <small>{{ 'dash.quranSessions' | translate }}</small
-        ><strong class="ltr-num">{{ kpis().sessions }}</strong
-        ><em>{{ 'dash.thisMonth' | translate }} {{ kpis().sessionsDelta }}</em>
+        <small>{{ 'dash.avgSarraj' | translate }}</small>
+        <strong class="ltr-num">{{ kpis().avgSarraj ?? '—' }}</strong>
       </div>
     </div>
     <div class="kpi card ring-card anim" style="--d: 180ms">
       <div class="kpi-txt">
-        <small>{{ 'dash.commitRate' | translate }}</small
-        ><strong class="ltr-num">{{ kpis().rate }}%</strong>
+        <small>{{ 'dash.commitRate' | translate }}</small>
+        <strong class="ltr-num">{{ kpis().rate === null ? '—' : kpis().rate + '%' }}</strong>
       </div>
-      <svg class="ring" viewBox="0 0 84 84" role="img" [attr.aria-label]="kpis().rate + '%'">
+      <svg
+        class="ring"
+        viewBox="0 0 84 84"
+        role="img"
+        [attr.aria-label]="kpis().rate === null ? '—' : kpis().rate + '%'"
+      >
         <circle cx="42" cy="42" r="34" class="track" />
-        <circle cx="42" cy="42" r="34" class="val" [attr.stroke-dasharray]="ringDash().array" />
+        <circle cx="42" cy="42" r="34" class="val" [attr.stroke-dasharray]="ringDash()" />
         <defs>
           <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#00b8a9" />
             <stop offset="1" stop-color="#8b5cf6" />
           </linearGradient>
         </defs>
-        <text x="42" y="47">{{ kpis().rate }}%</text>
+        <text x="42" y="47">{{ kpis().rate === null ? '—' : kpis().rate + '%' }}</text>
       </svg>
     </div>
   </div>
 
   <div class="panel card">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>{{ 'dash.studentName' | translate }}</th>
-            <th>{{ 'dash.currentSurah' | translate }}</th>
-            <th>{{ 'dash.progress' | translate }}</th>
-            <th>{{ 'dash.status' | translate }}</th>
-            <th>{{ 'dash.lastExam' | translate }}</th>
-            <th>{{ 'common.actions' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (s of tableRows(); track s.id) {
-            <tr class="anim" [style.--d]="$index * 50 + 'ms'">
-              <td class="ltr-num id">{{ s.id }}</td>
-              <td>
-                <span class="stud"
-                  ><span class="ava" aria-hidden="true">{{ s.name.slice(0, 1) }}</span
-                  >{{ s.name }}</span
-                >
-              </td>
-              <td class="mut">{{ s.surah }}</td>
-              <td>
-                <span class="bar"><span class="fill" [style.width.%]="s.progress"></span></span>
-              </td>
-              <td>
-                @if (s.status === 'active') {
-                  <span class="pill ok">{{ 'studentStatus.active' | translate }}</span>
-                } @else {
-                  <span class="pill warn">{{ 'studentStatus.paused' | translate }}</span>
-                }
-              </td>
-              <td class="ltr-num mut">{{ s.exam }}</td>
-              <td>
-                <span class="acts">
-                  <button type="button" aria-label="view">◌</button>
-                  <button type="button" aria-label="edit">✎</button>
-                  <button type="button" aria-label="file">▤</button>
-                </span>
-              </td>
+    @if (rows().length > 0 || students.isLoading()) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>{{ 'dash.studentName' | translate }}</th>
+              <th>{{ 'list.group' | translate }}</th>
+              <th>{{ 'list.mode' | translate }}</th>
+              <th>{{ 'dash.status' | translate }}</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    <div class="pager">
-      <span class="mut">6 {{ 'dash.resultsOf' | translate }} 999 ..</span>
-      <span class="sp"></span>
-      <button type="button">‹</button><button type="button" class="on">1</button
-      ><button type="button">›</button>
-    </div>
+          </thead>
+          <tbody>
+            @for (s of rows(); track s.id) {
+              <tr
+                class="anim"
+                [style.--d]="$index * 50 + 'ms'"
+                [class.on]="pickedStudent() === s.id"
+                tabindex="0"
+                (click)="pickedStudent.set(s.id)"
+                (keydown.enter)="pickedStudent.set(s.id)"
+              >
+                <td class="ltr-num id">{{ s.id }}</td>
+                <td>
+                  <span class="stud"
+                    ><span class="ava" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span
+                    >{{ s.full_name }}</span
+                  >
+                </td>
+                <td class="mut">{{ s.group?.name ?? '—' }}</td>
+                <td class="mut">{{ 'mode.' + s.memorization_mode | translate }}</td>
+                <td>
+                  @if (s.status === 'active') {
+                    <span class="pill ok">{{ 'studentStatus.active' | translate }}</span>
+                  } @else {
+                    <span class="pill warn">{{ 'studentStatus.' + s.status | translate }}</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (total() > 20) {
+        <app-paginator [page]="page()" [total]="total()" (pageChange)="page.set($event)" />
+      }
+    } @else {
+      <app-empty-state />
+    }
   </div>
 
   <div class="charts">
@@ -148,18 +146,31 @@
         <h2>{{ 'dash.monthlyEval' | translate }}</h2>
         <small>{{ 'dash.last6' | translate }}</small>
       </div>
-      <app-chart type="line" [data]="monthlyChart()" label="monthly" />
+      @if (pickedStudent() === null) {
+        <p class="pick-hint">{{ 'dash.pickStudent' | translate }}</p>
+      } @else if ((weekly.value() ?? []).length === 0) {
+        <app-empty-state />
+      } @else {
+        <app-chart type="line" [data]="monthlyChart()" label="monthly" />
+      }
     </div>
     <div class="card chart-card sm">
       <div class="chart-head">
         <h2>{{ 'dash.distribution' | translate }}</h2>
       </div>
-      <app-chart type="doughnut" [data]="distChart()" label="dist" />
-      <ul class="legend">
-        <li><i style="background: #00b8a9"></i>{{ 'dash.excellent' | translate }} 45%</li>
-        <li><i style="background: #0e9f6e"></i>{{ 'dash.good' | translate }} 30%</li>
-        <li><i style="background: #cbd5e1"></i>{{ 'dash.support' | translate }} 25%</li>
-      </ul>
+      @if (distLegend().length > 0) {
+        <app-chart type="doughnut" [data]="distChart()" label="dist" />
+        <ul class="legend">
+          @for (l of distLegend(); track l.status) {
+            <li>
+              <i [style.background]="l.color"></i>{{ 'attendance.' + l.status | translate }}
+              {{ l.pct }}%
+            </li>
+          }
+        </ul>
+      } @else {
+        <app-empty-state />
+      }
     </div>
   </div>
 </section>
