@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -170,7 +177,8 @@ export class ShellComponent {
   });
 
   constructor() {
-    setInterval(() => this.now.set(new Date()), 30_000);
+    const timer = setInterval(() => this.now.set(new Date()), 30_000);
+    inject(DestroyRef).onDestroy(() => clearInterval(timer));
   }
 
   toggleSidebar(): void {
