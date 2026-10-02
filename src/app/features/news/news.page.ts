@@ -12,13 +12,20 @@ import { firstValueFrom, map } from 'rxjs';
 import { AnnouncementsService } from '../../core/api/announcements.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { GroupsService } from '../../core/api/groups.service';
+import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 @Component({
   selector: 'app-news-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent, EmptyStateComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslatePipe,
+    DropdownComponent,
+    SpinnerComponent,
+    EmptyStateComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './news.page.html',
 })
@@ -44,6 +51,17 @@ export class NewsPage {
     params: () => ({}),
     loader: () => firstValueFrom(this.groupsSvc.list().pipe(map((p) => p.data))),
   });
+
+  readonly audienceOptions = [
+    { value: 'all', labelKey: 'audience.all' },
+    { value: 'teachers', labelKey: 'audience.teachers' },
+    { value: 'manager', labelKey: 'audience.manager' },
+    { value: 'my_students', labelKey: 'audience.my_students' },
+  ];
+  readonly groupOptions = computed(() => [
+    { value: '', label: '—' },
+    ...(this.groups.value() ?? []).map((g) => ({ value: g.id, label: g.name })),
+  ]);
 
   readonly form = new FormGroup({
     audience: new FormControl('all', { nonNullable: true, validators: [Validators.required] }),

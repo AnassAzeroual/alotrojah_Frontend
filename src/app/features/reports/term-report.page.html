@@ -27,15 +27,12 @@
     </div>
     <label class="field"
       ><span>{{ 'planning.pick_term' | translate }}</span>
-      <select
-        [value]="pickedTerm() ?? ''"
-        (change)="pickedTerm.set($any($event.target).value ? +$any($event.target).value : null)"
-      >
-        <option value="">—</option>
-        @for (t of terms.value() ?? []; track t.id) {
-          <option [value]="t.id">{{ t.name_ar }}</option>
-        }
-      </select>
+      <app-dropdown
+        [options]="termOptions()"
+        [value]="txt(pickedTerm())"
+        (valueChange)="pickedTerm.set(num($event))"
+        ariaLabelKey="planning.pick_term"
+      />
     </label>
     @if (report.value()) {
       <button type="button" class="btn btn-primary" (click)="print()">

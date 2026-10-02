@@ -53,33 +53,20 @@
     align-items: center;
   }
 
-  // Beat the encapsulated component style (select[_ngcontent]) by specificity.
-  app-language-switcher select {
+  // Beat the encapsulated component style by specificity.
+  app-dropdown .dd-btn {
     border: 0;
     background: transparent;
-    padding: 6px 2px;
-    font: inherit;
-    font-size: var(--text-sm);
+    min-height: 34px;
+    padding: 0 4px;
     font-weight: 700;
     color: var(--color-text);
-    cursor: pointer;
-    max-width: 110px;
 
-    &:focus-visible {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 1px;
-      border-radius: 8px;
-    }
-
-    option {
-      background: var(--color-surface);
-      color: var(--color-text);
+    &:hover {
+      border-color: transparent;
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
     }
   }
-}
-
-html[data-theme='dark'] .auth-topbar app-language-switcher select {
-  color-scheme: dark;
 }
 
 .auth-theme-btn {

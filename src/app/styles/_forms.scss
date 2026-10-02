@@ -8,8 +8,7 @@
   font-weight: 600;
   color: var(--green-800);
 
-  input,
-  select {
+  input {
     font-family: inherit;
     font-size: 16px; // prevents iOS zoom on focus
     font-weight: 400;
@@ -40,18 +39,12 @@
       color: var(--color-muted);
     }
   }
+}
 
-  select {
-    appearance: none;
-    padding-inline-end: var(--space-6);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%230e7c5b' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: left var(--space-3) center;
-
-    [dir='ltr'] & {
-      background-position: right var(--space-3) center;
-    }
-  }
+// Reactive-forms invalid state for the dropdown component (host carries the classes).
+app-dropdown.ng-touched.ng-invalid .dd-btn {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 18%, transparent);
 }
 
 .search {
@@ -85,7 +78,6 @@
 
 // Reactive-forms invalid state: red border once touched
 .field input.ng-touched.ng-invalid,
-.field select.ng-touched.ng-invalid,
 .field textarea.ng-touched.ng-invalid,
 .term-row input.ng-touched.ng-invalid {
   border-color: var(--color-danger);

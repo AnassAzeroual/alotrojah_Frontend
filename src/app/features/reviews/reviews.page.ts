@@ -14,13 +14,20 @@ import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ReviewsService } from '../../core/api/reviews.service';
 import { StudentsService } from '../../core/api/students.service';
+import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 @Component({
   selector: 'app-reviews-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent, EmptyStateComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslatePipe,
+    DropdownComponent,
+    SpinnerComponent,
+    EmptyStateComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './reviews.page.html',
 })
@@ -60,6 +67,11 @@ export class ReviewsPage {
     loader: ({ params }) =>
       params.s === null ? Promise.resolve([]) : firstValueFrom(this.planning.terms(params.s)),
   });
+
+  readonly termOptions = computed(() => [
+    { value: '', label: '—' },
+    ...(this.terms.value() ?? []).map((t) => ({ value: t.id, label: t.name_ar })),
+  ]);
 
   private currentSeasonId(): number | null {
     const list = this.seasons.value()?.data ?? [];

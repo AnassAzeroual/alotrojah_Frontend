@@ -30,18 +30,12 @@
   <div class="card anim-rise" style="--i: 2">
     <label class="field"
       ><span>{{ 'planning.pick_term' | translate }}</span>
-      <select
-        [value]="pickedTerm() ?? ''"
-        (change)="
-          pickedTerm.set($any($event.target).value ? +$any($event.target).value : null);
-          loadIntoForm()
-        "
-      >
-        <option value="">—</option>
-        @for (t of terms.value() ?? []; track t.id) {
-          <option [value]="t.id">{{ t.name_ar }}</option>
-        }
-      </select>
+      <app-dropdown
+        [options]="termOptions()"
+        [value]="txt(pickedTerm())"
+        (valueChange)="pickedTerm.set(num($event)); loadIntoForm()"
+        ariaLabelKey="planning.pick_term"
+      />
     </label>
     @if (plan.value()) {
       <button type="button" class="btn btn-ghost" (click)="loadIntoForm()">
@@ -95,12 +89,11 @@
       } @else {
         <label class="field"
           ><span>{{ 'planning.from_surah' | translate }}</span>
-          <select [formControl]="form.controls.plan_surah_from">
-            <option [ngValue]="null">—</option>
-            @for (s of surahs.value() ?? []; track s.id) {
-              <option [ngValue]="s.id">{{ s.name_ar }}</option>
-            }
-          </select>
+          <app-dropdown
+            [formControl]="form.controls.plan_surah_from"
+            [options]="surahOptions()"
+            ariaLabelKey="planning.from_surah"
+          />
         </label>
         <label class="field"
           ><span>{{ 'planning.from_ayah' | translate }}</span>
@@ -114,12 +107,11 @@
         </label>
         <label class="field"
           ><span>{{ 'planning.to_surah' | translate }}</span>
-          <select [formControl]="form.controls.plan_surah_to">
-            <option [ngValue]="null">—</option>
-            @for (s of surahs.value() ?? []; track s.id) {
-              <option [ngValue]="s.id">{{ s.name_ar }}</option>
-            }
-          </select>
+          <app-dropdown
+            [formControl]="form.controls.plan_surah_to"
+            [options]="surahOptions()"
+            ariaLabelKey="planning.to_surah"
+          />
         </label>
         <label class="field"
           ><span>{{ 'planning.to_ayah' | translate }}</span>

@@ -53,12 +53,11 @@
         <h2>{{ 'review.new_cycle' | translate }}</h2>
         <label class="field"
           ><span>{{ 'planning.pick_term' | translate }}</span>
-          <select formControlName="term_id">
-            <option [ngValue]="null">—</option>
-            @for (t of terms.value() ?? []; track t.id) {
-              <option [ngValue]="t.id">{{ t.name_ar }}</option>
-            }
-          </select>
+          <app-dropdown
+            formControlName="term_id"
+            [options]="termOptions()"
+            ariaLabelKey="planning.pick_term"
+          />
         </label>
         <label class="field"
           ><span>{{ 'review.week_from' | translate }}</span>

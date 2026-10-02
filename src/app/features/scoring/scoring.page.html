@@ -133,10 +133,14 @@
           </label>
           <label class="field"
             ><span>{{ 'scoring.scope' | translate }}</span>
-            <select formControlName="scope">
-              <option value="weekly">{{ 'scopeType.weekly' | translate }}</option>
-              <option value="murajaa">{{ 'scopeType.murajaa' | translate }}</option>
-            </select>
+            <app-dropdown
+              formControlName="scope"
+              [options]="[
+                { value: 'weekly', labelKey: 'scopeType.weekly' },
+                { value: 'murajaa', labelKey: 'scopeType.murajaa' },
+              ]"
+              ariaLabelKey="scoring.scope"
+            />
           </label>
           <div class="cluster">
             <button

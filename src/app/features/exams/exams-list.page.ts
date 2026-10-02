@@ -1,14 +1,23 @@
-import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { ExamsService } from '../../core/api/exams.service';
+import { LanguageService } from '../../core/i18n/language.service';
+import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-exams-list-page',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, EmptyStateComponent],
+  imports: [RouterLink, TranslatePipe, DropdownComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="page">
@@ -21,12 +30,12 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
       <div class="card anim-rise" style="--i: 1">
         <label class="field"
           ><span>{{ 'exam.filter_type' | translate }}</span>
-          <select [value]="type() ?? ''" (change)="type.set($any($event.target).value || null)">
-            <option value="">{{ 'list.all' | translate }}</option>
-            <option value="hizb_completion">{{ 'examType.hizb_completion' | translate }}</option>
-            <option value="term_batch">{{ 'examType.term_batch' | translate }}</option>
-            <option value="final_season">{{ 'examType.final_season' | translate }}</option>
-          </select>
+          <app-dropdown
+            [options]="typeOptions()"
+            [value]="type() ?? ''"
+            (valueChange)="type.set(txt($event) || null)"
+            ariaLabelKey="exam.filter_type"
+          />
         </label>
       </div>
       @if (exams.isLoading()) {
@@ -56,6 +65,21 @@ export class ExamsListPage {
   private readonly examsSvc = inject(ExamsService);
 
   readonly type = signal<string | null>(null);
+  protected readonly txt = dropdownText;
+
+  private readonly i18n = inject(TranslateService);
+  private readonly language = inject(LanguageService);
+
+  readonly typeOptions = computed(() => {
+    this.language.current();
+    const t = (k: string): string => this.i18n.instant(k);
+    return [
+      { value: '', label: t('list.all') },
+      { value: 'hizb_completion', labelKey: 'examType.hizb_completion' },
+      { value: 'term_batch', labelKey: 'examType.term_batch' },
+      { value: 'final_season', labelKey: 'examType.final_season' },
+    ];
+  });
 
   protected readonly exams = resource({
     params: () => ({ t: this.type() }),

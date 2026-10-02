@@ -1,17 +1,29 @@
-import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ReportsService } from '../../core/api/reports.service';
 import { StudentsService } from '../../core/api/students.service';
+import {
+  DropdownComponent,
+  dropdownNumber,
+  dropdownText,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
 
 @Component({
   selector: 'app-term-report-page',
   standalone: true,
-  imports: [TranslatePipe, EmptyStateComponent, StatusBadgeComponent],
+  imports: [TranslatePipe, DropdownComponent, EmptyStateComponent, StatusBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './term-report.page.html',
 })
@@ -21,9 +33,17 @@ export class TermReportPage {
   private readonly planning = inject(PlanningService);
   private readonly ref = inject(ReferenceService);
 
+  protected readonly num = dropdownNumber;
+  protected readonly txt = dropdownText;
+
   readonly search = signal('');
   readonly pickedStudent = signal<number | null>(null);
   readonly pickedTerm = signal<number | null>(null);
+
+  readonly termOptions = computed(() => [
+    { value: '', label: '—' },
+    ...(this.terms.value() ?? []).map((t) => ({ value: t.id, label: t.name_ar })),
+  ]);
 
   readonly found = resource({
     params: () => ({ q: this.search() }),

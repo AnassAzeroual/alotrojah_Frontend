@@ -1,51 +1,32 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { LanguageService, AppLang } from '../i18n/language.service';
+import { DropdownComponent, DropdownValue } from '../../shared/ui/dropdown/dropdown.component';
+
+const LABELS: Record<AppLang, string> = { ar: 'العربية', fr: 'Français', en: 'English' };
 
 @Component({
   selector: 'app-language-switcher',
   standalone: true,
+  imports: [DropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <select
+    <app-dropdown
+      [compact]="true"
+      [options]="options()"
       [value]="lang.current()"
-      (change)="onChange($event)"
-      [attr.aria-label]="'auth.language'"
-    >
-      @for (l of lang.langs; track l) {
-        <option [value]="l" [selected]="lang.current() === l">{{ label(l) }}</option>
-      }
-    </select>
+      (valueChange)="choose($event)"
+      ariaLabelKey="auth.language"
+    />
   `,
-  styles: [
-    `
-      select {
-        height: 40px;
-        padding: 0 var(--space-3);
-        border-radius: var(--radius-md);
-        border: 1px solid var(--color-border);
-        background: var(--color-surface);
-        color: var(--color-text);
-        font: inherit;
-        font-size: var(--text-sm);
-        font-weight: 600;
-        cursor: pointer;
-      }
-
-      select:focus-visible {
-        outline: 2px solid var(--color-primary);
-        outline-offset: 1px;
-      }
-    `,
-  ],
 })
 export class LanguageSwitcherComponent {
   readonly lang = inject(LanguageService);
 
-  protected label(l: AppLang): string {
-    return l === 'ar' ? 'العربية' : l === 'fr' ? 'Français' : 'English';
-  }
+  protected readonly options = computed(() =>
+    this.lang.langs.map((l) => ({ value: l, label: LABELS[l] })),
+  );
 
-  protected onChange(event: Event): void {
-    this.lang.use((event.target as HTMLSelectElement).value as AppLang);
+  protected choose(v: DropdownValue): void {
+    if (v === 'ar' || v === 'fr' || v === 'en') this.lang.use(v);
   }
 }

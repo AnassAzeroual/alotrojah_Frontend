@@ -7,13 +7,20 @@
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ChartData } from 'chart.js';
 import { firstValueFrom, map } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { CenterDashboard, DashboardService } from '../../core/api/dashboard.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
+import { LanguageService } from '../../core/i18n/language.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+  dropdownNumber,
+  dropdownText,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { ChartComponent } from '../../shared/ui/chart/chart.component';
 
 interface DemoStudent {
@@ -71,7 +78,7 @@ const DEMO_STUDENTS: DemoStudent[] = [
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [TranslatePipe, ChartComponent],
+  imports: [TranslatePipe, ChartComponent, DropdownComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
@@ -81,10 +88,40 @@ export class DashboardPage {
   private readonly centersSvc = inject(CentersService);
   private readonly studentsSvc = inject(StudentsService);
   private readonly ref = inject(ReferenceService);
+  private readonly i18n = inject(TranslateService);
+  private readonly language = inject(LanguageService);
 
   readonly centers = toSignal(this.centersSvc.list().pipe(map((p) => p.data)), {
     initialValue: [],
   });
+
+  private allOption(key: string): DropdownOption {
+    this.language.current();
+    const t = (k: string): string => this.i18n.instant(k);
+    return { value: '', label: `${t(key)}: ${t('list.all')}` };
+  }
+
+  readonly statusOptions = computed(() => [
+    this.allOption('list.status'),
+    { value: 'active', labelKey: 'studentStatus.active' },
+    { value: 'paused', labelKey: 'studentStatus.paused' },
+  ]);
+  readonly levelOptions = computed(() => [
+    { value: '', label: this.instant('dash.level') },
+    ...this.centers().map((c) => ({ value: String(c.id), label: c.name })),
+  ]);
+  readonly centerOptions = computed(() => [
+    { value: '', label: this.instant('dash.center') },
+    ...this.centers().map((c) => ({ value: String(c.id), label: c.name })),
+  ]);
+
+  private instant(key: string): string {
+    this.language.current();
+    return this.i18n.instant(key);
+  }
+  protected readonly num = dropdownNumber;
+  protected readonly txt = dropdownText;
+
   readonly pickedCenter = signal<number | null>(null);
   readonly search = signal('');
   readonly filterLevel = signal('');

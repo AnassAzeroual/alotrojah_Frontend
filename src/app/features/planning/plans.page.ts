@@ -1,16 +1,28 @@
-﻿import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService, Surah } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
+import {
+  DropdownComponent,
+  dropdownNumber,
+  dropdownText,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 @Component({
   selector: 'app-plans-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent],
+  imports: [ReactiveFormsModule, TranslatePipe, DropdownComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './plans.page.html',
 })
@@ -18,6 +30,9 @@ export class PlansPage {
   private readonly planning = inject(PlanningService);
   private readonly studentsSvc = inject(StudentsService);
   private readonly ref = inject(ReferenceService);
+
+  protected readonly num = dropdownNumber;
+  protected readonly txt = dropdownText;
 
   readonly search = signal('');
   readonly pickedStudent = signal<number | null>(null);
@@ -54,6 +69,15 @@ export class PlansPage {
     const list = this.seasons.value()?.data ?? [];
     return list.find((s) => s.is_current)?.id ?? list[0]?.id ?? null;
   }
+
+  readonly termOptions = computed(() => [
+    { value: '', label: '—' },
+    ...(this.terms.value() ?? []).map((t) => ({ value: t.id, label: t.name_ar })),
+  ]);
+  readonly surahOptions = computed(() => [
+    { value: '', label: '—' },
+    ...(this.surahs.value() ?? []).map((s) => ({ value: s.id, label: s.name_ar })),
+  ]);
 
   readonly plan = resource({
     params: () => ({ st: this.pickedStudent(), t: this.pickedTerm(), tick: this.savedTick() }),

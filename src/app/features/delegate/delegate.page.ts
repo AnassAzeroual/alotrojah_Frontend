@@ -1,22 +1,43 @@
-﻿import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { DelegationsService, GeneratedDelegation } from '../../core/api/delegations.service';
 import { GroupsService } from '../../core/api/groups.service';
+import {
+  DropdownComponent,
+  dropdownNumber,
+  dropdownText,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 @Component({
   selector: 'app-delegate-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent, EmptyStateComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslatePipe,
+    DropdownComponent,
+    SpinnerComponent,
+    EmptyStateComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './delegate.page.html',
 })
 export class DelegatePage {
   private readonly delegations = inject(DelegationsService);
   private readonly groupsSvc = inject(GroupsService);
+
+  protected readonly num = dropdownNumber;
+  protected readonly txt = dropdownText;
 
   readonly pickedGroup = signal<number | null>(null);
   readonly saving = signal(false);
@@ -37,6 +58,12 @@ export class DelegatePage {
   readonly form = new FormGroup({
     minutes: new FormControl(30, { nonNullable: true, validators: [Validators.required] }),
   });
+
+  readonly groupOptions = computed(() => [
+    { value: '', label: '—' },
+    ...(this.groups.value() ?? []).map((g) => ({ value: String(g.id), label: g.name })),
+  ]);
+  readonly minuteOptions = [15, 30, 60, 120].map((m) => ({ value: m, label: String(m) }));
 
   generate(): void {
     const g = this.pickedGroup();

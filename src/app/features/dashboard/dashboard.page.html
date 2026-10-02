@@ -17,39 +17,28 @@
       />
     </div>
     <div class="f-field">
-      <select
+      <app-dropdown
+        [options]="statusOptions()"
         [value]="filterStatus()"
-        (change)="filterStatus.set($any($event.target).value)"
-        [attr.aria-label]="'list.status' | translate"
-      >
-        <option value="">{{ 'list.status' | translate }}: {{ 'list.all' | translate }}</option>
-        <option value="active">{{ 'studentStatus.active' | translate }}</option>
-        <option value="paused">{{ 'studentStatus.paused' | translate }}</option>
-      </select>
+        (valueChange)="filterStatus.set(txt($event))"
+        ariaLabelKey="list.status"
+      />
     </div>
     <div class="f-field">
-      <select
+      <app-dropdown
+        [options]="levelOptions()"
         [value]="filterLevel()"
-        (change)="filterLevel.set($any($event.target).value)"
-        [attr.aria-label]="'list.level' | translate"
-      >
-        <option value="">{{ 'dash.level' | translate }}</option>
-        @for (c of centers(); track c.id) {
-          <option [value]="c.id">{{ c.name }}</option>
-        }
-      </select>
+        (valueChange)="filterLevel.set(txt($event))"
+        ariaLabelKey="list.level"
+      />
     </div>
     <div class="f-field">
-      <select
-        [value]="pickedCenter() ?? ''"
-        (change)="pickedCenter.set($any($event.target).value ? +$any($event.target).value : null)"
-        [attr.aria-label]="'dash.center' | translate"
-      >
-        <option value="">{{ 'dash.center' | translate }}</option>
-        @for (c of centers(); track c.id) {
-          <option [value]="c.id">{{ c.name }}</option>
-        }
-      </select>
+      <app-dropdown
+        [options]="centerOptions()"
+        [value]="txt(pickedCenter())"
+        (valueChange)="pickedCenter.set(num($event))"
+        ariaLabelKey="dash.center"
+      />
     </div>
   </div>
 

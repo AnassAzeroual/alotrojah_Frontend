@@ -10,6 +10,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ScoringService } from '../../core/api/scoring.service';
+import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 interface Draft {
@@ -21,7 +22,7 @@ interface Draft {
 @Component({
   selector: 'app-scoring-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent],
+  imports: [ReactiveFormsModule, TranslatePipe, DropdownComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './scoring.page.html',
 })

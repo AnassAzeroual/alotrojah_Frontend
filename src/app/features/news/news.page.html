@@ -7,22 +7,20 @@
     <form class="card anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="submit()">
       <label class="field"
         ><span>{{ 'news.audience' | translate }}</span>
-        <select formControlName="audience">
-          <option value="all">{{ 'audience.all' | translate }}</option>
-          <option value="teachers">{{ 'audience.teachers' | translate }}</option>
-          <option value="manager">{{ 'audience.manager' | translate }}</option>
-          <option value="my_students">{{ 'audience.my_students' | translate }}</option>
-        </select>
+        <app-dropdown
+          formControlName="audience"
+          [options]="audienceOptions"
+          ariaLabelKey="news.audience"
+        />
       </label>
       @if (form.controls.audience.value === 'my_students') {
         <label class="field"
           ><span>{{ 'entry.pick_group' | translate }}</span>
-          <select [formControl]="form.controls.group_id">
-            <option [ngValue]="null">—</option>
-            @for (g of groups.value() ?? []; track g.id) {
-              <option [ngValue]="g.id">{{ g.name }}</option>
-            }
-          </select>
+          <app-dropdown
+            [formControl]="form.controls.group_id"
+            [options]="groupOptions()"
+            ariaLabelKey="entry.pick_group"
+          />
         </label>
       }
       <label class="field"

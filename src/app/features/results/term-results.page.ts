@@ -1,4 +1,11 @@
-﻿import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
@@ -6,6 +13,11 @@ import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ResultsService } from '../../core/api/results.service';
 import { StudentsService } from '../../core/api/students.service';
+import {
+  DropdownComponent,
+  dropdownNumber,
+  dropdownText,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
 
@@ -14,7 +26,13 @@ const SCORE_FIELDS = ['hifz_total', 'murajaa_total', 'exam_score', 'general_avg'
 @Component({
   selector: 'app-term-results-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent, StatusBadgeComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslatePipe,
+    DropdownComponent,
+    SpinnerComponent,
+    StatusBadgeComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './term-results.page.html',
 })
@@ -24,9 +42,22 @@ export class TermResultsPage {
   private readonly planning = inject(PlanningService);
   private readonly ref = inject(ReferenceService);
 
+  protected readonly num = dropdownNumber;
+  protected readonly txt = dropdownText;
+
   readonly search = signal('');
   readonly pickedStudent = signal<number | null>(null);
   readonly pickedTerm = signal<number | null>(null);
+
+  readonly termOptions = computed(() => [
+    { value: '', label: '—' },
+    ...(this.terms.value() ?? []).map((t) => ({ value: t.id, label: t.name_ar })),
+  ]);
+  readonly honorOptions = [
+    { value: 'none', labelKey: 'honor.none' },
+    { value: 'tashji3', labelKey: 'honor.tashji3' },
+    { value: 'intibah', labelKey: 'honor.intibah' },
+  ];
   readonly saving = signal(false);
   private readonly tick = signal(0);
 

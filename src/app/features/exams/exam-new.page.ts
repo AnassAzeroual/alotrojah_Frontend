@@ -1,4 +1,11 @@
-﻿import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -7,12 +14,13 @@ import { ExamsService } from '../../core/api/exams.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
+import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 @Component({
   selector: 'app-exam-new-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent],
+  imports: [ReactiveFormsModule, TranslatePipe, DropdownComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './exam-new.page.html',
 })
@@ -50,6 +58,16 @@ export class ExamNewPage {
     const list = this.seasons.value()?.data ?? [];
     return list.find((s) => s.is_current)?.id ?? list[0]?.id ?? null;
   }
+
+  readonly examTypeOptions = [
+    { value: 'hizb_completion', labelKey: 'examType.hizb_completion' },
+    { value: 'term_batch', labelKey: 'examType.term_batch' },
+    { value: 'final_season', labelKey: 'examType.final_season' },
+  ];
+  readonly termOptions = computed(() => [
+    { value: '', label: '—' },
+    ...(this.terms.value() ?? []).map((t) => ({ value: t.id, label: t.name_ar })),
+  ]);
 
   readonly form = new FormGroup({
     exam_type: new FormControl<'hizb_completion' | 'term_batch' | 'final_season'>('term_batch', {
