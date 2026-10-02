@@ -6,30 +6,23 @@
   <div class="card anim-rise" style="--i: 1">
     <label class="field"
       ><span>{{ 'entry.pick_group' | translate }}</span>
-      <select
-        [value]="pickedGroup() ?? ''"
-        (change)="
-          pickedGroup.set($any($event.target).value ? +$any($event.target).value : null);
-          generated.set(null)
-        "
-      >
-        <option value="">—</option>
-        @for (g of groups.value() ?? []; track g.id) {
-          <option [value]="g.id">{{ g.name }}</option>
-        }
-      </select>
+      <app-dropdown
+        [options]="groupOptions()"
+        [value]="txt(pickedGroup())"
+        (valueChange)="pickedGroup.set(num($event)); generated.set(null)"
+        ariaLabelKey="entry.pick_group"
+      />
     </label>
 
     @if (pickedGroup() !== null) {
       <form [formGroup]="form" (ngSubmit)="generate()">
         <label class="field"
           ><span>{{ 'delegation.minutes' | translate }}</span>
-          <select formControlName="minutes">
-            <option [ngValue]="15">15</option>
-            <option [ngValue]="30">30</option>
-            <option [ngValue]="60">60</option>
-            <option [ngValue]="120">120</option>
-          </select>
+          <app-dropdown
+            formControlName="minutes"
+            [options]="minuteOptions"
+            ariaLabelKey="delegation.minutes"
+          />
         </label>
         <button
           type="submit"

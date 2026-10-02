@@ -2,13 +2,14 @@ import { ChangeDetectionStrategy, Component, inject, input, resource, signal } f
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
+import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
 
 @Component({
   selector: 'app-term-detail-page',
   standalone: true,
-  imports: [TranslatePipe, EmptyStateComponent, StatusBadgeComponent],
+  imports: [TranslatePipe, DropdownComponent, EmptyStateComponent, StatusBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './term-detail.page.html',
 })
@@ -24,6 +25,7 @@ export class TermDetailPage {
   });
 
   protected openWeek = signal<number | null>(null);
+  protected readonly txt = dropdownText;
 
   protected toggleWeek(id: number): void {
     this.openWeek.update((v) => (v === id ? null : id));
@@ -37,7 +39,18 @@ export class TermDetailPage {
     this.planning.updateSession(id, patch).subscribe(() => this.tick.update((n) => n + 1));
   }
 
+  readonly sessionTypeOptions = [
+    { value: 'memorization', labelKey: 'sessionType.memorization' },
+    { value: 'revision', labelKey: 'sessionType.revision' },
+    { value: 'exam', labelKey: 'sessionType.exam' },
+  ];
+  readonly sessionStatusOptions = [
+    { value: 'planned', labelKey: 'sessionStatus.planned' },
+    { value: 'done', labelKey: 'sessionStatus.done' },
+    { value: 'cancelled', labelKey: 'sessionStatus.cancelled' },
+  ];
+
   protected sessVal(event: Event): string {
-    return (event.target as HTMLSelectElement).value;
+    return (event.target as HTMLInputElement).value;
   }
 }

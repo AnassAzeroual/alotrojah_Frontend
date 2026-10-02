@@ -1,70 +1,165 @@
-<section class="page">
-  <div class="page-head anim-rise">
+<section class="dash">
+  <div class="dash-head">
     <div>
-      <h1>{{ 'dash.title' | translate }}</h1>
+      <h1>{{ 'dash.studentsTitle' | translate }}</h1>
+      <p>{{ 'dash.subtitle' | translate }}</p>
     </div>
   </div>
 
-  <div class="card anim-rise" style="--i: 1">
-    <h2>{{ 'dash.by_center' | translate }}</h2>
-    <label class="field"
-      ><span>{{ 'dash.by_center' | translate }}</span>
-      <select
-        [value]="pickedCenter() ?? ''"
-        (change)="pickedCenter.set($any($event.target).value ? +$any($event.target).value : null)"
-      >
-        <option value="">—</option>
-        @for (c of centers(); track c.id) {
-          <option [value]="c.id">{{ c.name }}</option>
-        }
-      </select>
-    </label>
-
-    @if (centerData.value(); as d) {
-      <div class="grid-auto">
-        <div class="stat-card">
-          <span class="stat-label">{{ 'dash.students' | translate }}</span>
-          <span class="stat-value ltr-num">{{ d.cards.students }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">{{ 'dash.avg_score' | translate }}</span>
-          <span class="stat-value ltr-num">{{ d.cards.avg_score ?? '—' }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">{{ 'dash.attendance' | translate }}</span>
-          <span class="stat-value ltr-num">{{ d.cards.avg_attendance ?? '—' }}%</span>
-        </div>
-      </div>
-      <app-chart type="bar" [data]="honorsChart()" label="honors" />
-      <app-chart type="doughnut" [data]="attendanceChart()" label="attendance" />
-    }
-  </div>
-
-  <div class="card anim-rise" style="--i: 2">
-    <h2>{{ 'dash.by_student' | translate }}</h2>
-    <label class="field search"
-      ><span>{{ 'list.search' | translate }}</span>
+  <div class="filters card">
+    <div class="f-search">
       <input
         type="search"
         [value]="search()"
-        (change)="search.set($any($event.target).value)"
+        (input)="search.set($any($event.target).value)"
         [placeholder]="'list.search' | translate"
+        [attr.aria-label]="'list.search' | translate"
       />
-    </label>
-    <div class="cluster">
-      @for (s of found.value() ?? []; track s.id) {
-        <button
-          type="button"
-          class="pick"
-          [class.on]="pickedStudent() === s.id"
-          (click)="pickedStudent.set(s.id)"
-        >
-          {{ s.full_name }}
-        </button>
-      }
     </div>
-    @if ((weekly.value() ?? []).length > 0) {
-      <app-chart type="bar" [data]="weeklyChart()" label="weekly" />
-    }
+    <div class="f-field">
+      <app-dropdown
+        [options]="statusOptions()"
+        [value]="filterStatus()"
+        (valueChange)="filterStatus.set(txt($event))"
+        ariaLabelKey="list.status"
+      />
+    </div>
+    <div class="f-field">
+      <app-dropdown
+        [options]="levelOptions()"
+        [value]="filterLevel()"
+        (valueChange)="filterLevel.set(txt($event))"
+        ariaLabelKey="list.level"
+      />
+    </div>
+    <div class="f-field">
+      <app-dropdown
+        [options]="centerOptions()"
+        [value]="txt(pickedCenter())"
+        (valueChange)="pickedCenter.set(num($event))"
+        ariaLabelKey="dash.center"
+      />
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi card anim">
+      <span class="kpi-ico">◉</span>
+      <div class="kpi-txt">
+        <small>{{ 'dash.totalStudents' | translate }}</small
+        ><strong class="ltr-num">{{ kpis().students }}</strong
+        ><em>▲ {{ kpis().studentsDelta }} {{ 'dash.thisMonth' | translate }}</em>
+      </div>
+    </div>
+    <div class="kpi card anim" style="--d: 60ms">
+      <span class="kpi-ico">◎</span>
+      <div class="kpi-txt">
+        <small>{{ 'dash.activeGroups' | translate }}</small
+        ><strong class="ltr-num">{{ kpis().groups }}</strong
+        ><em>▲ {{ kpis().groupsDelta }}</em>
+      </div>
+    </div>
+    <div class="kpi card anim" style="--d: 120ms">
+      <span class="kpi-ico">▣</span>
+      <div class="kpi-txt">
+        <small>{{ 'dash.quranSessions' | translate }}</small
+        ><strong class="ltr-num">{{ kpis().sessions }}</strong
+        ><em>{{ 'dash.thisMonth' | translate }} {{ kpis().sessionsDelta }}</em>
+      </div>
+    </div>
+    <div class="kpi card ring-card anim" style="--d: 180ms">
+      <div class="kpi-txt">
+        <small>{{ 'dash.commitRate' | translate }}</small
+        ><strong class="ltr-num">{{ kpis().rate }}%</strong>
+      </div>
+      <svg class="ring" viewBox="0 0 84 84" role="img" [attr.aria-label]="kpis().rate + '%'">
+        <circle cx="42" cy="42" r="34" class="track" />
+        <circle cx="42" cy="42" r="34" class="val" [attr.stroke-dasharray]="ringDash().array" />
+        <defs>
+          <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#00b8a9" />
+            <stop offset="1" stop-color="#8b5cf6" />
+          </linearGradient>
+        </defs>
+        <text x="42" y="47">{{ kpis().rate }}%</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="panel card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>{{ 'dash.studentName' | translate }}</th>
+            <th>{{ 'dash.currentSurah' | translate }}</th>
+            <th>{{ 'dash.progress' | translate }}</th>
+            <th>{{ 'dash.status' | translate }}</th>
+            <th>{{ 'dash.lastExam' | translate }}</th>
+            <th>{{ 'common.actions' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of tableRows(); track s.id) {
+            <tr class="anim" [style.--d]="$index * 50 + 'ms'">
+              <td class="ltr-num id">{{ s.id }}</td>
+              <td>
+                <span class="stud"
+                  ><span class="ava" aria-hidden="true">{{ s.name.slice(0, 1) }}</span
+                  >{{ s.name }}</span
+                >
+              </td>
+              <td class="mut">{{ s.surah }}</td>
+              <td>
+                <span class="bar"><span class="fill" [style.width.%]="s.progress"></span></span>
+              </td>
+              <td>
+                @if (s.status === 'active') {
+                  <span class="pill ok">{{ 'studentStatus.active' | translate }}</span>
+                } @else {
+                  <span class="pill warn">{{ 'studentStatus.paused' | translate }}</span>
+                }
+              </td>
+              <td class="ltr-num mut">{{ s.exam }}</td>
+              <td>
+                <span class="acts">
+                  <button type="button" aria-label="view">◌</button>
+                  <button type="button" aria-label="edit">✎</button>
+                  <button type="button" aria-label="file">▤</button>
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span class="mut">6 {{ 'dash.resultsOf' | translate }} 999 ..</span>
+      <span class="sp"></span>
+      <button type="button">‹</button><button type="button" class="on">1</button
+      ><button type="button">›</button>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="card chart-card">
+      <div class="chart-head">
+        <h2>{{ 'dash.monthlyEval' | translate }}</h2>
+        <small>{{ 'dash.last6' | translate }}</small>
+      </div>
+      <app-chart type="line" [data]="monthlyChart()" label="monthly" />
+    </div>
+    <div class="card chart-card sm">
+      <div class="chart-head">
+        <h2>{{ 'dash.distribution' | translate }}</h2>
+      </div>
+      <app-chart type="doughnut" [data]="distChart()" label="dist" />
+      <ul class="legend">
+        <li><i style="background: #00b8a9"></i>{{ 'dash.excellent' | translate }} 45%</li>
+        <li><i style="background: #0e9f6e"></i>{{ 'dash.good' | translate }} 30%</li>
+        <li><i style="background: #cbd5e1"></i>{{ 'dash.support' | translate }} 25%</li>
+      </ul>
+    </div>
   </div>
 </section>

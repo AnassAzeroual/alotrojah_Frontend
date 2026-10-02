@@ -27,15 +27,12 @@
     </div>
     <label class="field"
       ><span>{{ 'planning.pick_term' | translate }}</span>
-      <select
-        [value]="pickedTerm() ?? ''"
-        (change)="pickedTerm.set($any($event.target).value ? +$any($event.target).value : null)"
-      >
-        <option value="">—</option>
-        @for (t of terms.value() ?? []; track t.id) {
-          <option [value]="t.id">{{ t.name_ar }}</option>
-        }
-      </select>
+      <app-dropdown
+        [options]="termOptions()"
+        [value]="txt(pickedTerm())"
+        (valueChange)="pickedTerm.set(num($event))"
+        ariaLabelKey="planning.pick_term"
+      />
     </label>
     @if (existing.value()) {
       <div class="cluster">
@@ -61,20 +58,16 @@
         ><input formControlName="teacher_notes"
       /></label>
       <label class="field"
-        ><span>{{ 'result.guardian_notes' | translate }}</span
-        ><input formControlName="guardian_notes"
-      /></label>
-      <label class="field"
         ><span>{{ 'result.supervisor_note' | translate }}</span
         ><input formControlName="supervisor_note"
       /></label>
       <label class="field"
         ><span>{{ 'result.honor' | translate }}</span>
-        <select formControlName="honor_flag">
-          <option value="none">{{ 'honor.none' | translate }}</option>
-          <option value="tashji3">{{ 'honor.tashji3' | translate }}</option>
-          <option value="intibah">{{ 'honor.intibah' | translate }}</option>
-        </select>
+        <app-dropdown
+          formControlName="honor_flag"
+          [options]="honorOptions"
+          ariaLabelKey="result.honor"
+        />
       </label>
       <button
         type="submit"

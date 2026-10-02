@@ -14,52 +14,36 @@
       />
     </label>
     <label class="field">
-      <span class="sr-only">{{ 'list.group' | translate }}</span>
-      <select
-        [value]="groupId() ?? ''"
-        (change)="groupId.set(num($any($event.target).value)); resetPage()"
-      >
-        <option value="">{{ 'list.group' | translate }}: {{ 'list.all' | translate }}</option>
-        @for (g of groups(); track g.id) {
-          <option [value]="g.id">{{ g.name }}</option>
-        }
-      </select>
+      <app-dropdown
+        [options]="groupOptions()"
+        [value]="txt(groupId())"
+        (valueChange)="groupId.set(num($event)); resetPage()"
+        ariaLabelKey="list.group"
+      />
     </label>
     <label class="field">
-      <span class="sr-only">{{ 'list.level' | translate }}</span>
-      <select
-        [value]="levelId() ?? ''"
-        (change)="levelId.set(num($any($event.target).value)); resetPage()"
-      >
-        <option value="">{{ 'list.level' | translate }}: {{ 'list.all' | translate }}</option>
-        @for (l of levels(); track l.id) {
-          <option [value]="l.id">{{ l.name_ar }}</option>
-        }
-      </select>
+      <app-dropdown
+        [options]="levelOptions()"
+        [value]="txt(levelId())"
+        (valueChange)="levelId.set(num($event)); resetPage()"
+        ariaLabelKey="list.level"
+      />
     </label>
     <label class="field">
-      <span class="sr-only">{{ 'list.status' | translate }}</span>
-      <select
+      <app-dropdown
+        [options]="statusOptions()"
         [value]="status() ?? ''"
-        (change)="status.set($any($event.target).value || null); resetPage()"
-      >
-        <option value="">{{ 'list.status' | translate }}: {{ 'list.all' | translate }}</option>
-        @for (s of statuses; track s) {
-          <option [value]="s">{{ 'studentStatus.' + s | translate }}</option>
-        }
-      </select>
+        (valueChange)="status.set(txt($event) || null); resetPage()"
+        ariaLabelKey="list.status"
+      />
     </label>
     <label class="field">
-      <span class="sr-only">{{ 'list.mode' | translate }}</span>
-      <select
+      <app-dropdown
+        [options]="modeOptions()"
         [value]="mode() ?? ''"
-        (change)="mode.set($any($event.target).value || null); resetPage()"
-      >
-        <option value="">{{ 'list.mode' | translate }}: {{ 'list.all' | translate }}</option>
-        @for (m of modes; track m) {
-          <option [value]="m">{{ 'mode.' + m | translate }}</option>
-        }
-      </select>
+        (valueChange)="mode.set(txt($event) || null); resetPage()"
+        ariaLabelKey="list.mode"
+      />
     </label>
   </div>
 

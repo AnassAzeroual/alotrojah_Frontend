@@ -32,6 +32,21 @@ describe('LanguageService', () => {
     expect(localStorage.getItem('alotrojah_lang')).toBe('fr');
   });
 
+  it('falls back to Arabic for an invalid stored value', () => {
+    localStorage.setItem('alotrojah_lang', 'de');
+    lang.init();
+    expect(lang.current()).toBe('ar');
+    expect(document.documentElement.dir).toBe('rtl');
+  });
+
+  it('init applies the stored language to the document', () => {
+    localStorage.setItem('alotrojah_lang', 'en');
+    lang.init();
+    expect(lang.current()).toBe('en');
+    expect(document.documentElement.lang).toBe('en');
+    expect(document.documentElement.dir).toBe('ltr');
+  });
+
   it('restores the stored language', () => {
     localStorage.setItem('alotrojah_lang', 'en');
     TestBed.resetTestingModule();

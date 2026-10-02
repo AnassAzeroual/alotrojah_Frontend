@@ -6,6 +6,6 @@ export const DASHBOARD_ROUTES: Routes = [
     path: '',
     loadComponent: () => import('./dashboard.page').then((m) => m.DashboardPage),
     canActivate: [roleGuard],
-    data: { roles: ['admin', 'supervisor', 'teacher', 'guardian', 'student', 'board'] },
+    data: { roles: ['admin', 'supervisor', 'teacher', 'student', 'board'] },
   },
 ];

@@ -1,11 +1,25 @@
-import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { GroupsService } from '../../core/api/groups.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
+import { LanguageService } from '../../core/i18n/language.service';
+import {
+  DropdownComponent,
+  DropdownOption,
+  dropdownNumber,
+  dropdownText,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { PaginatorComponent } from '../../shared/ui/paginator/paginator.component';
 
@@ -15,7 +29,7 @@ const MODES = ['thumn', 'surah'] as const;
 @Component({
   selector: 'app-students-list-page',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, EmptyStateComponent, PaginatorComponent],
+  imports: [RouterLink, TranslatePipe, DropdownComponent, EmptyStateComponent, PaginatorComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './students-list.page.html',
   styleUrl: './students-list.page.scss',
@@ -24,11 +38,37 @@ export class StudentsListPage {
   private readonly studentsSvc = inject(StudentsService);
   private readonly groupsSvc = inject(GroupsService);
   private readonly ref = inject(ReferenceService);
+  private readonly i18n = inject(TranslateService);
+  private readonly language = inject(LanguageService);
+
+  private allOption(key: string): DropdownOption {
+    this.language.current();
+    const t = (k: string): string => this.i18n.instant(k);
+    return { value: '', label: `${t(key)}: ${t('list.all')}` };
+  }
+
+  readonly groupOptions = computed(() => [
+    this.allOption('list.group'),
+    ...this.groups().map((g) => ({ value: String(g.id), label: g.name })),
+  ]);
+  readonly levelOptions = computed(() => [
+    this.allOption('list.level'),
+    ...this.levels().map((l) => ({ value: String(l.id), label: l.name_ar })),
+  ]);
+  readonly statusOptions = computed(() => [
+    this.allOption('list.status'),
+    ...STATUSES.map((s) => ({ value: s, labelKey: `studentStatus.${s}` })),
+  ]);
+  readonly modeOptions = computed(() => [
+    this.allOption('list.mode'),
+    ...MODES.map((m) => ({ value: m, labelKey: `mode.${m}` })),
+  ]);
 
   readonly groups = toSignal(this.groupsSvc.list().pipe(map((p) => p.data)), { initialValue: [] });
   readonly levels = toSignal(this.ref.levels(), { initialValue: [] });
-  readonly statuses = STATUSES;
-  readonly modes = MODES;
+
+  protected readonly num = dropdownNumber;
+  protected readonly txt = dropdownText;
 
   readonly q = signal('');
   readonly groupId = signal<number | null>(null);
@@ -60,10 +100,6 @@ export class StudentsListPage {
   readonly rows = () => this.query.value()?.data ?? [];
   readonly total = () => this.query.value()?.meta.total ?? 0;
   readonly loading = () => this.query.isLoading();
-
-  protected num(v: string): number | null {
-    return v === '' ? null : Number(v);
-  }
 
   protected resetPage(): void {
     this.page.set(1);

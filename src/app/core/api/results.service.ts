@@ -12,7 +12,6 @@ export interface TermResult {
   exam_score: number | null;
   general_avg: number | null;
   teacher_notes: string | null;
-  guardian_notes: string | null;
   supervisor_note: string | null;
   honor_flag: string;
 }

@@ -14,7 +14,7 @@ export const REPORTS_ROUTES: Routes = [
     path: 'season',
     loadComponent: () => import('./season-report.page').then((m) => m.SeasonReportPage),
     canActivate: [roleGuard],
-    data: { roles: [...STAFF, 'guardian', 'student'] },
+    data: { roles: [...STAFF, 'student'] },
   },
   { path: '', pathMatch: 'full', redirectTo: 'term' },
 ];

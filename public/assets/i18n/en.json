@@ -1,11 +1,13 @@
 {
-  "app": { "title": "AlOtrojah", "subtitle": "Quran memorization tracking" },
+  "app": {
+    "title": "AlOtrojah",
+    "subtitle": "Quran memorization tracking"
+  },
   "nav": {
     "dashboard": "Home",
     "entry": "Daily entry",
     "students": "Students",
     "groups": "Circles",
-    "guardians": "Guardians",
     "planning": "Planning",
     "scoring": "Scoring",
     "exams": "Exams",
@@ -15,32 +17,38 @@
     "news": "News",
     "delegate": "Delegation",
     "notifications": "Messages",
-    "account": "Account"
+    "main": "Main",
+    "menu": "Menu",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark"
   },
   "auth": {
     "login": "Sign in",
     "email": "Email",
     "password": "Password",
-    "submit": "Sign in",
     "logout": "Sign out",
     "invalid": "Invalid credentials",
     "language": "Language",
     "show_password": "Show password",
     "hide_password": "Hide password",
-    "tagline": "The example of the believer who recites the Qur'an is like that of a citron: its fragrance is sweet and its taste is sweet"
+    "register": "Register",
+    "create_account": "Create account",
+    "have_account": "Already have an account?",
+    "no_account": "No account?",
+    "name": "Name",
+    "hello_again": "Hello Again!",
+    "get_started": "Lets get started",
+    "recovery": "Recovery Password",
+    "art_caption": "Finally, all your work in one place.",
+    "art_hint": "Track Quran memorization easily"
   },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "search": "Search",
-    "loading": "Loading…",
     "empty": "No data",
-    "total": "Total",
     "actions": "Actions",
-    "retry": "Retry",
-    "from": "From",
-    "to": "To",
     "week": "Week",
     "session": "Session",
     "score": "Score",
@@ -55,22 +63,69 @@
     "admin": "Admin",
     "supervisor": "Supervisor",
     "teacher": "Teacher",
-    "guardian": "Guardian",
     "student": "Student",
     "board": "Board"
   },
-  "teacherType": { "hifz": "Memorization", "murajaa": "Review", "both": "Both" },
-  "attendance": { "present": "Present", "absent": "Absent", "late": "Late", "excused": "Excused" },
-  "audience": { "all": "General", "teachers": "Teachers", "manager": "Management", "my_students": "My students" },
-  "honor": { "none": "—", "tashji3": "Praise", "intibah": "Warning" },
-  "weekType": { "study": "Study", "review": "Review" },
-  "sessionType": { "memorization": "Memorization", "revision": "Revision", "exam": "Exam" },
-  "mode": { "surah": "By surah", "thumn": "By thumn" },
-  "examType": { "hizb_completion": "Hizb completion", "term_batch": "Term exam", "final_season": "Final exam" },
-  "scopeType": { "weekly": "Weekly", "murajaa": "Murajaa" },
-  "studentStatus": { "active": "Active", "paused": "Paused", "graduated": "Graduated", "left": "Left" },
-  "results": { "season": "Season", "memorized": "Memorized (thumns)", "average": "Average", "attendance": "Attendance", "final": "Final score" },
-  "list": { "search": "Search by name", "group": "Circle", "level": "Level", "status": "Status", "mode": "Mode", "all": "All" },
+  "attendance": {
+    "present": "Present",
+    "absent": "Absent",
+    "late": "Late",
+    "excused": "Excused"
+  },
+  "audience": {
+    "all": "General",
+    "teachers": "Teachers",
+    "manager": "Management",
+    "my_students": "My students"
+  },
+  "honor": {
+    "none": "—",
+    "tashji3": "Praise",
+    "intibah": "Warning"
+  },
+  "weekType": {
+    "study": "Study",
+    "review": "Review"
+  },
+  "sessionType": {
+    "memorization": "Memorization",
+    "revision": "Revision",
+    "exam": "Exam"
+  },
+  "mode": {
+    "surah": "By surah",
+    "thumn": "By thumn"
+  },
+  "examType": {
+    "hizb_completion": "Hizb completion",
+    "term_batch": "Term exam",
+    "final_season": "Final exam"
+  },
+  "scopeType": {
+    "weekly": "Weekly",
+    "murajaa": "Murajaa"
+  },
+  "studentStatus": {
+    "active": "Active",
+    "paused": "Paused",
+    "graduated": "Graduated",
+    "left": "Left"
+  },
+  "results": {
+    "season": "Season",
+    "memorized": "Memorized (thumns)",
+    "average": "Average",
+    "attendance": "Attendance",
+    "final": "Final score"
+  },
+  "list": {
+    "search": "Search by name",
+    "group": "Circle",
+    "level": "Level",
+    "status": "Status",
+    "mode": "Mode",
+    "all": "All"
+  },
   "exam": {
     "title": "Exams",
     "new": "New exam",
@@ -98,7 +153,6 @@
     "exam_score": "Exam",
     "general_avg": "Average",
     "teacher_notes": "Teacher",
-    "guardian_notes": "Guardian",
     "supervisor_note": "Supervisor",
     "honor": "Honor board",
     "memorized_label": "Memorized",
@@ -140,14 +194,34 @@
     "failed": "Failed"
   },
   "dash": {
-    "title": "Dashboard",
-    "by_center": "By center",
-    "by_student": "By student",
-    "students": "Students",
-    "avg_score": "Average",
-    "attendance": "Attendance"
+    "studentsTitle": "Students",
+    "subtitle": "Overview",
+    "totalStudents": "Total students",
+    "activeGroups": "Active groups",
+    "quranSessions": "Quran sessions",
+    "commitRate": "Commit rate",
+    "thisMonth": "this month",
+    "studentName": "Student",
+    "currentSurah": "Surah",
+    "progress": "Progress",
+    "status": "Status",
+    "lastExam": "Last exam",
+    "resultsOf": "of",
+    "monthlyEval": "Monthly memorization",
+    "last6": "Last 6 months",
+    "distribution": "Distribution",
+    "excellent": "Excellent",
+    "good": "Good",
+    "support": "Needs support",
+    "today": "Today",
+    "level": "Level",
+    "center": "Center"
   },
-  "sessionStatus": { "planned": "Planned", "done": "Done", "cancelled": "Cancelled" },
+  "sessionStatus": {
+    "planned": "Planned",
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
   "planning": {
     "title": "Planning",
     "new_season": "New season",

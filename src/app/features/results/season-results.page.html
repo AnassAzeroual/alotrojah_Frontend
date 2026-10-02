@@ -58,11 +58,11 @@
       /></label>
       <label class="field"
         ><span>{{ 'result.honor' | translate }}</span>
-        <select formControlName="honor_flag">
-          <option value="none">{{ 'honor.none' | translate }}</option>
-          <option value="tashji3">{{ 'honor.tashji3' | translate }}</option>
-          <option value="intibah">{{ 'honor.intibah' | translate }}</option>
-        </select>
+        <app-dropdown
+          formControlName="honor_flag"
+          [options]="honorOptions"
+          ariaLabelKey="result.honor"
+        />
       </label>
       <button
         type="submit"

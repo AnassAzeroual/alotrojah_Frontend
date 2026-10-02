@@ -1,7 +1,6 @@
 @use '../../styles/tokens' as *;
 
 // Page-specific tweaks only; shared split layout lives in styles/_auth.scss.
-// Keeps component style budget small.
 :host {
   display: block;
 }

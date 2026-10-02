@@ -45,6 +45,16 @@ export class AuthService {
     );
   }
 
+  register(full_name: string, email: string, password: string): Observable<LoginData> {
+    return this.api.post<LoginData>('/auth/register', { full_name, email, password }).pipe(
+      tap((d) => {
+        localStorage.setItem(TOKEN_KEY, d.access_token);
+        this.token.set(d.access_token);
+        this.currentUser.set(d.user);
+      }),
+    );
+  }
+
   /** Single-flight refresh: concurrent 401s share one call. */
   refreshOnce(): Observable<string> {
     if (!this.inflightRefresh) {

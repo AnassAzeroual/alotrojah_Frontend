@@ -12,14 +12,19 @@ import { Chart, ChartData, ChartOptions, ChartType, registerables } from 'chart.
 
 Chart.register(...registerables);
 
-const FONT = "'Cairo','Segoe UI',Tahoma,sans-serif";
+const FONT = "'Readex Pro','Tajawal','Cairo','Segoe UI',sans-serif";
 
 /** Thin Chart.js wrapper: create on view init, update on input change, destroy on teardown. */
 @Component({
   selector: 'app-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<canvas #chartCanvas role="img" [attr.aria-label]="label()"></canvas>`,
+  template: `<div class="chart-box">
+    <canvas #chartCanvas role="img" [attr.aria-label]="label()"></canvas>
+  </div>`,
+  styles: [
+    '.chart-box{position:relative;height:260px} :host{display:block} canvas{max-height:260px}',
+  ],
 })
 export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   readonly type = input.required<ChartType>();
@@ -50,12 +55,20 @@ export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.chart = null;
   }
 
+  private isDark(): boolean {
+    return document.documentElement.dataset['theme'] === 'dark';
+  }
+
   private rtlOptions(): ChartOptions {
     const base = this.options() ?? {};
+    const dark = this.isDark();
+    const tickColor = dark ? '#94b3ad' : '#64748b';
     return {
-      animation: { duration: 700, easing: 'easeOutQuart' },
+      animation: { duration: 800, easing: 'easeOutQuart' },
+      responsive: true,
+      maintainAspectRatio: false,
       ...(this.type() === 'doughnut' && (base as Record<string, unknown>)['cutout'] === undefined
-        ? { cutout: '68%' }
+        ? { cutout: '72%' }
         : {}),
       ...base,
       plugins: {
@@ -63,25 +76,29 @@ export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
         legend: {
           rtl: true,
           textDirection: 'rtl',
-          labels: { font: { family: FONT }, color: '#1c2420', usePointStyle: true },
+          position: 'bottom',
+          labels: { font: { family: FONT }, color: tickColor, usePointStyle: true, padding: 16 },
           ...(base.plugins?.['legend'] ?? {}),
         },
         tooltip: {
           rtl: true,
           textDirection: 'rtl',
-          backgroundColor: '#063325',
+          backgroundColor: dark ? '#12211d' : '#0b2e25',
+          borderColor: 'rgba(0,184,169,.4)',
+          borderWidth: 1,
           titleFont: { family: FONT },
           bodyFont: { family: FONT },
           cornerRadius: 12,
+          padding: 12,
           ...(base.plugins?.['tooltip'] ?? {}),
         },
       },
-      scales: this.themedScales(base),
+      scales: this.type() === 'doughnut' ? undefined : this.themedScales(base, tickColor, dark),
     };
   }
 
   private themedData(): ChartData {
-    const palette = ['#0e7c5b', '#c9a227', '#2f9e73', '#2471a3', '#6fbf97', '#d48806'];
+    const palette = ['#00b8a9', '#8b5cf6', '#0e9f6e', '#06b6d4', '#f59e0b', '#64748b'];
     const src = this.data();
     return {
       ...src,
@@ -98,13 +115,25 @@ export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     };
   }
 
-  private themedScales(base: ChartOptions): ChartOptions['scales'] {
-    const tick = { font: { family: FONT }, color: '#6b7671' };
-    const grid = { color: 'rgba(14,124,91,.08)' };
-    const scales = { ...(base.scales ?? {}) } as Record<string, Record<string, unknown>>;
+  private themedScales(
+    base: ChartOptions,
+    tickColor = '#64748b',
+    dark = false,
+  ): ChartOptions['scales'] {
+    const tick = { font: { family: FONT }, color: tickColor };
+    const grid = { color: dark ? 'rgba(255,255,255,.06)' : 'rgba(0,184,169,.1)' };
+    const defaults: Record<string, Record<string, unknown>> = {
+      x: { grid: { display: false }, ticks: { ...tick } },
+      y: { grid, ticks: { ...tick }, border: { display: false } },
+    };
+    const scales = { ...defaults, ...((base.scales ?? {}) as object) } as Record<
+      string,
+      Record<string, unknown>
+    >;
     for (const key of Object.keys(scales)) {
       scales[key]['ticks'] = { ...tick, ...((scales[key]['ticks'] as object) ?? {}) };
-      scales[key]['grid'] = { ...grid, ...((scales[key]['grid'] as object) ?? {}) };
+      if (key === 'y')
+        scales[key]['grid'] = { ...grid, ...((scales[key]['grid'] as object) ?? {}) };
     }
     return scales as ChartOptions['scales'];
   }

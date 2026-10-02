@@ -30,21 +30,20 @@
   <form class="card anim-rise" style="--i: 2" [formGroup]="form" (ngSubmit)="submit()">
     <label class="field"
       ><span>{{ 'exam.type' | translate }}</span>
-      <select formControlName="exam_type">
-        <option value="hizb_completion">{{ 'examType.hizb_completion' | translate }}</option>
-        <option value="term_batch">{{ 'examType.term_batch' | translate }}</option>
-        <option value="final_season">{{ 'examType.final_season' | translate }}</option>
-      </select>
+      <app-dropdown
+        formControlName="exam_type"
+        [options]="examTypeOptions"
+        ariaLabelKey="exam.type"
+      />
     </label>
     @if (form.controls.exam_type.value !== 'final_season') {
       <label class="field"
         ><span>{{ 'planning.pick_term' | translate }}</span>
-        <select [formControl]="form.controls.term_id">
-          <option [ngValue]="null">—</option>
-          @for (t of terms.value() ?? []; track t.id) {
-            <option [ngValue]="t.id">{{ t.name_ar }}</option>
-          }
-        </select>
+        <app-dropdown
+          [formControl]="form.controls.term_id"
+          [options]="termOptions()"
+          ariaLabelKey="planning.pick_term"
+        />
       </label>
     }
     <label class="field"

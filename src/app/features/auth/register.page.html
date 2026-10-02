@@ -2,15 +2,25 @@
   <app-auth-topbar />
   <section class="auth-card">
     <div class="auth-form-side">
-      <h1 class="auth-title">{{ 'auth.hello_again' | translate }}</h1>
+      <h1 class="auth-title">{{ 'auth.create_account' | translate }}</h1>
       <p class="auth-sub">{{ 'auth.get_started' | translate }}</p>
 
       <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
         <div class="auth-input">
           <input
+            type="text"
+            formControlName="name"
+            autocomplete="name"
+            [placeholder]="'auth.name' | translate"
+            [attr.aria-label]="'auth.name' | translate"
+          />
+        </div>
+
+        <div class="auth-input">
+          <input
             type="email"
             formControlName="email"
-            autocomplete="username"
+            autocomplete="email"
             dir="ltr"
             [placeholder]="'auth.email' | translate"
             [attr.aria-label]="'auth.email' | translate"
@@ -21,7 +31,7 @@
           <input
             [type]="showPw() ? 'text' : 'password'"
             formControlName="password"
-            autocomplete="current-password"
+            autocomplete="new-password"
             dir="ltr"
             [placeholder]="'auth.password' | translate"
             [attr.aria-label]="'auth.password' | translate"
@@ -64,10 +74,6 @@
           </button>
         </div>
 
-        <div class="auth-meta-row">
-          <button type="button" class="link-quiet">{{ 'auth.recovery' | translate }}</button>
-        </div>
-
         @if (failed()) {
           <p class="auth-error">{{ 'auth.invalid' | translate }}</p>
         }
@@ -76,14 +82,14 @@
           @if (loading()) {
             <app-spinner />
           } @else {
-            {{ 'auth.login' | translate }}
+            {{ 'auth.create_account' | translate }}
           }
         </button>
       </form>
 
       <p class="auth-switch">
-        {{ 'auth.no_account' | translate }}
-        <a routerLink="/register">{{ 'auth.register' | translate }}</a>
+        {{ 'auth.have_account' | translate }}
+        <a routerLink="/login">{{ 'auth.login' | translate }}</a>
       </p>
     </div>
 

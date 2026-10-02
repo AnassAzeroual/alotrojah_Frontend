@@ -7,6 +7,7 @@
 @use 'app/styles/feedback';
 @use 'app/styles/motion';
 @use 'app/styles/tables';
+@use 'app/styles/auth';
 @use 'app/styles/rtl';
 @use 'app/styles/print';
 
@@ -57,12 +58,4 @@ textarea {
 
 .muted {
   color: var(--color-muted);
-}
-
-// Quranic text (ayat, verse references): naskh serif, larger line height.
-// Amiri downloads lazily (unicode-range subsets) only when used.
-.quran-text {
-  font-family: var(--font-quran);
-  font-size: 1.2em;
-  line-height: 2;
 }

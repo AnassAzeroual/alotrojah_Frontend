@@ -7,6 +7,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login.page').then((m) => m.LoginPage),
   },
   {
+    path: 'register',
+    loadComponent: () => import('./features/auth/register.page').then((m) => m.RegisterPage),
+  },
+  {
     path: '',
     loadComponent: () => import('./core/layout/shell.component').then((m) => m.ShellComponent),
     canActivate: [roleGuard],
@@ -28,11 +32,6 @@ export const routes: Routes = [
       {
         path: 'groups',
         loadChildren: () => import('./features/groups/groups.routes').then((m) => m.GROUPS_ROUTES),
-      },
-      {
-        path: 'guardians',
-        loadChildren: () =>
-          import('./features/guardians/guardians.routes').then((m) => m.GUARDIANS_ROUTES),
       },
       {
         path: 'planning',

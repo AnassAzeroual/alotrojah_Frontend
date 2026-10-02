@@ -1,245 +1,339 @@
-<header class="app-header">
-  <span class="brand" aria-hidden="true"><img src="logo.jpg" alt="" /></span>
-  <a class="title-block" routerLink="/" [attr.aria-label]="'app.title' | translate">
-    <strong>{{ 'app.title' | translate }}</strong>
-    <small class="muted"
-      >{{ 'app.subtitle' | translate }} · <span class="ltr-num">v{{ version }}</span></small
-    >
-  </a>
-  <span class="user-chip">
-    <span class="avatar" aria-hidden="true">{{ (user()?.full_name ?? '?').slice(0, 1) }}</span>
-    <span class="who">
-      {{ user()?.full_name }}
-      @if (user()?.role) {
-        <small class="muted">({{ 'role.' + user()?.role | translate }})</small>
+<div
+  class="shell"
+  [class.collapsed]="collapsed()"
+  [class.dark]="isDark()"
+  [attr.data-collapsed]="collapsed()"
+>
+  <div class="bg-scene" aria-hidden="true">
+    <div class="bg-orb orb-a"></div>
+    <div class="bg-orb orb-b"></div>
+    <div class="bg-pattern"></div>
+  </div>
+
+  <!-- Sidebar (right in RTL = inline-start) -->
+  <aside class="sidebar" [class.open]="mobileOpen()" aria-label="sidebar">
+    <div class="side-brand">
+      <a routerLink="/" class="brand" (click)="closeMobile()">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M16 2 19 9l7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#00b8a9" />
+            <circle cx="16" cy="14" r="3.2" fill="#fff" />
+          </svg>
+        </span>
+        <span class="brand-txt">
+          <strong>{{ 'app.title' | translate }}</strong>
+          <small>{{ 'app.subtitle' | translate }}</small>
+        </span>
+      </a>
+      <span class="brand-badge">v{{ version }}</span>
+    </div>
+
+    <div class="side-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m21 21-4-4" />
+      </svg>
+      <input type="search" [placeholder]="'list.search' | translate" aria-label="search" />
+    </div>
+
+    <nav class="side-nav" [attr.aria-label]="'app.title' | translate">
+      <p class="nav-caption">{{ 'nav.main' | translate }}</p>
+      @for (item of items(); track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+          (click)="closeMobile()"
+          [attr.data-icon]="item.icon"
+          [attr.title]="collapsed() ? (item.key | translate) : null"
+        >
+          <span class="ico" aria-hidden="true" [ngSwitch]="item.icon">
+            <svg
+              *ngSwitchCase="'home'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M3 11 12 3l9 8" />
+              <path d="M5 10v10h5v-6h4v6h5V10" />
+            </svg>
+            <svg
+              *ngSwitchCase="'users'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <svg
+              *ngSwitchCase="'grid'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="2" />
+              <rect x="14" y="3" width="7" height="7" rx="2" />
+              <rect x="3" y="14" width="7" height="7" rx="2" />
+              <rect x="14" y="14" width="7" height="7" rx="2" />
+            </svg>
+            <svg
+              *ngSwitchCase="'shield'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10z" />
+            </svg>
+            <svg
+              *ngSwitchCase="'edit'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+            </svg>
+            <svg
+              *ngSwitchCase="'calendar'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            <svg
+              *ngSwitchCase="'chart'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M12 20V10M18 20V4M6 20v-4" />
+            </svg>
+            <svg
+              *ngSwitchCase="'file'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6M9 13h6M9 17h4" />
+            </svg>
+            <svg
+              *ngSwitchCase="'refresh'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M21 12a9 9 0 1 1-2.6-6.4" />
+              <path d="M21 3v6h-6" />
+            </svg>
+            <svg
+              *ngSwitchCase="'award'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="8" r="6" />
+              <path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5" />
+            </svg>
+            <svg
+              *ngSwitchCase="'report'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <path d="M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            <svg
+              *ngSwitchCase="'bell'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+            </svg>
+            <svg
+              *ngSwitchCase="'share'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4" />
+            </svg>
+            <svg
+              *ngSwitchCase="'mail'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="m22 7-10 6L2 7" />
+            </svg>
+            <svg
+              *ngSwitchDefault
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="12" r="9" />
+            </svg>
+          </span>
+          <span class="lbl">{{ item.key | translate }}</span>
+          <span class="glow" aria-hidden="true"></span>
+        </a>
       }
-    </span>
-  </span>
-  <app-language-switcher />
-  <button
-    type="button"
-    class="icon-btn logout"
-    (click)="logout()"
-    [attr.aria-label]="'auth.logout' | translate"
-    [title]="'auth.logout' | translate"
-  >
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <path d="M16 17l5-5-5-5" />
-      <path d="M21 12H9" />
-    </svg>
-  </button>
-</header>
+    </nav>
 
-<main class="content">
-  <router-outlet />
-</main>
+    <div class="side-foot">
+      <button
+        type="button"
+        class="foot-btn"
+        (click)="theme.toggle()"
+        [attr.aria-label]="'nav.theme' | translate"
+      >
+        @if (isDark()) {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+            />
+          </svg>
+          <span>{{ 'nav.light' | translate }}</span>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+          </svg>
+          <span>{{ 'nav.dark' | translate }}</span>
+        }
+      </button>
+      <button type="button" class="foot-btn danger" (click)="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <path d="M16 17l5-5-5-5M21 12H9" />
+        </svg>
+        <span>{{ 'auth.logout' | translate }}</span>
+      </button>
+    </div>
+  </aside>
+  <div class="scrim" (click)="closeMobile()" [class.show]="mobileOpen()"></div>
 
-<nav class="app-nav" [attr.aria-label]="'app.title' | translate">
-  @for (item of items(); track item.path) {
-    <a
-      [routerLink]="item.path"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-    >
-      @switch (item.path) {
-        @case ('/') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="3" y="3" width="7" height="9" rx="1.5" />
-            <rect x="14" y="3" width="7" height="5" rx="1.5" />
-            <rect x="14" y="12" width="7" height="9" rx="1.5" />
-            <rect x="3" y="16" width="7" height="5" rx="1.5" />
+  <div class="main">
+    <header class="topbar">
+      <div class="top-start">
+        <button
+          type="button"
+          class="icon-btn menu-btn"
+          (click)="mobileOpen.set(true)"
+          [attr.aria-label]="'nav.menu' | translate"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h10" />
           </svg>
-        }
-        @case ('/entry') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+        </button>
+        <button
+          type="button"
+          class="icon-btn desk-btn"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="'nav.menu' | translate"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h10" />
           </svg>
-        }
-        @case ('/students') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+        </button>
+        <div class="clock">
+          <button
+            type="button"
+            class="date-chip ltr-num"
+            (click)="copyDate(gregorian(), 'greg')"
+            [class.copied]="copiedDate() === 'greg'"
+            [attr.title]="'delegation.copy' | translate"
           >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-        }
-        @case ('/groups') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="3" y="4" width="18" height="16" rx="2" />
-            <path d="M3 9h18" />
-            <path d="M8 4v5" />
-          </svg>
-        }
-        @case ('/guardians') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10z" />
-          </svg>
-        }
-        @case ('/planning') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <path d="M16 2v4M8 2v4M3 10h18" />
-          </svg>
-        }
-        @case ('/scoring') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 20V10M18 20V4M6 20v-4" />
-          </svg>
-        }
-        @case ('/exams') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <path d="M14 2v6h6M9 13h6M9 17h4" />
-          </svg>
-        }
-        @case ('/reviews') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M21 12a9 9 0 1 1-2.6-6.4" />
-            <path d="M21 3v6h-6" />
-          </svg>
-        }
-        @case ('/results/term') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="8" r="6" />
-            <path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5" />
-          </svg>
-        }
-        @case ('/reports/term') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <path d="M7 10l5 5 5-5" />
-            <path d="M12 15V3" />
-          </svg>
-        }
-        @case ('/news') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+            {{ gregorian() }}
+          </button>
+          @if (hijri()) {
+            <button
+              type="button"
+              class="date-chip"
+              (click)="copyDate(hijri(), 'hijri')"
+              [class.copied]="copiedDate() === 'hijri'"
+              [attr.title]="'delegation.copy' | translate"
+            >
+              {{ hijri() }}
+            </button>
+          }
+          <small>{{ 'dash.today' | translate }}</small>
+        </div>
+      </div>
+      <div class="top-end">
+        <button
+          type="button"
+          class="icon-btn"
+          (click)="theme.toggle()"
+          [attr.aria-label]="'nav.theme' | translate"
+        >
+          @if (isDark()) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="12" r="4" />
+              <path
+                d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+              />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+            </svg>
+          }
+        </button>
+        <button
+          type="button"
+          class="icon-btn dot"
+          [attr.aria-label]="'nav.notifications' | translate"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.7 21a2 2 0 0 1-3.4 0" />
           </svg>
-        }
-        @case ('/delegate') {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+        </button>
+        <app-language-switcher />
+        <span class="user-chip">
+          <span class="avatar" aria-hidden="true">{{
+            (user()?.full_name ?? '?').slice(0, 1)
+          }}</span>
+          <span class="who"
+            >{{ user()?.full_name
+            }}<small class="muted">{{
+              user()?.role ? ('role.' + user()?.role! | translate) : ''
+            }}</small></span
           >
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4" />
-          </svg>
-        }
-        @default {
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 8v4l2.5 2.5" />
-          </svg>
-        }
-      }
-      <span>{{ item.key | translate }}</span>
-    </a>
-  }
-</nav>
+        </span>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

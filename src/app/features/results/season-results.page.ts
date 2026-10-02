@@ -5,13 +5,20 @@ import { firstValueFrom, map } from 'rxjs';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ResultsService } from '../../core/api/results.service';
 import { StudentsService } from '../../core/api/students.service';
+import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
 
 @Component({
   selector: 'app-season-results-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent, StatusBadgeComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslatePipe,
+    DropdownComponent,
+    SpinnerComponent,
+    StatusBadgeComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './season-results.page.html',
 })
@@ -24,6 +31,12 @@ export class SeasonResultsPage {
   readonly pickedStudent = signal<number | null>(null);
   readonly saving = signal(false);
   private readonly tick = signal(0);
+
+  readonly honorOptions = [
+    { value: 'none', labelKey: 'honor.none' },
+    { value: 'tashji3', labelKey: 'honor.tashji3' },
+    { value: 'intibah', labelKey: 'honor.intibah' },
+  ];
 
   readonly found = resource({
     params: () => ({ q: this.search() }),

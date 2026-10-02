@@ -1,11 +1,13 @@
 {
-  "app": { "title": "AlOtrojah", "subtitle": "Suivi de la mémorisation du Coran" },
+  "app": {
+    "title": "AlOtrojah",
+    "subtitle": "Suivi de la mémorisation du Coran"
+  },
   "nav": {
     "dashboard": "Accueil",
     "entry": "Saisie du jour",
     "students": "Élèves",
     "groups": "Cercles",
-    "guardians": "Parents",
     "planning": "Planification",
     "scoring": "Notation",
     "exams": "Examens",
@@ -15,32 +17,38 @@
     "news": "Annonces",
     "delegate": "Délégation",
     "notifications": "Messages",
-    "account": "Compte"
+    "main": "Principal",
+    "menu": "Menu",
+    "theme": "Theme",
+    "light": "Clair",
+    "dark": "Sombre"
   },
   "auth": {
     "login": "Connexion",
     "email": "E-mail",
     "password": "Mot de passe",
-    "submit": "Entrer",
     "logout": "Déconnexion",
     "invalid": "Identifiants invalides",
     "language": "Langue",
     "show_password": "Afficher le mot de passe",
     "hide_password": "Masquer le mot de passe",
-    "tagline": "L'exemple du croyant qui récite le Coran est celui du cédrat : son parfum est agréable et son goût est agréable"
+    "register": "Inscription",
+    "create_account": "Créer un compte",
+    "have_account": "Déjà un compte ?",
+    "no_account": "Pas de compte ?",
+    "name": "Nom",
+    "hello_again": "Bon retour !",
+    "get_started": "Commençons",
+    "recovery": "Mot de passe oublié",
+    "art_caption": "Enfin, tout votre travail au même endroit.",
+    "art_hint": "Suivi de mémorisation facile"
   },
   "common": {
     "save": "Enregistrer",
     "cancel": "Annuler",
     "delete": "Supprimer",
-    "search": "Rechercher",
-    "loading": "Chargement…",
     "empty": "Aucune donnée",
-    "total": "Total",
     "actions": "Actions",
-    "retry": "Réessayer",
-    "from": "De",
-    "to": "À",
     "week": "Semaine",
     "session": "Séance",
     "score": "Note",
@@ -55,22 +63,69 @@
     "admin": "Directeur",
     "supervisor": "Superviseur",
     "teacher": "Enseignant",
-    "guardian": "Parent",
     "student": "Élève",
     "board": "Conseil"
   },
-  "teacherType": { "hifz": "Mémorisation", "murajaa": "Révision", "both": "Les deux" },
-  "attendance": { "present": "Présent", "absent": "Absent", "late": "En retard", "excused": "Excusé" },
-  "audience": { "all": "Général", "teachers": "Enseignants", "manager": "Direction", "my_students": "Mes élèves" },
-  "honor": { "none": "—", "tashji3": "Encouragement", "intibah": "Attention" },
-  "weekType": { "study": "Étude", "review": "Révision" },
-  "sessionType": { "memorization": "Mémorisation", "revision": "Révision", "exam": "Examen" },
-  "mode": { "surah": "Par sourate", "thumn": "Par thoumn" },
-  "examType": { "hizb_completion": "Validation de hizb", "term_batch": "Examen du trimestre", "final_season": "Examen final" },
-  "scopeType": { "weekly": "Hebdomadaire", "murajaa": "Murajaa" },
-  "studentStatus": { "active": "Actif", "paused": "En pause", "graduated": "Diplômé", "left": "Parti" },
-  "results": { "season": "Saison", "memorized": "Mémorisé (thoumns)", "average": "Moyenne", "attendance": "Présence", "final": "Note finale" },
-  "list": { "search": "Rechercher par nom", "group": "Cercle", "level": "Niveau", "status": "Statut", "mode": "Mode", "all": "Tous" },
+  "attendance": {
+    "present": "Présent",
+    "absent": "Absent",
+    "late": "En retard",
+    "excused": "Excusé"
+  },
+  "audience": {
+    "all": "Général",
+    "teachers": "Enseignants",
+    "manager": "Direction",
+    "my_students": "Mes élèves"
+  },
+  "honor": {
+    "none": "—",
+    "tashji3": "Encouragement",
+    "intibah": "Attention"
+  },
+  "weekType": {
+    "study": "Étude",
+    "review": "Révision"
+  },
+  "sessionType": {
+    "memorization": "Mémorisation",
+    "revision": "Révision",
+    "exam": "Examen"
+  },
+  "mode": {
+    "surah": "Par sourate",
+    "thumn": "Par thoumn"
+  },
+  "examType": {
+    "hizb_completion": "Validation de hizb",
+    "term_batch": "Examen du trimestre",
+    "final_season": "Examen final"
+  },
+  "scopeType": {
+    "weekly": "Hebdomadaire",
+    "murajaa": "Murajaa"
+  },
+  "studentStatus": {
+    "active": "Actif",
+    "paused": "En pause",
+    "graduated": "Diplômé",
+    "left": "Parti"
+  },
+  "results": {
+    "season": "Saison",
+    "memorized": "Mémorisé (thoumns)",
+    "average": "Moyenne",
+    "attendance": "Présence",
+    "final": "Note finale"
+  },
+  "list": {
+    "search": "Rechercher par nom",
+    "group": "Cercle",
+    "level": "Niveau",
+    "status": "Statut",
+    "mode": "Mode",
+    "all": "Tous"
+  },
   "exam": {
     "title": "Examens",
     "new": "Nouvel examen",
@@ -98,7 +153,6 @@
     "exam_score": "Examen",
     "general_avg": "Moyenne",
     "teacher_notes": "Enseignant",
-    "guardian_notes": "Parent",
     "supervisor_note": "Superviseur",
     "honor": "Tableau d'honneur",
     "memorized_label": "Mémorisé",
@@ -140,14 +194,34 @@
     "failed": "Échoué"
   },
   "dash": {
-    "title": "Tableau de bord",
-    "by_center": "Par centre",
-    "by_student": "Par élève",
-    "students": "Élèves",
-    "avg_score": "Moyenne",
-    "attendance": "Présence"
+    "studentsTitle": "Eleves",
+    "subtitle": "Apercu",
+    "totalStudents": "Total",
+    "activeGroups": "Groupes actifs",
+    "quranSessions": "Sessions",
+    "commitRate": "Assiduite",
+    "thisMonth": "ce mois",
+    "studentName": "Nom",
+    "currentSurah": "Sourate",
+    "progress": "Progres",
+    "status": "Statut",
+    "lastExam": "Dernier examen",
+    "resultsOf": "sur",
+    "monthlyEval": "Mensuelle",
+    "last6": "6 mois",
+    "distribution": "Repartition",
+    "excellent": "Excellent",
+    "good": "Bien",
+    "support": "Soutien",
+    "today": "Aujourd'hui",
+    "level": "Niveau",
+    "center": "Centre"
   },
-  "sessionStatus": { "planned": "Planifiée", "done": "Terminée", "cancelled": "Annulée" },
+  "sessionStatus": {
+    "planned": "Planifiée",
+    "done": "Terminée",
+    "cancelled": "Annulée"
+  },
   "planning": {
     "title": "Planification",
     "new_season": "Nouvelle saison",

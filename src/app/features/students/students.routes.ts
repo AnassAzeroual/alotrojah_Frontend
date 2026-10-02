@@ -1,7 +1,7 @@
 ﻿import { Routes } from '@angular/router';
 import { roleGuard } from '../../core/auth/role.guard';
 
-const STAFF_FAMILY = ['admin', 'supervisor', 'teacher', 'guardian', 'student'] as const;
+const STAFF_FAMILY = ['admin', 'supervisor', 'teacher', 'student'] as const;
 
 export const STUDENTS_ROUTES: Routes = [
   {

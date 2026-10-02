@@ -6,45 +6,32 @@
   <div class="toolbar card anim-rise" style="--i: 1">
     <label class="field">
       <span>{{ 'entry.pick_group' | translate }}</span>
-      <select
-        [value]="selectedGroup() ?? ''"
-        (change)="onGroup($any($event.target).value ? +$any($event.target).value : null)"
-      >
-        <option value="">—</option>
-        @for (g of groups(); track g.id) {
-          <option [value]="g.id">{{ g.name }}</option>
-        }
-      </select>
+      <app-dropdown
+        [options]="groupOptions()"
+        [value]="txt(selectedGroup())"
+        (valueChange)="onGroup(num($event))"
+        ariaLabelKey="entry.pick_group"
+      />
     </label>
 
     <label class="field">
       <span>{{ 'entry.pick_week' | translate }}</span>
-      <select
-        [value]="selectedWeek() ?? ''"
-        (change)="onWeek($any($event.target).value ? +$any($event.target).value : null)"
-      >
-        <option value="">—</option>
-        @for (w of weeks(); track w.id) {
-          <option [value]="w.id">{{ 'common.week' | translate }} {{ w.week_number_global }}</option>
-        }
-      </select>
+      <app-dropdown
+        [options]="weekOptions()"
+        [value]="txt(selectedWeek())"
+        (valueChange)="onWeek(num($event))"
+        ariaLabelKey="entry.pick_week"
+      />
     </label>
 
     <label class="field">
       <span>{{ 'entry.pick_session' | translate }}</span>
-      <select
-        [value]="selectedSession() ?? ''"
-        (change)="
-          selectedSession.set($any($event.target).value ? +$any($event.target).value : null)
-        "
-      >
-        <option value="">—</option>
-        @for (s of sessions.value() ?? []; track s.id) {
-          <option [value]="s.id">
-            {{ 'common.session' | translate }} {{ s.session_number_global }}
-          </option>
-        }
-      </select>
+      <app-dropdown
+        [options]="sessionOptions()"
+        [value]="txt(selectedSession())"
+        (valueChange)="selectedSession.set(num($event))"
+        ariaLabelKey="entry.pick_session"
+      />
     </label>
   </div>
 
