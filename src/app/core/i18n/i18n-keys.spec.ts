@@ -108,7 +108,7 @@ describe('i18n dictionaries', () => {
       ['honor', ['none', 'tashji3', 'intibah']],
       ['weekType', ['study', 'review']],
       ['common', ['active', 'paused', 'graduated', 'left']], // kind="generic" + status
-      ['role', ['admin', 'supervisor', 'teacher', 'guardian', 'student', 'board']],
+      ['role', ['admin', 'supervisor', 'teacher', 'student', 'board']],
       ['mode', ['surah', 'thumn']],
       ['examType', ['hizb_completion', 'term_batch', 'final_season']],
       ['scopeType', ['weekly', 'murajaa']],

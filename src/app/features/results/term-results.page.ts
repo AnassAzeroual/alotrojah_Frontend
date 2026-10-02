@@ -72,7 +72,6 @@ export class TermResultsPage {
     exam_score: new FormControl<number | null>(null),
     general_avg: new FormControl<number | null>(null),
     teacher_notes: new FormControl('', { nonNullable: true }),
-    guardian_notes: new FormControl('', { nonNullable: true }),
     supervisor_note: new FormControl('', { nonNullable: true }),
     honor_flag: new FormControl('none', { nonNullable: true }),
   });
@@ -87,7 +86,6 @@ export class TermResultsPage {
       exam_score: e.exam_score,
       general_avg: e.general_avg,
       teacher_notes: e.teacher_notes ?? '',
-      guardian_notes: e.guardian_notes ?? '',
       supervisor_note: e.supervisor_note ?? '',
       honor_flag: e.honor_flag,
     });
@@ -108,7 +106,6 @@ export class TermResultsPage {
         exam_score: v.exam_score,
         general_avg: v.general_avg,
         teacher_notes: v.teacher_notes || null,
-        guardian_notes: v.guardian_notes || null,
         supervisor_note: v.supervisor_note || null,
         honor_flag: v.honor_flag,
       })

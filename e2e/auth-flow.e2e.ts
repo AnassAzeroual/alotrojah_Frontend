@@ -25,13 +25,10 @@ test('admin logs in, sees dashboard and students', async ({ page }) => {
   const rows = page.locator('.grid-auto .card');
   await expect(rows).toHaveCount(7);
 
-  // groups + guardians lists render (regression: NG0203 loader bug spun forever)
+  // groups list renders (regression: NG0203 loader bug spun forever)
   await page.getByRole('link', { name: /الحلقات/ }).click();
   await expect(page).toHaveURL(/\/groups$/);
   await expect(page.locator('.grid-auto .card')).toHaveCount(5);
-  await page.getByRole('link', { name: /الأولياء/ }).click();
-  await expect(page).toHaveURL(/\/guardians$/);
-  await expect(page.locator('.grid-auto .card')).toHaveCount(7);
 
   // dashboard renders charts (demo fallback when no center is picked)
   await page.getByRole('link', { name: /الرئيسية/ }).click();

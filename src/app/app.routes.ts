@@ -34,11 +34,6 @@ export const routes: Routes = [
         loadChildren: () => import('./features/groups/groups.routes').then((m) => m.GROUPS_ROUTES),
       },
       {
-        path: 'guardians',
-        loadChildren: () =>
-          import('./features/guardians/guardians.routes').then((m) => m.GUARDIANS_ROUTES),
-      },
-      {
         path: 'planning',
         loadChildren: () =>
           import('./features/planning/planning.routes').then((m) => m.PLANNING_ROUTES),

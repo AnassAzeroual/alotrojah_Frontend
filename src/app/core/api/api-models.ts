@@ -17,7 +17,7 @@ export interface Paginated<T> {
   meta: PageMeta;
 }
 
-export type Role = 'admin' | 'supervisor' | 'teacher' | 'guardian' | 'student' | 'board';
+export type Role = 'admin' | 'supervisor' | 'teacher' | 'student' | 'board';
 export type TeacherType = 'hifz' | 'murajaa' | 'both';
 
 export interface CurrentUser {
@@ -61,21 +61,12 @@ export interface Group {
   students_count?: number;
 }
 
-export interface Guardian {
-  id: number;
-  full_name: string;
-  phone: string | null;
-  relation: string;
-  students_count?: number;
-}
-
 export interface Student {
   id: number;
   full_name: string;
   center_id: number | null;
   group?: { id: number; name: string };
   level_id: number | null;
-  guardian?: { id: number; full_name: string };
   gender: string | null;
   status: string;
   student_type: string | null;

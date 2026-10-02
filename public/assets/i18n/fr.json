@@ -8,7 +8,6 @@
     "entry": "Saisie du jour",
     "students": "Élèves",
     "groups": "Cercles",
-    "guardians": "Parents",
     "planning": "Planification",
     "scoring": "Notation",
     "exams": "Examens",
@@ -64,7 +63,6 @@
     "admin": "Directeur",
     "supervisor": "Superviseur",
     "teacher": "Enseignant",
-    "guardian": "Parent",
     "student": "Élève",
     "board": "Conseil"
   },
@@ -155,7 +153,6 @@
     "exam_score": "Examen",
     "general_avg": "Moyenne",
     "teacher_notes": "Enseignant",
-    "guardian_notes": "Parent",
     "supervisor_note": "Superviseur",
     "honor": "Tableau d'honneur",
     "memorized_label": "Mémorisé",

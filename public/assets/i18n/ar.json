@@ -8,7 +8,6 @@
     "entry": "إدخال اليوم",
     "students": "الطلاب",
     "groups": "الحلقات",
-    "guardians": "الأولياء",
     "planning": "التخطيط",
     "scoring": "التنقيط",
     "exams": "الاختبارات",
@@ -64,7 +63,6 @@
     "admin": "مدير",
     "supervisor": "ناظر",
     "teacher": "معلم",
-    "guardian": "ولي",
     "student": "طالب",
     "board": "مجلس الإدارة"
   },
@@ -155,7 +153,6 @@
     "exam_score": "الاختبار",
     "general_avg": "المعدل العام",
     "teacher_notes": "ملاحظات المعلم",
-    "guardian_notes": "ملاحظات الولي",
     "supervisor_note": "ملاحظة الناظر",
     "honor": "لوحة الشرف",
     "memorized_label": "المحفوظ",

@@ -8,7 +8,6 @@
     "entry": "Daily entry",
     "students": "Students",
     "groups": "Circles",
-    "guardians": "Guardians",
     "planning": "Planning",
     "scoring": "Scoring",
     "exams": "Exams",
@@ -64,7 +63,6 @@
     "admin": "Admin",
     "supervisor": "Supervisor",
     "teacher": "Teacher",
-    "guardian": "Guardian",
     "student": "Student",
     "board": "Board"
   },
@@ -155,7 +153,6 @@
     "exam_score": "Exam",
     "general_avg": "Average",
     "teacher_notes": "Teacher",
-    "guardian_notes": "Guardian",
     "supervisor_note": "Supervisor",
     "honor": "Honor board",
     "memorized_label": "Memorized",
