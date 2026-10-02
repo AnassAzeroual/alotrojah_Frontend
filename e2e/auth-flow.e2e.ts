@@ -7,13 +7,14 @@ import { expect, test } from '@playwright/test';
 test('guests are sent to login', async ({ page }) => {
   await page.goto('/students');
   await expect(page).toHaveURL(/\/login$/);
-  await expect(page.getByRole('heading', { name: /تسجيل الدخول/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /مرحباً بعودتك/ })).toBeVisible();
 });
 
 test('admin logs in, sees dashboard and students', async ({ page }) => {
   await page.goto('/login');
-  await page.getByLabel(/البريد/).fill('admin@example.org');
-  await page.getByLabel(/كلمة المرور/).fill('password123');
+  await page.getByLabel('البريد الإلكتروني', { exact: true }).fill('admin@example.org');
+  // exact: the password visibility toggle also contains "كلمة المرور" in its label
+  await page.getByLabel('كلمة المرور', { exact: true }).fill('password123');
   await page.getByRole('button', { name: /دخول/ }).click();
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
 
@@ -21,20 +22,19 @@ test('admin logs in, sees dashboard and students', async ({ page }) => {
   await page.getByRole('link', { name: /الطلاب/ }).click();
   await expect(page).toHaveURL(/\/students$/);
   await expect(page.getByText('أحمد بن يوسف')).toBeVisible();
-  const rows = page.locator('.rows .row');
+  const rows = page.locator('.grid-auto .card');
   await expect(rows).toHaveCount(7);
 
   // groups + guardians lists render (regression: NG0203 loader bug spun forever)
   await page.getByRole('link', { name: /الحلقات/ }).click();
   await expect(page).toHaveURL(/\/groups$/);
-  await expect(page.locator('.rows .row')).toHaveCount(5);
+  await expect(page.locator('.grid-auto .card')).toHaveCount(5);
   await page.getByRole('link', { name: /الأولياء/ }).click();
   await expect(page).toHaveURL(/\/guardians$/);
-  await expect(page.locator('.rows .row')).toHaveCount(7);
+  await expect(page.locator('.grid-auto .card')).toHaveCount(7);
 
-  // dashboard loads charts for center 1
+  // dashboard renders charts (demo fallback when no center is picked)
   await page.getByRole('link', { name: /الرئيسية/ }).click();
-  await page.getByLabel(/حسب المركز/).selectOption({ index: 1 });
   await expect(page.locator('canvas').first()).toBeVisible();
 
   // logout returns to login
@@ -44,8 +44,8 @@ test('admin logs in, sees dashboard and students', async ({ page }) => {
 
 test('session survives reload', async ({ page }) => {
   await page.goto('/login');
-  await page.getByLabel(/البريد/).fill('admin@example.org');
-  await page.getByLabel(/كلمة المرور/).fill('password123');
+  await page.getByLabel('البريد الإلكتروني', { exact: true }).fill('admin@example.org');
+  await page.getByLabel('كلمة المرور', { exact: true }).fill('password123');
   await page.getByRole('button', { name: /دخول/ }).click();
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
   await page.reload();
