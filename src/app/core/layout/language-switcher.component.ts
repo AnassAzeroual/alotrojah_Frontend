@@ -19,10 +19,21 @@ import { LanguageService, AppLang } from '../i18n/language.service';
   styles: [
     `
       select {
-        padding: var(--space-2);
-        border-radius: var(--radius-sm);
-        border: 1px solid #cfd6d2;
+        height: 40px;
+        padding: 0 var(--space-3);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
         background: var(--color-surface);
+        color: var(--color-text);
+        font: inherit;
+        font-size: var(--text-sm);
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      select:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 1px;
       }
     `,
   ],
