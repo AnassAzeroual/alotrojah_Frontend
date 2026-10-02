@@ -6,31 +6,34 @@ import { AuthService } from '../../core/auth/auth.service';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { AuthArtComponent } from './auth-art.component';
 import { AuthTopbarComponent } from './auth-topbar.component';
-import { APP_VERSION_SHORT } from '../../core/version';
 
-interface LoginForm {
+interface RegisterForm {
+  name: FormControl<string>;
   email: FormControl<string>;
   password: FormControl<string>;
 }
 
 @Component({
-  selector: 'app-login-page',
+  selector: 'app-register-page',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SpinnerComponent, AuthArtComponent, AuthTopbarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './login.page.html',
-  styleUrl: './login.page.scss',
+  templateUrl: './register.page.html',
+  styleUrl: './register.page.scss',
 })
-export class LoginPage {
+export class RegisterPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly loading = signal(false);
   readonly failed = signal(false);
-  readonly version = APP_VERSION_SHORT;
   readonly showPw = signal(false);
 
-  readonly form = new FormGroup<LoginForm>({
+  readonly form = new FormGroup<RegisterForm>({
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(3)],
+    }),
     email: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
@@ -45,8 +48,8 @@ export class LoginPage {
     if (this.form.invalid || this.loading()) return;
     this.loading.set(true);
     this.failed.set(false);
-    const { email, password } = this.form.getRawValue();
-    this.auth.login(email, password).subscribe({
+    const { name, email, password } = this.form.getRawValue();
+    this.auth.register(name, email, password).subscribe({
       next: () => {
         this.loading.set(false);
         void this.router.navigate(['/']);

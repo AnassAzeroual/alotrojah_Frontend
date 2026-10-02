@@ -35,7 +35,18 @@
     "language": "Language",
     "show_password": "Show password",
     "hide_password": "Hide password",
-    "tagline": "The example of the believer who recites the Qur'an is like that of a citron: its fragrance is sweet and its taste is sweet"
+    "tagline": "The example of the believer who recites the Qur'an is like that of a citron: its fragrance is sweet and its taste is sweet",
+    "register": "Register",
+    "create_account": "Create account",
+    "have_account": "Already have an account?",
+    "no_account": "No account?",
+    "name": "Name",
+    "hello_again": "Hello Again!",
+    "get_started": "Lets get started",
+    "recovery": "Recovery Password",
+    "or_continue": "Or continue with",
+    "art_caption": "Finally, all your work in one place.",
+    "art_hint": "Track Quran memorization easily"
   },
   "common": {
     "save": "Save",

@@ -35,7 +35,18 @@
     "language": "Langue",
     "show_password": "Afficher le mot de passe",
     "hide_password": "Masquer le mot de passe",
-    "tagline": "L'exemple du croyant qui récite le Coran est celui du cédrat : son parfum est agréable et son goût est agréable"
+    "tagline": "L'exemple du croyant qui récite le Coran est celui du cédrat : son parfum est agréable et son goût est agréable",
+    "register": "Inscription",
+    "create_account": "Créer un compte",
+    "have_account": "Déjà un compte ?",
+    "no_account": "Pas de compte ?",
+    "name": "Nom",
+    "hello_again": "Bon retour !",
+    "get_started": "Commençons",
+    "recovery": "Mot de passe oublié",
+    "or_continue": "Ou continuer avec",
+    "art_caption": "Enfin, tout votre travail au même endroit.",
+    "art_hint": "Suivi de mémorisation facile"
   },
   "common": {
     "save": "Enregistrer",

@@ -6,8 +6,7 @@ const KEY = 'alotrojah_theme';
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   readonly mode = signal<ThemeMode>(
-    (localStorage.getItem(KEY) as ThemeMode) ??
-      (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+    (localStorage.getItem(KEY) as ThemeMode) ?? 'dark',
   );
 
   constructor() {
