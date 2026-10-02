@@ -35,12 +35,6 @@ button.card {
   }
 }
 
-// Tinted section (sarraj, review notices)
-.card-tint {
-  background: linear-gradient(180deg, var(--green-100), var(--color-surface) 60%);
-  border-color: var(--green-200);
-}
-
 // Stat card: label + big number (dashboard, student detail)
 .stat-card {
   background: var(--color-surface);

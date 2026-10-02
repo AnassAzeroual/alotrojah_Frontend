@@ -213,9 +213,13 @@ html[data-theme='dark'] .auth-topbar app-language-switcher select {
     }
   }
 
+  &.with-eye input {
+    padding-right: 50px;
+  }
+
   .pw-eye {
     position: absolute;
-    inset-inline-end: 8px;
+    right: 8px;
     top: 50%;
     translate: 0 -50%;
     width: 38px;
@@ -324,64 +328,6 @@ html[data-theme='dark'] .auth-topbar app-language-switcher select {
   border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent);
   border-radius: 10px;
   padding: 10px 14px;
-}
-
-.auth-div {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--color-muted);
-  font-size: var(--text-sm);
-  max-width: 420px;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.4;
-  }
-}
-
-.social-row {
-  display: flex;
-  gap: 18px;
-  justify-content: center;
-  max-width: 420px;
-}
-
-.social-btn {
-  width: 84px;
-  height: 56px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-2);
-  color: var(--color-text);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition:
-    transform 160ms cubic-bezier(0.34, 1.4, 0.4, 1),
-    box-shadow 160ms,
-    border-color 160ms;
-
-  svg {
-    width: 26px;
-    height: 26px;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    border-color: var(--color-primary);
-    box-shadow: var(--shadow-2);
-  }
-
-  &.raised {
-    box-shadow: var(--shadow-2);
-    transform: translateY(-2px);
-    border-color: var(--color-primary);
-  }
 }
 
 // Art side

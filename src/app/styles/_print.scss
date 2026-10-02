@@ -2,8 +2,8 @@
 // Pages opt in with class="print-sheet".
 
 @media print {
-  .app-nav,
-  .app-header,
+  .sidebar,
+  .topbar,
   .no-print {
     display: none !important;
   }

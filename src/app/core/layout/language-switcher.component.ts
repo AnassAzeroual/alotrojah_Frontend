@@ -12,7 +12,7 @@ import { LanguageService, AppLang } from '../i18n/language.service';
       [attr.aria-label]="'auth.language'"
     >
       @for (l of lang.langs; track l) {
-        <option [value]="l">{{ label(l) }}</option>
+        <option [value]="l" [selected]="lang.current() === l">{{ label(l) }}</option>
       }
     </select>
   `,

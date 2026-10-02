@@ -63,17 +63,6 @@
   }
 }
 
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 .anim-rise {
   animation: rise calc(var(--dur-3) * var(--motion)) var(--ease-out) both;
   animation-delay: calc(var(--i, 0) * 45ms);
