@@ -17,6 +17,7 @@
     "news": "الأخبار",
     "delegate": "التفويض",
     "notifications": "المراسلات",
+    "registrations": "طلبات الانتساب",
     "main": "الرئيسية",
     "menu": "القائمة",
     "theme": "المظهر",
@@ -41,7 +42,22 @@
     "get_started": "لنبدأ مع تجربتك",
     "recovery": "استعادة كلمة المرور",
     "art_caption": "أخيراً، كل عملك في مكان واحد.",
-    "art_hint": "تابع حفظ القرآن الكريم بسهولة"
+    "art_hint": "تابع حفظ القرآن الكريم بسهولة",
+    "phone": "رقم الهاتف",
+    "birth_date": "تاريخ الميلاد",
+    "confirm_password": "تأكيد كلمة المرور",
+    "password_mismatch": "كلمتا المرور غير متطابقتين",
+    "role": "الصفة",
+    "pick_role": "اختر صفتك",
+    "teacher_type": "نوع التعليم",
+    "pick_teacher_type": "اختر النوع",
+    "gender": "الجنس",
+    "pick_gender": "اختر الجنس",
+    "email_taken": "هذا البريد الإلكتروني مسجل مسبقاً",
+    "in_waiting_room": "هذا البريد في غرفة الانتظار، طلبك قيد المراجعة",
+    "request_sent_title": "تم استلام طلبك",
+    "request_sent_body": "طلبك الآن في غرفة الانتظار، وسيتم تنشيط حسابك بعد موافقة الإدارة.",
+    "back_to_login": "العودة لتسجيل الدخول"
   },
   "common": {
     "save": "حفظ",
@@ -65,6 +81,24 @@
     "teacher": "معلم",
     "student": "طالب",
     "board": "مجلس الإدارة"
+  },
+  "teacher_type": {
+    "hifz": "حفظ",
+    "murajaa": "مراجعة",
+    "both": "حفظ ومراجعة"
+  },
+  "gender": {
+    "male": "ذكر",
+    "female": "أنثى"
+  },
+  "registrations": {
+    "title": "طلبات الانتساب",
+    "requested": "تاريخ الطلب",
+    "accept": "قبول",
+    "cancel": "إلغاء الطلب",
+    "cancel_confirm": "تأكيد الإلغاء",
+    "pick_center": "اختر المركز",
+    "accept_hint": "اختر المركز الذي سينتمي إليه هذا الحساب"
   },
   "attendance": {
     "present": "حاضر",

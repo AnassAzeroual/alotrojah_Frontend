@@ -77,6 +77,7 @@ const ITEMS: readonly NavItem[] = [
     icon: 'mail',
     roles: ['admin', 'supervisor', 'teacher'],
   },
+  { path: '/registrations', key: 'nav.registrations', icon: 'shield', roles: ['admin'] },
 ];
 
 @Component({

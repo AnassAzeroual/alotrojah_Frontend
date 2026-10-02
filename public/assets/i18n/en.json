@@ -17,6 +17,7 @@
     "news": "News",
     "delegate": "Delegation",
     "notifications": "Messages",
+    "registrations": "Registrations",
     "main": "Main",
     "menu": "Menu",
     "theme": "Theme",
@@ -41,7 +42,22 @@
     "get_started": "Lets get started",
     "recovery": "Recovery Password",
     "art_caption": "Finally, all your work in one place.",
-    "art_hint": "Track Quran memorization easily"
+    "art_hint": "Track Quran memorization easily",
+    "phone": "Phone number",
+    "birth_date": "Date of birth",
+    "confirm_password": "Confirm password",
+    "password_mismatch": "Passwords do not match",
+    "role": "Role",
+    "pick_role": "Choose your role",
+    "teacher_type": "Teaching type",
+    "pick_teacher_type": "Choose type",
+    "gender": "Gender",
+    "pick_gender": "Choose gender",
+    "email_taken": "This email is already registered",
+    "in_waiting_room": "This email is already in the waiting room — your request is under review",
+    "request_sent_title": "Request received",
+    "request_sent_body": "Your request is now in the waiting room. Your account will be activated once an admin approves it.",
+    "back_to_login": "Back to sign in"
   },
   "common": {
     "save": "Save",
@@ -65,6 +81,24 @@
     "teacher": "Teacher",
     "student": "Student",
     "board": "Board"
+  },
+  "teacher_type": {
+    "hifz": "Memorization",
+    "murajaa": "Review",
+    "both": "Both"
+  },
+  "gender": {
+    "male": "Male",
+    "female": "Female"
+  },
+  "registrations": {
+    "title": "Registration requests",
+    "requested": "Requested",
+    "accept": "Accept",
+    "cancel": "Reject request",
+    "cancel_confirm": "Confirm rejection",
+    "pick_center": "Choose a center",
+    "accept_hint": "Pick the center this account will belong to"
   },
   "attendance": {
     "present": "Present",

@@ -2,95 +2,216 @@
   <app-auth-topbar />
   <section class="auth-card">
     <div class="auth-form-side">
-      <h1 class="auth-title">{{ 'auth.create_account' | translate }}</h1>
-      <p class="auth-sub">{{ 'auth.get_started' | translate }}</p>
-
-      <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
-        <div class="auth-input">
-          <input
-            type="text"
-            formControlName="name"
-            autocomplete="name"
-            [placeholder]="'auth.name' | translate"
-            [attr.aria-label]="'auth.name' | translate"
-          />
+      @if (submitted()) {
+        <div class="reg-success">
+          <span class="ok-badge" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          </span>
+          <h1 class="auth-title">{{ 'auth.request_sent_title' | translate }}</h1>
+          <p class="auth-sub">{{ 'auth.request_sent_body' | translate }}</p>
+          <a routerLink="/login" class="auth-btn">{{ 'auth.back_to_login' | translate }}</a>
         </div>
+      } @else {
+        <h1 class="auth-title">{{ 'auth.create_account' | translate }}</h1>
+        <p class="auth-sub">{{ 'auth.get_started' | translate }}</p>
 
-        <div class="auth-input">
-          <input
-            type="email"
-            formControlName="email"
-            autocomplete="email"
-            dir="ltr"
-            [placeholder]="'auth.email' | translate"
-            [attr.aria-label]="'auth.email' | translate"
-          />
-        </div>
+        <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
+          <div class="auth-input">
+            <input
+              type="text"
+              formControlName="full_name"
+              autocomplete="name"
+              [placeholder]="'auth.name' | translate"
+              [attr.aria-label]="'auth.name' | translate"
+            />
+          </div>
 
-        <div class="auth-input with-eye">
-          <input
-            [type]="showPw() ? 'text' : 'password'"
-            formControlName="password"
-            autocomplete="new-password"
-            dir="ltr"
-            [placeholder]="'auth.password' | translate"
-            [attr.aria-label]="'auth.password' | translate"
-          />
-          <button
-            type="button"
-            class="pw-eye"
-            (click)="showPw.set(!showPw())"
-            [attr.aria-label]="(showPw() ? 'auth.hide_password' : 'auth.show_password') | translate"
-          >
-            @if (showPw()) {
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"
+          <div class="field-pair">
+            <div class="auth-input">
+              <input
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                dir="ltr"
+                [placeholder]="'auth.email' | translate"
+                [attr.aria-label]="'auth.email' | translate"
+              />
+            </div>
+            <div class="auth-input">
+              <input
+                type="tel"
+                formControlName="phone"
+                autocomplete="tel"
+                inputmode="tel"
+                dir="ltr"
+                [placeholder]="'auth.phone' | translate"
+                [attr.aria-label]="'auth.phone' | translate"
+              />
+            </div>
+          </div>
+
+          <div class="field-pair">
+            <app-dropdown
+              formControlName="role"
+              [options]="roleOptions"
+              placeholderKey="auth.pick_role"
+              ariaLabelKey="auth.role"
+            />
+            @if (isTeacher()) {
+              <app-dropdown
+                formControlName="teacher_type"
+                [options]="teacherTypeOptions"
+                placeholderKey="auth.pick_teacher_type"
+                ariaLabelKey="auth.teacher_type"
+              />
+            }
+          </div>
+
+          @if (isStudent()) {
+            <div class="field-pair">
+              <div class="auth-input">
+                <input
+                  type="date"
+                  formControlName="birth_date"
+                  dir="ltr"
+                  [attr.max]="today"
+                  [attr.aria-label]="'auth.birth_date' | translate"
                 />
-                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-                <path d="M1 1l22 22" />
-              </svg>
+              </div>
+              <app-dropdown
+                formControlName="gender"
+                [options]="genderOptions"
+                placeholderKey="auth.pick_gender"
+                ariaLabelKey="auth.gender"
+              />
+            </div>
+          }
+
+          <div class="auth-input with-eye">
+            <input
+              [type]="showPw() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              dir="ltr"
+              [placeholder]="'auth.password' | translate"
+              [attr.aria-label]="'auth.password' | translate"
+            />
+            <button
+              type="button"
+              class="pw-eye"
+              (click)="showPw.set(!showPw())"
+              [attr.aria-label]="(showPw() ? 'auth.hide_password' : 'auth.show_password') | translate"
+            >
+              @if (showPw()) {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"
+                  />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                  <path d="M1 1l22 22" />
+                </svg>
+              } @else {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              }
+            </button>
+          </div>
+
+          <div class="auth-input with-eye">
+            <input
+              [type]="showPwConfirm() ? 'text' : 'password'"
+              formControlName="passwordConfirm"
+              autocomplete="new-password"
+              dir="ltr"
+              [placeholder]="'auth.confirm_password' | translate"
+              [attr.aria-label]="'auth.confirm_password' | translate"
+            />
+            <button
+              type="button"
+              class="pw-eye"
+              (click)="showPwConfirm.set(!showPwConfirm())"
+              [attr.aria-label]="(showPwConfirm() ? 'auth.hide_password' : 'auth.show_password') | translate"
+            >
+              @if (showPwConfirm()) {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"
+                  />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                  <path d="M1 1l22 22" />
+                </svg>
+              } @else {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              }
+            </button>
+          </div>
+
+          @if (form.controls.passwordConfirm.touched && form.hasError('passwordMismatch')) {
+            <p class="field-error">{{ 'auth.password_mismatch' | translate }}</p>
+          }
+
+          @if (errorKey()) {
+            <p class="auth-error">{{ errorKey() | translate }}</p>
+          }
+
+          <button type="submit" class="auth-btn" [disabled]="form.invalid || loading()">
+            @if (loading()) {
+              <app-spinner />
             } @else {
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
+              {{ 'auth.create_account' | translate }}
             }
           </button>
-        </div>
+        </form>
 
-        @if (failed()) {
-          <p class="auth-error">{{ 'auth.invalid' | translate }}</p>
-        }
-
-        <button type="submit" class="auth-btn" [disabled]="form.invalid || loading()">
-          @if (loading()) {
-            <app-spinner />
-          } @else {
-            {{ 'auth.create_account' | translate }}
-          }
-        </button>
-      </form>
-
-      <p class="auth-switch">
-        {{ 'auth.have_account' | translate }}
-        <a routerLink="/login">{{ 'auth.login' | translate }}</a>
-      </p>
+        <p class="auth-switch">
+          {{ 'auth.have_account' | translate }}
+          <a routerLink="/login">{{ 'auth.login' | translate }}</a>
+        </p>
+      }
     </div>
 
     <div class="auth-art">

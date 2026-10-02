@@ -41,6 +41,33 @@ export interface User extends CurrentUser {
   is_active: boolean;
 }
 
+/** Self-registration roles (admin excluded — admin accounts are created directly). */
+export type RegisterRole = 'supervisor' | 'teacher' | 'student' | 'board';
+
+export interface RegisterPayload {
+  full_name: string;
+  email: string;
+  password: string;
+  role: RegisterRole;
+  phone: string;
+  teacher_type?: TeacherType;
+  birth_date?: string;
+  gender?: 'male' | 'female';
+}
+
+/** Waiting-room entry (admin listing). */
+export interface RegistrationRequest {
+  id: number;
+  full_name: string;
+  email: string;
+  role: RegisterRole;
+  teacher_type: TeacherType;
+  phone: string;
+  birth_date: string | null;
+  gender: 'male' | 'female' | null;
+  requested_at: string;
+}
+
 export interface Center {
   id: number;
   name: string;

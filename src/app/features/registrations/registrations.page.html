@@ -1,0 +1,135 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'registrations.title' | translate }}</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
+  } @else if (rows().length === 0) {
+    <app-empty-state />
+  } @else {
+    @for (r of rows(); track r.id) {
+      <article class="card anim-rise req-card" [style.--i]="$index + 1">
+        <header class="req-head">
+          <div class="req-who">
+            <strong>{{ r.full_name }}</strong>
+            <small class="muted" dir="ltr">{{ r.email }}</small>
+          </div>
+          <span class="req-role">{{ 'role.' + r.role | translate }}</span>
+        </header>
+
+        <ul class="req-meta">
+          <li dir="ltr" class="ltr-num">{{ r.phone }}</li>
+          @if (r.role === 'teacher') {
+            <li>
+              {{ 'auth.teacher_type' | translate }}:
+              {{ 'teacher_type.' + r.teacher_type | translate }}
+            </li>
+          }
+          @if (r.role === 'student' && r.birth_date) {
+            <li>
+              {{ 'auth.birth_date' | translate }}:
+              <span dir="ltr" class="ltr-num">{{ r.birth_date }}</span>
+              @if (r.gender) {
+                · {{ 'gender.' + r.gender | translate }}
+              }
+            </li>
+          }
+          <li>
+            {{ 'registrations.requested' | translate }}:
+            <span dir="ltr" class="ltr-num">{{ r.requested_at.slice(0, 10) }}</span>
+          </li>
+        </ul>
+
+        @if (acceptingId() === r.id) {
+          <div class="req-accept">
+            <div class="req-accept-pick">
+              <small class="muted">{{ 'registrations.accept_hint' | translate }}</small>
+              <app-dropdown
+                [value]="centerId()"
+                [options]="centerOptions()"
+                (valueChange)="centerId.set(num($event))"
+                placeholderKey="registrations.pick_center"
+                ariaLabelKey="registrations.pick_center"
+              />
+            </div>
+            <div class="req-accept-actions">
+              <button
+                type="button"
+                class="btn btn-primary"
+                [disabled]="centerId() === null || busyId() === r.id"
+                (click)="confirmAccept(r.id)"
+              >
+                @if (busyId() === r.id) {
+                  <app-spinner />
+                } @else {
+                  {{ 'registrations.accept' | translate }}
+                }
+              </button>
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="busyId() === r.id"
+                (click)="cancelAccept()"
+              >
+                {{ 'common.cancel' | translate }}
+              </button>
+            </div>
+          </div>
+        } @else {
+          <footer class="req-actions">
+            <button type="button" class="btn btn-primary" (click)="startAccept(r.id)">
+              {{ 'registrations.accept' | translate }}
+            </button>
+            @if (armingCancelId() === r.id) {
+              <button
+                type="button"
+                class="btn btn-danger-solid"
+                [disabled]="busyId() === r.id"
+                (click)="confirmCancel(r.id)"
+              >
+                @if (busyId() === r.id) {
+                  <app-spinner />
+                } @else {
+                  {{ 'registrations.cancel_confirm' | translate }}
+                }
+              </button>
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="busyId() === r.id"
+                (click)="disarmCancel()"
+              >
+                {{ 'common.cancel' | translate }}
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-danger-ghost"
+                (click)="armCancel(r.id)"
+              >
+                {{ 'registrations.cancel' | translate }}
+              </button>
+            }
+          </footer>
+        }
+      </article>
+    }
+
+    @if (total() > perPage()) {
+      <app-paginator
+        [page]="page()"
+        [perPage]="perPage()"
+        [total]="total()"
+        (pageChange)="page.set($event)"
+      />
+    }
+  }
+
+  @if (actionFailed()) {
+    <p class="req-error">{{ 'common.error' | translate }}</p>
+  }
+</section>

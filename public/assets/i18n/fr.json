@@ -17,6 +17,7 @@
     "news": "Annonces",
     "delegate": "Délégation",
     "notifications": "Messages",
+    "registrations": "Inscriptions",
     "main": "Principal",
     "menu": "Menu",
     "theme": "Theme",
@@ -41,7 +42,22 @@
     "get_started": "Commençons",
     "recovery": "Mot de passe oublié",
     "art_caption": "Enfin, tout votre travail au même endroit.",
-    "art_hint": "Suivi de mémorisation facile"
+    "art_hint": "Suivi de mémorisation facile",
+    "phone": "Téléphone",
+    "birth_date": "Date de naissance",
+    "confirm_password": "Confirmer le mot de passe",
+    "password_mismatch": "Les mots de passe ne correspondent pas",
+    "role": "Rôle",
+    "pick_role": "Choisissez votre rôle",
+    "teacher_type": "Type d'enseignement",
+    "pick_teacher_type": "Choisir le type",
+    "gender": "Genre",
+    "pick_gender": "Choisir le genre",
+    "email_taken": "Cet e-mail est déjà enregistré",
+    "in_waiting_room": "Cet e-mail est déjà en attente — votre demande est en cours de validation",
+    "request_sent_title": "Demande reçue",
+    "request_sent_body": "Votre demande est en attente. Votre compte sera activé après validation par l'administration.",
+    "back_to_login": "Retour à la connexion"
   },
   "common": {
     "save": "Enregistrer",
@@ -65,6 +81,24 @@
     "teacher": "Enseignant",
     "student": "Élève",
     "board": "Conseil"
+  },
+  "teacher_type": {
+    "hifz": "Mémorisation",
+    "murajaa": "Révision",
+    "both": "Les deux"
+  },
+  "gender": {
+    "male": "Garçon",
+    "female": "Fille"
+  },
+  "registrations": {
+    "title": "Demandes d'inscription",
+    "requested": "Demandé le",
+    "accept": "Accepter",
+    "cancel": "Refuser la demande",
+    "cancel_confirm": "Confirmer le refus",
+    "pick_center": "Choisir un centre",
+    "accept_hint": "Choisissez le centre de rattachement de ce compte"
   },
   "attendance": {
     "present": "Présent",

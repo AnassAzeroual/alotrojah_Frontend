@@ -79,6 +79,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'registrations',
+        loadChildren: () =>
+          import('./features/registrations/registrations.routes').then(
+            (m) => m.REGISTRATIONS_ROUTES,
+          ),
+      },
+      {
         path: 'dashboard',
         loadChildren: () =>
           import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
