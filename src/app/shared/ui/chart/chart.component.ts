@@ -8,9 +8,39 @@ import {
   OnDestroy,
   viewChild,
 } from '@angular/core';
-import { Chart, ChartData, ChartOptions, ChartType, registerables } from 'chart.js';
+import {
+  ArcElement,
+  BarController,
+  BarElement,
+  CategoryScale,
+  Chart,
+  ChartData,
+  ChartOptions,
+  ChartType,
+  DoughnutController,
+  Filler,
+  Legend,
+  LineController,
+  LineElement,
+  LinearScale,
+  PointElement,
+  Tooltip,
+} from 'chart.js';
 
-Chart.register(...registerables);
+Chart.register(
+  LineController,
+  BarController,
+  DoughnutController,
+  LineElement,
+  PointElement,
+  BarElement,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  Filler,
+  Legend,
+  Tooltip,
+);
 
 const FONT = "'Readex Pro','Tajawal','Cairo','Segoe UI',sans-serif";
 
