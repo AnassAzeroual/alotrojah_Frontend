@@ -45,6 +45,7 @@
           [routerLinkActiveOptions]="{ exact: item.path === '/' }"
           (click)="closeMobile()"
           [attr.data-icon]="item.icon"
+          [attr.title]="collapsed() ? (item.key | translate) : null"
         >
           <span class="ico" aria-hidden="true" [ngSwitch]="item.icon">
             <svg
@@ -263,12 +264,26 @@
           </svg>
         </button>
         <div class="clock">
-          <strong class="ltr-num"
-            >{{
-              now().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-            }}
-            - {{ now().toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' }) }}</strong
+          <button
+            type="button"
+            class="date-chip ltr-num"
+            (click)="copyDate(gregorian(), 'greg')"
+            [class.copied]="copiedDate() === 'greg'"
+            [attr.title]="'delegation.copy' | translate"
           >
+            {{ gregorian() }}
+          </button>
+          @if (hijri()) {
+            <button
+              type="button"
+              class="date-chip"
+              (click)="copyDate(hijri(), 'hijri')"
+              [class.copied]="copiedDate() === 'hijri'"
+              [attr.title]="'delegation.copy' | translate"
+            >
+              {{ hijri() }}
+            </button>
+          }
           <small>{{ 'dash.today' | translate }}</small>
         </div>
       </div>
@@ -321,13 +336,4 @@
       <router-outlet />
     </main>
   </div>
-
-  <button type="button" class="fab" [attr.aria-label]="'notif.title' | translate">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path
-        d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 20l1-4.9a8.4 8.4 0 1 1 17-3.6z"
-      />
-    </svg>
-    <span>{{ 'dash.newMessage' | translate }}</span>
-  </button>
 </div>

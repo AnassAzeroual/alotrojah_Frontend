@@ -199,7 +199,6 @@
   "dash": {
     "studentsTitle": "Eleves",
     "subtitle": "Apercu",
-    "newMessage": "Nouveau message",
     "totalStudents": "Total",
     "activeGroups": "Groupes actifs",
     "quranSessions": "Sessions",
@@ -217,7 +216,7 @@
     "excellent": "Excellent",
     "good": "Bien",
     "support": "Soutien",
-    "today": "hui",
+    "today": "Aujourd'hui",
     "level": "Niveau",
     "center": "Centre"
   },

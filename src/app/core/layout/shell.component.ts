@@ -3,6 +3,7 @@ import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../auth/auth.service';
+import { LanguageService } from '../i18n/language.service';
 import { LanguageSwitcherComponent } from './language-switcher.component';
 import { ThemeService } from '../theme/theme.service';
 import { Role } from '../api/api-models';
@@ -96,6 +97,7 @@ const ITEMS: readonly NavItem[] = [
 })
 export class ShellComponent {
   private readonly auth = inject(AuthService);
+  private readonly language = inject(LanguageService);
   readonly theme = inject(ThemeService);
 
   readonly user = this.auth.currentUser;
@@ -104,6 +106,69 @@ export class ShellComponent {
   readonly mobileOpen = signal(false);
   readonly now = signal(new Date());
   readonly isDark = computed(() => this.theme.mode() === 'dark');
+
+  /**
+   * Morocco moon-sighting adjustment (days).
+   * Intl's islamic-umalqura calendar is Saudi-calculated and can differ by ±1
+   * day from the observed calendar announced by the Ministry of Habous and
+   * Islamic Affairs. Set to -1 / +1 if the displayed date is off by a day.
+   */
+  private readonly hijriOffsetDays = 0;
+
+  readonly gregorian = computed(() => {
+    const d = this.now();
+    const date = d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const time = d.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return `${date} - ${time}`;
+  });
+
+  readonly copiedDate = signal<'greg' | 'hijri' | null>(null);
+
+  copyDate(text: string, which: 'greg' | 'hijri'): void {
+    const done = (): void => {
+      this.copiedDate.set(which);
+      setTimeout(() => this.copiedDate.set(null), 1500);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(done, () => this.legacyCopy(text, done));
+    } else {
+      this.legacyCopy(text, done);
+    }
+  }
+
+  private legacyCopy(text: string, done: () => void): void {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    } catch {
+      // clipboard unavailable — ignore
+    }
+    done();
+  }
+
+  /** Hijri date via built-in Intl islamic-umalqura calendar (CLDR, offline, no API). */
+  readonly hijri = computed(() => {
+    const lang = this.language.current();
+    const locale = `${lang}-u-ca-islamic-umalqura`;
+    try {
+      const d = new Date(this.now());
+      d.setDate(d.getDate() + this.hijriOffsetDays);
+      return new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }).format(d);
+    } catch {
+      return '';
+    }
+  });
 
   readonly items = computed(() => {
     const role = this.user()?.role;
