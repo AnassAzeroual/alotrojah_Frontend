@@ -16,7 +16,14 @@ interface LoginForm {
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SpinnerComponent, AuthArtComponent, AuthTopbarComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    TranslatePipe,
+    SpinnerComponent,
+    AuthArtComponent,
+    AuthTopbarComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',

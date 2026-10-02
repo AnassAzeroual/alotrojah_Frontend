@@ -26,11 +26,46 @@ interface DemoStudent {
 }
 
 const DEMO_STUDENTS: DemoStudent[] = [
-  { id: 170, name: 'اسم على العليون', surah: 'البقرة: 5 أجزاء', progress: 78, status: 'active', exam: '2023-06-25' },
-  { id: 182, name: 'اسم على الرايل', surah: 'آل عمران: 150 آية', progress: 64, status: 'active', exam: '2022-02-26' },
-  { id: 153, name: 'محمد الدخالي', surah: 'النساء: 150 آية', progress: 41, status: 'paused', exam: '2023-10-11' },
-  { id: 148, name: 'يوسف بن أحمد', surah: 'المائدة: 3 أجزاء', progress: 86, status: 'active', exam: '2023-08-14' },
-  { id: 131, name: 'مريم الزهراء', surah: 'الأنعام: 2 جزء', progress: 52, status: 'active', exam: '2023-09-02' },
+  {
+    id: 170,
+    name: 'اسم على العليون',
+    surah: 'البقرة: 5 أجزاء',
+    progress: 78,
+    status: 'active',
+    exam: '2023-06-25',
+  },
+  {
+    id: 182,
+    name: 'اسم على الرايل',
+    surah: 'آل عمران: 150 آية',
+    progress: 64,
+    status: 'active',
+    exam: '2022-02-26',
+  },
+  {
+    id: 153,
+    name: 'محمد الدخالي',
+    surah: 'النساء: 150 آية',
+    progress: 41,
+    status: 'paused',
+    exam: '2023-10-11',
+  },
+  {
+    id: 148,
+    name: 'يوسف بن أحمد',
+    surah: 'المائدة: 3 أجزاء',
+    progress: 86,
+    status: 'active',
+    exam: '2023-08-14',
+  },
+  {
+    id: 131,
+    name: 'مريم الزهراء',
+    surah: 'الأنعام: 2 جزء',
+    progress: 52,
+    status: 'active',
+    exam: '2023-09-02',
+  },
 ];
 
 @Component({

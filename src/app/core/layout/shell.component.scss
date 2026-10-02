@@ -5,7 +5,9 @@
   position: relative;
   background: var(--color-bg);
   color: var(--color-text);
-  transition: background var(--dur-3) var(--ease-out), color var(--dur-3) var(--ease-out);
+  transition:
+    background var(--dur-3) var(--ease-out),
+    color var(--dur-3) var(--ease-out);
 }
 
 .bg-scene {
@@ -67,7 +69,9 @@
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   backdrop-filter: blur(18px);
   border-inline-end: 1px solid var(--color-border);
-  transition: width var(--dur-3) var(--ease-spring), transform var(--dur-3) var(--ease-out);
+  transition:
+    width var(--dur-3) var(--ease-spring),
+    transform var(--dur-3) var(--ease-out);
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -484,7 +488,9 @@
   font-size: var(--text-sm);
   cursor: pointer;
   box-shadow: var(--glow-teal);
-  transition: transform var(--dur-2) var(--ease-spring), box-shadow var(--dur-2);
+  transition:
+    transform var(--dur-2) var(--ease-spring),
+    box-shadow var(--dur-2);
 
   svg {
     width: 20px;

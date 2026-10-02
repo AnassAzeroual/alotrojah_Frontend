@@ -16,7 +16,14 @@ interface RegisterForm {
 @Component({
   selector: 'app-register-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, SpinnerComponent, AuthArtComponent, AuthTopbarComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    TranslatePipe,
+    SpinnerComponent,
+    AuthArtComponent,
+    AuthTopbarComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './register.page.html',
   styleUrl: './register.page.scss',

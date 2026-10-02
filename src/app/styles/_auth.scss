@@ -7,13 +7,18 @@
   min-height: 100dvh;
   display: grid;
   place-items: center;
+  align-content: center;
   padding: var(--space-4);
   position: relative;
   overflow: hidden;
   background:
     radial-gradient(640px 420px at 85% -10%, rgb(0 184 169 / 0.22), transparent 65%),
     radial-gradient(700px 480px at 5% 110%, rgb(139 92 246 / 0.16), transparent 65%),
-    linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 10%, var(--color-bg)), var(--color-bg));
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--color-primary) 10%, var(--color-bg)),
+      var(--color-bg)
+    );
 
   &::before {
     content: '';
@@ -193,7 +198,9 @@ html[data-theme='dark'] .auth-topbar app-language-switcher select {
     font: inherit;
     font-size: 15px;
     color: var(--color-text);
-    transition: border-color 160ms, box-shadow 160ms;
+    transition:
+      border-color 160ms,
+      box-shadow 160ms;
 
     &::placeholder {
       color: var(--color-muted);
@@ -268,7 +275,10 @@ html[data-theme='dark'] .auth-topbar app-language-switcher select {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: transform 160ms cubic-bezier(0.34, 1.4, 0.4, 1), box-shadow 160ms, filter 160ms;
+  transition:
+    transform 160ms cubic-bezier(0.34, 1.4, 0.4, 1),
+    box-shadow 160ms,
+    filter 160ms;
 
   &:hover:not(:disabled) {
     transform: translateY(-2px) scale(1.01);
@@ -351,7 +361,10 @@ html[data-theme='dark'] .auth-topbar app-language-switcher select {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: transform 160ms cubic-bezier(0.34, 1.4, 0.4, 1), box-shadow 160ms, border-color 160ms;
+  transition:
+    transform 160ms cubic-bezier(0.34, 1.4, 0.4, 1),
+    box-shadow 160ms,
+    border-color 160ms;
 
   svg {
     width: 26px;
@@ -410,7 +423,9 @@ html[data-theme='dark'] .auth-topbar app-language-switcher select {
     object-fit: cover;
     opacity: 0;
     transform: scale(1.04);
-    transition: opacity 900ms cubic-bezier(0.22, 0.9, 0.28, 1), transform 6s linear;
+    transition:
+      opacity 900ms cubic-bezier(0.22, 0.9, 0.28, 1),
+      transform 6s linear;
     user-select: none;
     -webkit-user-drag: none;
 

@@ -19,7 +19,9 @@ const FONT = "'Readex Pro','Tajawal','Cairo','Segoe UI',sans-serif";
   selector: 'app-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<div class="chart-box"><canvas #chartCanvas role="img" [attr.aria-label]="label()"></canvas></div>`,
+  template: `<div class="chart-box">
+    <canvas #chartCanvas role="img" [attr.aria-label]="label()"></canvas>
+  </div>`,
   styles: [
     '.chart-box{position:relative;height:260px} :host{display:block} canvas{max-height:260px}',
   ],
@@ -91,8 +93,7 @@ export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
           ...(base.plugins?.['tooltip'] ?? {}),
         },
       },
-      scales:
-        this.type() === 'doughnut' ? undefined : this.themedScales(base, tickColor, dark),
+      scales: this.type() === 'doughnut' ? undefined : this.themedScales(base, tickColor, dark),
     };
   }
 
@@ -131,7 +132,8 @@ export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     >;
     for (const key of Object.keys(scales)) {
       scales[key]['ticks'] = { ...tick, ...((scales[key]['ticks'] as object) ?? {}) };
-      if (key === 'y') scales[key]['grid'] = { ...grid, ...((scales[key]['grid'] as object) ?? {}) };
+      if (key === 'y')
+        scales[key]['grid'] = { ...grid, ...((scales[key]['grid'] as object) ?? {}) };
     }
     return scales as ChartOptions['scales'];
   }
