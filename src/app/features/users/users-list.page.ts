@@ -67,6 +67,7 @@ export class UsersListPage {
   readonly q = signal('');
   readonly role = signal<string | null>(null);
   readonly page = signal(1);
+  readonly unassignedOnly = signal(false);
   private readonly tick = signal(0);
 
   private readonly query = resource({
@@ -74,12 +75,14 @@ export class UsersListPage {
       q: this.q(),
       r: this.role(),
       p: this.page(),
+      u: this.unassignedOnly(),
       t: this.tick(),
     }),
     loader: ({ params }) => {
       const query: Record<string, string | number> = { page: params.p };
       if (params.q) query['q'] = params.q;
       if (params.r !== null) query['role'] = params.r;
+      if (params.u) query['unassigned'] = 1;
       return firstValueFrom(this.usersSvc.list(query));
     },
   });

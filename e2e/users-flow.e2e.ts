@@ -203,6 +203,20 @@ test.describe.serial('Users management', () => {
     await groupSearch.press('Enter');
     await expect(page.locator('tbody tr', { hasText: groupName })).toHaveCount(1);
 
+    // the new teacher now owns the group → hidden by the unassigned filter
+    await page.getByRole('link', { name: /المستخدمون/ }).click();
+    await expect(page).toHaveURL(/\/users$/);
+    await page.getByRole('button', { name: 'تصفية بالصفة' }).click();
+    await page.getByRole('option', { name: 'معلم', exact: true }).click();
+    await searchBox.fill(newName);
+    await searchBox.press('Enter');
+    const newRow = page.locator('.users-table tbody tr', { hasText: newName });
+    await expect(newRow).toHaveCount(1);
+    await page.getByLabel('بدون حلقة نشطة').check();
+    await expect(newRow).toHaveCount(0);
+    await page.getByLabel('بدون حلقة نشطة').uncheck();
+    await expect(newRow).toHaveCount(1);
+
     await page.getByRole('button', { name: /خروج/ }).click();
     await expect(page).toHaveURL(/\/login$/);
   });

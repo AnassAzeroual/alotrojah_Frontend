@@ -405,6 +405,7 @@
     "create": "Create user",
     "edit": "Edit user",
     "delete_confirm": "Confirm delete",
+    "unassigned_only": "No active group",
     "cannot_delete_title": "Cannot delete",
     "cannot_delete_body": "{{name}} owns active groups. Choose a replacer to transfer them to.",
     "choose_replacer": "Choose replacer",

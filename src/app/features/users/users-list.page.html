@@ -23,6 +23,16 @@
         ariaLabelKey="users.role_filter"
       />
     </label>
+    @if (role() === 'teacher') {
+      <label class="field row">
+        <input
+          type="checkbox"
+          [checked]="unassignedOnly()"
+          (change)="unassignedOnly.set($any($event.target).checked); resetPage()"
+        />
+        <span>{{ 'users.unassigned_only' | translate }}</span>
+      </label>
+    }
   </div>
 
   @if (loading()) {

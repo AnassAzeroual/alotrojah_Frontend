@@ -405,6 +405,7 @@
     "create": "Créer un utilisateur",
     "edit": "Modifier l'utilisateur",
     "delete_confirm": "Confirmer la suppression",
+    "unassigned_only": "Sans groupe actif",
     "cannot_delete_title": "Suppression impossible",
     "cannot_delete_body": "« {{name}} » possède des groupes actifs. Choisissez un remplaçant.",
     "choose_replacer": "Choisir un remplaçant",

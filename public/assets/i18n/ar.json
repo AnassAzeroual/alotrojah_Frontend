@@ -405,6 +405,7 @@
     "create": "إضافة مستخدم",
     "edit": "تعديل مستخدم",
     "delete_confirm": "تأكيد الحذف",
+    "unassigned_only": "بدون حلقة نشطة",
     "cannot_delete_title": "تعذر الحذف",
     "cannot_delete_body": "المعلم {{name}} يملك حلقات نشطة. اختر معلماً بديلاً لنقلها إليه.",
     "choose_replacer": "اختيار البديل",
