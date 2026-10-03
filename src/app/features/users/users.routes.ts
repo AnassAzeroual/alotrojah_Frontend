@@ -10,6 +10,13 @@ export const USERS_ROUTES: Routes = [
   },
 
   {
+    path: ':id/replace',
+    loadComponent: () => import('./user-replace.page').then((m) => m.UserReplacePage),
+    canActivate: [roleGuard],
+    data: { roles: ['admin'] },
+  },
+
+  {
     path: ':id',
     loadComponent: () => import('./user-detail.page').then((m) => m.UserDetailPage),
     canActivate: [roleGuard],

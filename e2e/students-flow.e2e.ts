@@ -49,9 +49,10 @@ test.describe.serial('Students management', () => {
     await page.getByRole('link', { name: /الطلاب/ }).click();
     await expect(page).toHaveURL(/\/students$/);
 
-    // search for student
-    await page.locator('main').getByPlaceholder('بحث بالاسم').fill(studentName);
-    await page.locator('main').getByPlaceholder('بحث بالاسم').press('Enter');
+    // search for student (test-id locator: placeholder text changes with locale)
+    const searchBox = page.getByTestId('students-search');
+    await searchBox.fill(studentName);
+    await searchBox.press('Enter');
 
     const studentCard = page.locator('.grid-auto .card', { hasText: studentName }).first();
     await expect(studentCard).toBeVisible();

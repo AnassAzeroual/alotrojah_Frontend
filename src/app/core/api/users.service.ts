@@ -28,4 +28,11 @@ export class UsersService {
   delete(id: number): Observable<void> {
     return this.api.delete<void>(`/users/${id}`);
   }
+
+  /** Transfer a teacher's groups/history to a replacer, then delete them. */
+  replace(id: number, replacerId: number): Observable<{ replacer_id: number }> {
+    return this.api.post<{ replacer_id: number }>(`/users/${id}/replace`, {
+      replacer_id: replacerId,
+    });
+  }
 }

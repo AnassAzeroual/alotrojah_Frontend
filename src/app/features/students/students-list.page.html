@@ -11,6 +11,7 @@
       <span class="sr-only">{{ 'list.search' | translate }}</span>
       <input
         type="search"
+        data-testid="students-search"
         [placeholder]="'list.search' | translate"
         [value]="q()"
         (input)="q.set($any($event.target).value); resetPage()"

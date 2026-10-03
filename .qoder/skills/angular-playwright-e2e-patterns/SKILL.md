@@ -19,7 +19,7 @@ The two specs are the source of truth for current selectors and credentials — 
 - `webServer` auto-starts PHP `artisan serve` (:8000) and `ng serve` (:4201) with `reuseExistingServer: true` — do not start them by hand.
 - Admin login used by the specs: `admin@example.org` / `password123`.
 - Run the suite with `npm run e2e` (or `npx playwright test`); UI mode is `npm run e2e:ui`.
-- Current suite = 4 tests (1 in groups-flow, 3 in auth-flow); a healthy run is 4/4 green.
+- Current suite = 8 tests (groups-flow, auth-flow, students-flow, users-flow); a healthy run is 8/8 green.
 
 ## Gotcha A — fill() does NOT fire Angular (change)
 
@@ -28,13 +28,13 @@ The two specs are the source of truth for current selectors and credentials — 
 Commit the value explicitly after `fill()`:
 
 ```ts
-const search = page.locator('.toolbar input[type="search"]');
+const search = page.getByTestId('users-search');
 await search.fill('L3');
-await search.blur(); // fires (change) — or: await search.press('Enter');
+await search.press('Enter');
 await expect(page.locator('tbody tr.row-link')).toHaveCount(1);
 ```
 
-Symptom: the input visibly holds the text but the table/list is unchanged. Fix: `.blur()` (or `press('Enter')`) after every `fill()` on a `(change)`-bound control.
+Symptom: the input visibly holds the text but the table/list is unchanged. Fix: `.blur()` (or `press('Enter')`) after every `fill()` on a `(change)`-bound control. Prefer binding search inputs to `(input)` in app code so `fill()` alone suffices — commit events are inherently racy under re-renders.
 
 ## Gotcha B — count assertions drift on the shared seeded DB
 
@@ -57,7 +57,9 @@ The default sort is by Arabic name, so DOM order is not intuitive (`الفرقا
 page.locator('tbody tr.row-link', { hasText: 'الإحسان' });
 ```
 
-## Gotcha D — locator precision (labels & comboboxes)
+## Gotcha D — locator precision (labels, test-ids & comboboxes)
+
+- Prefer `data-testid` hooks over text-based locators for controls: placeholder/label text changes with locale (ar/fr/en), so `getByPlaceholder('بحث بالاسم')` breaks outside Arabic. Add `data-testid="<page>-search"` in the template and use `page.getByTestId(...)` in specs.
 
 - Use `{ exact: true }` when a sibling shares the label. The password field's visibility toggle also contains `كلمة المرور`, so:
   ```ts
@@ -72,7 +74,7 @@ The NG0203 loader bug (`inject()` inside a `resource()` loader spun `/groups` fo
 
 ## Done-gate (run before considering e2e work complete)
 
-1. `npm run e2e` — expect all tests green (currently 4/4). Read the head of the failure output first; Playwright prints received vs expected and the trace path (`trace: 'retain-on-failure'`).
+1. `npm run e2e` — expect all tests green (currently 8/8). Read the head of the failure output first; Playwright prints received vs expected and the trace path (`trace: 'retain-on-failure'`).
 2. `npm run format:check` — prettier covers `e2e/**/*.ts`, and freshly edited specs frequently fail formatting. To target only e2e: `npx prettier --check "e2e/**/*.ts"`.
 
 ### Windows / Git Bash cautions

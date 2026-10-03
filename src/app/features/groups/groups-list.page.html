@@ -124,6 +124,7 @@
         <span class="sr-only">{{ 'list.search' | translate }}</span>
         <input
           type="search"
+          data-testid="groups-search"
           [placeholder]="'grp.search_ph' | translate"
           [value]="q()"
           (change)="q.set($any($event.target).value); page.set(1)"
