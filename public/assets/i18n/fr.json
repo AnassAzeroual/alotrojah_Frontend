@@ -7,6 +7,7 @@
     "dashboard": "Accueil",
     "entry": "Saisie du jour",
     "students": "Élèves",
+    "users": "Utilisateurs",
     "groups": "Cercles",
     "planning": "Planification",
     "scoring": "Notation",
@@ -398,5 +399,22 @@
     "min": "Valeur trop petite",
     "max": "Valeur trop grande (max : {{max}})",
     "range": "La fin doit suivre le début"
+  },
+  "users": {
+    "create": "Créer un utilisateur",
+    "edit": "Modifier l'utilisateur",
+    "role_filter": "Filtrer par rôle",
+    "name": "Nom complet",
+    "email": "Email",
+    "password": "Mot de passe",
+    "phone": "Téléphone",
+    "role": "Rôle",
+    "teacher_type": "Type d'enseignement",
+    "center": "Centre",
+    "is_active": "Compte actif"
+  },
+  "students": {
+    "create": "Créer un élève",
+    "edit": "Modifier l'élève"
   }
 }

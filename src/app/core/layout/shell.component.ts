@@ -36,6 +36,12 @@ const ITEMS: readonly NavItem[] = [
     icon: 'users',
     roles: ['admin', 'supervisor', 'teacher', 'student'],
   },
+  {
+    path: '/users',
+    key: 'nav.users',
+    icon: 'users',
+    roles: ['admin', 'supervisor'],
+  },
   { path: '/groups', key: 'nav.groups', icon: 'grid', roles: ['admin', 'supervisor', 'teacher'] },
   { path: '/entry', key: 'nav.entry', icon: 'edit', roles: ['admin', 'supervisor', 'teacher'] },
   { path: '/planning', key: 'nav.planning', icon: 'calendar', roles: ['admin', 'supervisor'] },

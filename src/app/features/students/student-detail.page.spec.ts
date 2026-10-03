@@ -116,6 +116,13 @@ describe('StudentDetailPage', () => {
     fixture.detectChanges();
     flushStudent();
     flushSeasons();
+    // Edit-form lookups (levels + centers dropdowns).
+    http
+      .expectOne((r) => r.url.endsWith('/reference/levels') && r.method === 'GET')
+      .flush({ success: true, message: null, data: [] });
+    http
+      .expectOne((r) => r.url.endsWith('/centers') && r.method === 'GET')
+      .flush({ success: true, message: null, data: { data: [] } });
     // Let the student resource value land, then change-detect so the groups
     // resource effect fires; flushing it before whenStable avoids a deadlock
     // (whenStable waits on the pending resource, the test waits on whenStable).

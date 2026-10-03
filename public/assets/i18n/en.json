@@ -7,6 +7,7 @@
     "dashboard": "Home",
     "entry": "Daily entry",
     "students": "Students",
+    "users": "Users",
     "groups": "Circles",
     "planning": "Planning",
     "scoring": "Scoring",
@@ -398,5 +399,22 @@
     "min": "Value too small",
     "max": "Value too large (max: {{max}})",
     "range": "End must follow start"
+  },
+  "users": {
+    "create": "Create user",
+    "edit": "Edit user",
+    "role_filter": "Filter by role",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "phone": "Phone",
+    "role": "Role",
+    "teacher_type": "Teacher type",
+    "center": "Center",
+    "is_active": "Active account"
+  },
+  "students": {
+    "create": "Create student",
+    "edit": "Edit student"
   }
 }

@@ -12,4 +12,16 @@ export class UsersService {
   list(params?: QueryParams): Observable<Paginated<User>> {
     return this.api.get<Paginated<User>>('/users', params);
   }
+
+  get(id: number): Observable<User> {
+    return this.api.get<User>(`/users/${id}`);
+  }
+
+  create(data: import('./api-models').CreateUserPayload): Observable<User> {
+    return this.api.post<User>('/users', data);
+  }
+
+  update(id: number, data: import('./api-models').UpdateUserPayload): Observable<User> {
+    return this.api.put<User>(`/users/${id}`, data);
+  }
 }

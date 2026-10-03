@@ -15,6 +15,10 @@ export class StudentsService {
     return this.api.get<Student>(`/students/${id}`);
   }
 
+  create(payload: import('./api-models').CreateStudentPayload): Observable<Student> {
+    return this.api.post<Student>('/students', payload);
+  }
+
   /** Partial update (group assignment, profile fields, status…). */
   update(id: number, payload: UpdateStudentPayload): Observable<Student> {
     return this.api.put<Student>(`/students/${id}`, payload);

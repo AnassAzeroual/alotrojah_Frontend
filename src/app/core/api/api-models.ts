@@ -112,6 +112,21 @@ export interface UpdateGroupPayload {
   is_active?: boolean;
 }
 
+/** POST /students */
+export interface CreateStudentPayload {
+  full_name: string;
+  center_id?: number | null;
+  group_id?: number | null;
+  level_id?: number | null;
+  birth_date?: string | null;
+  gender?: 'male' | 'female' | null;
+  status?: string;
+  student_type?: string | null;
+  memorization_mode?: 'surah' | 'thumn';
+  start_hizb?: number | null;
+  notes?: string | null;
+}
+
 /** PUT /students/{id} — every field optional (backend rules are `sometimes`). */
 export interface UpdateStudentPayload {
   full_name?: string;
@@ -215,4 +230,25 @@ export interface GroupDetail {
   breakdown: GroupBreakdowns;
   trend: { week: number; avg_score: number }[];
   students: GroupDetailStudent[];
+}
+
+export interface CreateUserPayload {
+  full_name: string;
+  email: string;
+  password: string;
+  role: Role;
+  phone?: string | null;
+  center_id?: number | null;
+  teacher_type?: TeacherType;
+}
+
+export interface UpdateUserPayload {
+  full_name?: string;
+  email?: string;
+  password?: string | null;
+  role?: Role;
+  phone?: string | null;
+  center_id?: number | null;
+  teacher_type?: TeacherType;
+  is_active?: boolean;
 }

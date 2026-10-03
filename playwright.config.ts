@@ -7,6 +7,7 @@ const NG = 'C:\\Users\\devtips\\AppData\\Local\\Author Software\\nvm\\installs\\
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.e2e.ts',
+  workers: 1,
   timeout: 60000,
   use: {
     baseURL: 'http://127.0.0.1:4201',

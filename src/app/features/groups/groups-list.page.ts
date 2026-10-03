@@ -247,7 +247,10 @@ export class GroupsListPage {
         {
           data: entries.map((e) => e.n),
           backgroundColor: entries.map(
-            (e, i) => STATUS_COLORS[e.key] ?? GENDER_COLORS[e.key] ?? ['#00b8a9', '#8b5cf6', '#0e9f6e', '#06b6d4', '#f59e0b', '#64748b'][i % 6],
+            (e, i) =>
+              STATUS_COLORS[e.key] ??
+              GENDER_COLORS[e.key] ??
+              ['#00b8a9', '#8b5cf6', '#0e9f6e', '#06b6d4', '#f59e0b', '#64748b'][i % 6],
           ),
         },
       ],

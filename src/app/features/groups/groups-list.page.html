@@ -287,15 +287,22 @@
                         <small>{{ 'grp.chart_status' | translate }}</small>
                         <span class="chips">
                           @for (c of chips(g.breakdown, 'status', statusLabelKey); track c.label) {
-                            <i class="chip">{{ c.label }} <b class="ltr-num">{{ c.n }}</b></i>
+                            <i class="chip"
+                              >{{ c.label }} <b class="ltr-num">{{ c.n }}</b></i
+                            >
                           }
                         </span>
                       </div>
                       <div class="d-item wide">
                         <small>{{ 'grp.chart_type' | translate }}</small>
                         <span class="chips">
-                          @for (c of chips(g.breakdown, 'student_type', typeLabelKey); track c.label) {
-                            <i class="chip">{{ c.label }} <b class="ltr-num">{{ c.n }}</b></i>
+                          @for (
+                            c of chips(g.breakdown, 'student_type', typeLabelKey);
+                            track c.label
+                          ) {
+                            <i class="chip"
+                              >{{ c.label }} <b class="ltr-num">{{ c.n }}</b></i
+                            >
                           }
                         </span>
                       </div>

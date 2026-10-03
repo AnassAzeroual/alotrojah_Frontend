@@ -1,0 +1,57 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'nav.users' | translate }}</h1>
+    <a routerLink="/users/new" class="btn btn-primary">{{ 'users.create' | translate }}</a>
+  </div>
+
+  <div class="toolbar card anim-rise" style="--i: 1">
+    <label class="field search grow">
+      <span class="sr-only">{{ 'list.search' | translate }}</span>
+      <input
+        type="search"
+        [placeholder]="'list.search' | translate"
+        [value]="q()"
+        (change)="q.set($any($event.target).value); resetPage()"
+      />
+    </label>
+    <label class="field">
+      <app-dropdown
+        [options]="roleOptions()"
+        [value]="role() ?? ''"
+        (valueChange)="role.set(txt($event) || null); resetPage()"
+        ariaLabelKey="users.role_filter"
+      />
+    </label>
+  </div>
+
+  @if (loading()) {
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
+  } @else if (rows().length === 0) {
+    <app-empty-state />
+  } @else {
+    <div class="grid-auto">
+      @for (u of rows(); track u.id) {
+        <a class="card anim-rise" [style.--i]="$index" [routerLink]="['/users', u.id]">
+          <span class="row-top">
+            <span class="avatar-sm" aria-hidden="true">{{ u.full_name.slice(0, 1) }}</span>
+            <strong>{{ u.full_name }}</strong>
+          </span>
+          <small class="muted">
+            {{ 'role.' + u.role | translate }}
+            @if (u.role === 'teacher') {
+              · {{ 'teacher_type.' + u.teacher_type | translate }}
+            }
+            @if (!u.is_active) {
+              · <span class="danger">{{ 'common.paused' | translate }}</span>
+            }
+          </small>
+        </a>
+      }
+    </div>
+    <app-paginator [page]="page()" [total]="total()" (pageChange)="page.set($event)" />
+  }
+</section>

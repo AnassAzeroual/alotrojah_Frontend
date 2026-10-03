@@ -177,9 +177,7 @@ export class RegisterPage {
         const code = (err.error as { errors?: Record<string, string[]> } | null)?.errors?.[
           'email'
         ]?.[0];
-        this.errorCode.set(
-          code === 'email_taken' || code === 'in_waiting_room' ? code : 'invalid',
-        );
+        this.errorCode.set(code === 'email_taken' || code === 'in_waiting_room' ? code : 'invalid');
       },
     });
   }
