@@ -1,17 +1,28 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
-import { LanguageSwitcherComponent } from '../../core/layout/language-switcher.component';
+import { LanguageService } from '../../core/i18n/language.service';
 import { ThemeService } from '../../core/theme/theme.service';
 
-/** Floating lang + theme controls for auth pages. No header, just a glass pill. */
+/** Floating lang pills + theme toggle for auth pages. */
 @Component({
   selector: 'app-auth-topbar',
   standalone: true,
-  imports: [LanguageSwitcherComponent, TranslatePipe],
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="auth-topbar">
-      <app-language-switcher />
+      <div class="lang-pills" role="group" [attr.aria-label]="'auth.language' | translate">
+        @for (l of lang.langs; track l) {
+          <button
+            type="button"
+            [class.on]="lang.current() === l"
+            [attr.aria-pressed]="lang.current() === l"
+            (click)="lang.use(l)"
+          >
+            {{ l.toUpperCase() }}
+          </button>
+        }
+      </div>
       <button
         type="button"
         class="auth-theme-btn"
@@ -37,5 +48,6 @@ import { ThemeService } from '../../core/theme/theme.service';
 })
 export class AuthTopbarComponent {
   readonly theme = inject(ThemeService);
+  readonly lang = inject(LanguageService);
   readonly isDark = computed(() => this.theme.mode() === 'dark');
 }

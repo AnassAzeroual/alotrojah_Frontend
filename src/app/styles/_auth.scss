@@ -12,12 +12,13 @@
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(640px 420px at 85% -10%, rgb(0 184 169 / 0.22), transparent 65%),
-    radial-gradient(700px 480px at 5% 110%, rgb(139 92 246 / 0.16), transparent 65%),
+    radial-gradient(760px 560px at 95% -12%, rgb(0 184 169 / 0.2), transparent 66%),
+    radial-gradient(860px 640px at -8% 112%, rgb(139 92 246 / 0.18), transparent 68%),
     linear-gradient(
-      160deg,
-      color-mix(in srgb, var(--color-primary) 10%, var(--color-bg)),
-      var(--color-bg)
+      150deg,
+      color-mix(in srgb, var(--color-primary) 8%, var(--color-bg)),
+      var(--color-bg) 55%,
+      color-mix(in srgb, var(--color-accent) 6%, var(--color-bg))
     );
 
   &::before {
@@ -30,6 +31,17 @@
     background-size: 140px 140px;
     mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
   }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: calc(var(--bg-pattern-opacity) * 0.7);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%238b5cf6' stroke-opacity='0.14'%3E%3Cpath d='M60 10 70 50l40 10-40 10-10 40-10-40-40-10 40-10z'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 140px 140px;
+    mask-image: radial-gradient(ellipse 60% 50% at 5% 100%, black 20%, transparent 72%);
+  }
 }
 
 .auth-topbar {
@@ -39,32 +51,50 @@
   z-index: 5;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 6px;
-  padding-inline-start: 12px;
+  gap: 6px;
+  padding: 5px 8px;
   border-radius: 99px;
   background: color-mix(in srgb, var(--color-surface) 82%, transparent);
   backdrop-filter: blur(14px);
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-2);
+}
 
-  app-language-switcher {
-    display: flex;
-    align-items: center;
-  }
+.lang-pills {
+  display: flex;
+  align-items: center;
 
-  // Beat the encapsulated component style by specificity.
-  app-dropdown .dd-btn {
+  button {
     border: 0;
     background: transparent;
-    min-height: 34px;
-    padding: 0 4px;
+    padding: 6px 10px;
+    border-radius: 99px;
+    font: inherit;
+    font-size: 12px;
     font-weight: 700;
-    color: var(--color-text);
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition:
+      color 160ms,
+      background 160ms;
 
     &:hover {
-      border-color: transparent;
-      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      color: var(--color-text);
+    }
+
+    &.on {
+      color: var(--color-primary-dark);
+      background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+
+      [data-theme='dark'] & {
+        color: #5eead4;
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 1px;
     }
   }
 }
@@ -154,12 +184,28 @@
   font-size: clamp(1.7rem, 1.3rem + 2vw, 2.4rem);
   font-weight: 800;
   letter-spacing: -0.01em;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: -12px;
+    width: 76px;
+    height: 4px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--color-gold), #e8c84a);
+
+    [data-theme='dark'] & {
+      background: linear-gradient(90deg, var(--color-gold-dark), #f4e9c8);
+    }
+  }
 }
 
 .auth-sub {
   margin: 0;
   font-size: var(--text-sm);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--color-muted);
 }
 
@@ -178,7 +224,7 @@
     width: 100%;
     box-sizing: border-box;
     border: 1px solid var(--color-border);
-    border-radius: 12px;
+    border-radius: 14px;
     background: var(--color-surface-2);
     padding: 0 18px;
     height: 56px;
@@ -201,12 +247,24 @@
   }
 
   &.with-eye input {
-    padding-right: 50px;
+    padding-inline-start: 50px;
+    padding-inline-end: 52px;
+  }
+
+  .pw-lock {
+    position: absolute;
+    inset-inline-start: 18px;
+    top: 50%;
+    translate: 0 -50%;
+    width: 18px;
+    height: 18px;
+    color: var(--color-muted);
+    pointer-events: none;
   }
 
   .pw-eye {
     position: absolute;
-    right: 8px;
+    inset-inline-end: 8px;
     top: 50%;
     translate: 0 -50%;
     width: 38px;
@@ -239,7 +297,7 @@
 // Selects inside auth forms mirror the .auth-input geometry.
 .auth-form app-dropdown .dd-btn {
   min-height: 56px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--color-border);
   background: var(--color-surface-2);
 
@@ -269,7 +327,7 @@
   border: 0;
   cursor: pointer;
   height: 56px;
-  border-radius: 12px;
+  border-radius: 16px;
   font: inherit;
   font-weight: 700;
   font-size: 15px;
