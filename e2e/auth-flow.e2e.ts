@@ -29,7 +29,9 @@ test('admin logs in, sees dashboard and students', async ({ page }) => {
   await page.getByRole('link', { name: /الحلقات/ }).click();
   await expect(page).toHaveURL(/\/groups$/);
   await expect(page.locator('.kpi')).toHaveCount(5);
-  await expect(page.locator('tbody tr.row-link')).toHaveCount(5);
+  // the create-group e2e adds a group each run (no DELETE endpoint) → floor, never exact
+  const groupRows = page.locator('tbody tr.row-link');
+  await expect.poll(async () => groupRows.count()).toBeGreaterThanOrEqual(5);
 
   // dashboard renders charts (demo fallback when no center is picked)
   await page.getByRole('link', { name: /الرئيسية/ }).click();

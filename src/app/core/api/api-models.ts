@@ -112,6 +112,17 @@ export interface UpdateGroupPayload {
   is_active?: boolean;
 }
 
+/** POST /groups — name/center/level required (backend StoreGroupRequest);
+ * the server re-scopes center_id to the caller's own center for non-admins. */
+export interface CreateGroupPayload {
+  name: string;
+  center_id: number | null;
+  level_id: number;
+  teacher_id?: number | null;
+  capacity?: number | null;
+  schedule_days?: string;
+}
+
 /** POST /students */
 export interface CreateStudentPayload {
   full_name: string;

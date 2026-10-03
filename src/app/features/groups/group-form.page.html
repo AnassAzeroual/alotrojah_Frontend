@@ -1,0 +1,104 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>
+      <a routerLink="/groups" class="btn btn-icon btn-ghost" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+        </svg>
+      </a>
+      {{ 'grp.create' | translate }}
+    </h1>
+  </div>
+
+  <div class="card form-card anim-rise" style="--i: 1">
+    <div class="form-grid">
+      <label class="field">
+        <span>{{ 'grp.col_name' | translate }} <span class="danger">*</span></span>
+        <input
+          type="text"
+          [value]="name()"
+          (input)="name.set($any($event.target).value)"
+          [attr.aria-label]="'grp.col_name' | translate"
+        />
+      </label>
+
+      @if (isAdmin()) {
+        <label class="field">
+          <span>{{ 'dash.center' | translate }} <span class="danger">*</span></span>
+          <app-dropdown
+            [value]="centerId() ?? ''"
+            [options]="centerOptions()"
+            (valueChange)="onCenterChange(num($event))"
+            placeholderKey="registrations.pick_center"
+            ariaLabelKey="dash.center"
+          />
+        </label>
+      }
+
+      <label class="field">
+        <span>{{ 'grp.col_level' | translate }} <span class="danger">*</span></span>
+        <app-dropdown
+          [value]="levelId() ?? ''"
+          [options]="levelOptions()"
+          (valueChange)="levelId.set(num($event))"
+          placeholderKey="grp.col_level"
+          ariaLabelKey="grp.col_level"
+        />
+      </label>
+
+      <label class="field">
+        <span>{{ 'grp.col_teacher' | translate }}</span>
+        <app-dropdown
+          [value]="teacherId() ?? ''"
+          [options]="teacherOptions()"
+          (valueChange)="teacherId.set(num($event))"
+          placeholderKey="grp.col_teacher"
+          ariaLabelKey="grp.col_teacher"
+        />
+      </label>
+
+      <label class="field">
+        <span>{{ 'grp.col_capacity' | translate }}</span>
+        <input
+          type="number"
+          min="1"
+          inputmode="numeric"
+          [value]="capacity() ?? ''"
+          (input)="onCapacityInput($any($event.target).value)"
+          [attr.aria-label]="'grp.col_capacity' | translate"
+        />
+      </label>
+
+      <div class="field wide">
+        <span>{{ 'grp.schedule' | translate }}</span>
+        <div class="day-pick">
+          @for (d of weekdayKeys; track d) {
+            <button
+              type="button"
+              class="day-chip"
+              [class.on]="days().includes(d)"
+              [attr.aria-pressed]="days().includes(d)"
+              (click)="toggleDay(d)"
+            >
+              {{ 'grp.day.' + d | translate }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="submit()">
+        @if (saving()) {
+          <app-spinner />
+        } @else {
+          {{ 'common.save' | translate }}
+        }
+      </button>
+      <a routerLink="/groups" class="btn btn-ghost">{{ 'common.cancel' | translate }}</a>
+    </div>
+    @if (saveFailed()) {
+      <p class="field-error">{{ 'common.error' | translate }}</p>
+    }
+  </div>
+</section>

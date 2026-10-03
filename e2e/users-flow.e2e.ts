@@ -19,7 +19,7 @@ test.describe.serial('Users management', () => {
     await expect(page).toHaveURL(/\/users$/);
 
     // check list count (seeded users exist)
-    const rows = page.locator('.grid-auto .card');
+    const rows = page.locator('.users-table tbody tr');
     await expect.poll(async () => rows.count()).toBeGreaterThanOrEqual(1);
 
     // create new user
@@ -63,16 +63,16 @@ test.describe.serial('Users management', () => {
     await page.getByLabel('كلمة المرور', { exact: true }).fill('password123');
     await page.getByRole('button', { name: /دخول/ }).click();
 
+    // Find the created teacher through the search box (stable test-id locator).
     await page.getByRole('link', { name: /المستخدمون/ }).click();
-
-    // Find teacher
-    await page.locator('main').getByPlaceholder('بحث بالاسم').fill(teacherName);
-    await page.locator('main').getByPlaceholder('بحث بالاسم').press('Enter');
-
-    // click card
-    const teacherCard = page.locator('.grid-auto .card', { hasText: teacherName });
-    await expect(teacherCard).toHaveCount(1);
-    await teacherCard.click();
+    await expect(page).toHaveURL(/\/users$/);
+    const searchBox = page.getByTestId('users-search');
+    await searchBox.fill(teacherName);
+    await searchBox.press('Enter');
+    const teacherRow = page.locator('.users-table tbody tr', { hasText: teacherName });
+    await expect(teacherRow).toHaveCount(1);
+    await teacherRow.locator('.user-link').click();
+    await expect(page).toHaveURL(/\/users\/\d+$/);
 
     // Deactivate (wait for the form to be populated first)
     await expect(page.getByLabel('الاسم الكامل', { exact: false })).toHaveValue(teacherName);

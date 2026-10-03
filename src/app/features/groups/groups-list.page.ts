@@ -6,12 +6,13 @@ import {
   resource,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ChartData } from 'chart.js';
 import { firstValueFrom } from 'rxjs';
 import { GroupStatsRow } from '../../core/api/api-models';
 import { GroupsService } from '../../core/api/groups.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import {
   DropdownComponent,
@@ -53,6 +54,7 @@ function numOr(v: number | null | undefined, fallback: number): number {
   standalone: true,
   imports: [
     TranslatePipe,
+    RouterLink,
     ChartComponent,
     DropdownComponent,
     EmptyStateComponent,
@@ -67,6 +69,10 @@ export class GroupsListPage {
   private readonly i18n = inject(TranslateService);
   private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+
+  /** GroupPolicy::create allows admin/supervisor only. */
+  readonly canCreate = computed(() => ['admin', 'supervisor'].includes(this.auth.role() ?? ''));
 
   private readonly stats = resource({
     params: () => ({}),

@@ -1,7 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
-import { Group, GroupDetail, GroupStats, Paginated, UpdateGroupPayload } from './api-models';
+import {
+  CreateGroupPayload,
+  Group,
+  GroupDetail,
+  GroupStats,
+  Paginated,
+  UpdateGroupPayload,
+} from './api-models';
 
 @Injectable({ providedIn: 'root' })
 export class GroupsService {
@@ -14,6 +21,11 @@ export class GroupsService {
   /** Overview feed: every visible group + KPIs + breakdowns (current season). */
   stats(params?: QueryParams): Observable<GroupStats> {
     return this.api.get<GroupStats>('/groups/stats', params);
+  }
+
+  /** Create a group (admin picks any center; the server scopes supervisors). */
+  create(payload: CreateGroupPayload): Observable<Group> {
+    return this.api.post<Group>('/groups', payload);
   }
 
   /** One group with its students, season metrics and weekly trend. */

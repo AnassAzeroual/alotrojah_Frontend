@@ -10,6 +10,9 @@
       }
     </div>
     <div class="actions">
+      @if (canCreate()) {
+        <a routerLink="/groups/new" class="btn btn-primary">{{ 'grp.create' | translate }}</a>
+      }
       <button type="button" class="btn btn-ghost" (click)="exportCsv()">
         {{ 'grp.export_csv' | translate }}
       </button>

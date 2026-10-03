@@ -14,6 +14,7 @@ import { LanguageService } from '../../core/i18n/language.service';
 import {
   DropdownComponent,
   DropdownOption,
+  dropdownNumber,
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
@@ -46,6 +47,7 @@ export class UsersListPage {
     ...ROLES.map((r) => ({ value: r, labelKey: `role.${r}` })),
   ]);
 
+  protected readonly num = dropdownNumber;
   protected readonly txt = dropdownText;
 
   readonly q = signal('');
@@ -72,5 +74,9 @@ export class UsersListPage {
 
   protected resetPage(): void {
     this.page.set(1);
+  }
+
+  protected roleClass(role: string): string {
+    return role;
   }
 }

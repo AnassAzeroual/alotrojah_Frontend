@@ -24,4 +24,8 @@ export class UsersService {
   update(id: number, data: import('./api-models').UpdateUserPayload): Observable<User> {
     return this.api.put<User>(`/users/${id}`, data);
   }
+
+  delete(id: number): Observable<void> {
+    return this.api.delete<void>(`/users/${id}`);
+  }
 }

@@ -13,7 +13,7 @@
         type="search"
         [placeholder]="'list.search' | translate"
         [value]="q()"
-        (change)="q.set($any($event.target).value); resetPage()"
+        (input)="q.set($any($event.target).value); resetPage()"
       />
     </label>
     <label class="field">

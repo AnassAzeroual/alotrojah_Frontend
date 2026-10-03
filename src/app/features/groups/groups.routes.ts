@@ -9,6 +9,12 @@ export const GROUPS_ROUTES: Routes = [
     data: { roles: ['admin', 'supervisor', 'teacher'] },
   },
   {
+    path: 'new',
+    loadComponent: () => import('./group-form.page').then((m) => m.GroupFormPage),
+    canActivate: [roleGuard],
+    data: { roles: ['admin', 'supervisor'] },
+  },
+  {
     path: ':id',
     loadComponent: () => import('./group-detail.page').then((m) => m.GroupDetailPage),
     canActivate: [roleGuard],
