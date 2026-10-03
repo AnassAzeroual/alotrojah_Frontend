@@ -18,17 +18,18 @@ test('admin logs in, sees dashboard and students', async ({ page }) => {
   await page.getByRole('button', { name: /دخول/ }).click();
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
 
-  // students list renders all 7 seeded students
+  // students list renders (≥7 seeded; registration-flow tests may add more)
   await page.getByRole('link', { name: /الطلاب/ }).click();
   await expect(page).toHaveURL(/\/students$/);
   await expect(page.getByText('أحمد بن يوسف')).toBeVisible();
   const rows = page.locator('.grid-auto .card');
-  await expect(rows).toHaveCount(7);
+  await expect.poll(async () => rows.count()).toBeGreaterThanOrEqual(7);
 
-  // groups list renders (regression: NG0203 loader bug spun forever)
+  // groups overview renders (regression: NG0203 loader bug spun forever)
   await page.getByRole('link', { name: /الحلقات/ }).click();
   await expect(page).toHaveURL(/\/groups$/);
-  await expect(page.locator('.grid-auto .card')).toHaveCount(5);
+  await expect(page.locator('.kpi')).toHaveCount(5);
+  await expect(page.locator('tbody tr.row-link')).toHaveCount(5);
 
   // dashboard renders charts (demo fallback when no center is picked)
   await page.getByRole('link', { name: /الرئيسية/ }).click();

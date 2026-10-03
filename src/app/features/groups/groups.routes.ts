@@ -8,4 +8,10 @@ export const GROUPS_ROUTES: Routes = [
     canActivate: [roleGuard],
     data: { roles: ['admin', 'supervisor', 'teacher'] },
   },
+  {
+    path: ':id',
+    loadComponent: () => import('./group-detail.page').then((m) => m.GroupDetailPage),
+    canActivate: [roleGuard],
+    data: { roles: ['admin', 'supervisor', 'teacher'] },
+  },
 ];

@@ -119,3 +119,75 @@ export interface SessionScore {
   module: { code: string; name_ar: string; max_points: number };
   score: number;
 }
+
+export type Breakdown = Record<string, number>;
+
+export interface GroupBreakdowns {
+  status?: Breakdown;
+  gender?: Breakdown;
+  student_type?: Breakdown;
+  memorization_mode?: Breakdown;
+}
+
+export interface GroupStatsRow {
+  id: number;
+  name: string;
+  center_id: number;
+  level: { id: number; name_ar: string } | null;
+  teacher: {
+    id: number;
+    full_name: string;
+    phone: string | null;
+    teacher_type: 'hifz' | 'murajaa' | 'both';
+  } | null;
+  academic_year: string | null;
+  schedule_days: string;
+  is_active: boolean;
+  capacity: number | null;
+  students_count: number;
+  fill_pct: number | null;
+  avg_score: number | null;
+  attendance_pct: number | null;
+  thumn_total: number;
+  /** PHP serialises an empty array as [] instead of {} */
+  breakdown: GroupBreakdowns | [];
+}
+
+export interface GroupStats {
+  season: { id: number } | null;
+  season_name: string | null;
+  kpis: {
+    groups: number;
+    students: number;
+    avg_score: number | null;
+    attendance_pct: number | null;
+    fill_pct: number | null;
+  };
+  breakdown: GroupBreakdowns;
+  groups: GroupStatsRow[];
+}
+
+export interface GroupDetailStudent {
+  id: number;
+  full_name: string;
+  gender: string | null;
+  status: string;
+  student_type: string | null;
+  memorization_mode: 'surah' | 'thumn';
+  start_hizb: number | null;
+  birth_date: string | null;
+  enrollment_date: string | null;
+  level_id: number | null;
+  notes: string | null;
+  avg_score: number | null;
+  attendance_pct: number | null;
+  thumn_total: number;
+}
+
+export interface GroupDetail {
+  season_name: string | null;
+  group: GroupStatsRow;
+  breakdown: GroupBreakdowns;
+  trend: { week: number; avg_score: number }[];
+  students: GroupDetailStudent[];
+}
