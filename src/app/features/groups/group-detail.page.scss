@@ -9,6 +9,69 @@
   font-weight: 400;
 }
 
+.edit-btn {
+  align-self: flex-start;
+  min-height: 38px;
+  margin-top: var(--space-2);
+}
+
+// ---- Inline edit card ----
+
+.edit-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.edit-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr;
+
+  @include up($bp-lg) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .field {
+    min-width: 0;
+  }
+}
+
+.day-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+
+  .day-chip {
+    font: inherit;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    padding: var(--space-2) var(--space-3);
+    min-height: 40px;
+    cursor: pointer;
+    transition:
+      background calc(var(--dur-1) * var(--motion)),
+      border-color calc(var(--dur-1) * var(--motion)),
+      color calc(var(--dur-1) * var(--motion));
+
+    &:hover {
+      border-color: var(--color-primary);
+    }
+
+    &.on {
+      background: linear-gradient(135deg, var(--green-500), var(--green-700));
+      border-color: var(--green-600);
+      color: #fff;
+    }
+  }
+}
+
+.edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
 h1 {
   display: flex;
   align-items: center;

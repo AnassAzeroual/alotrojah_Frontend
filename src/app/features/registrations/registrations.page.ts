@@ -10,6 +10,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
+import { GroupsService } from '../../core/api/groups.service';
 import { RegistrationRequestsService } from '../../core/api/registration-requests.service';
 import { DropdownComponent, dropdownNumber } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
@@ -33,13 +34,16 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 export class RegistrationsPage {
   private readonly requestsSvc = inject(RegistrationRequestsService);
   private readonly centersSvc = inject(CentersService);
+  private readonly groupsSvc = inject(GroupsService);
 
   readonly page = signal(1);
   private readonly tick = signal(0);
 
-  /** Card currently in accept mode (center selection). */
+  /** Card currently in accept mode (center/group selection). */
   readonly acceptingId = signal<number | null>(null);
   readonly centerId = signal<number | null>(null);
+  /** Optional group of the chosen center (teachers/students only). */
+  readonly groupId = signal<number | null>(null);
   /** Two-step cancel: card armed for the confirming click. */
   readonly armingCancelId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
@@ -52,6 +56,27 @@ export class RegistrationsPage {
   });
   readonly centerOptions = computed(() =>
     this.centers().map((c) => ({ value: c.id, label: c.name })),
+  );
+
+  /** Row currently being accepted (for the role-gated group picker). */
+  protected readonly acceptingRow = computed(
+    () => this.rows().find((r) => r.id === this.acceptingId()) ?? null,
+  );
+  protected readonly canPickGroup = computed(() =>
+    ['teacher', 'student'].includes(this.acceptingRow()?.role ?? ''),
+  );
+
+  /** Groups of the picked center; reloads whenever the center changes. */
+  private readonly groupsRes = resource({
+    params: () => ({ centerId: this.centerId() }),
+    loader: ({ params }) => {
+      if (params.centerId === null) return Promise.resolve(null);
+      return firstValueFrom(this.groupsSvc.list({ center_id: params.centerId, is_active: true }));
+    },
+  });
+
+  protected readonly groupOptions = computed(() =>
+    (this.groupsRes.value()?.data ?? []).map((g) => ({ value: g.id, label: g.name })),
   );
 
   private readonly query = resource({
@@ -67,6 +92,7 @@ export class RegistrationsPage {
   startAccept(id: number): void {
     this.acceptingId.set(id);
     this.centerId.set(null);
+    this.groupId.set(null);
     this.armingCancelId.set(null);
     this.actionFailed.set(false);
   }
@@ -74,6 +100,13 @@ export class RegistrationsPage {
   cancelAccept(): void {
     this.acceptingId.set(null);
     this.centerId.set(null);
+    this.groupId.set(null);
+  }
+
+  /** Center change invalidates any previously picked group. */
+  protected onCenterChange(id: number | null): void {
+    this.centerId.set(id);
+    this.groupId.set(null);
   }
 
   confirmAccept(id: number): void {
@@ -81,7 +114,7 @@ export class RegistrationsPage {
     if (centerId === null || this.busyId() !== null) return;
     this.busyId.set(id);
     this.actionFailed.set(false);
-    this.requestsSvc.accept(id, centerId).subscribe({
+    this.requestsSvc.accept(id, centerId, this.groupId()).subscribe({
       next: () => {
         this.busyId.set(null);
         this.cancelAccept();

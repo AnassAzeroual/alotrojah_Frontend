@@ -101,6 +101,31 @@ export interface Student {
   start_hizb: number | null;
 }
 
+/** PUT /groups/{id} — every field optional (backend rules are `sometimes`). */
+export interface UpdateGroupPayload {
+  name?: string;
+  level_id?: number;
+  teacher_id?: number | null;
+  academic_year?: string | null;
+  capacity?: number | null;
+  schedule_days?: string;
+  is_active?: boolean;
+}
+
+/** PUT /students/{id} — every field optional (backend rules are `sometimes`). */
+export interface UpdateStudentPayload {
+  full_name?: string;
+  group_id?: number | null;
+  level_id?: number | null;
+  birth_date?: string | null;
+  gender?: 'male' | 'female' | null;
+  status?: string;
+  student_type?: string | null;
+  memorization_mode?: 'surah' | 'thumn';
+  start_hizb?: number | null;
+  notes?: string | null;
+}
+
 export interface ScoringModule {
   id: number;
   code: string;

@@ -12,9 +12,16 @@ export class RegistrationRequestsService {
     return this.api.get<Paginated<RegistrationRequest>>('/registration-requests', params);
   }
 
-  /** Copies the request into users (+ students when student) and removes it. */
-  accept(id: number, centerId: number): Observable<User> {
-    return this.api.post<User>(`/registration-requests/${id}/accept`, { center_id: centerId });
+  /**
+   * Copies the request into users (+ students when student) and removes it.
+   * groupId optionally links the new account to a group of the chosen center
+   * (teacher → groups.teacher_id, student → students.group_id).
+   */
+  accept(id: number, centerId: number, groupId: number | null = null): Observable<User> {
+    return this.api.post<User>(`/registration-requests/${id}/accept`, {
+      center_id: centerId,
+      ...(groupId !== null ? { group_id: groupId } : {}),
+    });
   }
 
   /** Hard-deletes the request; the email can register again afterwards. */

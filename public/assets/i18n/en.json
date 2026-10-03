@@ -98,6 +98,7 @@
     "cancel": "Reject request",
     "cancel_confirm": "Confirm rejection",
     "pick_center": "Choose a center",
+    "pick_group": "Choose a group (optional)",
     "accept_hint": "Pick the center this account will belong to"
   },
   "attendance": {
@@ -152,6 +153,10 @@
     "attendance": "Attendance",
     "final": "Final score"
   },
+  "studentDetail": {
+    "assign_group": "Assign group",
+    "no_group": "No group"
+  },
   "list": {
     "search": "Search by name",
     "group": "Circle",
@@ -199,6 +204,8 @@
     "expand": "Show details",
     "collapse": "Hide details",
     "open": "Open circle",
+    "edit": "Edit circle",
+    "no_teacher": "No teacher",
     "schedule": "Schedule",
     "year": "Academic year",
     "phone": "Phone",

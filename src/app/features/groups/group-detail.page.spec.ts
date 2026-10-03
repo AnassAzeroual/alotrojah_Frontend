@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import {
@@ -9,7 +10,8 @@ import {
 } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
-import { GroupDetail } from '../../core/api/api-models';
+import { CurrentUser, GroupDetail } from '../../core/api/api-models';
+import { AuthService } from '../../core/auth/auth.service';
 import { ChartComponent } from '../../shared/ui/chart/chart.component';
 import { GroupDetailPage } from './group-detail.page';
 
@@ -129,6 +131,19 @@ const DETAIL: GroupDetail = {
   ],
 };
 
+const ADMIN: CurrentUser = {
+  id: 1,
+  full_name: 'Admin',
+  role: 'admin',
+  center_id: null,
+  teacher_type: 'both',
+};
+
+const authStub = {
+  currentUser: signal<CurrentUser | null>(ADMIN),
+  role: signal<CurrentUser['role'] | null>('admin'),
+};
+
 describe('GroupDetailPage', () => {
   let fixture!: ReturnType<typeof TestBed.createComponent<GroupDetailPage>>;
   let page!: GroupDetailPage;
@@ -139,6 +154,38 @@ describe('GroupDetailPage', () => {
   const flushDetail = (): void => {
     const req = http.expectOne((r) => r.url.endsWith('/groups/5/detail') && r.method === 'GET');
     req.flush({ success: true, message: null, data: DETAIL });
+  };
+
+  const flushLevels = (): void => {
+    const req = http.expectOne((r) => r.url.endsWith('/reference/levels') && r.method === 'GET');
+    req.flush({
+      success: true,
+      message: null,
+      data: [{ id: 1, code: 'L1', name_ar: 'المستوى الأول' }],
+    });
+  };
+
+  const flushTeachers = (): void => {
+    const req = http.expectOne((r) => r.url.endsWith('/users') && r.method === 'GET');
+    req.flush({
+      success: true,
+      message: null,
+      data: {
+        data: [
+          {
+            id: 3,
+            full_name: 'ياسين العلوي',
+            role: 'teacher',
+            center_id: 1,
+            teacher_type: 'hifz',
+            email: 'y@example.com',
+            phone: null,
+            is_active: true,
+          },
+        ],
+        meta: { current_page: 1, total: 1, per_page: 20 },
+      },
+    });
   };
 
   const chart = (label: string): ChartComponent =>
@@ -158,6 +205,7 @@ describe('GroupDetailPage', () => {
         provideTranslateService({
           loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
         }),
+        { provide: AuthService, useValue: authStub },
       ],
     }).compileComponents();
     http = TestBed.inject(HttpTestingController);
@@ -168,6 +216,13 @@ describe('GroupDetailPage', () => {
     el = fixture.nativeElement;
     fixture.detectChanges();
     flushDetail();
+    flushLevels();
+    // Let the detail resource value land, then change-detect so the teachers
+    // resource effect fires; flushing it before whenStable avoids a deadlock
+    // (whenStable waits on the pending resource, the test waits on whenStable).
+    await new Promise<void>((r) => setTimeout(r, 0));
+    fixture.detectChanges();
+    flushTeachers();
     await fixture.whenStable();
     fixture.detectChanges();
   });
@@ -236,5 +291,56 @@ describe('GroupDetailPage', () => {
     expect(detailRow.textContent).toContain('3');
     expect(detailRow.textContent).toContain('2012-04-01');
     expect(detailRow.textContent).toContain('2025-09-15');
+  });
+
+  it('saves the inline edit and reloads the detail', async () => {
+    el.querySelector<HTMLButtonElement>('.edit-btn')!.click();
+    fixture.detectChanges();
+    expect(el.querySelector('.edit-card')).not.toBeNull();
+
+    const nameInput = el.querySelector<HTMLInputElement>('.edit-card input[type="text"]')!;
+    nameInput.value = 'حلقة النور — L1 (معدّلة)';
+    nameInput.dispatchEvent(new Event('input'));
+
+    const capInput = el.querySelector<HTMLInputElement>('.edit-card input[type="number"]')!;
+    capInput.value = '25';
+    capInput.dispatchEvent(new Event('input'));
+
+    // DETAIL starts with Sat+Mon; toggling Mon off leaves 'Sat'.
+    const monChip = Array.from(el.querySelectorAll<HTMLButtonElement>('.edit-card .day-chip')).find(
+      (c) => c.textContent!.trim() === 'grp.day.Mon',
+    )!;
+    monChip.click();
+    fixture.detectChanges();
+
+    el.querySelector<HTMLButtonElement>('.edit-actions .btn-primary')!.click();
+    const req = http.expectOne((r) => r.url.endsWith('/groups/5') && r.method === 'PUT');
+    expect(req.request.body).toEqual({
+      name: 'حلقة النور — L1 (معدّلة)',
+      level_id: 1,
+      teacher_id: 3,
+      capacity: 25,
+      schedule_days: 'Sat',
+      is_active: true,
+    });
+    req.flush({ success: true, message: null, data: null });
+    fixture.detectChanges(); // tick bump issues the detail reload
+
+    http
+      .expectOne((r) => r.url.endsWith('/groups/5/detail') && r.method === 'GET')
+      .flush({
+        success: true,
+        message: null,
+        data: { ...DETAIL, group: { ...DETAIL.group, name: 'حلقة النور — L1 (معدّلة)' } },
+      });
+    // The refreshed detail re-fires the teachers feed; flush before whenStable.
+    await new Promise<void>((r) => setTimeout(r, 0));
+    fixture.detectChanges();
+    flushTeachers();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(el.querySelector('.edit-card')).toBeNull();
+    expect(el.querySelector('h1')!.textContent).toContain('حلقة النور — L1 (معدّلة)');
   });
 });

@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
-import { Group, GroupDetail, GroupStats, Paginated } from './api-models';
+import { Group, GroupDetail, GroupStats, Paginated, UpdateGroupPayload } from './api-models';
 
 @Injectable({ providedIn: 'root' })
 export class GroupsService {
@@ -19,5 +19,10 @@ export class GroupsService {
   /** One group with its students, season metrics and weekly trend. */
   detail(id: number): Observable<GroupDetail> {
     return this.api.get<GroupDetail>(`/groups/${id}/detail`);
+  }
+
+  /** Partial update (name/level/teacher/capacity/schedule/is_active). */
+  update(id: number, payload: UpdateGroupPayload): Observable<Group> {
+    return this.api.put<Group>(`/groups/${id}`, payload);
   }
 }

@@ -51,10 +51,20 @@
               <app-dropdown
                 [value]="centerId()"
                 [options]="centerOptions()"
-                (valueChange)="centerId.set(num($event))"
+                (valueChange)="onCenterChange(num($event))"
                 placeholderKey="registrations.pick_center"
                 ariaLabelKey="registrations.pick_center"
               />
+              @if (canPickGroup()) {
+                <app-dropdown
+                  [value]="groupId()"
+                  [options]="groupOptions()"
+                  [disabled]="centerId() === null"
+                  (valueChange)="groupId.set(num($event))"
+                  placeholderKey="registrations.pick_group"
+                  ariaLabelKey="registrations.pick_group"
+                />
+              }
             </div>
             <div class="req-accept-actions">
               <button
@@ -106,11 +116,7 @@
                 {{ 'common.cancel' | translate }}
               </button>
             } @else {
-              <button
-                type="button"
-                class="btn btn-danger-ghost"
-                (click)="armCancel(r.id)"
-              >
+              <button type="button" class="btn btn-danger-ghost" (click)="armCancel(r.id)">
                 {{ 'registrations.cancel' | translate }}
               </button>
             }

@@ -19,8 +19,104 @@
           </p>
         }
       }
+      @if (canEdit() && !editing()) {
+        <button type="button" class="btn btn-ghost edit-btn" (click)="startEdit()">
+          {{ 'grp.edit' | translate }}
+        </button>
+      }
     </div>
   </div>
+
+  @if (editing()) {
+    <div class="card edit-card anim-rise">
+      <div class="edit-grid">
+        <label class="field">
+          <span>{{ 'grp.col_name' | translate }}</span>
+          <input
+            type="text"
+            [value]="editName()"
+            (input)="editName.set($any($event.target).value)"
+          />
+        </label>
+        <label class="field">
+          <span>{{ 'grp.col_level' | translate }}</span>
+          <app-dropdown
+            [value]="editLevelId() ?? ''"
+            [options]="levelOptions()"
+            (valueChange)="editLevelId.set(num($event))"
+            placeholderKey="grp.col_level"
+            ariaLabelKey="grp.col_level"
+          />
+        </label>
+        @if (canPickTeacher()) {
+          <label class="field">
+            <span>{{ 'grp.col_teacher' | translate }}</span>
+            <app-dropdown
+              [value]="editTeacherId() ?? ''"
+              [options]="teacherOptions()"
+              (valueChange)="editTeacherId.set(num($event))"
+              placeholderKey="grp.col_teacher"
+              ariaLabelKey="grp.col_teacher"
+            />
+          </label>
+        }
+        <label class="field">
+          <span>{{ 'grp.col_capacity' | translate }}</span>
+          <input
+            type="number"
+            min="1"
+            inputmode="numeric"
+            [value]="editCapacity() ?? ''"
+            (input)="onCapacityInput($any($event.target).value)"
+          />
+        </label>
+        <div class="field">
+          <span>{{ 'grp.schedule' | translate }}</span>
+          <div class="day-pick">
+            @for (d of weekdayKeys; track d) {
+              <button
+                type="button"
+                class="day-chip"
+                [class.on]="editDays().includes(d)"
+                [attr.aria-pressed]="editDays().includes(d)"
+                (click)="toggleDay(d)"
+              >
+                {{ 'grp.day.' + d | translate }}
+              </button>
+            }
+          </div>
+        </div>
+        <label class="chk">
+          <input
+            type="checkbox"
+            [checked]="editActive()"
+            (change)="editActive.set($any($event.target).checked)"
+          />
+          {{ 'grp.active' | translate }}
+        </label>
+      </div>
+      <div class="edit-actions">
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="!editName().trim() || editLevelId() === null || saving()"
+          (click)="saveEdit()"
+        >
+          @if (saving()) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+        <button type="button" class="btn btn-ghost" [disabled]="saving()" (click)="cancelEdit()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+      @if (saveFailed()) {
+        <p class="field-error">{{ 'common.error' | translate }}</p>
+      }
+    </div>
+  }
 
   @if (loading()) {
     <div class="stack" aria-hidden="true">

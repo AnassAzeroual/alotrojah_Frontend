@@ -1,0 +1,32 @@
+// Student detail: hero + group-assignment card + season stats.
+.assign-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  h2 {
+    margin: 0;
+    font-size: var(--text-lg);
+    color: var(--green-800);
+
+    [data-theme='dark'] & {
+      color: var(--green-300);
+    }
+  }
+}
+
+.assign-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.assign-dd {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.assign-card .field-error {
+  margin: 0;
+}

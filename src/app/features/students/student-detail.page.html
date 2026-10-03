@@ -27,6 +27,39 @@
       </div>
     </div>
 
+    @if (canAssign()) {
+      <section class="card anim-rise assign-card" style="--i: 1">
+        <h2>{{ 'studentDetail.assign_group' | translate }}</h2>
+        <div class="assign-row">
+          <app-dropdown
+            class="assign-dd"
+            [value]="assignValue()"
+            [options]="groupOptions()"
+            [disabled]="assignSaving()"
+            [compact]="true"
+            (valueChange)="onGroupPick($event)"
+            placeholderKey="studentDetail.assign_group"
+            ariaLabelKey="studentDetail.assign_group"
+          />
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!isDirty() || assignSaving()"
+            (click)="saveAssign()"
+          >
+            @if (assignSaving()) {
+              <app-spinner />
+            } @else {
+              {{ 'common.save' | translate }}
+            }
+          </button>
+        </div>
+        @if (assignFailed()) {
+          <p class="field-error">{{ 'common.error' | translate }}</p>
+        }
+      </section>
+    }
+
     @if (summaryVal()) {
       <section class="card anim-rise" style="--i: 1">
         <h2>{{ 'results.season' | translate }}</h2>

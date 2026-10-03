@@ -61,13 +61,30 @@ describe('RegistrationsPage', () => {
     req.flush({
       success: true,
       message: null,
-      data: { data: [{ id: 1, name: 'Al Noor', city: 'Casablanca' }], meta: { current_page: 1, total: 1, per_page: 20 } },
+      data: {
+        data: [{ id: 1, name: 'Al Noor', city: 'Casablanca' }],
+        meta: { current_page: 1, total: 1, per_page: 20 },
+      },
     });
   };
 
   const flushRequests = (rows: RegistrationRequest[], total = rows.length): void => {
     const req = http.expectOne((r) => r.url.endsWith('/registration-requests'));
     req.flush(PAGE(rows, total));
+  };
+
+  const flushGroups = (): void => {
+    const req = http.expectOne((r) => r.url.endsWith('/groups'));
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('center_id')).toBe('1');
+    req.flush({
+      success: true,
+      message: null,
+      data: {
+        data: [{ id: 2, name: 'حلقة النور' }],
+        meta: { current_page: 1, total: 1, per_page: 20 },
+      },
+    });
   };
 
   beforeEach(async () => {
@@ -115,7 +132,9 @@ describe('RegistrationsPage', () => {
 
     page.centerId.set(1);
     page.confirmAccept(TEACHER_REQ.id);
-    const req = http.expectOne((r) => r.url.endsWith(`/registration-requests/${TEACHER_REQ.id}/accept`));
+    const req = http.expectOne((r) =>
+      r.url.endsWith(`/registration-requests/${TEACHER_REQ.id}/accept`),
+    );
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ center_id: 1 });
     req.flush({ success: true, message: null, data: ACCEPTED_USER });
@@ -130,13 +149,51 @@ describe('RegistrationsPage', () => {
     expect(el.textContent).toContain('Youssef Amine');
   });
 
+  it('accepts a teacher into the picked group of the chosen center', async () => {
+    page.startAccept(TEACHER_REQ.id);
+    fixture.detectChanges();
+    page.centerId.set(1);
+    fixture.detectChanges(); // groups resource reloads for the picked center
+    flushGroups();
+    await fixture.whenStable(); // flushed group value lands
+    fixture.detectChanges();
+
+    const groupDdBtn = el.querySelectorAll<HTMLButtonElement>(
+      '.req-accept app-dropdown .dd-btn',
+    )[1];
+    groupDdBtn.click();
+    fixture.detectChanges();
+    expect(el.querySelector('.req-accept .dd-list li button span')!.textContent!.trim()).toBe(
+      'حلقة النور',
+    );
+
+    page.groupId.set(2);
+    page.confirmAccept(TEACHER_REQ.id);
+    const req = http.expectOne((r) =>
+      r.url.endsWith(`/registration-requests/${TEACHER_REQ.id}/accept`),
+    );
+    expect(req.request.body).toEqual({ center_id: 1, group_id: 2 });
+    req.flush({ success: true, message: null, data: ACCEPTED_USER });
+    fixture.detectChanges(); // resource effect issues the reload GET
+
+    flushRequests([STUDENT_REQ]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(page.acceptingId()).toBeNull();
+    expect(el.textContent).not.toContain('Fatima Zahra');
+  });
+
   it('keeps the panel and flags failure when accept errors', () => {
     page.startAccept(TEACHER_REQ.id);
     page.centerId.set(1);
     page.confirmAccept(TEACHER_REQ.id);
-    const req = http.expectOne((r) => r.url.endsWith(`/registration-requests/${TEACHER_REQ.id}/accept`));
+    const req = http.expectOne((r) =>
+      r.url.endsWith(`/registration-requests/${TEACHER_REQ.id}/accept`),
+    );
     req.flush(null, { status: 500, statusText: 'Server Error' });
     fixture.detectChanges();
+    flushGroups(); // the center stays picked, so the groups feed fired for it
 
     expect(page.acceptingId()).toBe(TEACHER_REQ.id);
     expect(page.actionFailed()).toBe(true);

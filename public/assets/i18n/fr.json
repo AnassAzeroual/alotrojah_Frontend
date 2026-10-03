@@ -98,6 +98,7 @@
     "cancel": "Refuser la demande",
     "cancel_confirm": "Confirmer le refus",
     "pick_center": "Choisir un centre",
+    "pick_group": "Choisir un groupe (facultatif)",
     "accept_hint": "Choisissez le centre de rattachement de ce compte"
   },
   "attendance": {
@@ -152,6 +153,10 @@
     "attendance": "Présence",
     "final": "Note finale"
   },
+  "studentDetail": {
+    "assign_group": "Affecter à un cercle",
+    "no_group": "Aucun cercle"
+  },
   "list": {
     "search": "Rechercher par nom",
     "group": "Cercle",
@@ -199,6 +204,8 @@
     "expand": "Afficher les détails",
     "collapse": "Masquer les détails",
     "open": "Ouvrir le cercle",
+    "edit": "Modifier le cercle",
+    "no_teacher": "Aucun enseignant",
     "schedule": "Horaires",
     "year": "Année scolaire",
     "phone": "Téléphone",
