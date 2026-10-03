@@ -12,13 +12,13 @@
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(760px 560px at 95% -12%, rgb(0 184 169 / 0.2), transparent 66%),
-    radial-gradient(860px 640px at -8% 112%, rgb(139 92 246 / 0.18), transparent 68%),
+    radial-gradient(700px 520px at 100% -14%, rgb(0 184 169 / 0.38), transparent 64%),
+    radial-gradient(820px 620px at -10% 114%, rgb(139 92 246 / 0.34), transparent 66%),
     linear-gradient(
       150deg,
-      color-mix(in srgb, var(--color-primary) 8%, var(--color-bg)),
+      color-mix(in srgb, var(--color-primary) 14%, var(--color-bg)),
       var(--color-bg) 55%,
-      color-mix(in srgb, var(--color-accent) 6%, var(--color-bg))
+      color-mix(in srgb, var(--color-accent) 12%, var(--color-bg))
     );
 
   &::before {
@@ -27,7 +27,7 @@
     inset: 0;
     pointer-events: none;
     opacity: var(--bg-pattern-opacity);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2300b8a9' stroke-opacity='0.16'%3E%3Cpath d='M60 10 70 50l40 10-40 10-10 40-10-40-40-10 40-10z'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2300b8a9' stroke-opacity='0.22'%3E%3Cpath d='M60 10 70 50l40 10-40 10-10 40-10-40-40-10 40-10z'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 140px 140px;
     mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
   }
@@ -38,7 +38,7 @@
     inset: 0;
     pointer-events: none;
     opacity: calc(var(--bg-pattern-opacity) * 0.7);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%238b5cf6' stroke-opacity='0.14'%3E%3Cpath d='M60 10 70 50l40 10-40 10-10 40-10-40-40-10 40-10z'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%238b5cf6' stroke-opacity='0.2'%3E%3Cpath d='M60 10 70 50l40 10-40 10-10 40-10-40-40-10 40-10z'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 140px 140px;
     mask-image: radial-gradient(ellipse 60% 50% at 5% 100%, black 20%, transparent 72%);
   }
@@ -47,28 +47,29 @@
 .auth-topbar {
   position: absolute;
   top: 14px;
-  inset-inline-end: 14px;
+  inset-inline-start: 14px;
   z-index: 5;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  border-radius: 99px;
-  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow-2);
+  gap: 8px;
+  direction: ltr;
 }
 
 .lang-pills {
   display: flex;
   align-items: center;
+  direction: ltr;
+  padding: 4px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-2);
 
   button {
     border: 0;
     background: transparent;
-    padding: 6px 10px;
-    border-radius: 99px;
+    padding: 6px 12px;
     font: inherit;
     font-size: 12px;
     font-weight: 700;
@@ -79,13 +80,17 @@
       color 160ms,
       background 160ms;
 
+    + button {
+      border-inline-start: 1px solid var(--card-border);
+    }
+
     &:hover {
       color: var(--color-text);
     }
 
     &.on {
       color: var(--color-primary-dark);
-      background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+      font-weight: 800;
 
       [data-theme='dark'] & {
         color: #5eead4;
@@ -106,22 +111,16 @@
   /* Prevents flexbox/grid height stretching */
   box-sizing: border-box;
   display: grid;
-  color: var(--color-primary-dark);
+  color: var(--color-bg);
   cursor: pointer;
-  flex: 0 0 32px;
+  flex: 0 0 34px;
   /* Set exact flex-basis instead of auto */
   place-items: center;
   border-radius: 50%;
-  border-width: 1px;
-  border-style: solid;
-  border-color: transparent;
-  border-image: none;
-  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  border: 1px solid var(--card-border);
+  background: var(--color-text);
+  box-shadow: var(--shadow-2);
   transition: 160ms;
-
-  [data-theme='dark'] & {
-    color: #5eead4;
-  }
 
   svg {
     width: 18px;
@@ -129,7 +128,6 @@
   }
 
   &:hover {
-    border-color: var(--color-primary);
     transform: translateY(-1px);
   }
 
@@ -142,12 +140,27 @@
 .auth-card {
   position: relative;
   width: min(1120px, 100%);
-  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  background:
+    linear-gradient(
+        color-mix(in srgb, var(--color-surface) 92%, transparent),
+        color-mix(in srgb, var(--color-surface) 92%, transparent)
+      )
+      padding-box,
+    linear-gradient(
+        140deg,
+        rgb(0 184 169 / 0.65),
+        rgb(139 92 246 / 0.3) 40%,
+        rgb(0 184 169 / 0.2) 65%,
+        rgb(139 92 246 / 0.45)
+      )
+      border-box;
   backdrop-filter: blur(18px);
   color: var(--color-text);
-  border: 1px solid var(--card-border);
+  border: 1.5px solid transparent;
   border-radius: 32px;
-  box-shadow: var(--shadow-3);
+  box-shadow:
+    var(--shadow-3),
+    0 0 48px rgb(0 184 169 / 0.12);
   display: grid;
   grid-template-columns: 1fr;
   overflow: hidden;
@@ -457,24 +470,34 @@
   }
 
   .art-nav {
+    position: absolute;
+    top: 50%;
+    left: 18px;
+    translate: 0 -50%;
     display: flex;
     gap: 10px;
+    z-index: 2;
 
     button {
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      border: 1.5px solid rgb(255 255 255 / 0.7);
-      background: transparent;
-      color: #fff;
-      font-size: 18px;
+      border: none;
+      background: #fff;
+      color: #12201d;
+      font-size: 20px;
+      line-height: 1;
       cursor: pointer;
       display: grid;
       place-items: center;
-      transition: background 160ms;
+      box-shadow: 0 2px 12px rgb(0 0 0 / 0.35);
+      transition:
+        background 160ms,
+        transform 160ms;
 
       &:hover {
-        background: rgb(0 184 169 / 0.35);
+        background: #d9f5f1;
+        transform: scale(1.06);
       }
     }
   }
