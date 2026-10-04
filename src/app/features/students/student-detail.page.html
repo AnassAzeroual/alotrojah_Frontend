@@ -129,7 +129,7 @@
           </button>
         </div>
         @if (assignFailed()) {
-          <p class="field-error">{{ 'common.error' | translate }}</p>
+          <p class="field-error">{{ assignFailed()! | translate }}</p>
         }
       </form>
     } @else {
@@ -201,7 +201,7 @@
             </button>
           </div>
           @if (assignFailed()) {
-            <p class="field-error">{{ 'common.error' | translate }}</p>
+            <p class="field-error">{{ assignFailed()! | translate }}</p>
           }
         </section>
       }

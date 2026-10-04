@@ -110,7 +110,7 @@
       <a routerLink="/groups" class="btn btn-ghost">{{ 'common.cancel' | translate }}</a>
     </div>
     @if (saveFailed()) {
-      <p class="field-error">{{ 'common.error' | translate }}</p>
+      <p class="field-error">{{ saveFailed()! | translate }}</p>
     }
   </div>
 </section>

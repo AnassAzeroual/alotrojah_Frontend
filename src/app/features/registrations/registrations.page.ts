@@ -12,6 +12,7 @@ import { firstValueFrom, map } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { RegistrationRequestsService } from '../../core/api/registration-requests.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { DropdownComponent, dropdownNumber } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { PaginatorComponent } from '../../shared/ui/paginator/paginator.component';
@@ -47,7 +48,7 @@ export class RegistrationsPage {
   /** Two-step cancel: card armed for the confirming click. */
   readonly armingCancelId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
-  readonly actionFailed = signal(false);
+  readonly actionFailed = signal<string | null>(null);
 
   protected readonly num = dropdownNumber;
 
@@ -94,7 +95,7 @@ export class RegistrationsPage {
     this.centerId.set(null);
     this.groupId.set(null);
     this.armingCancelId.set(null);
-    this.actionFailed.set(false);
+    this.actionFailed.set(null);
   }
 
   cancelAccept(): void {
@@ -113,16 +114,16 @@ export class RegistrationsPage {
     const centerId = this.centerId();
     if (centerId === null || this.busyId() !== null) return;
     this.busyId.set(id);
-    this.actionFailed.set(false);
+    this.actionFailed.set(null);
     this.requestsSvc.accept(id, centerId, this.groupId()).subscribe({
       next: () => {
         this.busyId.set(null);
         this.cancelAccept();
         this.refresh();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.busyId.set(null);
-        this.actionFailed.set(true);
+        this.actionFailed.set(apiErrorKey(err));
       },
     });
   }
@@ -130,7 +131,7 @@ export class RegistrationsPage {
   armCancel(id: number): void {
     this.armingCancelId.set(id);
     this.acceptingId.set(null);
-    this.actionFailed.set(false);
+    this.actionFailed.set(null);
   }
 
   disarmCancel(): void {
@@ -140,16 +141,16 @@ export class RegistrationsPage {
   confirmCancel(id: number): void {
     if (this.busyId() !== null) return;
     this.busyId.set(id);
-    this.actionFailed.set(false);
+    this.actionFailed.set(null);
     this.requestsSvc.remove(id).subscribe({
       next: () => {
         this.busyId.set(null);
         this.armingCancelId.set(null);
         this.refresh();
       },
-      error: () => {
+      error: (err: unknown) => {
         this.busyId.set(null);
-        this.actionFailed.set(true);
+        this.actionFailed.set(apiErrorKey(err));
       },
     });
   }

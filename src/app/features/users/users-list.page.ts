@@ -10,6 +10,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { UsersService } from '../../core/api/users.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import {
@@ -43,7 +44,7 @@ export class UsersListPage {
   readonly currentId = computed(() => this.auth.currentUser()?.id ?? null);
   readonly armingDeleteId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
-  readonly deleteFailed = signal(false);
+  readonly deleteErrorKey = signal<string | null>(null);
   readonly pendingReplace = signal<{
     id: number;
     name: string;
@@ -103,7 +104,7 @@ export class UsersListPage {
 
   armDelete(id: number): void {
     this.armingDeleteId.set(id);
-    this.deleteFailed.set(false);
+    this.deleteErrorKey.set(null);
   }
 
   disarmDelete(): void {
@@ -113,17 +114,17 @@ export class UsersListPage {
   confirmDelete(id: number): void {
     if (this.busyId() !== null) return;
     this.busyId.set(id);
-    this.deleteFailed.set(false);
+    this.deleteErrorKey.set(null);
     this.usersSvc.delete(id).subscribe({
       next: () => {
         this.busyId.set(null);
         this.armingDeleteId.set(null);
         this.refresh();
       },
-      error: (err: { status?: number; error?: { errors?: Record<string, unknown> } }) => {
+      error: (err: unknown) => {
         this.busyId.set(null);
-        const errors = err?.error?.errors;
-        if (err?.status === 422 && errors?.['code'] === 'NEED_REPLACER') {
+        const errors = (err as { error?: { errors?: Record<string, unknown> } })?.error?.errors;
+        if ((err as { status?: number })?.status === 422 && errors?.['code'] === 'NEED_REPLACER') {
           this.armingDeleteId.set(null);
           const row = this.rows().find((u) => u.id === id);
           this.pendingReplace.set({
@@ -132,7 +133,7 @@ export class UsersListPage {
             groups: (errors['groups'] as { id: number; name: string }[]) ?? [],
           });
         } else {
-          this.deleteFailed.set(true);
+          this.deleteErrorKey.set(apiErrorKey(err));
         }
       },
     });

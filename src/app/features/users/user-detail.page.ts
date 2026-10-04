@@ -14,6 +14,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { UsersService } from '../../core/api/users.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import {
   DropdownComponent,
@@ -51,7 +52,7 @@ export class UserDetailPage {
   private readonly router = inject(Router);
 
   readonly saving = signal(false);
-  readonly error = signal(false);
+  readonly errorKey = signal<string | null>(null);
 
   readonly isNew = computed(() => this.id() === 'new');
   readonly isAdmin = computed(() => this.auth.role() === 'admin');
@@ -152,7 +153,7 @@ export class UserDetailPage {
   submit(): void {
     if (this.form.invalid || this.saving()) return;
     this.saving.set(true);
-    this.error.set(false);
+    this.errorKey.set(null);
 
     const v = this.form.getRawValue();
     if (!v.role) return;
@@ -183,9 +184,9 @@ export class UserDetailPage {
         this.saving.set(false);
         this.router.navigate(['/users']);
       },
-      error: () => {
+      error: (err: unknown) => {
         this.saving.set(false);
-        this.error.set(true);
+        this.errorKey.set(apiErrorKey(err));
       },
     });
   }

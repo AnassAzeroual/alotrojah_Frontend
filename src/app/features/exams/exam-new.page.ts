@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { ExamsService } from '../../core/api/exams.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
@@ -34,6 +35,7 @@ export class ExamNewPage {
   readonly search = signal('');
   readonly pickedStudent = signal<number | null>(null);
   readonly saving = signal(false);
+  readonly errorKey = signal<string | null>(null);
 
   readonly found = resource({
     params: () => ({ q: this.search() }),
@@ -84,6 +86,7 @@ export class ExamNewPage {
     if (st === null || this.saving()) return;
     if (v.exam_type !== 'final_season' && v.term_id === null) return;
     this.saving.set(true);
+    this.errorKey.set(null);
     this.examsSvc
       .create({
         student_id: st,
@@ -98,7 +101,10 @@ export class ExamNewPage {
           this.saving.set(false);
           void this.router.navigate(['/exams', e.id]);
         },
-        error: () => this.saving.set(false),
+        error: (err: unknown) => {
+          this.saving.set(false);
+          this.errorKey.set(apiErrorKey(err));
+        },
       });
   }
 }

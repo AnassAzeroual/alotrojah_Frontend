@@ -11,6 +11,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { SeasonsService } from '../../core/api/seasons.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
@@ -94,8 +95,8 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
                   }
                 }
               </div>
-              @if (deleteFailedId() === s.id) {
-                <div class="banner danger">{{ 'planning.has_facts' | translate }}</div>
+              @if (deleteFailed()?.id === s.id) {
+                <div class="banner danger">{{ deleteFailed()!.key | translate }}</div>
               }
             </div>
           }
@@ -112,7 +113,7 @@ export class SeasonsListPage {
   readonly canDelete = computed(() => this.auth.role() === 'admin');
   readonly armingDeleteId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
-  readonly deleteFailedId = signal<number | null>(null);
+  readonly deleteFailed = signal<{ id: number; key: string } | null>(null);
 
   protected readonly seasons = resource({
     params: () => ({}),
@@ -125,7 +126,7 @@ export class SeasonsListPage {
 
   armDelete(id: number): void {
     this.armingDeleteId.set(id);
-    this.deleteFailedId.set(null);
+    this.deleteFailed.set(null);
   }
 
   disarmDelete(): void {
@@ -135,18 +136,18 @@ export class SeasonsListPage {
   confirmDelete(id: number): void {
     if (this.busyId() !== null) return;
     this.busyId.set(id);
-    this.deleteFailedId.set(null);
+    this.deleteFailed.set(null);
     this.seasonsSvc.remove(id).subscribe({
       next: () => {
         this.busyId.set(null);
         this.armingDeleteId.set(null);
         this.seasons.reload();
       },
-      error: () => {
+      error: (err: unknown) => {
         // 422 when the season holds recorded facts (terms cascade otherwise).
         this.busyId.set(null);
         this.armingDeleteId.set(null);
-        this.deleteFailedId.set(id);
+        this.deleteFailed.set({ id, key: apiErrorKey(err) });
       },
     });
   }

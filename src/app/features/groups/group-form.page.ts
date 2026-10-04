@@ -11,6 +11,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { GroupsService } from '../../core/api/groups.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { ReferenceService, Level } from '../../core/api/reference.service';
 import { UsersService } from '../../core/api/users.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -43,7 +44,7 @@ export class GroupFormPage {
   private readonly router = inject(Router);
 
   readonly saving = signal(false);
-  readonly saveFailed = signal(false);
+  readonly saveFailed = signal<string | null>(null);
 
   protected readonly name = signal('');
   protected readonly centerId = signal<number | null>(null);
@@ -128,7 +129,7 @@ export class GroupFormPage {
   protected submit(): void {
     if (!this.canSave()) return;
     this.saving.set(true);
-    this.saveFailed.set(false);
+    this.saveFailed.set(null);
     this.groupsSvc
       .create({
         name: this.name().trim(),
@@ -143,9 +144,9 @@ export class GroupFormPage {
           this.saving.set(false);
           void this.router.navigate(['/groups']);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.saving.set(false);
-          this.saveFailed.set(true);
+          this.saveFailed.set(apiErrorKey(err));
         },
       });
   }

@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ExamsService } from '../../core/api/exams.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { AuthService } from '../../core/auth/auth.service';
 import {
@@ -78,11 +79,11 @@ export class ExamDetailPage {
   readonly editTerm = signal<number | null>(null);
   private editInit = false;
   readonly editSaving = signal(false);
-  readonly editFailed = signal(false);
+  readonly editErrorKey = signal<string | null>(null);
 
   readonly armingDelete = signal(false);
   readonly deleteSaving = signal(false);
-  readonly deleteFailed = signal(false);
+  readonly deleteErrorKey = signal<string | null>(null);
 
   private readonly termsRes = resource({
     params: () => ({ season: this.exam.value()?.season_id ?? null }),
@@ -121,7 +122,7 @@ export class ExamDetailPage {
       validators: [Validators.min(0), Validators.max(20)],
     }),
   });
-  readonly addFailed = signal(false);
+  readonly addErrorKey = signal<string | null>(null);
 
   /** Unsaved question batch — saved atomically once weights total 20. */
   readonly draft = signal<DraftRow[]>([]);
@@ -138,7 +139,7 @@ export class ExamDetailPage {
   readonly reweighting = signal(false);
   readonly weights = signal<Record<number, number | null>>({});
   readonly reweightSaving = signal(false);
-  readonly reweightFailed = signal(false);
+  readonly reweightErrorKey = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -155,7 +156,7 @@ export class ExamDetailPage {
   submitEdit(): void {
     if (!this.canSaveEdit()) return;
     this.editSaving.set(true);
-    this.editFailed.set(false);
+    this.editErrorKey.set(null);
     const type = this.editType();
     this.examsSvc
       .update(this.id(), {
@@ -169,16 +170,16 @@ export class ExamDetailPage {
           this.editInit = false;
           this.tick.update((n) => n + 1);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.editSaving.set(false);
-          this.editFailed.set(true);
+          this.editErrorKey.set(apiErrorKey(err));
         },
       });
   }
 
   armDelete(): void {
     this.armingDelete.set(true);
-    this.deleteFailed.set(false);
+    this.deleteErrorKey.set(null);
   }
 
   disarmDelete(): void {
@@ -188,15 +189,15 @@ export class ExamDetailPage {
   confirmDelete(): void {
     if (this.deleteSaving()) return;
     this.deleteSaving.set(true);
-    this.deleteFailed.set(false);
+    this.deleteErrorKey.set(null);
     this.examsSvc.remove(this.id()).subscribe({
       next: () => {
         this.deleteSaving.set(false);
         void this.router.navigate(['/exams']);
       },
-      error: () => {
+      error: (err: unknown) => {
         this.deleteSaving.set(false);
-        this.deleteFailed.set(true);
+        this.deleteErrorKey.set(apiErrorKey(err));
       },
     });
   }
@@ -219,10 +220,10 @@ export class ExamDetailPage {
     if (qno === null || max === null) return;
     if (score !== null && score > max) return;
     if (this.draft().some((d) => d.question_no === qno)) {
-      this.addFailed.set(true);
+      this.addErrorKey.set('common.error');
       return;
     }
-    this.addFailed.set(false);
+    this.addErrorKey.set(null);
     this.draftKey.update((n) => n + 1);
     const key = this.draftKey();
     this.draft.update((d) => [
@@ -243,7 +244,7 @@ export class ExamDetailPage {
   saveDraft(): void {
     if (this.draft().length === 0 || this.draftTotal() !== 20 || this.saving()) return;
     this.saving.set(true);
-    this.addFailed.set(false);
+    this.addErrorKey.set(null);
     this.examsSvc
       .addQuestions(
         this.id(),
@@ -260,9 +261,9 @@ export class ExamDetailPage {
           this.draft.set([]);
           this.tick.update((n) => n + 1);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.saving.set(false);
-          this.addFailed.set(true);
+          this.addErrorKey.set(apiErrorKey(err));
         },
       });
   }
@@ -271,7 +272,7 @@ export class ExamDetailPage {
     const init: Record<number, number | null> = {};
     for (const q of this.exam.value()?.questions ?? []) init[q.id] = q.max_score;
     this.weights.set(init);
-    this.reweightFailed.set(false);
+    this.reweightErrorKey.set(null);
     this.reweighting.set(true);
   }
 
@@ -296,16 +297,16 @@ export class ExamDetailPage {
     )
       return;
     this.reweightSaving.set(true);
-    this.reweightFailed.set(false);
+    this.reweightErrorKey.set(null);
     this.examsSvc.reweight(this.id(), payload as { id: number; max_score: number }[]).subscribe({
       next: () => {
         this.reweightSaving.set(false);
         this.reweighting.set(false);
         this.tick.update((n) => n + 1);
       },
-      error: () => {
+      error: (err: unknown) => {
         this.reweightSaving.set(false);
-        this.reweightFailed.set(true);
+        this.reweightErrorKey.set(apiErrorKey(err));
       },
     });
   }

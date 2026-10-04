@@ -14,6 +14,7 @@ import { ChartData } from 'chart.js';
 import { firstValueFrom } from 'rxjs';
 import { GroupDetail } from '../../core/api/api-models';
 import { GroupsService } from '../../core/api/groups.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { ReferenceService, Level } from '../../core/api/reference.service';
 import { UsersService } from '../../core/api/users.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -102,7 +103,7 @@ export class GroupDetailPage {
 
   readonly editing = signal(false);
   readonly saving = signal(false);
-  readonly saveFailed = signal(false);
+  readonly saveFailed = signal<string | null>(null);
 
   protected readonly editName = signal('');
   protected readonly editLevelId = signal<number | null>(null);
@@ -141,7 +142,7 @@ export class GroupDetailPage {
     this.editCapacity.set(g.capacity);
     this.editDays.set(this.scheduleKeys(g.schedule_days));
     this.editActive.set(g.is_active);
-    this.saveFailed.set(false);
+    this.saveFailed.set(null);
     this.editing.set(true);
   }
 
@@ -168,7 +169,7 @@ export class GroupDetailPage {
     const levelId = this.editLevelId();
     if (!g || !name || levelId === null || this.saving()) return;
     this.saving.set(true);
-    this.saveFailed.set(false);
+    this.saveFailed.set(null);
     this.groupsSvc
       .update(g.id, {
         name,
@@ -184,9 +185,9 @@ export class GroupDetailPage {
           this.editing.set(false);
           this.tick.update((n) => n + 1);
         },
-        error: () => {
+        error: (err: unknown) => {
           this.saving.set(false);
-          this.saveFailed.set(true);
+          this.saveFailed.set(apiErrorKey(err));
         },
       });
   }

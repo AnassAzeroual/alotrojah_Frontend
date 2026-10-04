@@ -53,8 +53,8 @@
             </button>
           }
         </div>
-        @if (deleteFailed()) {
-          <div class="banner danger">{{ 'common.error' | translate }}</div>
+        @if (deleteErrorKey()) {
+          <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
         }
       }
     </section>
@@ -96,8 +96,8 @@
             </label>
           }
         </div>
-        @if (editFailed()) {
-          <div class="banner danger">{{ 'common.error' | translate }}</div>
+        @if (editErrorKey()) {
+          <div class="banner danger">{{ editErrorKey()! | translate }}</div>
         }
         <button
           type="button"
@@ -150,8 +150,8 @@
             </button>
           }
         </div>
-        @if (reweightFailed()) {
-          <div class="banner danger">{{ 'common.error' | translate }}</div>
+        @if (reweightErrorKey()) {
+          <div class="banner danger">{{ reweightErrorKey()! | translate }}</div>
         }
       }
       @for (q of exam.value()!.questions ?? []; track q.id) {
@@ -278,8 +278,8 @@
           }
         </button>
       }
-      @if (addFailed()) {
-        <div class="banner danger">{{ 'common.error' | translate }}</div>
+      @if (addErrorKey()) {
+        <div class="banner danger">{{ addErrorKey()! | translate }}</div>
       }
     </form>
   </section>

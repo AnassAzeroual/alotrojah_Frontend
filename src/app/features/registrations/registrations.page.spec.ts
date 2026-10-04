@@ -196,8 +196,8 @@ describe('RegistrationsPage', () => {
     flushGroups(); // the center stays picked, so the groups feed fired for it
 
     expect(page.acceptingId()).toBe(TEACHER_REQ.id);
-    expect(page.actionFailed()).toBe(true);
-    expect(el.textContent).toContain('common.error');
+    expect(page.actionFailed()).toBe('apiErrors.server');
+    expect(el.textContent).toContain('apiErrors.server');
   });
 
   it('requires two clicks to cancel and then hard-deletes the request', async () => {

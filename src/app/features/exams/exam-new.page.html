@@ -67,5 +67,8 @@
         {{ 'common.save' | translate }}
       }
     </button>
+    @if (errorKey()) {
+      <div class="banner danger">{{ errorKey()! | translate }}</div>
+    }
   </form>
 </section>

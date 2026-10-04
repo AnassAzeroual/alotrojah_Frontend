@@ -55,8 +55,8 @@
         </label>
       }
 
-      @if (failed()) {
-        <div class="banner danger">{{ 'common.error' | translate }}</div>
+      @if (errorKey()) {
+        <div class="banner danger">{{ errorKey()! | translate }}</div>
       }
 
       <div class="actions" style="margin-top: 1rem">

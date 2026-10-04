@@ -173,8 +173,8 @@
       </table>
     </div>
     <app-paginator [page]="page()" [total]="total()" (pageChange)="page.set($event)" />
-    @if (deleteFailed()) {
-      <div class="banner danger">{{ 'common.error' | translate }}</div>
+    @if (deleteErrorKey()) {
+      <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
     }
   }
 

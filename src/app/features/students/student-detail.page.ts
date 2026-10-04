@@ -18,6 +18,7 @@ import {
   dropdownNumber,
 } from '../../shared/ui/dropdown/dropdown.component';
 import { StudentsService } from '../../core/api/students.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { ReferenceService } from '../../core/api/reference.service';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -205,7 +206,7 @@ export class StudentDetailPage {
   protected readonly assignPicked = signal<number | null>(null);
   protected readonly assignChosen = signal(false);
   protected readonly assignSaving = signal(false);
-  protected readonly assignFailed = signal(false);
+  protected readonly assignFailed = signal<string | null>(null);
   protected readonly currentGroupId = computed(() => this.studentVal()?.group?.id ?? null);
   protected readonly assignValue = computed<DropdownValue>(() =>
     this.assignChosen() ? (this.assignPicked() ?? '') : (this.currentGroupId() ?? ''),
@@ -261,7 +262,7 @@ export class StudentDetailPage {
   protected submitForm(): void {
     if (this.form.invalid || this.assignSaving()) return;
     this.assignSaving.set(true);
-    this.assignFailed.set(false);
+    this.assignFailed.set(null);
 
     const v = this.form.getRawValue();
     const role = this.auth.role();
@@ -284,9 +285,9 @@ export class StudentDetailPage {
           this.tick.update((n) => n + 1);
         }
       },
-      error: () => {
+      error: (err: unknown) => {
         this.assignSaving.set(false);
-        this.assignFailed.set(true);
+        this.assignFailed.set(apiErrorKey(err));
       },
     });
   }
@@ -300,7 +301,7 @@ export class StudentDetailPage {
     const s = this.studentVal();
     if (!s || !this.assignChosen() || !this.isDirty() || this.assignSaving()) return;
     this.assignSaving.set(true);
-    this.assignFailed.set(false);
+    this.assignFailed.set(null);
     this.studentsSvc.update(s.id, { group_id: this.assignPicked() }).subscribe({
       next: () => {
         this.assignSaving.set(false);
@@ -308,9 +309,9 @@ export class StudentDetailPage {
         this.assignPicked.set(null);
         this.tick.update((n) => n + 1);
       },
-      error: () => {
+      error: (err: unknown) => {
         this.assignSaving.set(false);
-        this.assignFailed.set(true);
+        this.assignFailed.set(apiErrorKey(err));
       },
     });
   }

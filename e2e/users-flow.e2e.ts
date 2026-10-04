@@ -42,6 +42,20 @@ test.describe.serial('Users management', () => {
     await page.getByTestId('user-submit').click();
     await expect(page).toHaveURL(/\/users$/);
 
+    // duplicate email → translated 422 banner, zero new rows
+    await page.getByTestId('users-new').click();
+    await expect(page).toHaveURL(/\/users\/new$/);
+    await page.getByTestId('user-name').fill(`E2E Dup ${stamp}`);
+    await page.getByTestId('user-email').fill(teacherEmail);
+    await page.getByTestId('user-password').fill(teacherPassword);
+    await page.getByTestId('user-role').click();
+    await page.getByRole('option', { name: /معلم/ }).click();
+    await page.getByTestId('user-teacher-type').click();
+    await page.getByRole('option', { name: /حفظ ومراجعة/ }).click();
+    await page.getByTestId('user-submit').click();
+    await expect(page.getByTestId('user-error')).toContainText('مسجل مسبقاً');
+    await expect(page).toHaveURL(/\/users\/new$/);
+
     // logout
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);

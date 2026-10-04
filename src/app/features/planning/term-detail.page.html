@@ -40,8 +40,8 @@
             {{ 'common.cancel' | translate }}
           </button>
         </div>
-        @if (renameFailed()) {
-          <div class="banner danger">{{ 'common.error' | translate }}</div>
+        @if (renameErrorKey()) {
+          <div class="banner danger">{{ renameErrorKey()! | translate }}</div>
         }
       } @else {
         <h1>

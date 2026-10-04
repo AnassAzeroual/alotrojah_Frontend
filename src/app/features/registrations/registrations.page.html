@@ -136,6 +136,6 @@
   }
 
   @if (actionFailed()) {
-    <p class="req-error">{{ 'common.error' | translate }}</p>
+    <p class="req-error">{{ actionFailed()! | translate }}</p>
   }
 </section>

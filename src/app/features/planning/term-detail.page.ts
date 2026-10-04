@@ -10,6 +10,7 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
@@ -45,7 +46,7 @@ export class TermDetailPage {
   readonly renaming = signal(false);
   readonly renameValue = signal('');
   readonly renameSaving = signal(false);
-  readonly renameFailed = signal(false);
+  readonly renameErrorKey = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -59,29 +60,29 @@ export class TermDetailPage {
   }
 
   startRename(): void {
-    this.renameFailed.set(false);
+    this.renameErrorKey.set(null);
     this.renaming.set(true);
   }
 
   cancelRename(): void {
     this.renaming.set(false);
-    this.renameFailed.set(false);
+    this.renameErrorKey.set(null);
   }
 
   submitRename(): void {
     const name = this.renameValue().trim();
     if (name === '' || name.length > 50 || this.renameSaving()) return;
     this.renameSaving.set(true);
-    this.renameFailed.set(false);
+    this.renameErrorKey.set(null);
     this.planning.renameTerm(this.id(), name).subscribe({
       next: () => {
         this.renameSaving.set(false);
         this.renaming.set(false);
         this.tick.update((n) => n + 1);
       },
-      error: () => {
+      error: (err: unknown) => {
         this.renameSaving.set(false);
-        this.renameFailed.set(true);
+        this.renameErrorKey.set(apiErrorKey(err));
       },
     });
   }

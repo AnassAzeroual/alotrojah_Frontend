@@ -19,9 +19,9 @@
     </div>
   } @else {
     <form class="card stack anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="submit()">
-      @if (error()) {
-        <div class="banner danger">
-          {{ 'common.error' | translate }}
+      @if (errorKey()) {
+        <div class="banner danger" data-testid="user-error">
+          {{ errorKey()! | translate }}
         </div>
       }
 
