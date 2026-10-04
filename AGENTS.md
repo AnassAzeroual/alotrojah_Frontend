@@ -11,7 +11,7 @@ Read this first. It points to the authoritative project knowledge; do not duplic
   - `ftp-only-prod-db-patching` — production DB changes (FTP + phpMyAdmin only; no SSH, no artisan).
 - **Standards & chronological build log:** `docs/Agent.md`. Treat its standards sections as law.
 
-## Non-negotiables
+## Non-negotiables 
 
 - Production is FTP + phpMyAdmin only. Never run `artisan migrate` or SSH against prod; ship idempotent patch SQL (see the `ftp-only-prod-db-patching` skill).
 - `docs/Agent.md` exists in BOTH repos and must stay in lockstep — update both when facts change.
