@@ -43,7 +43,7 @@
 - **Scoring core:** `scoring_modules`, `session_scores` (UNIQUE student×session×module), `memorization_logs` (amounts + ranges only, NO score columns), `revision_logs`, `murajaa_reviews`, `attendance`.
 - **Exams/reports:** `exams`, `exam_questions`, `term_results`, `season_results`.
 - **Features:** `delegation_tokens`, `announcements`, `notifications_log`.
-- **Reference:** `surahs` (114 seeded), `quran_hizb_reference` (60).
+- **Reference:** `quran_verses` (6236, Tanzil CC-BY 3.0 — `reference/surahs` feed shape unchanged), `quran_hizb_reference` (60).
 - **Views (Chart.js):** `v_session_totals`, `v_weekly_progress`, `v_weekly_murajaa`, `v_attendance_rate`, `v_term_quiz_avgs`, `v_student_season_avgs`, `v_separate_module_avgs`, `v_murajaa_cycles`, `v_scoring_check`, `v_season_dashboard`, `v_announcements_feed`.
 - **Isolation invariant:** every operational row belongs to exactly ONE center (`users.center_id` scalar; students/groups linked). Audit queries A2/A3/A4 in check file must return 0 rows.
 
@@ -128,6 +128,8 @@
 - **F28 (done, all gates green):** Item 9 centers page (un-deferred by the wipe — fresh DB proved centers weren't manageable in-app). Table (name/city/manager/phone/counts) + create + per-row full-field edit; NO delete button (policy refuses 100%: isolation anchor, endpoint 403s — tested). `CentersService.create/update`, `Center.title/create/edit/name/city/address/phone/manager` ×3, `nav-centers` + building icon (admin-only route). `CenterManageTest` (create+rename/supervisor-403/delete-refused); centers-flow e2e (create → edit all → reload-persist). Lesson: single-resource 404s on an empty DB are correct, not binding bugs — verify row existence first.
 
 - **F29 (done, all gates green):** Item 10 scoring table — cards replaced by a filterable table (search + scope + status) keeping drafts+bulk-save (any single max change breaks the 20-sum alone, so atomic save stays); per-row two-step delete (unused only, translated refusal); add-book modal kept. Route + writes admin-only (supervisors lose the page per owner call). `ScoringModuleManageTest` (incl. the binding-trap regression); self-cleaning scoring-flow e2e. Backend 87/87 (verify clone), e2e 16/16 (verify clone), dev residue zero.
+
+- **F30 (done):** Item 11 Quran verses — backend-only, frontend untouched (`reference/surahs` feed shape identical). Noted here for lockstep: `quran_verses` (6236 Tanzil rows) replaces the `surahs` stub; surah pickers/validation behave identically. QURAN IMMUTABILITY LAW: verses are append-once by migration `000013` only — never update/delete/re-seed from any code; `QuranVerse` model throws on writes.
 
 # Modern Angular Development Standards & AI Coding Guidelines
 
