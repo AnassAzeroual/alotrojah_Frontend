@@ -249,7 +249,10 @@
     "questions": "Questions",
     "add_question": "Ajouter une question",
     "q_no": "N°",
-    "prompt": "Énoncé"
+    "prompt": "Énoncé",
+    "weight": "Poids",
+    "weights": "Total des poids : {{total}} / 20",
+    "reweight": "Rééquilibrer les poids"
   },
   "review": {
     "title": "Révision",
@@ -434,6 +437,7 @@
   },
   "students": {
     "create": "Créer un élève",
-    "edit": "Modifier l'élève"
+    "edit": "Modifier l'élève",
+    "unassigned_only": "Sans groupe"
   }
 }

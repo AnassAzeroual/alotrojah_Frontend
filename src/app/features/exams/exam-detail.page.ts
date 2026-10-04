@@ -26,6 +26,14 @@ import { ScoreInputComponent } from '../../shared/ui/score-input/score-input.com
 
 type ExamType = 'hizb_completion' | 'term_batch' | 'final_season';
 
+interface DraftRow {
+  key: number;
+  question_no: number;
+  prompt_text: string;
+  max_score: number;
+  score: number | null;
+}
+
 @Component({
   selector: 'app-exam-detail-page',
   standalone: true,
@@ -39,6 +47,7 @@ type ExamType = 'hizb_completion' | 'term_batch' | 'final_season';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './exam-detail.page.html',
+  styleUrl: './exam-detail.page.scss',
 })
 export class ExamDetailPage {
   readonly id = input.required<number, string>({ transform: (v: string) => Number(v) });
@@ -105,10 +114,31 @@ export class ExamDetailPage {
       validators: [Validators.required, Validators.min(1)],
     }),
     prompt_text: new FormControl('', { nonNullable: true }),
+    max_score: new FormControl<number | null>(null, {
+      validators: [Validators.required, Validators.min(0.01), Validators.max(20)],
+    }),
     score: new FormControl<number | null>(null, {
       validators: [Validators.min(0), Validators.max(20)],
     }),
   });
+  readonly addFailed = signal(false);
+
+  /** Unsaved question batch — saved atomically once weights total 20. */
+  readonly draft = signal<DraftRow[]>([]);
+  private readonly draftKey = signal(0);
+
+  /** Live weights total — must read exactly 20 (backend 422s otherwise). */
+  readonly weightsTotal = computed(
+    () =>
+      Math.round(
+        (this.exam.value()?.questions ?? []).reduce((s, q) => s + (q.max_score ?? 0), 0) * 100,
+      ) / 100,
+  );
+
+  readonly reweighting = signal(false);
+  readonly weights = signal<Record<number, number | null>>({});
+  readonly reweightSaving = signal(false);
+  readonly reweightFailed = signal(false);
 
   constructor() {
     effect(() => {
@@ -183,23 +213,100 @@ export class ExamDetailPage {
   addQuestion(): void {
     if (this.addForm.invalid || this.saving()) return;
     const v = this.addForm.getRawValue();
-    if (v.question_no === null) return;
+    const qno = v.question_no;
+    const max = v.max_score;
+    const score = v.score;
+    if (qno === null || max === null) return;
+    if (score !== null && score > max) return;
+    if (this.draft().some((d) => d.question_no === qno)) {
+      this.addFailed.set(true);
+      return;
+    }
+    this.addFailed.set(false);
+    this.draftKey.update((n) => n + 1);
+    const key = this.draftKey();
+    this.draft.update((d) => [
+      ...d,
+      { key, question_no: qno, prompt_text: v.prompt_text, max_score: max, score },
+    ]);
+    this.addForm.reset();
+  }
+
+  removeDraft(key: number): void {
+    this.draft.update((d) => d.filter((r) => r.key !== key));
+  }
+
+  readonly draftTotal = computed(
+    () => Math.round(this.draft().reduce((s, r) => s + r.max_score, 0) * 100) / 100,
+  );
+
+  saveDraft(): void {
+    if (this.draft().length === 0 || this.draftTotal() !== 20 || this.saving()) return;
     this.saving.set(true);
+    this.addFailed.set(false);
     this.examsSvc
-      .addQuestions(this.id(), [
-        {
-          question_no: v.question_no,
-          prompt_text: v.prompt_text || undefined,
-          score: v.score ?? undefined,
-        },
-      ])
+      .addQuestions(
+        this.id(),
+        this.draft().map((r) => ({
+          question_no: r.question_no,
+          prompt_text: r.prompt_text || undefined,
+          max_score: r.max_score,
+          score: r.score ?? undefined,
+        })),
+      )
       .subscribe({
         next: () => {
           this.saving.set(false);
-          this.addForm.reset();
+          this.draft.set([]);
           this.tick.update((n) => n + 1);
         },
-        error: () => this.saving.set(false),
+        error: () => {
+          this.saving.set(false);
+          this.addFailed.set(true);
+        },
       });
+  }
+
+  startReweight(): void {
+    const init: Record<number, number | null> = {};
+    for (const q of this.exam.value()?.questions ?? []) init[q.id] = q.max_score;
+    this.weights.set(init);
+    this.reweightFailed.set(false);
+    this.reweighting.set(true);
+  }
+
+  cancelReweight(): void {
+    this.reweighting.set(false);
+  }
+
+  setWeight(qid: number, v: string): void {
+    const n = v.trim() === '' ? null : Number(v);
+    this.weights.update((w) => ({
+      ...w,
+      [qid]: n === null || Number.isNaN(n) ? null : n,
+    }));
+  }
+
+  submitReweight(): void {
+    const list = this.exam.value()?.questions ?? [];
+    const payload = list.map((q) => ({ id: q.id, max_score: this.weights()[q.id] }));
+    if (
+      this.reweightSaving() ||
+      payload.some((p) => p.max_score === null || p.max_score < 0.01 || p.max_score > 20)
+    )
+      return;
+    this.reweightSaving.set(true);
+    this.reweightFailed.set(false);
+    this.examsSvc.reweight(this.id(), payload as { id: number; max_score: number }[]).subscribe({
+      next: () => {
+        this.reweightSaving.set(false);
+        this.reweighting.set(false);
+        this.tick.update((n) => n + 1);
+      },
+      error: () => {
+        this.reweightSaving.set(false);
+        this.reweightFailed.set(true);
+      },
+    });
   }
 }

@@ -27,6 +27,7 @@ export interface ExamQuestion {
   ayah_to: number | null;
   sort_order: number;
   model_type: string | null;
+  max_score: number;
   score: number | null;
   notes: string | null;
 }
@@ -38,6 +39,7 @@ export interface QuestionInput {
   surah_ref?: number;
   ayah_from?: number;
   ayah_to?: number;
+  max_score: number;
   score?: number;
   notes?: string;
 }
@@ -74,6 +76,10 @@ export class ExamsService {
 
   addQuestions(examId: number, questions: QuestionInput[]): Observable<ExamQuestion[]> {
     return this.api.post<ExamQuestion[]>(`/exams/${examId}/questions`, { questions });
+  }
+
+  reweight(examId: number, weights: { id: number; max_score: number }[]): Observable<unknown> {
+    return this.api.put<unknown>(`/exams/${examId}/question-weights`, { weights });
   }
 
   updateQuestion(id: number, patch: Partial<ExamQuestion>): Observable<ExamQuestion> {

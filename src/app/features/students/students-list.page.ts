@@ -75,6 +75,7 @@ export class StudentsListPage {
   readonly levelId = signal<number | null>(null);
   readonly status = signal<string | null>(null);
   readonly mode = signal<string | null>(null);
+  readonly unassignedOnly = signal(false);
   readonly page = signal(1);
 
   private readonly query = resource({
@@ -84,6 +85,7 @@ export class StudentsListPage {
       l: this.levelId(),
       s: this.status(),
       m: this.mode(),
+      u: this.unassignedOnly(),
       p: this.page(),
     }),
     loader: ({ params }) => {
@@ -93,6 +95,7 @@ export class StudentsListPage {
       if (params.l !== null) query['level_id'] = params.l;
       if (params.s !== null) query['status'] = params.s;
       if (params.m !== null) query['memorization_mode'] = params.m;
+      if (params.u) query['unassigned'] = 1;
       return firstValueFrom(this.studentsSvc.list(query));
     },
   });

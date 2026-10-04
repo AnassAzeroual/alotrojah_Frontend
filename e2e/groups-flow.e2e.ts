@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { apiNames, apiToken } from './api';
 
 /**
  * Groups overview → detail drill-down, dark mode, and locale switch
@@ -63,8 +64,15 @@ test('admin drills into a group, then flips theme and locale', async ({ page }) 
   await expect(page.locator('.kpi')).toHaveCount(5);
 });
 
-test('admin creates a group and finds it in the overview', async ({ page }) => {
+test('admin creates a group and finds it in the overview', async ({ page, request }) => {
   await login(page);
+
+  // seed teacher names, looked up at runtime (immune to renames/re-seeds)
+  const token = await apiToken(request);
+  const center1 = await apiNames(request, token, '/users?role=teacher&center_id=1');
+  const center2 = await apiNames(request, token, '/users?role=teacher&center_id=2');
+  expect(center1.length).toBeGreaterThan(0);
+  expect(center2.length).toBeGreaterThan(0);
 
   await page.getByTestId('nav-groups').click();
   await expect(page).toHaveURL(/\/groups$/);
@@ -81,8 +89,8 @@ test('admin creates a group and finds it in the overview', async ({ page }) => {
   await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
 
   await page.getByTestId('group-teacher').click();
-  await expect(page.getByRole('option', { name: 'محفظ النور أ' })).toBeVisible();
-  await expect(page.getByRole('option', { name: 'محفظ الفرقان' })).toHaveCount(0);
+  await expect(page.getByRole('option', { name: center1[0] })).toBeVisible();
+  await expect(page.getByRole('option', { name: center2[0] })).toHaveCount(0);
   await page.getByRole('option', { name: 'بدون معلم' }).click(); // keep it teacherless + close
 
   await page.getByTestId('group-level').click();

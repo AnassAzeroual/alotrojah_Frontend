@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { fillStable } from './api';
 
 test.describe.serial('Users management', () => {
   const stamp = Date.now();
@@ -82,10 +83,12 @@ test.describe.serial('Users management', () => {
     await expect(page).toHaveURL(/\/users$/);
 
     await page.getByTestId('nav-logout').click();
+    await expect(page).toHaveURL(/\/login$/);
 
-    // Teacher tries login again
-    await page.getByTestId('auth-email').fill(teacherEmail);
-    await page.getByTestId('auth-password').fill(teacherPassword);
+    // Teacher tries login again (fillStable: full-suite load can wipe form
+    // state between fill and submit — observed, retried, still fails loudly)
+    await fillStable(page.getByTestId('auth-email'), teacherEmail);
+    await fillStable(page.getByTestId('auth-password'), teacherPassword);
     await page.getByTestId('auth-submit').click();
 
     // Should see error and stay on login

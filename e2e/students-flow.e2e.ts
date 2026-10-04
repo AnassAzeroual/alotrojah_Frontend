@@ -56,5 +56,10 @@ test.describe.serial('Students management', () => {
 
     const studentCard = page.locator('.grid-auto .card', { hasText: studentName }).first();
     await expect(studentCard).toBeVisible();
+
+    // created with no group → survives the unassigned filter
+    await page.getByTestId('students-unassigned').check();
+    await expect(page.locator('.grid-auto .card', { hasText: studentName }).first()).toBeVisible();
+    await page.getByTestId('students-unassigned').uncheck();
   });
 });

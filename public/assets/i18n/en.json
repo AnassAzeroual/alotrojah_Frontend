@@ -249,7 +249,10 @@
     "questions": "Questions",
     "add_question": "Add question",
     "q_no": "No.",
-    "prompt": "Prompt"
+    "prompt": "Prompt",
+    "weight": "Weight",
+    "weights": "Weights total: {{total}} / 20",
+    "reweight": "Rebalance weights"
   },
   "review": {
     "title": "Review",
@@ -434,6 +437,7 @@
   },
   "students": {
     "create": "Create student",
-    "edit": "Edit student"
+    "edit": "Edit student",
+    "unassigned_only": "No group"
   }
 }

@@ -26,17 +26,15 @@
         testId="users-role"
       />
     </label>
-    @if (role() === 'teacher') {
-      <label class="field row">
-        <input
-          type="checkbox"
-          data-testid="users-unassigned"
-          [checked]="unassignedOnly()"
-          (change)="unassignedOnly.set($any($event.target).checked); resetPage()"
-        />
-        <span>{{ 'users.unassigned_only' | translate }}</span>
-      </label>
-    }
+    <label class="field row">
+      <input
+        type="checkbox"
+        data-testid="users-unassigned"
+        [checked]="unassignedOnly()"
+        (change)="unassignedOnly.set($any($event.target).checked); resetPage()"
+      />
+      <span>{{ 'users.unassigned_only' | translate }}</span>
+    </label>
   </div>
 
   @if (loading()) {

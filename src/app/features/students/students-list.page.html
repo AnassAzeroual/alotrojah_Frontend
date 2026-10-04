@@ -49,6 +49,15 @@
         ariaLabelKey="list.mode"
       />
     </label>
+    <label class="field row">
+      <input
+        type="checkbox"
+        data-testid="students-unassigned"
+        [checked]="unassignedOnly()"
+        (change)="unassignedOnly.set($any($event.target).checked); resetPage()"
+      />
+      <span>{{ 'students.unassigned_only' | translate }}</span>
+    </label>
   </div>
 
   @if (loading()) {
