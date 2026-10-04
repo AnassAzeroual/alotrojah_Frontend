@@ -30,6 +30,10 @@ export class ScoringService {
     });
   }
 
+  remove(id: number): Observable<null> {
+    return this.api.delete<null>(`/scoring-modules/${id}`);
+  }
+
   create(payload: {
     code: string;
     name_ar: string;

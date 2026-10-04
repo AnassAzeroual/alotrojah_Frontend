@@ -91,6 +91,7 @@
     "WEIGHTS_FOREIGN": "Chaque question doit appartenir au même examen",
     "SCORE_OVER_MAX": "La note dépasse le poids de la question",
     "SEASON_HAS_FACTS": "Suppression impossible — la saison contient des données",
+    "MODULE_HAS_SCORES": "Suppression impossible — le module a des notes enregistrées",
     "TERM_REQUIRED": "Ce type d'examen exige un trimestre",
     "SPAN_INVALID": "La révision doit couvrir 1 à 3 semaines",
     "RANGE_INVALID": "Plage invalide",
@@ -421,7 +422,10 @@
     "add_book": "Ajouter une matière",
     "code": "Code",
     "name": "Nom",
-    "scope": "Portée"
+    "scope": "Portée",
+    "status": "Statut",
+    "inactive": "Inactif",
+    "delete_confirm": "Confirmer la suppression"
   },
   "entry": {
     "title": "Saisie du jour",

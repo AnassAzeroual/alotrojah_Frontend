@@ -127,6 +127,8 @@
 
 - **F28 (done, all gates green):** Item 9 centers page (un-deferred by the wipe — fresh DB proved centers weren't manageable in-app). Table (name/city/manager/phone/counts) + create + per-row full-field edit; NO delete button (policy refuses 100%: isolation anchor, endpoint 403s — tested). `CentersService.create/update`, `Center.title/create/edit/name/city/address/phone/manager` ×3, `nav-centers` + building icon (admin-only route). `CenterManageTest` (create+rename/supervisor-403/delete-refused); centers-flow e2e (create → edit all → reload-persist). Lesson: single-resource 404s on an empty DB are correct, not binding bugs — verify row existence first.
 
+- **F29 (done, all gates green):** Item 10 scoring table — cards replaced by a filterable table (search + scope + status) keeping drafts+bulk-save (any single max change breaks the 20-sum alone, so atomic save stays); per-row two-step delete (unused only, translated refusal); add-book modal kept. Route + writes admin-only (supervisors lose the page per owner call). `ScoringModuleManageTest` (incl. the binding-trap regression); self-cleaning scoring-flow e2e. Backend 87/87 (verify clone), e2e 16/16 (verify clone), dev residue zero.
+
 # Modern Angular Development Standards & AI Coding Guidelines
 
 This document serves as both a human-readable best practices guide and an AI prompt instruction set (`.cursorrules` / `copilot-instructions.md`) for Angular development.
