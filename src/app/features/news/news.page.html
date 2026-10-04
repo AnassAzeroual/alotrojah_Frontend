@@ -25,15 +25,16 @@
       }
       <label class="field"
         ><span>{{ 'news.title' | translate }}</span
-        ><input formControlName="title"
+        ><input formControlName="title" data-testid="news-title"
       /></label>
       <label class="field"
         ><span>{{ 'news.body' | translate }}</span
-        ><textarea formControlName="body" rows="3"></textarea>
+        ><textarea formControlName="body" rows="3" data-testid="news-body"></textarea>
       </label>
       <button
         type="submit"
         class="btn btn-primary btn-block"
+        data-testid="news-publish"
         [class.is-loading]="saving()"
         [disabled]="form.invalid || saving()"
       >
@@ -43,6 +44,9 @@
           {{ 'news.publish' | translate }}
         }
       </button>
+      @if (submitErrorKey()) {
+        <div class="banner danger">{{ submitErrorKey()! | translate }}</div>
+      }
     </form>
   }
 
@@ -56,20 +60,82 @@
   } @else {
     @for (a of items.value() ?? []; track a.id) {
       <article class="card anim-rise" [style.--i]="$index + 2">
-        <h2>{{ a.title }}</h2>
-        <p>{{ a.body }}</p>
-        <small class="muted"
-          >{{ 'audience.' + a.audience | translate }} · {{ a.author?.full_name ?? '' }}</small
-        >
-        @if (canPost()) {
-          <button
-            type="button"
-            class="btn btn-danger-ghost"
-            [attr.aria-label]="'common.delete' | translate"
-            (click)="remove(a.id)"
+        @if (editingId() === a.id) {
+          <label class="field"
+            ><span>{{ 'news.title' | translate }}</span
+            ><input
+              type="text"
+              data-testid="news-edit-title"
+              [value]="draftTitle()"
+              (input)="draftTitle.set($any($event.target).value)"
+              maxlength="200"
+          /></label>
+          <label class="field"
+            ><span>{{ 'news.body' | translate }}</span
+            ><textarea
+              rows="3"
+              data-testid="news-edit-body"
+              [value]="draftBody()"
+              (input)="draftBody.set($any($event.target).value)"
+            ></textarea>
+          </label>
+          <div class="cluster">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              data-testid="news-save"
+              [disabled]="draftTitle().trim() === '' || draftBody().trim() === '' || editSaving()"
+              (click)="saveEdit(a.id)"
+            >
+              @if (editSaving()) {
+                <app-spinner />
+              } @else {
+                {{ 'common.save' | translate }}
+              }
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              [disabled]="editSaving()"
+              (click)="cancelEdit()"
+            >
+              {{ 'common.cancel' | translate }}
+            </button>
+          </div>
+          @if (editErrorKey()) {
+            <div class="banner danger">{{ editErrorKey()! | translate }}</div>
+          }
+        } @else {
+          <h2>{{ a.title }}</h2>
+          <p>{{ a.body }}</p>
+          <small class="muted"
+            >{{ 'audience.' + a.audience | translate }} · {{ a.author?.full_name ?? '' }}</small
           >
-            {{ 'common.delete' | translate }}
-          </button>
+        }
+        @if (editingId() !== a.id) {
+          <div class="cluster">
+            @if (canPost()) {
+              <button
+                type="button"
+                class="btn btn-danger-ghost btn-sm"
+                data-testid="news-delete"
+                [attr.aria-label]="'common.delete' | translate"
+                (click)="remove(a.id)"
+              >
+                {{ 'common.delete' | translate }}
+              </button>
+            }
+            @if (canEdit(a.author?.id)) {
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                data-testid="news-edit"
+                (click)="startEdit(a.id, a.title, a.body)"
+              >
+                {{ 'news.edit' | translate }}
+              </button>
+            }
+          </div>
         }
       </article>
     }

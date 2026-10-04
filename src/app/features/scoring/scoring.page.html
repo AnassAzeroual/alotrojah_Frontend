@@ -2,7 +2,12 @@
   <div class="page-head anim-rise">
     <h1>{{ 'scoring.title' | translate }}</h1>
     <div class="actions">
-      <button type="button" class="btn btn-primary" (click)="showAdd.set(true)">
+      <button
+        type="button"
+        class="btn btn-primary"
+        data-testid="scoring-open-add"
+        (click)="showAdd.set(true)"
+      >
         {{ 'scoring.add_book' | translate }}
       </button>
     </div>
@@ -15,61 +20,160 @@
     }
   </p>
 
-  @for (m of modules.value() ?? []; track m.code) {
-    <div class="card mod anim-rise" [style.--i]="$index + 2">
-      <span class="row-top">
-        <strong>{{ m.name_ar }}</strong>
-      </span>
-      <small class="muted">{{ 'scopeType.' + m.scope | translate }}</small>
-      <label class="field"
-        ><span>{{ 'scoring.max' | translate }}</span>
-        <input
-          type="number"
-          class="ltr-num"
-          [value]="m.max_points"
-          min="0"
-          max="20"
-          step="0.5"
-          (change)="
-            edit(
-              m.code,
-              { max: +$any($event.target).value },
-              { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
-            )
-          "
-        />
-      </label>
-      <label class="chk">
-        <input
-          type="checkbox"
-          [checked]="m.is_active"
-          (change)="
-            edit(
-              m.code,
-              { active: $any($event.target).checked },
-              { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
-            )
-          "
-        />
-        {{ 'scoring.active' | translate }}
-      </label>
-      @if (m.scope === 'weekly') {
-        <label class="chk">
-          <input
-            type="checkbox"
-            [checked]="m.is_in_weekly_total"
-            (change)="
-              edit(
-                m.code,
-                { inTotal: $any($event.target).checked },
-                { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
-              )
-            "
-          />
-          {{ 'scoring.in_total' | translate }}
-        </label>
-      }
+  <div class="toolbar card anim-rise" style="--i: 1">
+    <label class="field search grow">
+      <span class="sr-only">{{ 'list.search' | translate }}</span>
+      <input
+        type="search"
+        data-testid="scoring-search"
+        [placeholder]="'list.search' | translate"
+        [value]="q()"
+        (input)="q.set($any($event.target).value)"
+      />
+    </label>
+    <label class="field">
+      <app-dropdown
+        [options]="scopeOptions"
+        [value]="scope() ?? ''"
+        (valueChange)="scope.set(txt($event) || null)"
+        ariaLabelKey="scoring.scope"
+        testId="scoring-scope"
+      />
+    </label>
+    <label class="field">
+      <app-dropdown
+        [options]="statusOptions()"
+        [value]="status() ?? ''"
+        (valueChange)="status.set(txt($event) || null)"
+        ariaLabelKey="scoring.status"
+        testId="scoring-status"
+      />
+    </label>
+  </div>
+
+  @if (modules.isLoading()) {
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
     </div>
+  } @else if (rows().length === 0) {
+    <app-empty-state />
+  } @else {
+    <div class="table-responsive">
+      <table class="scoring-table">
+        <thead>
+          <tr>
+            <th>{{ 'scoring.name' | translate }}</th>
+            <th>{{ 'scoring.code' | translate }}</th>
+            <th>{{ 'scoring.max' | translate }}</th>
+            <th>{{ 'scoring.scope' | translate }}</th>
+            <th>{{ 'scoring.active' | translate }}</th>
+            <th>{{ 'scoring.in_total' | translate }}</th>
+            <th class="actions-col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of rows(); track m.code) {
+            <tr>
+              <td>
+                <strong>{{ m.name_ar }}</strong>
+              </td>
+              <td>
+                <code class="ltr-num" dir="ltr">{{ m.code }}</code>
+              </td>
+              <td>
+                <input
+                  type="number"
+                  class="ltr-num mini"
+                  [value]="m.max_points"
+                  min="0"
+                  max="20"
+                  step="0.5"
+                  [attr.aria-label]="'scoring.max' | translate"
+                  (change)="
+                    edit(
+                      m.code,
+                      { max: +$any($event.target).value },
+                      { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
+                    )
+                  "
+                />
+              </td>
+              <td>{{ 'scopeType.' + m.scope | translate }}</td>
+              <td>
+                <input
+                  type="checkbox"
+                  [checked]="m.is_active"
+                  [attr.aria-label]="'scoring.active' | translate"
+                  (change)="
+                    edit(
+                      m.code,
+                      { active: $any($event.target).checked },
+                      { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
+                    )
+                  "
+                />
+              </td>
+              <td>
+                @if (m.scope === 'weekly') {
+                  <input
+                    type="checkbox"
+                    [checked]="m.is_in_weekly_total"
+                    [attr.aria-label]="'scoring.in_total' | translate"
+                    (change)="
+                      edit(
+                        m.code,
+                        { inTotal: $any($event.target).checked },
+                        { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
+                      )
+                    "
+                  />
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td class="actions-col">
+                @if (armingDeleteId() === m.id) {
+                  <button
+                    type="button"
+                    class="btn btn-danger-solid btn-sm"
+                    [disabled]="busyId() === m.id"
+                    [attr.data-testid]="'confirm-delete-module-' + m.id"
+                    (click)="remove(m.id)"
+                  >
+                    @if (busyId() === m.id) {
+                      <app-spinner />
+                    } @else {
+                      {{ 'scoring.delete_confirm' | translate }}
+                    }
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    [disabled]="busyId() === m.id"
+                    (click)="disarmDelete()"
+                  >
+                    {{ 'common.cancel' | translate }}
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="btn btn-danger-ghost btn-sm"
+                    [attr.data-testid]="'delete-module-' + m.id"
+                    [attr.aria-label]="'common.delete' | translate"
+                    (click)="armDelete(m.id)"
+                  >
+                    {{ 'common.delete' | translate }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (deleteErrorKey()) {
+      <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
+    }
   }
 
   @if (error(); as e) {
@@ -102,7 +206,7 @@
           <h2>{{ 'scoring.add_book' | translate }}</h2>
           <label class="field"
             ><span>{{ 'scoring.code' | translate }}</span>
-            <input formControlName="code" dir="ltr" />
+            <input formControlName="code" dir="ltr" data-testid="scoring-code" />
             @if (addForm.controls.code.touched && addForm.controls.code.hasError('required')) {
               <small class="field-error">{{ 'validation.required' | translate }}</small>
             }
@@ -112,14 +216,21 @@
           </label>
           <label class="field"
             ><span>{{ 'scoring.name' | translate }}</span>
-            <input formControlName="name_ar" />
+            <input formControlName="name_ar" data-testid="scoring-name" />
             @if (addForm.controls.name_ar.touched && addForm.controls.name_ar.invalid) {
               <small class="field-error">{{ 'validation.required' | translate }}</small>
             }
           </label>
           <label class="field"
             ><span>{{ 'scoring.max' | translate }}</span
-            ><input type="number" class="ltr-num" formControlName="max_points" min="0" max="20" />
+            ><input
+              type="number"
+              class="ltr-num"
+              formControlName="max_points"
+              data-testid="scoring-max"
+              min="0"
+              max="20"
+            />
             @if (
               addForm.controls.max_points.touched && addForm.controls.max_points.hasError('min')
             ) {
@@ -146,6 +257,7 @@
             <button
               type="submit"
               class="btn btn-primary"
+              data-testid="scoring-add"
               [class.is-loading]="saving()"
               [disabled]="saving()"
             >

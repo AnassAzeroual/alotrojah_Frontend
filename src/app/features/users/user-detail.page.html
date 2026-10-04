@@ -1,0 +1,116 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>
+      <a routerLink="/users" class="btn btn-icon btn-ghost" aria-label="Back">
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+        </svg>
+      </a>
+      {{ (isNew() ? 'users.create' : 'users.edit') | translate }}
+    </h1>
+  </div>
+
+  @if (loading()) {
+    <div
+      class="card anim-rise"
+      style="--i: 1; padding: 2rem; display: flex; justify-content: center"
+    >
+      <app-spinner />
+    </div>
+  } @else {
+    <form class="card stack anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="submit()">
+      @if (errorKey()) {
+        <div class="banner danger" data-testid="user-error">
+          {{ errorKey()! | translate }}
+        </div>
+      }
+
+      <div class="grid" style="--cols: 2">
+        <label class="field">
+          <span>{{ 'auth.name' | translate }} <span class="danger">*</span></span>
+          <input type="text" formControlName="full_name" data-testid="user-name" />
+        </label>
+        <label class="field">
+          <span>{{ 'auth.email' | translate }} <span class="danger">*</span></span>
+          <input type="email" formControlName="email" dir="ltr" data-testid="user-email" />
+        </label>
+
+        <label class="field">
+          <span>{{ 'auth.phone' | translate }}</span>
+          <input type="tel" formControlName="phone" dir="ltr" />
+        </label>
+
+        <label class="field">
+          <span
+            >{{ 'auth.password' | translate }}
+            @if (isNew()) {
+              <span class="danger">*</span>
+            }
+          </span>
+          <input type="password" formControlName="password" dir="ltr" data-testid="user-password" />
+        </label>
+
+        <label class="field">
+          <span>{{ 'auth.role' | translate }} <span class="danger">*</span></span>
+          <app-dropdown
+            [options]="roleOptions"
+            [value]="form.controls.role.value ?? ''"
+            (valueChange)="form.controls.role.setValue($any($event))"
+            ariaLabelKey="auth.role"
+            testId="user-role"
+          />
+        </label>
+
+        @if (isTeacher()) {
+          <label class="field">
+            <span>{{ 'auth.teacher_type' | translate }} <span class="danger">*</span></span>
+            <app-dropdown
+              [options]="teacherTypeOptions"
+              [value]="form.controls.teacher_type.value ?? ''"
+              (valueChange)="form.controls.teacher_type.setValue($any($event))"
+              ariaLabelKey="auth.teacher_type"
+              testId="user-teacher-type"
+            />
+          </label>
+        }
+
+        @if (isAdmin()) {
+          <label class="field">
+            <span>{{ 'dash.center' | translate }}</span>
+            <app-dropdown
+              [options]="centerOptions()"
+              [value]="
+                form.controls.center_id.value ? form.controls.center_id.value.toString() : ''
+              "
+              (valueChange)="form.controls.center_id.setValue($event ? num($event) : null)"
+              ariaLabelKey="dash.center"
+              testId="user-center"
+            />
+          </label>
+        }
+      </div>
+
+      @if (!isNew()) {
+        <label class="field row">
+          <input type="checkbox" formControlName="is_active" data-testid="user-active" />
+          <span>{{ 'common.active' | translate }}</span>
+        </label>
+      }
+
+      <div class="actions" style="margin-top: 1rem">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          data-testid="user-submit"
+          [disabled]="form.invalid || saving()"
+        >
+          @if (saving()) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+</section>

@@ -40,10 +40,10 @@ const SWIPE_PX = 40;
       </span>
       <div class="art-cap">
         <p>{{ slides[index()].caption | translate }}</p>
-        <div class="art-nav">
-          <button type="button" tabindex="-1" (click)="prev()" aria-hidden="true">‹</button>
-          <button type="button" tabindex="-1" (click)="next()" aria-hidden="true">›</button>
-        </div>
+      </div>
+      <div class="art-nav">
+        <button type="button" tabindex="-1" (click)="prev()" aria-hidden="true">‹</button>
+        <button type="button" tabindex="-1" (click)="next()" aria-hidden="true">›</button>
       </div>
     </div>
   `,

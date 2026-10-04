@@ -7,10 +7,13 @@
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ScoringService } from '../../core/api/scoring.service';
-import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
+import { apiErrorKey } from '../../core/api/api-errors';
+import { LanguageService } from '../../core/i18n/language.service';
+import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 interface Draft {
@@ -22,23 +25,68 @@ interface Draft {
 @Component({
   selector: 'app-scoring-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, DropdownComponent, SpinnerComponent],
+  imports: [
+    ReactiveFormsModule,
+    TranslatePipe,
+    DropdownComponent,
+    SpinnerComponent,
+    EmptyStateComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './scoring.page.html',
+  styleUrl: './scoring.page.scss',
 })
 export class ScoringPage {
   private readonly scoring = inject(ScoringService);
+  private readonly i18n = inject(TranslateService);
+  private readonly language = inject(LanguageService);
 
   private readonly tick = signal(0);
   readonly saving = signal(false);
   readonly error = signal<{ key: string; params?: Record<string, string | number> } | null>(null);
   readonly drafts = signal<ReadonlyMap<string, Draft>>(new Map());
   readonly showAdd = signal(false);
+  protected readonly txt = dropdownText;
 
   readonly modules = resource({
     params: () => ({ t: this.tick() }),
     loader: () => firstValueFrom(this.scoring.modules()),
   });
+
+  readonly q = signal('');
+  readonly scope = signal<string | null>(null);
+  readonly status = signal<string | null>(null);
+
+  readonly scopeOptions = [
+    { value: '', labelKey: 'list.all' },
+    { value: 'weekly', labelKey: 'scopeType.weekly' },
+    { value: 'murajaa', labelKey: 'scopeType.murajaa' },
+  ];
+
+  readonly statusOptions = computed(() => {
+    this.language.current();
+    return [
+      { value: '', label: this.i18n.instant('list.all') },
+      { value: 'active', labelKey: 'scoring.active' },
+      { value: 'inactive', labelKey: 'scoring.inactive' },
+    ];
+  });
+
+  readonly rows = computed(() => {
+    const needle = this.q().trim().toLowerCase();
+    return (this.modules.value() ?? []).filter(
+      (m) =>
+        (needle === '' ||
+          m.name_ar.toLowerCase().includes(needle) ||
+          m.code.toLowerCase().includes(needle)) &&
+        (this.scope() === null || m.scope === this.scope()) &&
+        (this.status() === null || (this.status() === 'active' ? m.is_active : !m.is_active)),
+    );
+  });
+
+  readonly armingDeleteId = signal<number | null>(null);
+  readonly busyId = signal<number | null>(null);
+  readonly deleteErrorKey = signal<string | null>(null);
 
   /** Live sum of active weekly-total modules — must stay 20. */
   readonly liveSum = computed(() => {
@@ -68,10 +116,15 @@ export class ScoringPage {
     return a && t && scope === 'weekly' ? v : 0;
   }
 
-  /** Maps known backend messages to i18n keys so errors follow the app language. */
-  private mapError(message: unknown): { key: string; params?: Record<string, string | number> } {
-    if (typeof message === 'string') {
-      const m = message.match(/Weekly total would be ([\d.]+)/);
+  /** Maps backend failures to i18n keys so errors follow the app language. */
+  private mapError(err: unknown): { key: string; params?: Record<string, string | number> } {
+    const body = (err as { error?: { errors?: Record<string, unknown>; message?: unknown } })
+      ?.error;
+    const raw = body?.errors?.['code'];
+    const code = Array.isArray(raw) ? raw[0] : raw;
+    if (typeof code === 'string' && code !== 'ERROR') return { key: `apiErrors.${code}` };
+    if (typeof body?.message === 'string') {
+      const m = body.message.match(/Weekly total would be ([\d.]+)/);
       if (m) return { key: 'scoring.sum_bad_server', params: { total: m[1] } };
     }
     return { key: 'common.error' };
@@ -100,7 +153,34 @@ export class ScoringPage {
       },
       error: (e) => {
         this.saving.set(false);
-        this.error.set(this.mapError(e?.error?.message));
+        this.error.set(this.mapError(e));
+      },
+    });
+  }
+
+  armDelete(id: number): void {
+    this.armingDeleteId.set(id);
+    this.deleteErrorKey.set(null);
+  }
+
+  disarmDelete(): void {
+    this.armingDeleteId.set(null);
+  }
+
+  remove(id: number): void {
+    if (this.busyId() !== null) return;
+    this.busyId.set(id);
+    this.deleteErrorKey.set(null);
+    this.scoring.remove(id).subscribe({
+      next: () => {
+        this.busyId.set(null);
+        this.armingDeleteId.set(null);
+        this.tick.update((n) => n + 1);
+      },
+      error: (err: unknown) => {
+        this.busyId.set(null);
+        this.armingDeleteId.set(null);
+        this.deleteErrorKey.set(apiErrorKey(err));
       },
     });
   }
@@ -150,7 +230,7 @@ export class ScoringPage {
         },
         error: (e) => {
           this.saving.set(false);
-          this.error.set(this.mapError(e?.error?.message));
+          this.error.set(this.mapError(e));
         },
       });
   }

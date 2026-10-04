@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, finalize, map, shareReplay, tap } from 'rxjs';
 import { ApiClient } from '../api/api-client';
-import { CurrentUser, LoginData } from '../api/api-models';
+import { CurrentUser, LoginData, RegisterPayload } from '../api/api-models';
 
 const TOKEN_KEY = 'alotrojah_token';
 
@@ -45,14 +45,12 @@ export class AuthService {
     );
   }
 
-  register(full_name: string, email: string, password: string): Observable<LoginData> {
-    return this.api.post<LoginData>('/auth/register', { full_name, email, password }).pipe(
-      tap((d) => {
-        localStorage.setItem(TOKEN_KEY, d.access_token);
-        this.token.set(d.access_token);
-        this.currentUser.set(d.user);
-      }),
-    );
+  /**
+   * Waiting-room registration. Deliberately stores nothing: the account only
+   * exists (and can log in) after an admin accepts the request.
+   */
+  register(payload: RegisterPayload): Observable<null> {
+    return this.api.post<null>('/auth/register', payload);
   }
 
   /** Single-flight refresh: concurrent 401s share one call. */

@@ -6,6 +6,6 @@ export const SCORING_ROUTES: Routes = [
     path: '',
     loadComponent: () => import('./scoring.page').then((m) => m.ScoringPage),
     canActivate: [roleGuard],
-    data: { roles: ['admin', 'supervisor'] },
+    data: { roles: ['admin'] },
   },
 ];

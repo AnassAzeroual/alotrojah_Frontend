@@ -1,6 +1,9 @@
 <section class="page">
   <div class="page-head anim-rise">
     <h1>{{ 'nav.students' | translate }}</h1>
+    <a routerLink="/students/new" class="btn btn-primary" data-testid="students-new">
+      {{ 'students.create' | translate }}
+    </a>
   </div>
 
   <div class="toolbar card anim-rise" style="--i: 1">
@@ -8,9 +11,10 @@
       <span class="sr-only">{{ 'list.search' | translate }}</span>
       <input
         type="search"
+        data-testid="students-search"
         [placeholder]="'list.search' | translate"
         [value]="q()"
-        (change)="q.set($any($event.target).value); resetPage()"
+        (input)="q.set($any($event.target).value); resetPage()"
       />
     </label>
     <label class="field">
@@ -44,6 +48,15 @@
         (valueChange)="mode.set(txt($event) || null); resetPage()"
         ariaLabelKey="list.mode"
       />
+    </label>
+    <label class="field row">
+      <input
+        type="checkbox"
+        data-testid="students-unassigned"
+        [checked]="unassignedOnly()"
+        (change)="unassignedOnly.set($any($event.target).checked); resetPage()"
+      />
+      <span>{{ 'students.unassigned_only' | translate }}</span>
     </label>
   </div>
 

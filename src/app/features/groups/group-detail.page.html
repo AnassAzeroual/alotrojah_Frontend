@@ -1,0 +1,326 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <div>
+      <button type="button" class="btn btn-ghost back-btn" (click)="back()">
+        <span aria-hidden="true">→</span> {{ 'grp.back' | translate }}
+      </button>
+      @if (group(); as g) {
+        <h1>
+          {{ g.name }}
+          @if (g.is_active) {
+            <span class="pill ok">{{ 'grp.active' | translate }}</span>
+          } @else {
+            <span class="pill warn">{{ 'grp.inactive' | translate }}</span>
+          }
+        </h1>
+        @if (seasonName()) {
+          <p class="season">
+            {{ 'grp.season' | translate }}: <span class="ltr-num">{{ seasonName() }}</span>
+          </p>
+        }
+      }
+      @if (canEdit() && !editing()) {
+        <button type="button" class="btn btn-ghost edit-btn" (click)="startEdit()">
+          {{ 'grp.edit' | translate }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (editing()) {
+    <div class="card edit-card anim-rise">
+      <div class="edit-grid">
+        <label class="field">
+          <span>{{ 'grp.col_name' | translate }}</span>
+          <input
+            type="text"
+            [value]="editName()"
+            (input)="editName.set($any($event.target).value)"
+          />
+        </label>
+        <label class="field">
+          <span>{{ 'grp.col_level' | translate }}</span>
+          <app-dropdown
+            [value]="editLevelId() ?? ''"
+            [options]="levelOptions()"
+            (valueChange)="editLevelId.set(num($event))"
+            placeholderKey="grp.col_level"
+            ariaLabelKey="grp.col_level"
+          />
+        </label>
+        @if (canPickTeacher()) {
+          <label class="field">
+            <span>{{ 'grp.col_teacher' | translate }}</span>
+            <app-dropdown
+              [value]="editTeacherId() ?? ''"
+              [options]="teacherOptions()"
+              (valueChange)="editTeacherId.set(num($event))"
+              placeholderKey="grp.col_teacher"
+              ariaLabelKey="grp.col_teacher"
+            />
+          </label>
+        }
+        <label class="field">
+          <span>{{ 'grp.col_capacity' | translate }}</span>
+          <input
+            type="number"
+            min="1"
+            inputmode="numeric"
+            [value]="editCapacity() ?? ''"
+            (input)="onCapacityInput($any($event.target).value)"
+          />
+        </label>
+        <div class="field">
+          <span>{{ 'grp.schedule' | translate }}</span>
+          <div class="day-pick">
+            @for (d of weekdayKeys; track d) {
+              <button
+                type="button"
+                class="day-chip"
+                [class.on]="editDays().includes(d)"
+                [attr.aria-pressed]="editDays().includes(d)"
+                (click)="toggleDay(d)"
+              >
+                {{ 'grp.day.' + d | translate }}
+              </button>
+            }
+          </div>
+        </div>
+        <label class="chk">
+          <input
+            type="checkbox"
+            [checked]="editActive()"
+            (change)="editActive.set($any($event.target).checked)"
+          />
+          {{ 'grp.active' | translate }}
+        </label>
+      </div>
+      <div class="edit-actions">
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="!editName().trim() || editLevelId() === null || saving()"
+          (click)="saveEdit()"
+        >
+          @if (saving()) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+        <button type="button" class="btn btn-ghost" [disabled]="saving()" (click)="cancelEdit()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+      @if (saveFailed()) {
+        <p class="field-error">{{ saveFailed()! | translate }}</p>
+      }
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
+  } @else if (detail(); as d) {
+    <div class="info-grid">
+      <div class="card teacher-card anim-rise" style="--i: 1">
+        <span class="avatar-lg" aria-hidden="true">{{
+          (group()?.teacher?.full_name ?? '?').slice(0, 1)
+        }}</span>
+        <div class="teacher-txt">
+          <small class="lbl">{{ 'grp.col_teacher' | translate }}</small>
+          <strong>{{ group()?.teacher?.full_name ?? ('grp.unknown' | translate) }}</strong>
+          @if (group()?.teacher; as t) {
+            <small class="mut">{{ 'teacher_type.' + t.teacher_type | translate }}</small>
+            @if (waLink(t.phone); as wa) {
+              <a class="btn btn-ghost wa-btn" [href]="wa" target="_blank" rel="noopener">
+                {{ 'grp.whatsapp' | translate }} <span class="ltr-num">{{ t.phone }}</span>
+              </a>
+            } @else if (t.phone) {
+              <small class="mut ltr-num">{{ t.phone }}</small>
+            }
+          }
+        </div>
+      </div>
+
+      <div class="card meta-card anim-rise" style="--i: 2">
+        <div class="m-item">
+          <small>{{ 'grp.col_level' | translate }}</small>
+          <span>{{ group()?.level?.name_ar ?? '—' }}</span>
+        </div>
+        <div class="m-item">
+          <small>{{ 'grp.year' | translate }}</small>
+          <span class="ltr-num">{{ group()?.academic_year ?? '—' }}</span>
+        </div>
+        <div class="m-item">
+          <small>{{ 'grp.schedule' | translate }}</small>
+          <span class="days">
+            @for (day of scheduleKeys(group()?.schedule_days ?? ''); track day) {
+              <i class="day-chip">{{ 'grp.day.' + day | translate }}</i>
+            }
+          </span>
+        </div>
+        <div class="m-item wide">
+          <small>
+            {{ 'grp.col_students' | translate }}
+            <b class="ltr-num">{{ group()?.students_count ?? 0 }}</b>
+            @if (group()?.capacity != null) {
+              / <b class="ltr-num">{{ group()?.capacity }}</b>
+            }
+            @if (group()?.fill_pct != null) {
+              (<b class="ltr-num">{{ group()?.fill_pct }}%</b>)
+            }
+          </small>
+          <span class="cap-bar">
+            <i [style.inline-size]="fillWidth(group()?.fill_pct ?? null)"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="card chart-card wide anim-rise" style="--i: 3">
+        <div class="chart-head">
+          <h2>{{ 'grp.chart_trend' | translate }}</h2>
+        </div>
+        @if (hasTrend()) {
+          <app-chart type="line" [data]="trendChart()" [options]="noLegend" label="trend" />
+        } @else {
+          <p class="chart-empty">{{ 'grp.no_season' | translate }}</p>
+        }
+      </div>
+      <div class="card chart-card anim-rise" style="--i: 4">
+        <div class="chart-head">
+          <h2>{{ 'grp.chart_mode' | translate }}</h2>
+        </div>
+        @if (hasMode()) {
+          <app-chart type="doughnut" [data]="modeChart()" label="mode" />
+        } @else {
+          <p class="chart-empty">{{ 'grp.no_season' | translate }}</p>
+        }
+      </div>
+      <div class="card chart-card wide anim-rise" style="--i: 5">
+        <div class="chart-head">
+          <h2>{{ 'grp.chart_dist' | translate }}</h2>
+        </div>
+        <app-chart type="bar" [data]="distChart()" [options]="noLegend" label="dist" />
+      </div>
+    </div>
+
+    <div class="table-wrap card anim-rise" style="--i: 6">
+      <div class="table-head">
+        <h2>{{ 'grp.students_title' | translate }}</h2>
+      </div>
+      @if (students().length === 0) {
+        <app-empty-state />
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'dash.studentName' | translate }}</th>
+              <th>{{ 'grp.col_score' | translate }}</th>
+              <th>{{ 'grp.col_att' | translate }}</th>
+              <th>{{ 'grp.col_thumn' | translate }}</th>
+              <th>{{ 'grp.col_status' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of students(); track s.id) {
+              <tr
+                tabindex="0"
+                class="row-link"
+                [style.--i]="$index"
+                (click)="open(s.id)"
+                (keydown.enter)="open(s.id)"
+              >
+                <td [attr.data-label]="'dash.studentName' | translate">
+                  <span class="cell-name">
+                    <button
+                      type="button"
+                      class="expander"
+                      [class.open]="expandedId() === s.id"
+                      [attr.aria-label]="
+                        (expandedId() === s.id ? 'grp.collapse' : 'grp.expand') | translate
+                      "
+                      (click)="$event.stopPropagation(); toggleExpand(s.id)"
+                    >
+                      {{ expandedId() === s.id ? '▾' : '▸' }}
+                    </button>
+                    <span class="avatar-sm" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span>
+                    <strong>{{ s.full_name }}</strong>
+                  </span>
+                </td>
+                <td [attr.data-label]="'grp.col_score' | translate" class="ltr-num">
+                  {{ s.avg_score ?? '—' }}
+                </td>
+                <td [attr.data-label]="'grp.col_att' | translate" class="ltr-num">
+                  {{ s.attendance_pct ?? '—' }}
+                </td>
+                <td [attr.data-label]="'grp.col_thumn' | translate" class="ltr-num">
+                  {{ s.thumn_total }}
+                </td>
+                <td [attr.data-label]="'grp.col_status' | translate">
+                  @if (s.status === 'active') {
+                    <span class="pill ok">{{ 'studentStatus.active' | translate }}</span>
+                  } @else {
+                    <span class="pill warn">{{ 'studentStatus.' + s.status | translate }}</span>
+                  }
+                </td>
+              </tr>
+              @if (expandedId() === s.id) {
+                <tr class="detail-row">
+                  <td colspan="5">
+                    <div class="detail-grid">
+                      <div class="d-item">
+                        <small>{{ 'grp.col_gender' | translate }}</small>
+                        <span>
+                          @if (s.gender) {
+                            {{ 'gender.' + s.gender | translate }}
+                          } @else {
+                            —
+                          }
+                        </span>
+                      </div>
+                      <div class="d-item">
+                        <small>{{ 'grp.col_type' | translate }}</small>
+                        <span>
+                          @if (s.student_type) {
+                            {{ typeLabelKey(s.student_type) | translate }}
+                          } @else {
+                            —
+                          }
+                        </span>
+                      </div>
+                      <div class="d-item">
+                        <small>{{ 'grp.col_mode' | translate }}</small>
+                        <span>{{ 'mode.' + s.memorization_mode | translate }}</span>
+                      </div>
+                      <div class="d-item">
+                        <small>{{ 'grp.start_hizb' | translate }}</small>
+                        <span class="ltr-num">{{ s.start_hizb ?? '—' }}</span>
+                      </div>
+                      <div class="d-item">
+                        <small>{{ 'grp.birth_date' | translate }}</small>
+                        <span class="ltr-num">{{ s.birth_date ?? '—' }}</span>
+                      </div>
+                      <div class="d-item">
+                        <small>{{ 'grp.enrolled' | translate }}</small>
+                        <span class="ltr-num">{{ s.enrollment_date ?? '—' }}</span>
+                      </div>
+                      <div class="d-item wide">
+                        <small>{{ 'grp.notes' | translate }}</small>
+                        <span>{{ s.notes ?? '—' }}</span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</section>

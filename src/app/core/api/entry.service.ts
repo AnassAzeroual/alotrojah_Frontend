@@ -60,6 +60,10 @@ export class EntryService {
     return this.api.get<Paginated<AttendanceRow>>('/attendance', params);
   }
 
+  deleteAttendance(id: number): Observable<null> {
+    return this.api.delete<null>(`/attendance/${id}`);
+  }
+
   scoresBulk(
     sessionId: number,
     records: ScoreRecord[],

@@ -2,7 +2,7 @@
   <app-auth-topbar />
   <section class="auth-card">
     <div class="auth-form-side">
-      <h1 class="auth-title">{{ 'auth.hello_again' | translate }}</h1>
+      <h1 class="auth-title" data-testid="auth-title">{{ 'auth.hello_again' | translate }}</h1>
       <p class="auth-sub">{{ 'auth.get_started' | translate }}</p>
 
       <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
@@ -12,17 +12,32 @@
             formControlName="email"
             autocomplete="username"
             dir="ltr"
+            data-testid="auth-email"
             [placeholder]="'auth.email' | translate"
             [attr.aria-label]="'auth.email' | translate"
           />
         </div>
 
         <div class="auth-input with-eye">
+          <svg
+            class="pw-lock"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
           <input
             [type]="showPw() ? 'text' : 'password'"
             formControlName="password"
             autocomplete="current-password"
             dir="ltr"
+            data-testid="auth-password"
             [placeholder]="'auth.password' | translate"
             [attr.aria-label]="'auth.password' | translate"
           />
@@ -72,7 +87,12 @@
           <p class="auth-error">{{ 'auth.invalid' | translate }}</p>
         }
 
-        <button type="submit" class="auth-btn" [disabled]="form.invalid || loading()">
+        <button
+          type="submit"
+          class="auth-btn"
+          data-testid="auth-submit"
+          [disabled]="form.invalid || loading()"
+        >
           @if (loading()) {
             <app-spinner />
           } @else {

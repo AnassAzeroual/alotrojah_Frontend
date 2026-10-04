@@ -1,15 +1,31 @@
-import { ChangeDetectionStrategy, Component, inject, input, resource, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  input,
+  resource,
+  signal,
+} from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
+import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
 
 @Component({
   selector: 'app-term-detail-page',
   standalone: true,
-  imports: [TranslatePipe, DropdownComponent, EmptyStateComponent, StatusBadgeComponent],
+  imports: [
+    TranslatePipe,
+    DropdownComponent,
+    EmptyStateComponent,
+    SpinnerComponent,
+    StatusBadgeComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './term-detail.page.html',
 })
@@ -27,8 +43,48 @@ export class TermDetailPage {
   protected openWeek = signal<number | null>(null);
   protected readonly txt = dropdownText;
 
+  readonly renaming = signal(false);
+  readonly renameValue = signal('');
+  readonly renameSaving = signal(false);
+  readonly renameErrorKey = signal<string | null>(null);
+
+  constructor() {
+    effect(() => {
+      const t = this.term.value();
+      if (t && !this.renaming()) this.renameValue.set(t.name_ar);
+    });
+  }
+
   protected toggleWeek(id: number): void {
     this.openWeek.update((v) => (v === id ? null : id));
+  }
+
+  startRename(): void {
+    this.renameErrorKey.set(null);
+    this.renaming.set(true);
+  }
+
+  cancelRename(): void {
+    this.renaming.set(false);
+    this.renameErrorKey.set(null);
+  }
+
+  submitRename(): void {
+    const name = this.renameValue().trim();
+    if (name === '' || name.length > 50 || this.renameSaving()) return;
+    this.renameSaving.set(true);
+    this.renameErrorKey.set(null);
+    this.planning.renameTerm(this.id(), name).subscribe({
+      next: () => {
+        this.renameSaving.set(false);
+        this.renaming.set(false);
+        this.tick.update((n) => n + 1);
+      },
+      error: (err: unknown) => {
+        this.renameSaving.set(false);
+        this.renameErrorKey.set(apiErrorKey(err));
+      },
+    });
   }
 
   protected setWeekType(weekId: number, type: string): void {

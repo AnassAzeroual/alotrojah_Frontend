@@ -17,25 +17,178 @@
           >
         </p>
       </div>
-    </section>
-
-    <section class="card anim-rise" style="--i: 1">
-      <h2>{{ 'exam.questions' | translate }}</h2>
-      @for (q of exam.value()!.questions ?? []; track q.id) {
-        <div class="line anim-rise" [style.--i]="$index + 2">
-          <span
-            ><strong class="ltr-num">{{ q.question_no }}.</strong> {{ q.prompt_text ?? '—' }}</span
-          >
-          <div class="cluster">
-            <app-score-input [max]="20" [value]="q.score" (valueChange)="setScore(q.id, $event)" />
+      @if (canDelete()) {
+        <div class="cluster">
+          @if (armingDelete()) {
+            <button
+              type="button"
+              class="btn btn-danger-solid"
+              [disabled]="deleteSaving()"
+              data-testid="confirm-delete-exam"
+              (click)="confirmDelete()"
+            >
+              @if (deleteSaving()) {
+                <app-spinner />
+              } @else {
+                {{ 'exam.delete_confirm' | translate }}
+              }
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [disabled]="deleteSaving()"
+              (click)="disarmDelete()"
+            >
+              {{ 'common.cancel' | translate }}
+            </button>
+          } @else {
             <button
               type="button"
               class="btn btn-danger-ghost"
+              data-testid="delete-exam"
               [attr.aria-label]="'common.delete' | translate"
-              (click)="deleteQuestion(q.id)"
+              (click)="armDelete()"
             >
               {{ 'common.delete' | translate }}
             </button>
+          }
+        </div>
+        @if (deleteErrorKey()) {
+          <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
+        }
+      }
+    </section>
+
+    @if (canEdit()) {
+      <section class="card anim-rise" style="--i: 1">
+        <h2>{{ 'exam.edit' | translate }}</h2>
+        <div class="grid" style="--cols: 3">
+          <label class="field"
+            ><span>{{ 'exam.date' | translate }}</span>
+            <input
+              type="date"
+              class="ltr-num"
+              data-testid="exam-date"
+              [value]="editDate()"
+              (input)="editDate.set($any($event.target).value)"
+            />
+          </label>
+          <label class="field"
+            ><span>{{ 'exam.type' | translate }}</span>
+            <app-dropdown
+              [options]="examTypeOptions"
+              [value]="editType()"
+              (valueChange)="editType.set($any($event))"
+              ariaLabelKey="exam.type"
+              testId="exam-type"
+            />
+          </label>
+          @if (editType() !== 'final_season') {
+            <label class="field"
+              ><span>{{ 'planning.pick_term' | translate }}</span>
+              <app-dropdown
+                [options]="termOptions()"
+                [value]="editTerm() ?? ''"
+                (valueChange)="editTerm.set(num($event))"
+                ariaLabelKey="planning.pick_term"
+                testId="exam-term"
+              />
+            </label>
+          }
+        </div>
+        @if (editErrorKey()) {
+          <div class="banner danger">{{ editErrorKey()! | translate }}</div>
+        }
+        <button
+          type="button"
+          class="btn btn-primary"
+          [class.is-loading]="editSaving()"
+          [disabled]="!canSaveEdit()"
+          data-testid="save-exam-edit"
+          (click)="submitEdit()"
+        >
+          @if (editSaving()) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+      </section>
+    }
+
+    <section class="card anim-rise" style="--i: 1">
+      <h2>{{ 'exam.questions' | translate }}</h2>
+      <p class="muted ltr-num">
+        {{ 'exam.weights' | translate: { total: weightsTotal() } }}
+      </p>
+      @if (canEdit()) {
+        <div class="cluster">
+          @if (reweighting()) {
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="reweightSaving()"
+              (click)="submitReweight()"
+            >
+              @if (reweightSaving()) {
+                <app-spinner />
+              } @else {
+                {{ 'common.save' | translate }}
+              }
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              [disabled]="reweightSaving()"
+              (click)="cancelReweight()"
+            >
+              {{ 'common.cancel' | translate }}
+            </button>
+          } @else {
+            <button type="button" class="btn btn-ghost btn-sm" (click)="startReweight()">
+              {{ 'exam.reweight' | translate }}
+            </button>
+          }
+        </div>
+        @if (reweightErrorKey()) {
+          <div class="banner danger">{{ reweightErrorKey()! | translate }}</div>
+        }
+      }
+      @for (q of exam.value()!.questions ?? []; track q.id) {
+        <div class="line anim-rise" [style.--i]="$index + 2">
+          <span
+            ><strong class="ltr-num">{{ q.question_no }}.</strong> {{ q.prompt_text ?? '—' }}
+            <small class="muted ltr-num">({{ q.max_score }}/20)</small></span
+          >
+          <div class="cluster">
+            @if (reweighting() && canEdit()) {
+              <input
+                type="number"
+                class="ltr-num"
+                [value]="weights()[q.id] ?? ''"
+                (input)="setWeight(q.id, $any($event.target).value)"
+                min="0.01"
+                max="20"
+                step="0.01"
+                [attr.aria-label]="'exam.weight' | translate"
+              />
+            } @else {
+              <app-score-input
+                [max]="q.max_score"
+                [value]="q.score"
+                (valueChange)="setScore(q.id, $event)"
+              />
+            }
+            @if (canEdit()) {
+              <button
+                type="button"
+                class="btn btn-danger-ghost"
+                [attr.aria-label]="'common.delete' | translate"
+                (click)="deleteQuestion(q.id)"
+              >
+                {{ 'common.delete' | translate }}
+              </button>
+            }
           </div>
         </div>
       }
@@ -45,28 +198,89 @@
       <h2>{{ 'exam.add_question' | translate }}</h2>
       <label class="field"
         ><span>{{ 'exam.q_no' | translate }}</span>
-        <input type="number" class="ltr-num" formControlName="question_no" min="1" />
+        <input
+          type="number"
+          class="ltr-num"
+          formControlName="question_no"
+          data-testid="exam-q-no"
+          min="1"
+        />
       </label>
       <label class="field"
         ><span>{{ 'exam.prompt' | translate }}</span
-        ><input formControlName="prompt_text"
+        ><input formControlName="prompt_text" data-testid="exam-q-prompt"
       /></label>
       <label class="field"
+        ><span>{{ 'exam.weight' | translate }} <span class="danger">*</span></span>
+        <input
+          type="number"
+          class="ltr-num"
+          formControlName="max_score"
+          data-testid="exam-q-max"
+          min="0.01"
+          max="20"
+          step="0.01"
+        />
+      </label>
+      <label class="field"
         ><span>{{ 'common.score' | translate }}</span>
-        <input type="number" class="ltr-num" formControlName="score" min="0" max="20" />
+        <input
+          type="number"
+          class="ltr-num"
+          formControlName="score"
+          data-testid="exam-q-score"
+          min="0"
+          max="20"
+        />
       </label>
       <button
         type="submit"
-        class="btn btn-primary btn-block"
-        [class.is-loading]="saving()"
-        [disabled]="addForm.invalid || saving()"
+        class="btn btn-ghost btn-block"
+        data-testid="exam-queue"
+        [disabled]="addForm.invalid"
       >
-        @if (saving()) {
-          <app-spinner />
-        } @else {
-          {{ 'common.save' | translate }}
-        }
+        + {{ 'exam.add_question' | translate }}
       </button>
+      @if (draft().length > 0) {
+        <ul class="draft-list">
+          @for (r of draft(); track r.key) {
+            <li>
+              <span class="ltr-num"
+                >{{ r.question_no }}. ({{ r.max_score }}/20){{
+                  r.score !== null ? ' = ' + r.score : ''
+                }}</span
+              >
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                [attr.data-testid]="'exam-draft-rm-' + r.key"
+                [attr.aria-label]="'common.delete' | translate"
+                (click)="removeDraft(r.key)"
+              >
+                ×
+              </button>
+            </li>
+          }
+        </ul>
+        <p class="muted ltr-num">{{ 'exam.weights' | translate: { total: draftTotal() } }}</p>
+        <button
+          type="button"
+          class="btn btn-primary btn-block"
+          data-testid="exam-draft-save"
+          [class.is-loading]="saving()"
+          [disabled]="draftTotal() !== 20 || saving()"
+          (click)="saveDraft()"
+        >
+          @if (saving()) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+      }
+      @if (addErrorKey()) {
+        <div class="banner danger">{{ addErrorKey()! | translate }}</div>
+      }
     </form>
   </section>
 }

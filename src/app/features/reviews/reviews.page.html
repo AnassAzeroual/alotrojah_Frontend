@@ -48,6 +48,30 @@
       }
     </div>
 
+    <div class="card anim-rise" style="--i: 3">
+      <h2>{{ 'review.practice' | translate }}</h2>
+      @for (l of logs.value() ?? []; track l.id) {
+        <div class="line anim-rise" [style.--i]="$index + 4">
+          <span class="ltr-num"
+            >{{ l.hizb_from ?? '—' }}–{{ l.hizb_to ?? '—' }} · {{ l.murajaa_score ?? '—'
+            }}{{ 'common.of20' | translate }}</span
+          >
+          @if (canManage()) {
+            <button
+              type="button"
+              class="btn btn-danger-ghost"
+              [attr.aria-label]="'common.delete' | translate"
+              (click)="removeLog(l.id)"
+            >
+              {{ 'common.delete' | translate }}
+            </button>
+          }
+        </div>
+      } @empty {
+        <app-empty-state />
+      }
+    </div>
+
     @if (canEnter()) {
       <form class="card anim-rise" style="--i: 3" [formGroup]="form" (ngSubmit)="submit()">
         <h2>{{ 'review.new_cycle' | translate }}</h2>

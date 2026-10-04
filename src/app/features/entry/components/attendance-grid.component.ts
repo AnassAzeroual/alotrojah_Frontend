@@ -18,6 +18,7 @@ type Status = (typeof STATES)[number];
 interface Row {
   student: Student;
   status: Status;
+  recordId: number | null;
 }
 
 @Component({
@@ -40,15 +41,16 @@ export class AttendanceGridComponent {
   private readonly edits = signal<ReadonlyMap<number, Status>>(new Map());
 
   private readonly existingMap = computed(() => {
-    const m = new Map<number, Status>();
-    for (const r of this.existing()) m.set(r.student_id, r.status);
+    const m = new Map<number, AttendanceRow>();
+    for (const r of this.existing()) m.set(r.student_id, r);
     return m;
   });
 
   readonly rows = computed((): Row[] =>
     this.students().map((s) => ({
       student: s,
-      status: this.edits().get(s.id) ?? this.existingMap().get(s.id) ?? 'present',
+      status: this.edits().get(s.id) ?? this.existingMap().get(s.id)?.status ?? 'present',
+      recordId: this.existingMap().get(s.id)?.id ?? null,
     })),
   );
 
@@ -56,6 +58,18 @@ export class AttendanceGridComponent {
 
   setStatus(id: number, status: Status): void {
     this.edits.update((m) => new Map(m).set(id, status));
+  }
+
+  clearRow(recordId: number): void {
+    if (this.saving()) return;
+    this.saving.set(true);
+    this.entry.deleteAttendance(recordId).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.saved.emit();
+      },
+      error: () => this.saving.set(false),
+    });
   }
 
   save(): void {

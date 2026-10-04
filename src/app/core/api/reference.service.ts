@@ -14,12 +14,6 @@ export interface Surah {
   ayahs_count: number;
 }
 
-export interface HizbRef {
-  hizb_no: number;
-  juz_no: number;
-  label_ar: string;
-}
-
 export interface Season {
   id: number;
   name: string;
@@ -36,10 +30,6 @@ export class ReferenceService {
 
   surahs(q?: string): Observable<Surah[]> {
     return this.api.get<Surah[]>('/reference/surahs', q ? { q } : undefined);
-  }
-
-  hizb(): Observable<HizbRef[]> {
-    return this.api.get<HizbRef[]>('/reference/hizb');
   }
 
   seasons(): Observable<{ data: Season[] }> {

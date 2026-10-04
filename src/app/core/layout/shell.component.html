@@ -15,10 +15,7 @@
     <div class="side-brand">
       <a routerLink="/" class="brand" (click)="closeMobile()">
         <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32" fill="none">
-            <path d="M16 2 19 9l7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#00b8a9" />
-            <circle cx="16" cy="14" r="3.2" fill="#fff" />
-          </svg>
+          <img src="assets/logo.jpg" alt="" />
         </span>
         <span class="brand-txt">
           <strong>{{ 'app.title' | translate }}</strong>
@@ -45,6 +42,7 @@
           [routerLinkActiveOptions]="{ exact: item.path === '/' }"
           (click)="closeMobile()"
           [attr.data-icon]="item.icon"
+          [attr.data-testid]="item.testId"
           [attr.title]="collapsed() ? (item.key | translate) : null"
         >
           <span class="ico" aria-hidden="true" [ngSwitch]="item.icon">
@@ -80,6 +78,16 @@
               <rect x="14" y="3" width="7" height="7" rx="2" />
               <rect x="3" y="14" width="7" height="7" rx="2" />
               <rect x="14" y="14" width="7" height="7" rx="2" />
+            </svg>
+            <svg
+              *ngSwitchCase="'building'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M3 21h18M5 21V7l7-4 7 4v14" />
+              <path d="M9 21v-4h6v4M9 10h.01M15 10h.01M9 14h.01M15 14h.01" />
             </svg>
             <svg
               *ngSwitchCase="'shield'"
@@ -229,7 +237,7 @@
           <span>{{ 'nav.dark' | translate }}</span>
         }
       </button>
-      <button type="button" class="foot-btn danger" (click)="logout()">
+      <button type="button" class="foot-btn danger" (click)="logout()" data-testid="nav-logout">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
           <path d="M16 17l5-5-5-5M21 12H9" />
@@ -292,6 +300,7 @@
           type="button"
           class="icon-btn"
           (click)="theme.toggle()"
+          data-testid="nav-theme"
           [attr.aria-label]="'nav.theme' | translate"
         >
           @if (isDark()) {

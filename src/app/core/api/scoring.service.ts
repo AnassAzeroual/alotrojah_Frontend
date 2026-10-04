@@ -30,6 +30,10 @@ export class ScoringService {
     });
   }
 
+  remove(id: number): Observable<null> {
+    return this.api.delete<null>(`/scoring-modules/${id}`);
+  }
+
   create(payload: {
     code: string;
     name_ar: string;
@@ -39,9 +43,5 @@ export class ScoringService {
     is_in_weekly_total?: boolean;
   }): Observable<ScoringModule> {
     return this.api.post<ScoringModule>('/scoring-modules', payload);
-  }
-
-  check(): Observable<ScoringCheck> {
-    return this.api.get<ScoringCheck>('/scoring-check');
   }
 }

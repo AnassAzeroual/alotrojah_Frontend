@@ -44,6 +44,12 @@ export class ReviewsPage {
     return r === 'admin' || r === 'supervisor' || t === 'murajaa' || t === 'both';
   });
 
+  /** Practice-row deletes are admin/supervisor-only (policy). */
+  readonly canManage = computed(() => {
+    const r = this.auth.currentUser()?.role;
+    return r === 'admin' || r === 'supervisor';
+  });
+
   readonly search = signal('');
   readonly pickedStudent = signal<number | null>(null);
   readonly saving = signal(false);
@@ -84,6 +90,14 @@ export class ReviewsPage {
       params.st === null
         ? Promise.resolve([])
         : firstValueFrom(this.reviews.cycles({ student_id: params.st }).pipe(map((p) => p.data))),
+  });
+
+  readonly logs = resource({
+    params: () => ({ st: this.pickedStudent(), t: this.tick() }),
+    loader: ({ params }) =>
+      params.st === null
+        ? Promise.resolve([])
+        : firstValueFrom(this.reviews.logs({ student_id: params.st }).pipe(map((p) => p.data))),
   });
 
   readonly form = new FormGroup({
@@ -128,5 +142,9 @@ export class ReviewsPage {
 
   remove(id: number): void {
     this.reviews.deleteCycle(id).subscribe(() => this.tick.update((n) => n + 1));
+  }
+
+  removeLog(id: number): void {
+    this.reviews.deleteLog(id).subscribe(() => this.tick.update((n) => n + 1));
   }
 }

@@ -2,12 +2,15 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  effect,
   ElementRef,
+  inject,
   input,
   OnChanges,
   OnDestroy,
   viewChild,
 } from '@angular/core';
+import { ThemeService } from '../../../core/theme/theme.service';
 import {
   ArcElement,
   BarController,
@@ -63,7 +66,17 @@ export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   readonly label = input('chart');
 
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('chartCanvas');
+  private readonly theme = inject(ThemeService);
   private chart: Chart | null = null;
+
+  /** Re-theme the live chart whenever light/dark is toggled. */
+  private readonly onTheme = effect(() => {
+    this.theme.mode();
+    if (!this.chart) return;
+    this.chart.data = this.themedData();
+    this.chart.options = this.rtlOptions();
+    this.chart.update();
+  });
 
   ngAfterViewInit(): void {
     this.chart = new Chart(this.canvas().nativeElement, {
@@ -86,7 +99,7 @@ export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private isDark(): boolean {
-    return document.documentElement.dataset['theme'] === 'dark';
+    return this.theme.mode() === 'dark';
   }
 
   private rtlOptions(): ChartOptions {

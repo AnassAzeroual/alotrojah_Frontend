@@ -1,0 +1,331 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <div>
+      <h1>{{ 'nav.groups' | translate }}</h1>
+      <p>{{ 'grp.subtitle' | translate }}</p>
+      @if (seasonName()) {
+        <p class="season">
+          {{ 'grp.season' | translate }}: <span class="ltr-num">{{ seasonName() }}</span>
+        </p>
+      }
+    </div>
+    <div class="actions">
+      @if (canCreate()) {
+        <a routerLink="/groups/new" class="btn btn-primary" data-testid="groups-new">{{
+          'grp.create' | translate
+        }}</a>
+      }
+      <button type="button" class="btn btn-ghost" (click)="exportCsv()">
+        {{ 'grp.export_csv' | translate }}
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
+  } @else if (rows().length === 0) {
+    <app-empty-state />
+  } @else {
+    <div class="kpis">
+      <div class="kpi card anim-rise" style="--i: 1">
+        <span class="kpi-ico" aria-hidden="true">▦</span>
+        <div class="kpi-txt">
+          <small>{{ 'grp.kpi_groups' | translate }}</small>
+          <strong class="ltr-num">{{ kpis()?.groups ?? '—' }}</strong>
+        </div>
+      </div>
+      <div class="kpi card anim-rise" style="--i: 2">
+        <span class="kpi-ico" aria-hidden="true">◉</span>
+        <div class="kpi-txt">
+          <small>{{ 'grp.kpi_students' | translate }}</small>
+          <strong class="ltr-num">{{ kpis()?.students ?? '—' }}</strong>
+        </div>
+      </div>
+      <div class="kpi card anim-rise" style="--i: 3">
+        <span class="kpi-ico" aria-hidden="true">◎</span>
+        <div class="kpi-txt">
+          <small>{{ 'grp.kpi_avg' | translate }}</small>
+          <strong class="ltr-num">{{ kpis()?.avg_score ?? '—' }}</strong>
+        </div>
+      </div>
+      <div class="kpi card anim-rise" style="--i: 4">
+        <span class="kpi-ico" aria-hidden="true">◔</span>
+        <div class="kpi-txt">
+          <small>{{ 'grp.kpi_attendance' | translate }}</small>
+          <strong class="ltr-num">{{ kpis()?.attendance_pct ?? '—' }}</strong>
+        </div>
+      </div>
+      <div class="kpi card anim-rise" style="--i: 5">
+        <span class="kpi-ico" aria-hidden="true">▤</span>
+        <div class="kpi-txt">
+          <small>{{ 'grp.kpi_fill' | translate }}</small>
+          <strong class="ltr-num">{{ kpis()?.fill_pct ?? '—' }}</strong>
+        </div>
+      </div>
+    </div>
+
+    @if (!seasonName()) {
+      <p class="no-season card anim-rise">{{ 'grp.no_season' | translate }}</p>
+    }
+
+    <div class="charts">
+      <div class="card chart-card wide anim-rise" style="--i: 6">
+        <div class="chart-head">
+          <h2>{{ 'grp.chart_fill' | translate }}</h2>
+        </div>
+        <app-chart type="bar" [data]="fillChart()" label="fill" />
+      </div>
+      <div class="card chart-card anim-rise" style="--i: 7">
+        <div class="chart-head">
+          <h2>{{ 'grp.chart_status' | translate }}</h2>
+        </div>
+        @if (hasStatus()) {
+          <app-chart type="doughnut" [data]="statusChart()" label="status" />
+        } @else {
+          <p class="chart-empty">{{ 'grp.no_season' | translate }}</p>
+        }
+      </div>
+      <div class="card chart-card anim-rise" style="--i: 8">
+        <div class="chart-head">
+          <h2>{{ 'grp.chart_gender' | translate }}</h2>
+        </div>
+        @if (hasGender()) {
+          <app-chart type="doughnut" [data]="genderChart()" label="gender" />
+        } @else {
+          <p class="chart-empty">{{ 'grp.no_season' | translate }}</p>
+        }
+      </div>
+      <div class="card chart-card anim-rise" style="--i: 9">
+        <div class="chart-head">
+          <h2>{{ 'grp.chart_score' | translate }}</h2>
+        </div>
+        @if (hasScores()) {
+          <app-chart type="bar" [data]="scoreChart()" [options]="noLegend" label="score" />
+        } @else {
+          <p class="chart-empty">{{ 'grp.no_season' | translate }}</p>
+        }
+      </div>
+      <div class="card chart-card anim-rise" style="--i: 10">
+        <div class="chart-head">
+          <h2>{{ 'grp.chart_att' | translate }}</h2>
+        </div>
+        @if (hasAtt()) {
+          <app-chart type="bar" [data]="attChart()" [options]="noLegend" label="attendance" />
+        } @else {
+          <p class="chart-empty">{{ 'grp.no_season' | translate }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="toolbar card anim-rise" style="--i: 11">
+      <label class="field search grow">
+        <span class="sr-only">{{ 'list.search' | translate }}</span>
+        <input
+          type="search"
+          data-testid="groups-search"
+          [placeholder]="'grp.search_ph' | translate"
+          [value]="q()"
+          (change)="q.set($any($event.target).value); page.set(1)"
+        />
+      </label>
+      <label class="field">
+        <app-dropdown
+          [options]="levelOptions()"
+          [value]="levelId()"
+          (valueChange)="levelId.set(txt($event)); page.set(1)"
+          ariaLabelKey="list.level"
+        />
+      </label>
+      <label class="field">
+        <app-dropdown
+          [options]="statusOptions()"
+          [value]="status()"
+          (valueChange)="status.set(txt($event)); page.set(1)"
+          ariaLabelKey="list.status"
+        />
+      </label>
+    </div>
+
+    @if (total() === 0) {
+      <app-empty-state />
+    } @else {
+      <div class="table-wrap card anim-rise" style="--i: 12">
+        <table>
+          <thead>
+            <tr>
+              <th>
+                <button type="button" class="th-sort" (click)="toggleSort('name')">
+                  {{ 'grp.col_name' | translate }} {{ sortMark('name') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="th-sort" (click)="toggleSort('teacher')">
+                  {{ 'grp.col_teacher' | translate }} {{ sortMark('teacher') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="th-sort" (click)="toggleSort('level')">
+                  {{ 'grp.col_level' | translate }} {{ sortMark('level') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="th-sort" (click)="toggleSort('students')">
+                  {{ 'grp.col_students' | translate }} {{ sortMark('students') }}
+                </button>
+              </th>
+              <th>{{ 'grp.col_capacity' | translate }}</th>
+              <th>
+                <button type="button" class="th-sort" (click)="toggleSort('fill')">
+                  {{ 'grp.col_fill' | translate }} {{ sortMark('fill') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="th-sort" (click)="toggleSort('score')">
+                  {{ 'grp.col_score' | translate }} {{ sortMark('score') }}
+                </button>
+              </th>
+              <th>
+                <button type="button" class="th-sort" (click)="toggleSort('attendance')">
+                  {{ 'grp.col_att' | translate }} {{ sortMark('attendance') }}
+                </button>
+              </th>
+              <th>{{ 'grp.col_thumn' | translate }}</th>
+              <th>{{ 'grp.col_status' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of paged(); track g.id) {
+              <tr
+                tabindex="0"
+                class="row-link"
+                [style.--i]="$index"
+                (click)="open(g.id)"
+                (keydown.enter)="open(g.id)"
+              >
+                <td [attr.data-label]="'grp.col_name' | translate">
+                  <span class="cell-name">
+                    <button
+                      type="button"
+                      class="expander"
+                      [class.open]="expandedId() === g.id"
+                      [attr.aria-label]="
+                        (expandedId() === g.id ? 'grp.collapse' : 'grp.expand') | translate
+                      "
+                      (click)="$event.stopPropagation(); toggleExpand(g.id)"
+                    >
+                      {{ expandedId() === g.id ? '▾' : '▸' }}
+                    </button>
+                    <span class="avatar-sm" aria-hidden="true">{{ g.name.slice(0, 1) }}</span>
+                    <strong>{{ g.name }}</strong>
+                  </span>
+                </td>
+                <td [attr.data-label]="'grp.col_teacher' | translate">
+                  {{ g.teacher?.full_name ?? '—' }}
+                </td>
+                <td [attr.data-label]="'grp.col_level' | translate" class="mut">
+                  {{ g.level?.name_ar ?? '—' }}
+                </td>
+                <td [attr.data-label]="'grp.col_students' | translate" class="ltr-num">
+                  {{ g.students_count }}
+                </td>
+                <td [attr.data-label]="'grp.col_capacity' | translate" class="ltr-num">
+                  {{ g.capacity ?? '—' }}
+                </td>
+                <td [attr.data-label]="'grp.col_fill' | translate" class="ltr-num">
+                  {{ g.fill_pct ?? '—' }}
+                </td>
+                <td [attr.data-label]="'grp.col_score' | translate" class="ltr-num">
+                  {{ g.avg_score ?? '—' }}
+                </td>
+                <td [attr.data-label]="'grp.col_att' | translate" class="ltr-num">
+                  {{ g.attendance_pct ?? '—' }}
+                </td>
+                <td [attr.data-label]="'grp.col_thumn' | translate" class="ltr-num">
+                  {{ g.thumn_total }}
+                </td>
+                <td [attr.data-label]="'grp.col_status' | translate">
+                  @if (g.is_active) {
+                    <span class="pill ok">{{ 'grp.active' | translate }}</span>
+                  } @else {
+                    <span class="pill warn">{{ 'grp.inactive' | translate }}</span>
+                  }
+                </td>
+              </tr>
+              @if (expandedId() === g.id) {
+                <tr class="detail-row">
+                  <td colspan="10">
+                    <div class="detail-grid">
+                      <div class="d-item">
+                        <small>{{ 'grp.schedule' | translate }}</small>
+                        <span class="days">
+                          @for (d of scheduleKeys(g.schedule_days); track d) {
+                            <i class="day-chip">{{ 'grp.day.' + d | translate }}</i>
+                          }
+                        </span>
+                      </div>
+                      <div class="d-item">
+                        <small>{{ 'grp.year' | translate }}</small>
+                        <span class="ltr-num">{{ g.academic_year ?? '—' }}</span>
+                      </div>
+                      <div class="d-item">
+                        <small>{{ 'grp.phone' | translate }}</small>
+                        <span class="ltr-num">{{ g.teacher?.phone ?? '—' }}</span>
+                      </div>
+                      <div class="d-item">
+                        <small>{{ 'grp.teacher_kind' | translate }}</small>
+                        <span>
+                          @if (g.teacher) {
+                            {{ 'teacher_type.' + g.teacher.teacher_type | translate }}
+                          } @else {
+                            —
+                          }
+                        </span>
+                      </div>
+                      <div class="d-item">
+                        <small>{{ 'grp.col_thumn' | translate }}</small>
+                        <span class="ltr-num">{{ g.thumn_total }}</span>
+                      </div>
+                      <div class="d-item wide">
+                        <small>{{ 'grp.chart_status' | translate }}</small>
+                        <span class="chips">
+                          @for (c of chips(g.breakdown, 'status', statusLabelKey); track c.label) {
+                            <i class="chip"
+                              >{{ c.label }} <b class="ltr-num">{{ c.n }}</b></i
+                            >
+                          }
+                        </span>
+                      </div>
+                      <div class="d-item wide">
+                        <small>{{ 'grp.chart_type' | translate }}</small>
+                        <span class="chips">
+                          @for (
+                            c of chips(g.breakdown, 'student_type', typeLabelKey);
+                            track c.label
+                          ) {
+                            <i class="chip"
+                              >{{ c.label }} <b class="ltr-num">{{ c.n }}</b></i
+                            >
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-paginator
+        [page]="page()"
+        [perPage]="perPage"
+        [total]="total()"
+        (pageChange)="page.set($event)"
+      />
+    }
+  }
+</section>

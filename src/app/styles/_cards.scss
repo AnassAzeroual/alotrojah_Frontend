@@ -35,6 +35,19 @@ button.card {
   }
 }
 
+// A card hosting an open dropdown rises above following content. Needed
+// because .anim-rise / .page keep fill-retained transforms, which trap the
+// dropdown's own z-index inside the card's stacking context.
+// NOTE: .toolbar is position:sticky — never override it with relative,
+// otherwise the filter bar un-sticks and visibly jumps on open.
+.card:has(.dd.open) {
+  z-index: var(--z-dropdown);
+}
+
+.card:has(.dd.open):not(.toolbar) {
+  position: relative;
+}
+
 // Stat card: label + big number (dashboard, student detail)
 .stat-card {
   background: var(--color-surface);

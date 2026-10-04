@@ -79,9 +79,25 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'registrations',
+        loadChildren: () =>
+          import('./features/registrations/registrations.routes').then(
+            (m) => m.REGISTRATIONS_ROUTES,
+          ),
+      },
+      {
         path: 'dashboard',
         loadChildren: () =>
           import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
+      },
+      {
+        path: 'users',
+        loadChildren: () => import('./features/users/users.routes').then((m) => m.USERS_ROUTES),
+      },
+      {
+        path: 'centers',
+        loadChildren: () =>
+          import('./features/centers/centers.routes').then((m) => m.CENTERS_ROUTES),
       },
       // F11+ append feature routes here
     ],

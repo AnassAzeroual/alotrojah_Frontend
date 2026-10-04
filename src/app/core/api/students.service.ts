@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
-import { Paginated, Student } from './api-models';
+import { Paginated, Student, UpdateStudentPayload } from './api-models';
 
 @Injectable({ providedIn: 'root' })
 export class StudentsService {
@@ -13,5 +13,14 @@ export class StudentsService {
 
   get(id: number): Observable<Student> {
     return this.api.get<Student>(`/students/${id}`);
+  }
+
+  create(payload: import('./api-models').CreateStudentPayload): Observable<Student> {
+    return this.api.post<Student>('/students', payload);
+  }
+
+  /** Partial update (group assignment, profile fields, status…). */
+  update(id: number, payload: UpdateStudentPayload): Observable<Student> {
+    return this.api.put<Student>(`/students/${id}`, payload);
   }
 }

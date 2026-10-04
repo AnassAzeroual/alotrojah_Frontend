@@ -16,6 +16,7 @@ const LABELS: Record<AppLang, string> = { ar: 'العربية', fr: 'Français',
       [value]="lang.current()"
       (valueChange)="choose($event)"
       ariaLabelKey="auth.language"
+      testId="lang-switcher"
     />
   `,
 })

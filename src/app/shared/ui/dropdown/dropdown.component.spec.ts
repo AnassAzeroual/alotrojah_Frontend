@@ -70,4 +70,29 @@ describe('DropdownComponent', () => {
     await host.whenStable();
     expect(host.nativeElement.querySelector('.dd-label').textContent).toContain('Bee');
   });
+
+  it('stays open after the opening click (inside clicks are ignored)', () => {
+    (fixture.nativeElement.querySelector('.dd-btn') as HTMLElement).click();
+    fixture.detectChanges();
+    expect(cmp.open()).toBe(true);
+    expect(fixture.nativeElement.querySelector('.dd-list')).toBeTruthy();
+  });
+
+  it('closes on outside document click', () => {
+    (fixture.nativeElement.querySelector('.dd-btn') as HTMLElement).click();
+    fixture.detectChanges();
+    expect(cmp.open()).toBe(true);
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+    expect(cmp.open()).toBe(false);
+  });
+
+  it('closes on Escape', () => {
+    (fixture.nativeElement.querySelector('.dd-btn') as HTMLElement).click();
+    fixture.detectChanges();
+    expect(cmp.open()).toBe(true);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(cmp.open()).toBe(false);
+  });
 });
