@@ -8,6 +8,7 @@
     "entry": "Saisie du jour",
     "students": "Élèves",
     "users": "Utilisateurs",
+    "centers": "Centres",
     "groups": "Cercles",
     "planning": "Planification",
     "scoring": "Notation",
@@ -362,6 +363,16 @@
     "today": "Aujourd'hui",
     "level": "Niveau",
     "center": "Centre"
+  },
+  "center": {
+    "title": "Centres",
+    "create": "Ajouter un centre",
+    "edit": "Modifier",
+    "name": "Nom",
+    "city": "Ville",
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "manager": "Responsable"
   },
   "sessionStatus": {
     "planned": "Planifiée",

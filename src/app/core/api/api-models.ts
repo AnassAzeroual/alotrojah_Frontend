@@ -72,6 +72,9 @@ export interface Center {
   id: number;
   name: string;
   city: string | null;
+  address?: string | null;
+  phone?: string | null;
+  manager_name?: string | null;
   groups_count?: number;
   students_count?: number;
 }

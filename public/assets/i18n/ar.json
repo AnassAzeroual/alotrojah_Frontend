@@ -8,6 +8,7 @@
     "entry": "إدخال اليوم",
     "students": "الطلاب",
     "users": "المستخدمون",
+    "centers": "المراكز",
     "groups": "الحلقات",
     "planning": "التخطيط",
     "scoring": "التنقيط",
@@ -362,6 +363,16 @@
     "today": "اليوم",
     "level": "المستوى",
     "center": "المركز"
+  },
+  "center": {
+    "title": "المراكز",
+    "create": "إضافة مركز",
+    "edit": "تعديل",
+    "name": "الاسم",
+    "city": "المدينة",
+    "address": "العنوان",
+    "phone": "الهاتف",
+    "manager": "المسؤول"
   },
   "sessionStatus": {
     "planned": "مبرمجة",

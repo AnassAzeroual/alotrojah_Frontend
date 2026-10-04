@@ -94,6 +94,11 @@ export const routes: Routes = [
         path: 'users',
         loadChildren: () => import('./features/users/users.routes').then((m) => m.USERS_ROUTES),
       },
+      {
+        path: 'centers',
+        loadChildren: () =>
+          import('./features/centers/centers.routes').then((m) => m.CENTERS_ROUTES),
+      },
       // F11+ append feature routes here
     ],
   },

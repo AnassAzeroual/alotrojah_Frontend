@@ -1,0 +1,184 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'center.title' | translate }}</h1>
+  </div>
+
+  <form class="card anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="submit()">
+    <h2>{{ 'center.create' | translate }}</h2>
+    <div class="grid-auto">
+      <label class="field"
+        ><span>{{ 'center.name' | translate }} <span class="danger">*</span></span>
+        <input type="text" formControlName="name" data-testid="center-name" maxlength="150" />
+      </label>
+      <label class="field"
+        ><span>{{ 'center.city' | translate }}</span>
+        <input type="text" formControlName="city" data-testid="center-city" maxlength="100" />
+      </label>
+      <label class="field"
+        ><span>{{ 'center.phone' | translate }}</span>
+        <input type="tel" formControlName="phone" data-testid="center-phone" dir="ltr" />
+      </label>
+      <label class="field"
+        ><span>{{ 'center.manager' | translate }}</span>
+        <input
+          type="text"
+          formControlName="manager_name"
+          data-testid="center-manager"
+          maxlength="150"
+        />
+      </label>
+    </div>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      data-testid="center-save"
+      [class.is-loading]="saving()"
+      [disabled]="form.invalid || saving()"
+    >
+      @if (saving()) {
+        <app-spinner />
+      } @else {
+        {{ 'common.save' | translate }}
+      }
+    </button>
+    @if (createErrorKey()) {
+      <div class="banner danger">{{ createErrorKey()! | translate }}</div>
+    }
+  </form>
+
+  @if (centers.isLoading()) {
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
+  } @else if ((centers.value() ?? []).length === 0) {
+    <app-empty-state />
+  } @else {
+    <div class="table-responsive">
+      <table class="centers-table">
+        <thead>
+          <tr>
+            <th>{{ 'center.name' | translate }}</th>
+            <th>{{ 'center.city' | translate }}</th>
+            <th>{{ 'center.manager' | translate }}</th>
+            <th>{{ 'center.phone' | translate }}</th>
+            <th class="ltr-num">∑</th>
+            <th class="actions-col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of centers.value() ?? []; track c.id) {
+            <tr>
+              <td>
+                <strong>{{ c.name }}</strong>
+              </td>
+              <td>{{ c.city ?? '—' }}</td>
+              <td>{{ c.manager_name ?? '—' }}</td>
+              <td>
+                <span class="ltr-num" dir="ltr">{{ c.phone ?? '—' }}</span>
+              </td>
+              <td>
+                <span class="ltr-num">{{ c.groups_count ?? 0 }} / {{ c.students_count ?? 0 }}</span>
+              </td>
+              <td class="actions-col">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  [attr.data-testid]="'edit-center-' + c.id"
+                  [attr.aria-label]="'center.edit' | translate"
+                  (click)="startEdit(c.id, c)"
+                >
+                  {{ 'center.edit' | translate }}
+                </button>
+              </td>
+            </tr>
+            @if (editingId() === c.id) {
+              <tr class="edit-row">
+                <td colspan="6">
+                  <div class="grid-auto">
+                    <label class="field"
+                      ><span>{{ 'center.name' | translate }} *</span>
+                      <input
+                        type="text"
+                        data-testid="center-edit-name"
+                        [value]="draft().name"
+                        (input)="setDraft('name', $any($event.target).value)"
+                        maxlength="150"
+                      />
+                    </label>
+                    <label class="field"
+                      ><span>{{ 'center.city' | translate }}</span>
+                      <input
+                        type="text"
+                        data-testid="center-edit-city"
+                        [value]="draft().city"
+                        (input)="setDraft('city', $any($event.target).value)"
+                        maxlength="100"
+                      />
+                    </label>
+                    <label class="field"
+                      ><span>{{ 'center.address' | translate }}</span>
+                      <input
+                        type="text"
+                        data-testid="center-edit-address"
+                        [value]="draft().address"
+                        (input)="setDraft('address', $any($event.target).value)"
+                        maxlength="255"
+                      />
+                    </label>
+                    <label class="field"
+                      ><span>{{ 'center.phone' | translate }}</span>
+                      <input
+                        type="tel"
+                        data-testid="center-edit-phone"
+                        [value]="draft().phone"
+                        (input)="setDraft('phone', $any($event.target).value)"
+                        dir="ltr"
+                      />
+                    </label>
+                    <label class="field"
+                      ><span>{{ 'center.manager' | translate }}</span>
+                      <input
+                        type="text"
+                        data-testid="center-edit-manager"
+                        [value]="draft().manager"
+                        (input)="setDraft('manager', $any($event.target).value)"
+                        maxlength="150"
+                      />
+                    </label>
+                  </div>
+                  <div class="cluster">
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm"
+                      data-testid="center-edit-save"
+                      [disabled]="draft().name.trim() === '' || editSaving()"
+                      (click)="saveEdit(c.id)"
+                    >
+                      @if (editSaving()) {
+                        <app-spinner />
+                      } @else {
+                        {{ 'common.save' | translate }}
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm"
+                      [disabled]="editSaving()"
+                      (click)="cancelEdit()"
+                    >
+                      {{ 'common.cancel' | translate }}
+                    </button>
+                  </div>
+                  @if (editErrorKey()) {
+                    <div class="banner danger">{{ editErrorKey()! | translate }}</div>
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

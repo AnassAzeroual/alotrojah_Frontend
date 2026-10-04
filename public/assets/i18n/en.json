@@ -8,6 +8,7 @@
     "entry": "Daily entry",
     "students": "Students",
     "users": "Users",
+    "centers": "Centers",
     "groups": "Circles",
     "planning": "Planning",
     "scoring": "Scoring",
@@ -362,6 +363,16 @@
     "today": "Today",
     "level": "Level",
     "center": "Center"
+  },
+  "center": {
+    "title": "Centers",
+    "create": "Add center",
+    "edit": "Edit",
+    "name": "Name",
+    "city": "City",
+    "address": "Address",
+    "phone": "Phone",
+    "manager": "Manager"
   },
   "sessionStatus": {
     "planned": "Planned",
