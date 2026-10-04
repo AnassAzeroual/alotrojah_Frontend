@@ -240,6 +240,8 @@
   "exam": {
     "title": "Exams",
     "new": "New exam",
+    "edit": "Edit exam",
+    "delete_confirm": "Confirm delete",
     "filter_type": "Type",
     "type": "Type",
     "date": "Date",

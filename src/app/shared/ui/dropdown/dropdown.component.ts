@@ -2,7 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
   forwardRef,
+  HostListener,
+  inject,
   input,
   output,
   signal,
@@ -119,6 +122,10 @@ export interface DropdownOption {
         position: relative;
         min-width: 0;
       }
+      /* Lift the whole control above following cards/sections while open. */
+      .dd.open {
+        z-index: var(--z-dropdown);
+      }
       .dd-btn {
         width: 100%;
         min-height: 48px;
@@ -174,8 +181,11 @@ export interface DropdownOption {
       .dd-list {
         position: absolute;
         top: calc(100% + 8px);
-        inset-inline: 0;
+        inset-inline-start: 0;
         z-index: 2;
+        min-width: 100%;
+        width: max-content;
+        max-width: min(92vw, 340px);
         max-height: 280px;
         overflow-y: auto;
         margin: 0;
@@ -219,6 +229,10 @@ export interface DropdownOption {
       [data-theme='dark'] .dd-list button.on {
         color: #5eead4;
       }
+      .dd-list button span {
+        min-width: 0;
+        overflow-wrap: break-word;
+      }
       .dd-list button svg {
         width: 16px;
         height: 16px;
@@ -246,6 +260,25 @@ export class DropdownComponent implements ControlValueAccessor {
   readonly compact = input(false);
 
   readonly open = signal(false);
+
+  private readonly host = inject(ElementRef<HTMLElement>);
+
+  /**
+   * Click-away close. The fixed backdrop catches most outside clicks, but it
+   * is clipped whenever an ancestor creates a containing block (transform /
+   * filter / backdrop-filter) — the document listener always fires.
+   */
+  @HostListener('document:click', ['$event'])
+  protected onDocumentClick(event: MouseEvent): void {
+    if (this.open() && !this.host.nativeElement.contains(event.target as Node | null)) {
+      this.close();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    if (this.open()) this.close();
+  }
 
   private readonly cva = signal(false);
   private readonly inner = signal<DropdownValue>('');

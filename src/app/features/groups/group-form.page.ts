@@ -93,13 +93,13 @@ export class GroupFormPage {
   private readonly teachersRes = resource({
     params: () => ({ centerId: this.effectiveCenterId() }),
     loader: ({ params }) => {
-      if (params.centerId === null) return Promise.resolve(null);
-      return firstValueFrom(this.usersSvc.list({ role: 'teacher', center_id: params.centerId }));
+      if (params.centerId === null) return Promise.resolve([]);
+      return this.usersSvc.listAll({ role: 'teacher', center_id: params.centerId });
     },
   });
 
   protected readonly teacherOptions = computed<DropdownOption[]>(() => {
-    const opts: DropdownOption[] = (this.teachersRes.value()?.data ?? []).map((u) => ({
+    const opts: DropdownOption[] = (this.teachersRes.value() ?? []).map((u) => ({
       value: u.id,
       label: u.full_name,
     }));

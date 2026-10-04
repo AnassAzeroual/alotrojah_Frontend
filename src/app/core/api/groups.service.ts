@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
 import {
   CreateGroupPayload,
@@ -16,6 +16,22 @@ export class GroupsService {
 
   list(params?: QueryParams): Observable<Paginated<Group>> {
     return this.api.get<Paginated<Group>>('/groups', params);
+  }
+
+  /**
+   * Every page (the list endpoint paginates 20/page). For feeds where late
+   * rows must not hide (free-teacher checks, group pickers).
+   */
+  async listAll(params?: QueryParams): Promise<Group[]> {
+    const out: Group[] = [];
+    let page = 1;
+    for (;;) {
+      const res = await firstValueFrom(this.list({ ...params, page }));
+      out.push(...res.data);
+      if (res.meta.current_page * res.meta.per_page >= res.meta.total) break;
+      page++;
+    }
+    return out;
   }
 
   /** Overview feed: every visible group + KPIs + breakdowns (current season). */

@@ -57,7 +57,7 @@ export class UserReplacePage {
     loader: ({ params }) => {
       const query: Record<string, string | number> = { role: 'teacher' };
       if (params.center !== null) query['center_id'] = params.center;
-      return firstValueFrom(this.usersSvc.list(query));
+      return this.usersSvc.listAll(query);
     },
   });
 
@@ -66,7 +66,7 @@ export class UserReplacePage {
     loader: ({ params }) => {
       const query: Record<string, string | number> = {};
       if (params.center !== null) query['center_id'] = params.center;
-      return firstValueFrom(this.groupsSvc.list(query));
+      return this.groupsSvc.listAll(query);
     },
   });
 
@@ -76,16 +76,16 @@ export class UserReplacePage {
     this.teacherRes.isLoading() || this.teachersRes.isLoading() || this.groupsRes.isLoading();
 
   readonly blockingGroups = computed(() =>
-    (this.groupsRes.value()?.data ?? []).filter((g) => g.teacher?.id === this.id() && g.is_active),
+    (this.groupsRes.value() ?? []).filter((g) => g.teacher?.id === this.id() && g.is_active),
   );
 
   readonly candidates = computed(() => {
     this.language.current();
     const t = this.teacher();
     if (!t) return [];
-    const groups = this.groupsRes.value()?.data ?? [];
+    const groups = this.groupsRes.value() ?? [];
     const center = t.center_id ?? 0;
-    return (this.teachersRes.value()?.data ?? []).filter(
+    return (this.teachersRes.value() ?? []).filter(
       (c) =>
         c.id !== this.id() &&
         c.is_active &&

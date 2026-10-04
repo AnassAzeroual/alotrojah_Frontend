@@ -35,6 +35,14 @@ button.card {
   }
 }
 
+// A card hosting an open dropdown rises above following content. Needed
+// because .anim-rise / .page keep fill-retained transforms, which trap the
+// dropdown's own z-index inside the card's stacking context.
+.card:has(.dd.open) {
+  position: relative;
+  z-index: var(--z-dropdown);
+}
+
 // Stat card: label + big number (dashboard, student detail)
 .stat-card {
   background: var(--color-surface);

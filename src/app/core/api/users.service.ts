@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
 import { Paginated, User } from './api-models';
 
@@ -11,6 +11,22 @@ export class UsersService {
   /** Admin may pass center_id; other staff are auto-scoped to their center. */
   list(params?: QueryParams): Observable<Paginated<User>> {
     return this.api.get<Paginated<User>>('/users', params);
+  }
+
+  /**
+   * Every page (the list endpoint paginates 20/page). For picker feeds where
+   * late rows must not hide — e.g. replacer candidates, group teacher lists.
+   */
+  async listAll(params?: QueryParams): Promise<User[]> {
+    const out: User[] = [];
+    let page = 1;
+    for (;;) {
+      const res = await firstValueFrom(this.list({ ...params, page }));
+      out.push(...res.data);
+      if (res.meta.current_page * res.meta.per_page >= res.meta.total) break;
+      page++;
+    }
+    return out;
   }
 
   get(id: number): Observable<User> {

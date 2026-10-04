@@ -17,7 +17,101 @@
           >
         </p>
       </div>
+      @if (canDelete()) {
+        <div class="cluster">
+          @if (armingDelete()) {
+            <button
+              type="button"
+              class="btn btn-danger-solid"
+              [disabled]="deleteSaving()"
+              data-testid="confirm-delete-exam"
+              (click)="confirmDelete()"
+            >
+              @if (deleteSaving()) {
+                <app-spinner />
+              } @else {
+                {{ 'exam.delete_confirm' | translate }}
+              }
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [disabled]="deleteSaving()"
+              (click)="disarmDelete()"
+            >
+              {{ 'common.cancel' | translate }}
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="btn btn-danger-ghost"
+              data-testid="delete-exam"
+              [attr.aria-label]="'common.delete' | translate"
+              (click)="armDelete()"
+            >
+              {{ 'common.delete' | translate }}
+            </button>
+          }
+        </div>
+        @if (deleteFailed()) {
+          <div class="banner danger">{{ 'common.error' | translate }}</div>
+        }
+      }
     </section>
+
+    @if (canEdit()) {
+      <section class="card anim-rise" style="--i: 1">
+        <h2>{{ 'exam.edit' | translate }}</h2>
+        <div class="grid" style="--cols: 3">
+          <label class="field"
+            ><span>{{ 'exam.date' | translate }}</span>
+            <input
+              type="date"
+              class="ltr-num"
+              [value]="editDate()"
+              (input)="editDate.set($any($event.target).value)"
+            />
+          </label>
+          <label class="field"
+            ><span>{{ 'exam.type' | translate }}</span>
+            <app-dropdown
+              [options]="examTypeOptions"
+              [value]="editType()"
+              (valueChange)="editType.set($any($event))"
+              ariaLabelKey="exam.type"
+            />
+          </label>
+          @if (editType() !== 'final_season') {
+            <label class="field"
+              ><span>{{ 'planning.pick_term' | translate }}</span>
+              <app-dropdown
+                [options]="termOptions()"
+                [value]="editTerm() ?? ''"
+                (valueChange)="editTerm.set(num($event))"
+                ariaLabelKey="planning.pick_term"
+              />
+            </label>
+          }
+        </div>
+        @if (editFailed()) {
+          <div class="banner danger">{{ 'common.error' | translate }}</div>
+        }
+        <button
+          type="button"
+          class="btn btn-primary"
+          [class.is-loading]="editSaving()"
+          [disabled]="!canSaveEdit()"
+          data-testid="save-exam-edit"
+          (click)="submitEdit()"
+        >
+          @if (editSaving()) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+      </section>
+    }
 
     <section class="card anim-rise" style="--i: 1">
       <h2>{{ 'exam.questions' | translate }}</h2>
