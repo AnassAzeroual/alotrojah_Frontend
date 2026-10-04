@@ -254,6 +254,7 @@
   "review": {
     "title": "Révision",
     "cycles": "Cycles",
+    "practice": "Pratique",
     "new_cycle": "Nouveau cycle",
     "week_from": "Semaine de",
     "week_to": "Semaine à"
@@ -282,7 +283,8 @@
     "audience": "Public",
     "title": "Titre",
     "body": "Texte",
-    "publish": "Publier"
+    "publish": "Publier",
+    "edit": "Modifier"
   },
   "delegation": {
     "title": "Délégation",
@@ -351,6 +353,9 @@
     "create": "Créer la saison",
     "current": "Actuelle",
     "activate": "Activer",
+    "delete_confirm": "Confirmer la suppression",
+    "has_facts": "Suppression impossible — la saison contient des données enregistrées",
+    "rename_term": "Renommer",
     "plans_title": "Plans des trimestres",
     "pick_student": "Élève",
     "pick_term": "Trimestre",

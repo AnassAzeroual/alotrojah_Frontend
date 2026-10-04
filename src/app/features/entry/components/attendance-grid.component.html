@@ -16,6 +16,17 @@
           </button>
         }
       </div>
+      @if (row.recordId !== null) {
+        <button
+          type="button"
+          class="btn btn-danger-ghost btn-sm"
+          [attr.data-testid]="'clear-attendance-' + row.student.id"
+          [attr.aria-label]="'common.delete' | translate"
+          (click)="clearRow(row.recordId!)"
+        >
+          {{ 'common.delete' | translate }}
+        </button>
+      }
     </div>
   }
 

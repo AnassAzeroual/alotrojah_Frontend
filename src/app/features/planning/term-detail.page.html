@@ -9,7 +9,54 @@
 } @else {
   <section class="page">
     <div class="page-head anim-rise">
-      <h1>{{ term.value()!.name_ar }}</h1>
+      @if (renaming()) {
+        <div class="cluster">
+          <input
+            type="text"
+            data-testid="term-name-input"
+            [value]="renameValue()"
+            (input)="renameValue.set($any($event.target).value)"
+            maxlength="50"
+          />
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            [disabled]="renameValue().trim() === '' || renameSaving()"
+            data-testid="term-name-save"
+            (click)="submitRename()"
+          >
+            @if (renameSaving()) {
+              <app-spinner />
+            } @else {
+              {{ 'common.save' | translate }}
+            }
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [disabled]="renameSaving()"
+            (click)="cancelRename()"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+        </div>
+        @if (renameFailed()) {
+          <div class="banner danger">{{ 'common.error' | translate }}</div>
+        }
+      } @else {
+        <h1>
+          {{ term.value()!.name_ar }}
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            data-testid="term-rename"
+            [attr.aria-label]="'planning.rename_term' | translate"
+            (click)="startRename()"
+          >
+            {{ 'planning.rename_term' | translate }}
+          </button>
+        </h1>
+      }
     </div>
 
     @for (w of term.value()!.weeks; track w.id) {

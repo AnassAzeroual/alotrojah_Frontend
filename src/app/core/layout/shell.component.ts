@@ -21,6 +21,7 @@ interface NavItem {
   key: string;
   icon: string;
   roles: readonly Role[];
+  testId: string;
 }
 
 const ITEMS: readonly NavItem[] = [
@@ -29,61 +30,106 @@ const ITEMS: readonly NavItem[] = [
     key: 'nav.dashboard',
     icon: 'home',
     roles: ['admin', 'supervisor', 'teacher', 'student', 'board'],
+    testId: 'nav-dashboard',
   },
   {
     path: '/students',
     key: 'nav.students',
     icon: 'users',
     roles: ['admin', 'supervisor', 'teacher', 'student'],
+    testId: 'nav-students',
   },
   {
     path: '/users',
     key: 'nav.users',
     icon: 'users',
     roles: ['admin', 'supervisor'],
+    testId: 'nav-users',
   },
-  { path: '/groups', key: 'nav.groups', icon: 'grid', roles: ['admin', 'supervisor', 'teacher'] },
-  { path: '/entry', key: 'nav.entry', icon: 'edit', roles: ['admin', 'supervisor', 'teacher'] },
-  { path: '/planning', key: 'nav.planning', icon: 'calendar', roles: ['admin', 'supervisor'] },
-  { path: '/scoring', key: 'nav.scoring', icon: 'chart', roles: ['admin', 'supervisor'] },
-  { path: '/exams', key: 'nav.exams', icon: 'file', roles: ['admin', 'supervisor', 'teacher'] },
+  {
+    path: '/groups',
+    key: 'nav.groups',
+    icon: 'grid',
+    roles: ['admin', 'supervisor', 'teacher'],
+    testId: 'nav-groups',
+  },
+  {
+    path: '/entry',
+    key: 'nav.entry',
+    icon: 'edit',
+    roles: ['admin', 'supervisor', 'teacher'],
+    testId: 'nav-entry',
+  },
+  {
+    path: '/planning',
+    key: 'nav.planning',
+    icon: 'calendar',
+    roles: ['admin', 'supervisor'],
+    testId: 'nav-planning',
+  },
+  {
+    path: '/scoring',
+    key: 'nav.scoring',
+    icon: 'chart',
+    roles: ['admin', 'supervisor'],
+    testId: 'nav-scoring',
+  },
+  {
+    path: '/exams',
+    key: 'nav.exams',
+    icon: 'file',
+    roles: ['admin', 'supervisor', 'teacher'],
+    testId: 'nav-exams',
+  },
   {
     path: '/reviews',
     key: 'nav.reviews',
     icon: 'refresh',
     roles: ['admin', 'supervisor', 'teacher'],
+    testId: 'nav-reviews',
   },
   {
     path: '/results/term',
     key: 'nav.results',
     icon: 'award',
     roles: ['admin', 'supervisor', 'teacher'],
+    testId: 'nav-results',
   },
   {
     path: '/reports/term',
     key: 'nav.reports',
     icon: 'report',
     roles: ['admin', 'supervisor', 'teacher'],
+    testId: 'nav-reports',
   },
   {
     path: '/news',
     key: 'nav.news',
     icon: 'bell',
     roles: ['admin', 'supervisor', 'teacher', 'student', 'board'],
+    testId: 'nav-news',
   },
   {
     path: '/delegate',
     key: 'nav.delegate',
     icon: 'share',
     roles: ['admin', 'supervisor', 'teacher'],
+    testId: 'nav-delegate',
   },
   {
     path: '/notifications',
     key: 'nav.notifications',
     icon: 'mail',
     roles: ['admin', 'supervisor', 'teacher'],
+    testId: 'nav-notifications',
   },
-  { path: '/registrations', key: 'nav.registrations', icon: 'shield', roles: ['admin'] },
+  {
+    path: '/registrations',
+    key: 'nav.registrations',
+    icon: 'shield',
+    roles: ['admin'],
+    testId: 'nav-registrations',
+  },
 ];
 
 @Component({

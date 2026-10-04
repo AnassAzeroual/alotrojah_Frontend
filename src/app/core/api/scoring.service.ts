@@ -40,8 +40,4 @@ export class ScoringService {
   }): Observable<ScoringModule> {
     return this.api.post<ScoringModule>('/scoring-modules', payload);
   }
-
-  check(): Observable<ScoringCheck> {
-    return this.api.get<ScoringCheck>('/scoring-check');
-  }
 }

@@ -254,6 +254,7 @@
   "review": {
     "title": "Review",
     "cycles": "Cycles",
+    "practice": "Practice",
     "new_cycle": "New cycle",
     "week_from": "From week",
     "week_to": "To week"
@@ -282,7 +283,8 @@
     "audience": "Audience",
     "title": "Title",
     "body": "Body",
-    "publish": "Publish"
+    "publish": "Publish",
+    "edit": "Edit"
   },
   "delegation": {
     "title": "Delegation",
@@ -351,6 +353,9 @@
     "create": "Create season",
     "current": "Current",
     "activate": "Activate",
+    "delete_confirm": "Confirm delete",
+    "has_facts": "Cannot delete — the season holds recorded facts",
+    "rename_term": "Rename",
     "plans_title": "Term plans",
     "pick_student": "Student",
     "pick_term": "Term",

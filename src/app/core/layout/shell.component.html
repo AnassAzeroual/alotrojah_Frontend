@@ -42,6 +42,7 @@
           [routerLinkActiveOptions]="{ exact: item.path === '/' }"
           (click)="closeMobile()"
           [attr.data-icon]="item.icon"
+          [attr.data-testid]="item.testId"
           [attr.title]="collapsed() ? (item.key | translate) : null"
         >
           <span class="ico" aria-hidden="true" [ngSwitch]="item.icon">
@@ -226,7 +227,7 @@
           <span>{{ 'nav.dark' | translate }}</span>
         }
       </button>
-      <button type="button" class="foot-btn danger" (click)="logout()">
+      <button type="button" class="foot-btn danger" (click)="logout()" data-testid="nav-logout">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
           <path d="M16 17l5-5-5-5M21 12H9" />
@@ -289,6 +290,7 @@
           type="button"
           class="icon-btn"
           (click)="theme.toggle()"
+          data-testid="nav-theme"
           [attr.aria-label]="'nav.theme' | translate"
         >
           @if (isDark()) {

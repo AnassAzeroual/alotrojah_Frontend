@@ -47,6 +47,41 @@ export class NewsPage {
     loader: () => firstValueFrom(this.news.list().pipe(map((p) => p.data))),
   });
 
+  readonly editingId = signal<number | null>(null);
+  readonly draftTitle = signal('');
+  readonly draftBody = signal('');
+  readonly editSaving = signal(false);
+
+  canEdit(authorId: number | undefined): boolean {
+    const me = this.auth.currentUser();
+    return !!me && (me.role === 'admin' || me.id === authorId);
+  }
+
+  startEdit(id: number, title: string, body: string): void {
+    this.editingId.set(id);
+    this.draftTitle.set(title);
+    this.draftBody.set(body);
+  }
+
+  cancelEdit(): void {
+    this.editingId.set(null);
+  }
+
+  saveEdit(id: number): void {
+    const title = this.draftTitle().trim();
+    const body = this.draftBody().trim();
+    if (title === '' || body === '' || this.editSaving()) return;
+    this.editSaving.set(true);
+    this.news.update(id, { title, body }).subscribe({
+      next: () => {
+        this.editSaving.set(false);
+        this.editingId.set(null);
+        this.tick.update((n) => n + 1);
+      },
+      error: () => this.editSaving.set(false),
+    });
+  }
+
   readonly groups = resource({
     params: () => ({}),
     loader: () => firstValueFrom(this.groupsSvc.list().pipe(map((p) => p.data))),

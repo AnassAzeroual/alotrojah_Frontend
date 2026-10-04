@@ -53,6 +53,7 @@ export interface DropdownOption {
         class="dd-btn"
         [disabled]="isDisabled()"
         (click)="open.set(!open())"
+        [attr.data-testid]="testId() || null"
         [attr.aria-label]="ariaLabel() || (ariaLabelKey() | translate)"
         aria-haspopup="listbox"
         [attr.aria-expanded]="open()"
@@ -258,6 +259,8 @@ export class DropdownComponent implements ControlValueAccessor {
   readonly ariaLabelKey = input<string>('');
   readonly disabled = input(false);
   readonly compact = input(false);
+  /** Stable hook for e2e (dynamic option values keep content-based selection). */
+  readonly testId = input('');
 
   readonly open = signal(false);
 

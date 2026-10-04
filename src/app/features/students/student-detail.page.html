@@ -20,7 +20,12 @@
       >
         <label class="field">
           <span>{{ 'users.name' | translate }} <span class="danger">*</span></span>
-          <input type="text" formControlName="full_name" [placeholder]="'users.name' | translate" />
+          <input
+            type="text"
+            formControlName="full_name"
+            data-testid="student-name"
+            [placeholder]="'users.name' | translate"
+          />
         </label>
 
         <div class="grid-auto">
@@ -85,6 +90,7 @@
               [value]="form.controls.memorization_mode.value"
               (valueChange)="form.controls.memorization_mode.setValue($any($event))"
               ariaLabelKey="list.mode"
+              testId="student-mode"
             />
           </label>
 
@@ -95,6 +101,7 @@
               [value]="form.controls.status.value"
               (valueChange)="form.controls.status.setValue($any($event))"
               ariaLabelKey="list.status"
+              testId="student-status"
             />
           </label>
         </div>
@@ -108,7 +115,12 @@
           <button type="button" class="btn btn-icon btn-ghost" (click)="cancelEdit()">
             {{ 'common.cancel' | translate }}
           </button>
-          <button type="submit" class="btn btn-primary" [disabled]="form.invalid || assignSaving()">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            data-testid="student-submit"
+            [disabled]="form.invalid || assignSaving()"
+          >
             @if (assignSaving()) {
               <app-spinner />
             } @else {

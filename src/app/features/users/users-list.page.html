@@ -1,7 +1,9 @@
 <section class="page">
   <div class="page-head anim-rise">
     <h1>{{ 'nav.users' | translate }}</h1>
-    <a routerLink="/users/new" class="btn btn-primary">{{ 'users.create' | translate }}</a>
+    <a routerLink="/users/new" class="btn btn-primary" data-testid="users-new">{{
+      'users.create' | translate
+    }}</a>
   </div>
 
   <div class="toolbar card anim-rise" style="--i: 1">
@@ -21,12 +23,14 @@
         [value]="role() ?? ''"
         (valueChange)="role.set(txt($event) || null); resetPage()"
         ariaLabelKey="users.role_filter"
+        testId="users-role"
       />
     </label>
     @if (role() === 'teacher') {
       <label class="field row">
         <input
           type="checkbox"
+          data-testid="users-unassigned"
           [checked]="unassignedOnly()"
           (change)="unassignedOnly.set($any($event.target).checked); resetPage()"
         />
@@ -183,6 +187,7 @@
         (click)="$event.stopPropagation()"
         role="dialog"
         aria-modal="true"
+        data-testid="replace-dialog"
         [attr.aria-label]="'users.cannot_delete_title' | translate"
       >
         <h2>{{ 'users.cannot_delete_title' | translate }}</h2>
@@ -193,7 +198,12 @@
           }
         </ul>
         <div class="modal-actions">
-          <button type="button" class="btn btn-primary btn-sm" (click)="goReplace()">
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            data-testid="choose-replacer"
+            (click)="goReplace()"
+          >
             {{ 'users.choose_replacer' | translate }}
           </button>
           <button type="button" class="btn btn-ghost btn-sm" (click)="pendingReplace.set(null)">

@@ -17,6 +17,15 @@ export interface MurajaaReview {
   reviewed_at: string | null;
 }
 
+export interface RevisionLog {
+  id: number;
+  student_id: number;
+  session_id: number;
+  hizb_from: number | null;
+  hizb_to: number | null;
+  murajaa_score: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ReviewsService {
   private readonly api = inject(ApiClient);
@@ -40,5 +49,13 @@ export class ReviewsService {
 
   deleteCycle(id: number): Observable<null> {
     return this.api.delete<null>(`/murajaa-reviews/${id}`);
+  }
+
+  logs(params?: QueryParams): Observable<Paginated<RevisionLog>> {
+    return this.api.get<Paginated<RevisionLog>>('/revision-logs', params);
+  }
+
+  deleteLog(id: number): Observable<null> {
+    return this.api.delete<null>(`/revision-logs/${id}`);
   }
 }

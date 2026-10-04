@@ -28,11 +28,11 @@
       <div class="grid" style="--cols: 2">
         <label class="field">
           <span>{{ 'auth.name' | translate }} <span class="danger">*</span></span>
-          <input type="text" formControlName="full_name" />
+          <input type="text" formControlName="full_name" data-testid="user-name" />
         </label>
         <label class="field">
           <span>{{ 'auth.email' | translate }} <span class="danger">*</span></span>
-          <input type="email" formControlName="email" dir="ltr" />
+          <input type="email" formControlName="email" dir="ltr" data-testid="user-email" />
         </label>
 
         <label class="field">
@@ -47,7 +47,7 @@
               <span class="danger">*</span>
             }
           </span>
-          <input type="password" formControlName="password" dir="ltr" />
+          <input type="password" formControlName="password" dir="ltr" data-testid="user-password" />
         </label>
 
         <label class="field">
@@ -57,6 +57,7 @@
             [value]="form.controls.role.value ?? ''"
             (valueChange)="form.controls.role.setValue($any($event))"
             ariaLabelKey="auth.role"
+            testId="user-role"
           />
         </label>
 
@@ -68,6 +69,7 @@
               [value]="form.controls.teacher_type.value ?? ''"
               (valueChange)="form.controls.teacher_type.setValue($any($event))"
               ariaLabelKey="auth.teacher_type"
+              testId="user-teacher-type"
             />
           </label>
         }
@@ -82,6 +84,7 @@
               "
               (valueChange)="form.controls.center_id.setValue($event ? num($event) : null)"
               ariaLabelKey="dash.center"
+              testId="user-center"
             />
           </label>
         }
@@ -89,13 +92,18 @@
 
       @if (!isNew()) {
         <label class="field row">
-          <input type="checkbox" formControlName="is_active" />
+          <input type="checkbox" formControlName="is_active" data-testid="user-active" />
           <span>{{ 'common.active' | translate }}</span>
         </label>
       }
 
       <div class="actions" style="margin-top: 1rem">
-        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          data-testid="user-submit"
+          [disabled]="form.invalid || saving()"
+        >
           @if (saving()) {
             <app-spinner />
           } @else {

@@ -68,6 +68,7 @@
             <input
               type="date"
               class="ltr-num"
+              data-testid="exam-date"
               [value]="editDate()"
               (input)="editDate.set($any($event.target).value)"
             />
@@ -79,6 +80,7 @@
               [value]="editType()"
               (valueChange)="editType.set($any($event))"
               ariaLabelKey="exam.type"
+              testId="exam-type"
             />
           </label>
           @if (editType() !== 'final_season') {
@@ -89,6 +91,7 @@
                 [value]="editTerm() ?? ''"
                 (valueChange)="editTerm.set(num($event))"
                 ariaLabelKey="planning.pick_term"
+                testId="exam-term"
               />
             </label>
           }

@@ -254,6 +254,7 @@
   "review": {
     "title": "المراجعة",
     "cycles": "الدورات",
+    "practice": "التدريب",
     "new_cycle": "دورة جديدة",
     "week_from": "من الأسبوع",
     "week_to": "إلى الأسبوع"
@@ -282,7 +283,8 @@
     "audience": "الجمهور",
     "title": "العنوان",
     "body": "النص",
-    "publish": "نشر"
+    "publish": "نشر",
+    "edit": "تعديل"
   },
   "delegation": {
     "title": "التفويض",
@@ -351,6 +353,9 @@
     "create": "إنشاء الموسم",
     "current": "الحالي",
     "activate": "تفعيل",
+    "delete_confirm": "تأكيد الحذف",
+    "has_facts": "لا يمكن الحذف — الموسم يحتوي على معطيات مسجلة",
+    "rename_term": "تعديل الاسم",
     "plans_title": "خطط الفصول",
     "pick_student": "الطالب",
     "pick_term": "الفصل",

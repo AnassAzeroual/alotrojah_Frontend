@@ -2,7 +2,12 @@
   <div class="page-head anim-rise">
     <h1>{{ 'planning.new_season' | translate }}</h1>
     <div class="actions">
-      <button type="button" class="btn btn-ghost" (click)="fillTemplate()">
+      <button
+        type="button"
+        class="btn btn-ghost"
+        data-testid="seasons-template"
+        (click)="fillTemplate()"
+      >
         {{ 'planning.use_template' | translate }}
       </button>
     </div>
@@ -12,11 +17,11 @@
     <form [formGroup]="form" (ngSubmit)="submit()" class="stack">
       <label class="field"
         ><span>{{ 'planning.name' | translate }}</span
-        ><input formControlName="name"
+        ><input formControlName="name" data-testid="season-name"
       /></label>
       <label class="field"
         ><span>{{ 'planning.start_date' | translate }}</span
-        ><input type="date" formControlName="start_date"
+        ><input type="date" formControlName="start_date" data-testid="season-start"
       /></label>
       <label class="field"
         ><span>{{ 'planning.hijri' | translate }}</span
@@ -65,6 +70,7 @@
       <button
         type="submit"
         class="btn btn-primary btn-block"
+        data-testid="season-save"
         [class.is-loading]="saving()"
         [disabled]="form.invalid || saving()"
       >

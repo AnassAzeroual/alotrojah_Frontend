@@ -30,6 +30,13 @@ export class AnnouncementsService {
     return this.api.post<Announcement>('/announcements', payload);
   }
 
+  update(
+    id: number,
+    patch: Partial<Pick<Announcement, 'title' | 'body'>>,
+  ): Observable<Announcement> {
+    return this.api.patch<Announcement>(`/announcements/${id}`, patch);
+  }
+
   remove(id: number): Observable<null> {
     return this.api.delete<null>(`/announcements/${id}`);
   }

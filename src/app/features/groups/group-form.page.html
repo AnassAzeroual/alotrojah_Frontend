@@ -19,6 +19,7 @@
           [value]="name()"
           (input)="name.set($any($event.target).value)"
           [attr.aria-label]="'grp.col_name' | translate"
+          data-testid="group-name"
         />
       </label>
 
@@ -31,6 +32,7 @@
             (valueChange)="onCenterChange(num($event))"
             placeholderKey="registrations.pick_center"
             ariaLabelKey="dash.center"
+            testId="group-center"
           />
         </label>
       }
@@ -43,6 +45,7 @@
           (valueChange)="levelId.set(num($event))"
           placeholderKey="grp.col_level"
           ariaLabelKey="grp.col_level"
+          testId="group-level"
         />
       </label>
 
@@ -54,6 +57,7 @@
           (valueChange)="teacherId.set(num($event))"
           placeholderKey="grp.col_teacher"
           ariaLabelKey="grp.col_teacher"
+          testId="group-teacher"
         />
       </label>
 
@@ -66,6 +70,7 @@
           [value]="capacity() ?? ''"
           (input)="onCapacityInput($any($event.target).value)"
           [attr.aria-label]="'grp.col_capacity' | translate"
+          data-testid="group-capacity"
         />
       </label>
 
@@ -78,6 +83,7 @@
               class="day-chip"
               [class.on]="days().includes(d)"
               [attr.aria-pressed]="days().includes(d)"
+              [attr.data-testid]="'day-' + d"
               (click)="toggleDay(d)"
             >
               {{ 'grp.day.' + d | translate }}
@@ -88,7 +94,13 @@
     </div>
 
     <div class="form-actions">
-      <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="submit()">
+      <button
+        type="button"
+        class="btn btn-primary"
+        data-testid="group-save"
+        [disabled]="!canSave()"
+        (click)="submit()"
+      >
         @if (saving()) {
           <app-spinner />
         } @else {

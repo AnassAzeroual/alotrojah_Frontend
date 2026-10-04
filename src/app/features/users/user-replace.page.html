@@ -50,6 +50,7 @@
             [value]="replacer() ?? ''"
             (valueChange)="replacer.set(num($event))"
             ariaLabelKey="users.pick_replacer"
+            testId="replace-pick"
           />
         </label>
       }
@@ -62,6 +63,7 @@
         <button
           type="button"
           class="btn btn-danger-solid"
+          data-testid="replace-confirm"
           [disabled]="replacer() === null || saving()"
           (click)="submit()"
         >

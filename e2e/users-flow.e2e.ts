@@ -9,13 +9,13 @@ test.describe.serial('Users management', () => {
   test('admin creates teacher and sees list', async ({ page }) => {
     // login as admin
     await page.goto('/login');
-    await page.getByLabel('البريد الإلكتروني', { exact: true }).fill('admin@example.org');
-    await page.getByLabel('كلمة المرور', { exact: true }).fill('password123');
-    await page.getByRole('button', { name: /دخول/ }).click();
+    await page.getByTestId('auth-email').fill('admin@example.org');
+    await page.getByTestId('auth-password').fill('password123');
+    await page.getByTestId('auth-submit').click();
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
 
     // go to users
-    await page.getByRole('link', { name: /المستخدمون/ }).click();
+    await page.getByTestId('nav-users').click();
     await expect(page).toHaveURL(/\/users$/);
 
     // check list count (seeded users exist)
@@ -23,48 +23,48 @@ test.describe.serial('Users management', () => {
     await expect.poll(async () => rows.count()).toBeGreaterThanOrEqual(1);
 
     // create new user
-    await page.getByRole('link', { name: /إضافة مستخدم/ }).click();
+    await page.getByTestId('users-new').click();
     await expect(page).toHaveURL(/\/users\/new$/);
 
-    await page.getByLabel('الاسم الكامل', { exact: false }).fill(teacherName);
-    await page.getByLabel('البريد الإلكتروني', { exact: false }).fill(teacherEmail);
-    await page.getByLabel('كلمة المرور', { exact: false }).fill(teacherPassword);
+    await page.getByTestId('user-name').fill(teacherName);
+    await page.getByTestId('user-email').fill(teacherEmail);
+    await page.getByTestId('user-password').fill(teacherPassword);
 
     // role: teacher
-    await page.getByRole('button', { name: 'الصفة' }).click();
+    await page.getByTestId('user-role').click();
     await page.getByRole('option', { name: /معلم/ }).click();
 
     // teacher type
-    await page.getByRole('button', { name: 'نوع التعليم' }).click();
+    await page.getByTestId('user-teacher-type').click();
     await page.getByRole('option', { name: /حفظ ومراجعة/ }).click();
 
-    await page.locator('button[type="submit"]').click();
+    await page.getByTestId('user-submit').click();
     await expect(page).toHaveURL(/\/users$/);
 
     // logout
-    await page.getByRole('button', { name: /خروج/ }).click();
+    await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
   });
 
   test('created teacher logs in, then admin deactivates, login fails', async ({ page }) => {
     // Teacher logs in
     await page.goto('/login');
-    await page.getByLabel('البريد الإلكتروني', { exact: true }).fill(teacherEmail);
-    await page.getByLabel('كلمة المرور', { exact: true }).fill(teacherPassword);
-    await page.getByRole('button', { name: /دخول/ }).click();
+    await page.getByTestId('auth-email').fill(teacherEmail);
+    await page.getByTestId('auth-password').fill(teacherPassword);
+    await page.getByTestId('auth-submit').click();
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
 
     // Logout
-    await page.getByRole('button', { name: /خروج/ }).click();
+    await page.getByTestId('nav-logout').click();
 
     // Admin logs in to deactivate
     await page.goto('/login');
-    await page.getByLabel('البريد الإلكتروني', { exact: true }).fill('admin@example.org');
-    await page.getByLabel('كلمة المرور', { exact: true }).fill('password123');
-    await page.getByRole('button', { name: /دخول/ }).click();
+    await page.getByTestId('auth-email').fill('admin@example.org');
+    await page.getByTestId('auth-password').fill('password123');
+    await page.getByTestId('auth-submit').click();
 
     // Find the created teacher through the search box (stable test-id locator).
-    await page.getByRole('link', { name: /المستخدمون/ }).click();
+    await page.getByTestId('nav-users').click();
     await expect(page).toHaveURL(/\/users$/);
     const searchBox = page.getByTestId('users-search');
     await searchBox.fill(teacherName);
@@ -75,18 +75,18 @@ test.describe.serial('Users management', () => {
     await expect(page).toHaveURL(/\/users\/\d+$/);
 
     // Deactivate (wait for the form to be populated first)
-    await expect(page.getByLabel('الاسم الكامل', { exact: false })).toHaveValue(teacherName);
-    await page.getByLabel('نشط', { exact: true }).uncheck();
+    await expect(page.getByTestId('user-name')).toHaveValue(teacherName);
+    await page.getByTestId('user-active').uncheck();
 
-    await page.locator('button[type="submit"]').click();
+    await page.getByTestId('user-submit').click();
     await expect(page).toHaveURL(/\/users$/);
 
-    await page.getByRole('button', { name: /خروج/ }).click();
+    await page.getByTestId('nav-logout').click();
 
     // Teacher tries login again
-    await page.getByLabel('البريد الإلكتروني', { exact: true }).fill(teacherEmail);
-    await page.getByLabel('كلمة المرور', { exact: true }).fill(teacherPassword);
-    await page.getByRole('button', { name: /دخول/ }).click();
+    await page.getByTestId('auth-email').fill(teacherEmail);
+    await page.getByTestId('auth-password').fill(teacherPassword);
+    await page.getByTestId('auth-submit').click();
 
     // Should see error and stay on login
     await expect(page.locator('.auth-error')).toBeVisible();
@@ -95,12 +95,12 @@ test.describe.serial('Users management', () => {
 
   test('admin deletes the teacher and the row disappears', async ({ page }) => {
     await page.goto('/login');
-    await page.getByLabel('البريد الإلكتروني', { exact: true }).fill('admin@example.org');
-    await page.getByLabel('كلمة المرور', { exact: true }).fill('password123');
-    await page.getByRole('button', { name: /دخول/ }).click();
+    await page.getByTestId('auth-email').fill('admin@example.org');
+    await page.getByTestId('auth-password').fill('password123');
+    await page.getByTestId('auth-submit').click();
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
 
-    await page.getByRole('link', { name: /المستخدمون/ }).click();
+    await page.getByTestId('nav-users').click();
     await expect(page).toHaveURL(/\/users$/);
 
     const searchBox = page.getByTestId('users-search');
@@ -113,7 +113,7 @@ test.describe.serial('Users management', () => {
     await teacherRow.locator('button[data-testid^="confirm-delete-user-"]').click();
     await expect(teacherRow).toHaveCount(0);
 
-    await page.getByRole('button', { name: /خروج/ }).click();
+    await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
   });
 
@@ -125,9 +125,9 @@ test.describe.serial('Users management', () => {
     const groupName = `RPLC ${stamp}`;
 
     await page.goto('/login');
-    await page.getByLabel('البريد الإلكتروني', { exact: true }).fill('admin@example.org');
-    await page.getByLabel('كلمة المرور', { exact: true }).fill('password123');
-    await page.getByRole('button', { name: /دخول/ }).click();
+    await page.getByTestId('auth-email').fill('admin@example.org');
+    await page.getByTestId('auth-password').fill('password123');
+    await page.getByTestId('auth-submit').click();
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
 
     // two hifz teachers in center 1
@@ -135,42 +135,42 @@ test.describe.serial('Users management', () => {
       [oldName, oldEmail],
       [newName, newEmail],
     ]) {
-      await page.getByRole('link', { name: /المستخدمون/ }).click();
+      await page.getByTestId('nav-users').click();
       await expect(page).toHaveURL(/\/users$/);
-      await page.getByRole('link', { name: /إضافة مستخدم/ }).click();
+      await page.getByTestId('users-new').click();
       await expect(page).toHaveURL(/\/users\/new$/);
-      await page.getByLabel('الاسم الكامل', { exact: false }).fill(name);
-      await page.getByLabel('البريد الإلكتروني', { exact: false }).fill(email);
-      await page.getByLabel('كلمة المرور', { exact: false }).fill('password123');
-      await page.getByRole('button', { name: 'الصفة' }).click();
+      await page.getByTestId('user-name').fill(name);
+      await page.getByTestId('user-email').fill(email);
+      await page.getByTestId('user-password').fill('password123');
+      await page.getByTestId('user-role').click();
       await page.getByRole('option', { name: /معلم/ }).click();
-      await page.getByRole('button', { name: 'نوع التعليم' }).click();
+      await page.getByTestId('user-teacher-type').click();
       await page.getByRole('option', { name: 'حفظ', exact: true }).click();
-      await page.getByRole('button', { name: 'المركز', exact: true }).click();
+      await page.getByTestId('user-center').click();
       await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
-      await page.locator('button[type="submit"]').click();
+      await page.getByTestId('user-submit').click();
       await expect(page).toHaveURL(/\/users$/);
     }
 
     // group owned by the old teacher
-    await page.getByRole('link', { name: /الحلقات/ }).click();
+    await page.getByTestId('nav-groups').click();
     await expect(page).toHaveURL(/\/groups$/);
-    await page.getByRole('link', { name: /إضافة مجموعة/ }).click();
+    await page.getByTestId('groups-new').click();
     await expect(page).toHaveURL(/\/groups\/new$/);
-    await page.getByLabel('الحلقة', { exact: true }).fill(groupName);
-    await page.getByRole('button', { name: 'المركز', exact: true }).click();
+    await page.getByTestId('group-name').fill(groupName);
+    await page.getByTestId('group-center').click();
     await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
-    await page.getByRole('button', { name: 'المعلم', exact: true }).click();
+    await page.getByTestId('group-teacher').click();
     await page.getByRole('option', { name: oldName }).click();
-    await page.getByRole('button', { name: 'المستوى', exact: true }).click();
+    await page.getByTestId('group-level').click();
     await page.getByRole('option', { name: /المستوى الأول/ }).click();
-    await page.getByLabel('الطاقة', { exact: true }).fill('15');
-    await page.locator('.day-pick .day-chip', { hasText: 'الجمعة' }).click();
-    await page.getByRole('button', { name: /حفظ/ }).click();
+    await page.getByTestId('group-capacity').fill('15');
+    await page.getByTestId('day-Fri').click();
+    await page.getByTestId('group-save').click();
     await expect(page).toHaveURL(/\/groups$/);
 
     // deleting the old teacher is blocked → replacer dialog
-    await page.getByRole('link', { name: /المستخدمون/ }).click();
+    await page.getByTestId('nav-users').click();
     await expect(page).toHaveURL(/\/users$/);
     const searchBox = page.getByTestId('users-search');
     await searchBox.fill(oldName);
@@ -179,15 +179,15 @@ test.describe.serial('Users management', () => {
     await expect(oldRow).toHaveCount(1);
     await oldRow.locator('button[data-testid^="delete-user-"]').click();
     await oldRow.locator('button[data-testid^="confirm-delete-user-"]').click();
-    const dialog = page.getByRole('dialog');
+    const dialog = page.getByTestId('replace-dialog');
     await expect(dialog).toBeVisible();
-    await dialog.getByRole('button', { name: /اختيار البديل/ }).click();
+    await page.getByTestId('choose-replacer').click();
     await expect(page).toHaveURL(/\/users\/\d+\/replace$/);
 
     // pick the new teacher and confirm the transfer
-    await page.getByRole('button', { name: 'اختر المعلم البديل' }).click();
+    await page.getByTestId('replace-pick').click();
     await page.getByRole('option', { name: newName }).click();
-    await page.getByRole('button', { name: /نقل وحذف/ }).click();
+    await page.getByTestId('replace-confirm').click();
     await expect(page).toHaveURL(/\/users$/);
 
     // old teacher is gone
@@ -196,7 +196,7 @@ test.describe.serial('Users management', () => {
     await expect(page.locator('.users-table tbody tr', { hasText: oldName })).toHaveCount(0);
 
     // the group survived the transfer
-    await page.getByRole('link', { name: /الحلقات/ }).click();
+    await page.getByTestId('nav-groups').click();
     await expect(page).toHaveURL(/\/groups$/);
     const groupSearch = page.getByTestId('groups-search');
     await groupSearch.fill(groupName);
@@ -204,20 +204,20 @@ test.describe.serial('Users management', () => {
     await expect(page.locator('tbody tr', { hasText: groupName })).toHaveCount(1);
 
     // the new teacher now owns the group → hidden by the unassigned filter
-    await page.getByRole('link', { name: /المستخدمون/ }).click();
+    await page.getByTestId('nav-users').click();
     await expect(page).toHaveURL(/\/users$/);
-    await page.getByRole('button', { name: 'تصفية بالصفة' }).click();
+    await page.getByTestId('users-role').click();
     await page.getByRole('option', { name: 'معلم', exact: true }).click();
     await searchBox.fill(newName);
     await searchBox.press('Enter');
     const newRow = page.locator('.users-table tbody tr', { hasText: newName });
     await expect(newRow).toHaveCount(1);
-    await page.getByLabel('بدون حلقة نشطة').check();
+    await page.getByTestId('users-unassigned').check();
     await expect(newRow).toHaveCount(0);
-    await page.getByLabel('بدون حلقة نشطة').uncheck();
+    await page.getByTestId('users-unassigned').uncheck();
     await expect(newRow).toHaveCount(1);
 
-    await page.getByRole('button', { name: /خروج/ }).click();
+    await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
   });
 });
