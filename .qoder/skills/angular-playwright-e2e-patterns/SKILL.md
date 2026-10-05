@@ -7,7 +7,7 @@ description: Debugging and writing Playwright e2e specs for the AlOtrojah Angula
 
 ## Overview
 
-Playwright specs for the AlOtrojah Angular frontend live in `alotrojah_Frontend/e2e/*.e2e.ts` and run against a real backend plus `ng serve`, both started automatically by `playwright.config.ts`. The specs are **read-only** (no writes, no cleanup) and run against a **shared, seeded dev database** — other flows (registration, feature tests, manual use) add rows to that same DB between runs. That one fact causes most flakiness: an assertion that was exact yesterday drifts today.
+Playwright specs for the AlOtrojah Angular frontend live in `alotrojah_Frontend/e2e/*.e2e.ts` and run against a real backend plus `ng serve`, both started automatically by `playwright.config.ts`. The specs are **read-only** (no writes, no cleanup) and run against a **shared, seeded database** (`alotrojah_verify`, auto-selected by `playwright.config.ts` — never dev) — other flows (registration, feature tests, manual use) add rows to that same DB between runs. That one fact causes most flakiness: an assertion that was exact yesterday drifts today.
 
 The two specs are the source of truth for current selectors and credentials — re-read them before relying on any locator below:
 - `alotrojah_Frontend/e2e/auth-flow.e2e.ts`

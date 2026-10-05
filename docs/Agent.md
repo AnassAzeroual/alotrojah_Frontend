@@ -130,6 +130,7 @@
 - **F29 (done, all gates green):** Item 10 scoring table — cards replaced by a filterable table (search + scope + status) keeping drafts+bulk-save (any single max change breaks the 20-sum alone, so atomic save stays); per-row two-step delete (unused only, translated refusal); add-book modal kept. Route + writes admin-only (supervisors lose the page per owner call). `ScoringModuleManageTest` (incl. the binding-trap regression); self-cleaning scoring-flow e2e. Backend 87/87 (verify clone), e2e 16/16 (verify clone), dev residue zero.
 
 - **F30 (done):** Item 11 Quran verses — backend-only, frontend untouched (`reference/surahs` feed shape identical). Noted here for lockstep: `quran_verses` (6236 Tanzil rows) replaces the `surahs` stub; surah pickers/validation behave identically. QURAN IMMUTABILITY LAW: verses are append-once by migration `000013` only — never update/delete/re-seed from any code; `QuranVerse` model throws on writes.
+- **F31 (done):** suite DB routing — e2e's `artisan serve` auto-selects `alotrojah_verify` via `playwright.config.ts` env (never dev); PHPUnit auto-selects `alotrojah_testing` via `phpunit.xml`. No `.env` switching, no wrong-DB runs (that trap caused a full-red 11-fail e2e: background server silently on empty dev). 16/16 green on the branch.
 
 # Modern Angular Development Standards & AI Coding Guidelines
 
