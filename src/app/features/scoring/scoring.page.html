@@ -202,7 +202,7 @@
         role="dialog"
         aria-modal="true"
       >
-        <form [formGroup]="addForm" (ngSubmit)="addBook()" class="stack">
+        <form [formGroup]="addForm" (ngSubmit)="addBook()" class="stack" autocomplete="off">
           <h2>{{ 'scoring.add_book' | translate }}</h2>
           <label class="field"
             ><span>{{ 'scoring.code' | translate }}</span>

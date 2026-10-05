@@ -14,7 +14,7 @@
   </div>
 
   <section class="card anim-rise" style="--i: 1">
-    <form [formGroup]="form" (ngSubmit)="submit()" class="stack">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="stack" autocomplete="off">
       <label class="field"
         ><span>{{ 'planning.name' | translate }}</span
         ><input formControlName="name" data-testid="season-name"

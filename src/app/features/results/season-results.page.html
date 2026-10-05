@@ -36,7 +36,13 @@
   </div>
 
   @if (pickedStudent() !== null) {
-    <form class="card anim-rise" style="--i: 2" [formGroup]="form" (ngSubmit)="submit()">
+    <form
+      class="card anim-rise"
+      style="--i: 2"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      autocomplete="off"
+    >
       <label class="field"
         ><span>{{ 'result.memorized_label' | translate }}</span
         ><input formControlName="total_memorized_label"

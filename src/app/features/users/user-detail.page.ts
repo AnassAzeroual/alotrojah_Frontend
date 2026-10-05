@@ -101,7 +101,9 @@ export class UserDetailPage {
   });
 
   readonly isTeacher = signal(false);
-  /** Center is required for every role except admin (§2.8). */
+  /** Center is required for every role except admin — but only when the
+   * creator can see the field (admin creator). Supervisors never see it:
+   * the backend forces their own center on store. (§2.8) */
   readonly centerRequired = signal(false);
 
   private readonly userRes = resource({
@@ -150,7 +152,7 @@ export class UserDetailPage {
       }
       tt.updateValueAndValidity();
       const cc = this.form.controls.center_id;
-      this.centerRequired.set(r !== null && r !== 'admin');
+      this.centerRequired.set(this.isAdmin() && r !== null && r !== 'admin');
       if (this.centerRequired()) {
         cc.addValidators(Validators.required);
       } else {

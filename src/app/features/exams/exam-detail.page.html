@@ -196,7 +196,13 @@
       }
     </section>
 
-    <form class="card anim-rise" style="--i: 2" [formGroup]="addForm" (ngSubmit)="addQuestion()">
+    <form
+      class="card anim-rise"
+      style="--i: 2"
+      [formGroup]="addForm"
+      (ngSubmit)="addQuestion()"
+      autocomplete="off"
+    >
       <h2>{{ 'exam.add_question' | translate }}</h2>
       <label class="field"
         ><span>{{ 'exam.q_no' | translate }}</span>

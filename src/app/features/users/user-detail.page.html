@@ -18,7 +18,13 @@
       <app-spinner />
     </div>
   } @else {
-    <form class="card stack anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="submit()">
+    <form
+      class="card stack anim-rise"
+      style="--i: 1"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      autocomplete="off"
+    >
       @if (errorKey()) {
         <div class="banner danger" data-testid="user-error">
           {{ errorKey()! | translate }}
@@ -28,16 +34,27 @@
       <div class="grid" style="--cols: 2">
         <label class="field">
           <span>{{ 'auth.name' | translate }} <span class="danger">*</span></span>
-          <input type="text" formControlName="full_name" data-testid="user-name" />
+          <input
+            type="text"
+            formControlName="full_name"
+            data-testid="user-name"
+            autocomplete="off"
+          />
         </label>
         <label class="field">
           <span>{{ 'auth.email' | translate }} <span class="danger">*</span></span>
-          <input type="email" formControlName="email" dir="ltr" data-testid="user-email" />
+          <input
+            type="email"
+            formControlName="email"
+            dir="ltr"
+            data-testid="user-email"
+            autocomplete="off"
+          />
         </label>
 
         <label class="field">
           <span>{{ 'auth.phone' | translate }}</span>
-          <input type="tel" formControlName="phone" dir="ltr" />
+          <input type="tel" formControlName="phone" dir="ltr" autocomplete="off" />
         </label>
 
         <label class="field">
@@ -47,7 +64,13 @@
               <span class="danger">*</span>
             }
           </span>
-          <input type="password" formControlName="password" dir="ltr" data-testid="user-password" />
+          <input
+            type="password"
+            formControlName="password"
+            dir="ltr"
+            data-testid="user-password"
+            autocomplete="new-password"
+          />
         </label>
 
         <label class="field">
@@ -84,10 +107,8 @@
             </span>
             <app-dropdown
               [options]="centerOptions()"
-              [value]="
-                form.controls.center_id.value ? form.controls.center_id.value.toString() : ''
-              "
-              (valueChange)="form.controls.center_id.setValue($event ? num($event) : null)"
+              [value]="form.controls.center_id.value"
+              (valueChange)="form.controls.center_id.setValue(num($event))"
               ariaLabelKey="dash.center"
               testId="user-center"
             />

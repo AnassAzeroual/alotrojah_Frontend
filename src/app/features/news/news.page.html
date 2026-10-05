@@ -4,7 +4,13 @@
   </div>
 
   @if (canPost()) {
-    <form class="card anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="submit()">
+    <form
+      class="card anim-rise"
+      style="--i: 1"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      autocomplete="off"
+    >
       <label class="field"
         ><span>{{ 'news.audience' | translate }}</span>
         <app-dropdown

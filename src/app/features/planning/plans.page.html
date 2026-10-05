@@ -45,7 +45,7 @@
   </div>
 
   @if (pickedStudent() !== null && pickedTerm() !== null) {
-    <form class="card anim-rise" style="--i: 3" (ngSubmit)="submit()">
+    <form class="card anim-rise" style="--i: 3" (ngSubmit)="submit()" autocomplete="off">
       <div class="segmented" role="group">
         <button
           type="button"

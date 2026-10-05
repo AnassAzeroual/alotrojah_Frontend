@@ -15,7 +15,7 @@
     </label>
 
     @if (pickedGroup() !== null) {
-      <form [formGroup]="form" (ngSubmit)="generate()">
+      <form [formGroup]="form" (ngSubmit)="generate()" autocomplete="off">
         <label class="field"
           ><span>{{ 'delegation.minutes' | translate }}</span>
           <app-dropdown

@@ -76,8 +76,6 @@ export class RegisterPage {
   readonly roleOptions: DropdownOption[] = [
     { value: 'teacher', labelKey: 'role.teacher' },
     { value: 'student', labelKey: 'role.student' },
-    { value: 'supervisor', labelKey: 'role.supervisor' },
-    { value: 'board', labelKey: 'role.board' },
   ];
   readonly teacherTypeOptions: DropdownOption[] = [
     { value: 'hifz', labelKey: 'teacher_type.hifz' },

@@ -46,7 +46,13 @@
   </div>
 
   @if (pickedStudent() !== null && pickedTerm() !== null) {
-    <form class="card anim-rise" style="--i: 2" [formGroup]="form" (ngSubmit)="submit()">
+    <form
+      class="card anim-rise"
+      style="--i: 2"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      autocomplete="off"
+    >
       @for (f of scoreFields; track f) {
         <label class="field"
           ><span>{{ 'result.' + f | translate }}</span>

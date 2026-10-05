@@ -28,7 +28,13 @@
     </div>
   </div>
 
-  <form class="card anim-rise" style="--i: 2" [formGroup]="form" (ngSubmit)="submit()">
+  <form
+    class="card anim-rise"
+    style="--i: 2"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+    autocomplete="off"
+  >
     <label class="field"
       ><span>{{ 'exam.type' | translate }}</span>
       <app-dropdown

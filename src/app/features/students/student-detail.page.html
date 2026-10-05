@@ -17,6 +17,7 @@
         style="--i: 1"
         [formGroup]="form"
         (ngSubmit)="submitForm()"
+        autocomplete="off"
       >
         <label class="field">
           <span>{{ 'users.name' | translate }} <span class="danger">*</span></span>

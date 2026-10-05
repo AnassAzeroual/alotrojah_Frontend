@@ -3,7 +3,13 @@
     <h1>{{ 'notif.title' | translate }}</h1>
   </div>
 
-  <form class="card anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="queue()">
+  <form
+    class="card anim-rise"
+    style="--i: 1"
+    [formGroup]="form"
+    (ngSubmit)="queue()"
+    autocomplete="off"
+  >
     <label class="field"
       ><span>{{ 'notif.phone' | translate }}</span>
       <input formControlName="recipient_phone" inputmode="tel" dir="ltr" />

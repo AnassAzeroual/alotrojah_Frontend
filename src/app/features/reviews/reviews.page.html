@@ -73,7 +73,13 @@
     </div>
 
     @if (canEnter()) {
-      <form class="card anim-rise" style="--i: 3" [formGroup]="form" (ngSubmit)="submit()">
+      <form
+        class="card anim-rise"
+        style="--i: 3"
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        autocomplete="off"
+      >
         <h2>{{ 'review.new_cycle' | translate }}</h2>
         <label class="field"
           ><span>{{ 'planning.pick_term' | translate }}</span>
