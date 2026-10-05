@@ -29,14 +29,20 @@
         </label>
 
         <div class="grid-auto">
-          @if (centerOptions().length > 1) {
+          @if (centerOptions().length > 0) {
             <label class="field">
-              <span>{{ 'registrations.pick_center' | translate }}</span>
+              <span
+                >{{ 'registrations.pick_center' | translate }}
+                @if (showCenterAdmin()) {
+                  <span class="danger">*</span>
+                }
+              </span>
               <app-dropdown
                 [options]="centerOptions()"
                 [value]="num(form.controls.center_id.value)"
                 (valueChange)="form.controls.center_id.setValue(num($event))"
                 ariaLabelKey="registrations.pick_center"
+                testId="student-center"
               />
             </label>
           }

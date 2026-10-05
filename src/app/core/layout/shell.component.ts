@@ -78,7 +78,7 @@ const ITEMS: readonly NavItem[] = [
     path: '/scoring',
     key: 'nav.scoring',
     icon: 'chart',
-    roles: ['admin', 'supervisor'],
+    roles: ['admin'],
     testId: 'nav-scoring',
   },
   {

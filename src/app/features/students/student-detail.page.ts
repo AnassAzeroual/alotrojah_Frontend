@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   resource,
@@ -114,8 +115,8 @@ export class StudentDetailPage {
 
   // Form Options
   readonly genderOptions: DropdownOption[] = [
-    { value: 'male', labelKey: 'common.male' },
-    { value: 'female', labelKey: 'common.female' },
+    { value: 'male', labelKey: 'gender.male' },
+    { value: 'female', labelKey: 'gender.female' },
   ];
   readonly typeOptions: DropdownOption[] = [
     { value: 'child', labelKey: 'grp.type_child' },
@@ -146,6 +147,8 @@ export class StudentDetailPage {
   readonly centerOptions = computed<DropdownOption[]>(() => {
     return (this.centersRes.value()?.data ?? []).map((c) => ({ value: c.id, label: c.name }));
   });
+  /** The center is choosable (and effectively required) only for the admin. */
+  protected readonly showCenterAdmin = computed(() => this.auth.role() === 'admin');
 
   // Form State
   readonly form = new FormGroup<StudentForm>({
@@ -223,6 +226,14 @@ export class StudentDetailPage {
     this.student.isLoading() || this.season.isLoading() || this.summary.isLoading();
 
   constructor() {
+    // §2.1: on a single-center deployment the only center is pre-selected so
+    // the group dropdown loads and the pupil can never be born center-less.
+    effect(() => {
+      const opts = this.centerOptions();
+      if (this.isNew() && opts.length === 1 && this.form.controls.center_id.value === null) {
+        this.form.controls.center_id.setValue(Number(opts[0].value));
+      }
+    });
     // Sync student to form when editing
     resource({
       params: () => ({ s: this.studentVal(), editing: this.editing() }),
@@ -269,6 +280,17 @@ export class StudentDetailPage {
     // Teacher creates: force auth center
     if (this.isNew() && (role === 'teacher' || role === 'student')) {
       v.center_id = this.auth.currentUser()?.center_id ?? null;
+    }
+    // §2.1: admin/supervisor must not submit a center-less pupil. A single
+    // center is auto-applied; with several, the selector is mandatory.
+    if (this.isNew() && (role === 'admin' || role === 'supervisor') && v.center_id === null) {
+      const opts = this.centerOptions();
+      if (opts.length === 1) {
+        v.center_id = Number(opts[0].value);
+      } else {
+        this.assignFailed.set('validation.required');
+        return;
+      }
     }
 
     const req$ = this.isNew()

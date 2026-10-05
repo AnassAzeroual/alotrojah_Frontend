@@ -347,6 +347,8 @@
     "activeGroups": "Active groups",
     "quranSessions": "Quran sessions",
     "commitRate": "Commit rate",
+    "myFinal": "My final average",
+    "noPupil": "No pupil record is linked to this account yet — ask your supervisor to link it.",
     "thisMonth": "this month",
     "studentName": "Student",
     "currentSurah": "Surah",

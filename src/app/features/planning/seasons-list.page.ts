@@ -54,9 +54,11 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
                     {{ 'planning.activate' | translate }}
                   </button>
                 }
-                <a class="btn btn-ghost" [routerLink]="['/planning/terms', s.id]">{{
-                  'planning.terms' | translate
-                }}</a>
+                @if (s.first_term_id) {
+                  <a class="btn btn-ghost" [routerLink]="['/planning/terms', s.first_term_id]">{{
+                    'planning.terms' | translate
+                  }}</a>
+                }
                 @if (canDelete()) {
                   @if (!s.is_current) {
                     @if (armingDeleteId() === s.id) {

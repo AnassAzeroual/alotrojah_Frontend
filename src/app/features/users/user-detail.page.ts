@@ -101,6 +101,8 @@ export class UserDetailPage {
   });
 
   readonly isTeacher = signal(false);
+  /** Center is required for every role except admin (§2.8). */
+  readonly centerRequired = signal(false);
 
   private readonly userRes = resource({
     params: () => ({ id: this.id() }),
@@ -147,6 +149,14 @@ export class UserDetailPage {
         tt.setValue(null);
       }
       tt.updateValueAndValidity();
+      const cc = this.form.controls.center_id;
+      this.centerRequired.set(r !== null && r !== 'admin');
+      if (this.centerRequired()) {
+        cc.addValidators(Validators.required);
+      } else {
+        cc.clearValidators();
+      }
+      cc.updateValueAndValidity();
     });
   }
 

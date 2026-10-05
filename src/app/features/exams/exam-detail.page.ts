@@ -141,6 +141,21 @@ export class ExamDetailPage {
   readonly reweightSaving = signal(false);
   readonly reweightErrorKey = signal<string | null>(null);
 
+  /** Live total of the reweight draft — must read exactly 20 (§2.10). */
+  readonly reweightTotal = computed(() => {
+    const sum: number = Object.values(this.weights()).reduce<number>((s, v) => s + (v ?? 0), 0);
+    return Math.round(sum * 100) / 100;
+  });
+  readonly reweightValid = computed(() => {
+    const list = this.exam.value()?.questions ?? [];
+    if (list.length === 0) return false;
+    const w = this.weights();
+    const vals = list.map((q) => w[q.id]);
+    if (vals.some((v) => v === null || v === undefined)) return false;
+    if ((vals as number[]).some((v) => v < 0.01 || v > 20)) return false;
+    return this.reweightTotal() === 20;
+  });
+
   constructor() {
     effect(() => {
       const e = this.exam.value();
@@ -289,13 +304,13 @@ export class ExamDetailPage {
   }
 
   submitReweight(): void {
+    if (this.reweightSaving()) return;
+    if (!this.reweightValid()) {
+      this.reweightErrorKey.set('validation.required');
+      return;
+    }
     const list = this.exam.value()?.questions ?? [];
     const payload = list.map((q) => ({ id: q.id, max_score: this.weights()[q.id] }));
-    if (
-      this.reweightSaving() ||
-      payload.some((p) => p.max_score === null || p.max_score < 0.01 || p.max_score > 20)
-    )
-      return;
     this.reweightSaving.set(true);
     this.reweightErrorKey.set(null);
     this.examsSvc.reweight(this.id(), payload as { id: number; max_score: number }[]).subscribe({

@@ -10,10 +10,11 @@
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ChartData } from 'chart.js';
-import { firstValueFrom, map } from 'rxjs';
+import { firstValueFrom, map, of } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
-import { CenterDashboard, DashboardService } from '../../core/api/dashboard.service';
+import { CenterDashboard, DashboardService, MeDashboard } from '../../core/api/dashboard.service';
 import { ReferenceService } from '../../core/api/reference.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { StudentsService } from '../../core/api/students.service';
 import { Paginated, Student } from '../../core/api/api-models';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -53,18 +54,27 @@ const ATTENDANCE_COLORS: Record<string, string> = {
 export class DashboardPage {
   private readonly dash = inject(DashboardService);
   private readonly centersSvc = inject(CentersService);
+  private readonly auth = inject(AuthService);
   private readonly studentsSvc = inject(StudentsService);
   private readonly ref = inject(ReferenceService);
   private readonly i18n = inject(TranslateService);
   private readonly language = inject(LanguageService);
 
-  readonly centers = toSignal(this.centersSvc.list().pipe(map((p) => p.data)), {
-    initialValue: [],
-  });
+  readonly centers = toSignal(
+    // §2.16: students never load the center list (it 403s) — they get /me.
+    this.auth.role() === 'student' ? of([]) : this.centersSvc.list().pipe(map((p) => p.data)),
+    { initialValue: [] },
+  );
   readonly levels = toSignal(this.ref.levels(), { initialValue: [] });
 
+  readonly isAdmin = computed(() => this.auth.role() === 'admin');
+  /** Set once the user picks (or clears) a center — stops the initial auto-lock. */
+  private readonly centerTouched = signal(false);
+
   private readonly autoCenter = effect(() => {
-    if (this.pickedCenter() === null) {
+    // §2.19: initial lock to the first center (preserves KPIs/charts on load);
+    // the admin may clear to All afterwards — All is admin-only below.
+    if (!this.centerTouched() && this.pickedCenter() === null) {
       const first = this.centers()[0];
       if (first) this.pickedCenter.set(first.id);
     }
@@ -84,9 +94,11 @@ export class DashboardPage {
     this.allOption('list.level'),
     ...this.levels().map((l) => ({ value: String(l.id), label: l.name_ar })),
   ]);
-  readonly centerOptions = computed(() =>
-    this.centers().map((c) => ({ value: String(c.id), label: c.name })),
-  );
+  readonly centerOptions = computed(() => [
+    // §2.19: the All entry is admin-only; staff stay center-scoped.
+    ...(this.isAdmin() ? [this.allOption('dash.center')] : []),
+    ...this.centers().map((c) => ({ value: String(c.id), label: c.name })),
+  ]);
 
   private instant(key: string): string {
     this.language.current();
@@ -95,6 +107,45 @@ export class DashboardPage {
   protected readonly num = dropdownNumber;
   protected readonly txt = dropdownText;
 
+  readonly isStudent = computed(() => this.auth.role() === 'student');
+
+  /** §2.16: the student's own dashboard (null while loading or unlinked). */
+  readonly me = resource({
+    params: () => ({ s: this.auth.role() }),
+    loader: ({ params }): Promise<MeDashboard | null> =>
+      params.s !== 'student' ? Promise.resolve(null) : firstValueFrom(this.dash.me()),
+  });
+
+  readonly meKpis = computed(() => {
+    const m = this.me.value();
+    return {
+      avgScore: m?.season?.season_avg_score ?? null,
+      avgSarraj: m?.season?.season_avg_sarraj ?? null,
+      rate:
+        m?.season?.season_attendance_pct != null
+          ? Math.round(m.season.season_attendance_pct)
+          : null,
+      final: m?.final ?? null,
+    };
+  });
+
+  readonly studentChart = computed((): ChartData => {
+    const rows = this.me.value()?.weekly ?? [];
+    return {
+      labels: rows.map((r) => `W${r.week_id}`),
+      datasets: [
+        {
+          label: this.instant('mode.thumn'),
+          data: rows.map((r) => Number(r.total_thumn)),
+          borderColor: '#00b8a9',
+          backgroundColor: 'rgba(0,184,169,.22)',
+          fill: true,
+          tension: 0.45,
+          pointRadius: 0,
+        },
+      ],
+    };
+  });
   readonly pickedCenter = signal<number | null>(null);
   readonly search = signal('');
   readonly filterLevel = signal('');
@@ -104,10 +155,13 @@ export class DashboardPage {
 
   readonly seasonId = resource({
     params: () => ({}),
-    loader: () =>
-      firstValueFrom(this.ref.seasons()).then(
+    loader: () => {
+      // §2.16: the seasons feed 403s for students; /me resolves the season.
+      if (this.auth.role() === 'student') return Promise.resolve(null);
+      return firstValueFrom(this.ref.seasons()).then(
         (r) => r.data.find((s) => s.is_current)?.id ?? r.data[0]?.id ?? 1,
-      ),
+      );
+    },
   });
 
   readonly centerData = resource({
@@ -161,6 +215,7 @@ export class DashboardPage {
   });
 
   protected pickCenter(value: number | null): void {
+    this.centerTouched.set(true);
     this.pickedStudent.set(null);
     this.pickedCenter.set(value);
     this.page.set(1);

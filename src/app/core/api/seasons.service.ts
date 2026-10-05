@@ -13,6 +13,7 @@ export interface Season {
   total_sessions: number;
   is_current: boolean;
   terms_count?: number;
+  first_term_id?: number | null;
 }
 
 export interface SeasonTerm {

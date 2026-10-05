@@ -39,6 +39,10 @@ test.describe.serial('Users management', () => {
     await page.getByTestId('user-teacher-type').click();
     await page.getByRole('option', { name: /حفظ ومراجعة/ }).click();
 
+    // center (required for non-admin roles; first option is the placeholder)
+    await page.getByTestId('user-center').click();
+    await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
+
     await page.getByTestId('user-submit').click();
     await expect(page).toHaveURL(/\/users$/);
 
@@ -52,6 +56,8 @@ test.describe.serial('Users management', () => {
     await page.getByRole('option', { name: /معلم/ }).click();
     await page.getByTestId('user-teacher-type').click();
     await page.getByRole('option', { name: /حفظ ومراجعة/ }).click();
+    await page.getByTestId('user-center').click();
+    await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
     await page.getByTestId('user-submit').click();
     await expect(page.getByTestId('user-error')).toContainText('مسجل مسبقاً');
     await expect(page).toHaveURL(/\/users\/new$/);

@@ -76,7 +76,12 @@
 
         @if (isAdmin()) {
           <label class="field">
-            <span>{{ 'dash.center' | translate }}</span>
+            <span
+              >{{ 'dash.center' | translate }}
+              @if (centerRequired()) {
+                <span class="danger">*</span>
+              }
+            </span>
             <app-dropdown
               [options]="centerOptions()"
               [value]="

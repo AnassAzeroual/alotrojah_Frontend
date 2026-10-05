@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   resource,
@@ -36,9 +37,14 @@ export class GoalListComponent {
 
   private readonly tick = signal(0);
 
+  // §2.20: load only the selected week's goals — the unfiltered list let the
+  // newest goal per pupil shadow every older week (blank boxes).
   private readonly goals = resource({
-    params: () => ({ t: this.tick() }),
-    loader: () => firstValueFrom(this.entry.goals({}).pipe(map((p) => p.data))),
+    params: () => ({ weekId: this.weekId(), t: this.tick() }),
+    loader: ({ params }) =>
+      params.weekId === null
+        ? Promise.resolve([] as WeeklyGoal[])
+        : firstValueFrom(this.entry.goals({ week_id: params.weekId }).pipe(map((p) => p.data))),
   });
 
   private readonly drafts = signal<
@@ -47,20 +53,26 @@ export class GoalListComponent {
 
   readonly rows = computed((): GoalRow[] => {
     const byStudent = new Map((this.goals.value() ?? []).map((g) => [g.student_id, g]));
-    const wid = this.weekId();
     return this.students().map((st) => {
       const existing = byStudent.get(st.id) ?? null;
-      const matchesWeek = existing?.week_id === wid;
       const d = this.drafts().get(st.id);
       return {
         student: st,
-        goal: matchesWeek ? existing : null,
-        target: d?.target ?? (matchesWeek ? (existing?.target_text ?? '') : ''),
-        done: d?.done ?? (matchesWeek ? (existing?.is_completed ?? false) : false),
+        goal: existing,
+        target: d?.target ?? (existing?.target_text ?? ''),
+        done: d?.done ?? (existing?.is_completed ?? false),
         saving: d?.saving ?? false,
       };
     });
   });
+
+  constructor() {
+    // §2.20: unsaved text must not travel between weeks.
+    effect(() => {
+      this.weekId();
+      this.drafts.set(new Map());
+    });
+  }
 
   edit(id: number, patch: Partial<{ target: string; done: boolean }>): void {
     const cur = this.drafts().get(id) ?? {
