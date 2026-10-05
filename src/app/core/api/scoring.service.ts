@@ -20,12 +20,19 @@ export interface ScoringCheck {
 export class ScoringService {
   private readonly api = inject(ApiClient);
 
-  modules(): Observable<ScoringModule[]> {
-    return this.api.get<ScoringModule[]>('/scoring-modules');
+  modules(centerId?: number | null): Observable<ScoringModule[]> {
+    return this.api.get<ScoringModule[]>(
+      '/scoring-modules',
+      centerId ? { center_id: centerId } : undefined,
+    );
   }
 
-  bulk(patches: ModulePatch[]): Observable<{ modules: ScoringModule[]; check: ScoringCheck }> {
+  bulk(
+    patches: ModulePatch[],
+    centerId?: number | null,
+  ): Observable<{ modules: ScoringModule[]; check: ScoringCheck }> {
     return this.api.put<{ modules: ScoringModule[]; check: ScoringCheck }>('/scoring-modules', {
+      center_id: centerId ?? null,
       modules: patches,
     });
   }
@@ -41,6 +48,7 @@ export class ScoringService {
     scope: 'weekly' | 'murajaa';
     is_active?: boolean;
     is_in_weekly_total?: boolean;
+    center_id?: number | null;
   }): Observable<ScoringModule> {
     return this.api.post<ScoringModule>('/scoring-modules', payload);
   }

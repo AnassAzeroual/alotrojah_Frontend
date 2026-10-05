@@ -159,6 +159,7 @@ export interface ScoringModule {
   id: number;
   code: string;
   name_ar: string;
+  center_id?: number | null;
   max_points: number;
   scope: 'weekly' | 'murajaa';
   is_active: boolean;

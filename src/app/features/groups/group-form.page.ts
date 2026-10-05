@@ -70,7 +70,8 @@ export class GroupFormPage {
   );
 
   private readonly levelsRes = resource({
-    loader: () => firstValueFrom(this.refSvc.levels()),
+    params: () => ({ centerId: this.effectiveCenterId() }),
+    loader: ({ params }) => firstValueFrom(this.refSvc.levels(params.centerId)),
   });
 
   protected readonly levelOptions = computed<DropdownOption[]>(() =>

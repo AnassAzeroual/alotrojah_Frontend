@@ -40,6 +40,13 @@ const ITEMS: readonly NavItem[] = [
     testId: 'nav-centers',
   },
   {
+    path: '/levels',
+    key: 'nav.levels',
+    icon: 'grid',
+    roles: ['admin'],
+    testId: 'nav-levels',
+  },
+  {
     path: '/students',
     key: 'nav.students',
     icon: 'users',

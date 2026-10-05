@@ -33,6 +33,15 @@
     </label>
     <label class="field">
       <app-dropdown
+        [options]="centerScopeOptions()"
+        [value]="txt(centerScope() ?? '')"
+        (valueChange)="setCenterScope($event)"
+        ariaLabelKey="dash.center"
+        testId="scoring-center-scope"
+      />
+    </label>
+    <label class="field">
+      <app-dropdown
         [options]="scopeOptions"
         [value]="scope() ?? ''"
         (valueChange)="scope.set(txt($event) || null)"

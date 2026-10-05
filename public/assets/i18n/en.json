@@ -9,6 +9,7 @@
     "students": "Students",
     "users": "Users",
     "centers": "Centers",
+    "levels": "Levels",
     "groups": "Circles",
     "planning": "Planning",
     "scoring": "Scoring",
@@ -92,6 +93,7 @@
     "SCORE_OVER_MAX": "Score exceeds the question weight",
     "SEASON_HAS_FACTS": "Cannot delete — the season holds recorded facts",
     "MODULE_HAS_SCORES": "Cannot delete — the module has recorded scores",
+    "LEVEL_IN_USE": "Cannot delete — the level is used by groups or pupils",
     "TERM_REQUIRED": "This exam type requires a term",
     "SPAN_INVALID": "Review must cover 1 to 3 weeks",
     "RANGE_INVALID": "Invalid range",
@@ -376,6 +378,19 @@
     "address": "Address",
     "phone": "Phone",
     "manager": "Manager"
+  },
+  "level": {
+    "title": "Levels",
+    "code": "Code",
+    "name": "Name",
+    "sessions": "Sessions/week",
+    "thumnSession": "Thumn/session",
+    "thumnSessionLabel": "Session amount label",
+    "thumnWeek": "Thumn/week",
+    "ahzabTerm": "Ahzab/term",
+    "ahzabDawra": "Ahzab/cycle",
+    "duration": "Duration",
+    "totalAhzab": "Total ahzab"
   },
   "sessionStatus": {
     "planned": "Planned",

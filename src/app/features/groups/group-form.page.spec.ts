@@ -75,9 +75,10 @@ describe('GroupFormPage', () => {
   };
 
   const flushLevels = (): void => {
+    // The levels feed refires whenever the center scope changes.
     http
-      .expectOne((r) => r.url.endsWith('/reference/levels') && r.method === 'GET')
-      .flush({ success: true, message: null, data: LEVELS });
+      .match((r) => r.url.includes('/reference/levels') && r.method === 'GET')
+      .forEach((req) => req.flush({ success: true, message: null, data: LEVELS }));
   };
 
   const flushCenters = (): void => {
@@ -167,6 +168,7 @@ describe('GroupFormPage', () => {
 
     pick('dash.center', 'المركز الأول');
     await settle();
+    flushLevels();
     flushTeachers();
     await settle();
 
@@ -213,6 +215,7 @@ describe('GroupFormPage', () => {
 
     pick('dash.center', 'المركز الأول');
     await settle();
+    flushLevels();
     flushTeachers();
     await settle();
 
@@ -272,6 +275,7 @@ describe('GroupFormPage', () => {
 
     pick('dash.center', 'المركز الأول');
     await settle();
+    flushLevels();
     flushTeachers();
     await settle();
     expect(saveBtn().disabled).toBe(true);

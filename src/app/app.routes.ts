@@ -99,6 +99,10 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/centers/centers.routes').then((m) => m.CENTERS_ROUTES),
       },
+      {
+        path: 'levels',
+        loadChildren: () => import('./features/levels/levels.routes').then((m) => m.LEVELS_ROUTES),
+      },
       // F11+ append feature routes here
     ],
   },

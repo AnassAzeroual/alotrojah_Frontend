@@ -8,11 +8,17 @@
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 import { ScoringService } from '../../core/api/scoring.service';
+import { CentersService } from '../../core/api/centers.service';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { LanguageService } from '../../core/i18n/language.service';
-import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
+import {
+  DropdownComponent,
+  dropdownNumber,
+  DropdownValue,
+  dropdownText,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
@@ -38,6 +44,7 @@ interface Draft {
 })
 export class ScoringPage {
   private readonly scoring = inject(ScoringService);
+  private readonly centersSvc = inject(CentersService);
   private readonly i18n = inject(TranslateService);
   private readonly language = inject(LanguageService);
 
@@ -47,15 +54,27 @@ export class ScoringPage {
   readonly drafts = signal<ReadonlyMap<string, Draft>>(new Map());
   readonly showAdd = signal(false);
   protected readonly txt = dropdownText;
+  protected readonly num = dropdownNumber;
 
   readonly modules = resource({
-    params: () => ({ t: this.tick() }),
-    loader: () => firstValueFrom(this.scoring.modules()),
+    params: () => ({ t: this.tick(), c: this.centerScope() }),
+    loader: ({ params }) => firstValueFrom(this.scoring.modules(params.c)),
   });
 
   readonly q = signal('');
   readonly scope = signal<string | null>(null);
   readonly status = signal<string | null>(null);
+  /** NULL = shared default set; a center id edits that center's overrides. */
+  readonly centerScope = signal<number | null>(null);
+
+  readonly centers = resource({
+    loader: () => firstValueFrom(this.centersSvc.list().pipe(map((p) => p.data))),
+  });
+
+  readonly centerScopeOptions = computed(() => [
+    { value: '', labelKey: 'list.all' },
+    ...(this.centers.value() ?? []).map((c) => ({ value: String(c.id), label: c.name })),
+  ]);
 
   readonly scopeOptions = [
     { value: '', labelKey: 'list.all' },
@@ -71,6 +90,12 @@ export class ScoringPage {
       { value: 'inactive', labelKey: 'scoring.inactive' },
     ];
   });
+
+  /** Switching scope discards unsaved drafts (they belong to the old set). */
+  setCenterScope(v: DropdownValue): void {
+    this.centerScope.set(dropdownNumber(v));
+    this.drafts.set(new Map());
+  }
 
   readonly rows = computed(() => {
     const needle = this.q().trim().toLowerCase();
@@ -145,7 +170,7 @@ export class ScoringPage {
     if (patches.length === 0) return;
     this.saving.set(true);
     this.error.set(null);
-    this.scoring.bulk(patches).subscribe({
+    this.scoring.bulk(patches, this.centerScope()).subscribe({
       next: () => {
         this.saving.set(false);
         this.drafts.set(new Map());
@@ -214,6 +239,7 @@ export class ScoringPage {
         scope: v.scope,
         is_active: true,
         is_in_weekly_total: v.is_in_weekly_total,
+        center_id: this.centerScope(),
       })
       .subscribe({
         next: () => {

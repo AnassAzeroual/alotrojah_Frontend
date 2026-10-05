@@ -9,6 +9,7 @@
     "students": "Élèves",
     "users": "Utilisateurs",
     "centers": "Centres",
+    "levels": "Niveaux",
     "groups": "Cercles",
     "planning": "Planification",
     "scoring": "Notation",
@@ -92,6 +93,7 @@
     "SCORE_OVER_MAX": "La note dépasse le poids de la question",
     "SEASON_HAS_FACTS": "Suppression impossible — la saison contient des données",
     "MODULE_HAS_SCORES": "Suppression impossible — le module a des notes enregistrées",
+    "LEVEL_IN_USE": "Suppression impossible — le niveau est utilisé par des cercles ou des élèves",
     "TERM_REQUIRED": "Ce type d'examen exige un trimestre",
     "SPAN_INVALID": "La révision doit couvrir 1 à 3 semaines",
     "RANGE_INVALID": "Plage invalide",
@@ -376,6 +378,19 @@
     "address": "Adresse",
     "phone": "Téléphone",
     "manager": "Responsable"
+  },
+  "level": {
+    "title": "Niveaux",
+    "code": "Code",
+    "name": "Nom",
+    "sessions": "Séances/sem",
+    "thumnSession": "Thumn/séance",
+    "thumnSessionLabel": "Libellé du montant",
+    "thumnWeek": "Thumn/sem",
+    "ahzabTerm": "Ahzab/trimestre",
+    "ahzabDawra": "Ahzab/cycle",
+    "duration": "Durée",
+    "totalAhzab": "Total ahzab"
   },
   "sessionStatus": {
     "planned": "Planifiée",

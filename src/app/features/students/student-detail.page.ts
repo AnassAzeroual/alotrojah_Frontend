@@ -133,7 +133,8 @@ export class StudentDetailPage {
   ];
 
   private readonly levelsRes = resource({
-    loader: () => firstValueFrom(this.ref.levels()),
+    params: () => ({ c: this.formCenterId() ?? this.auth.currentUser()?.center_id ?? null }),
+    loader: ({ params }) => firstValueFrom(this.ref.levels(params.c)),
   });
   readonly levelOptions = computed<DropdownOption[]>(() => {
     return (this.levelsRes.value() ?? []).map((l) => ({ value: l.id, label: l.name_ar }));
