@@ -14,14 +14,17 @@ test.describe.serial('Centers management', () => {
     await page.getByTestId('nav-centers').click();
     await expect(page).toHaveURL(/\/centers$/);
 
-    // create
-    await page.getByTestId('center-name').fill(name);
-    await page.getByTestId('center-city').fill('Testville');
-    await page.getByTestId('center-phone').fill('0600000000');
-    await page.getByTestId('center-manager').fill('E2E Manager');
-    await page.getByTestId('center-save').click();
+    // create (empty row inside the table, same pattern as inline edit)
+    await page.getByTestId('center-open-create').click();
+    await page.getByTestId('center-new-name').fill(name);
+    await page.getByTestId('center-new-city').fill('Testville');
+    await page.getByTestId('center-new-address').fill('1 Test St');
+    await page.getByTestId('center-new-phone').fill('0600000000');
+    await page.getByTestId('center-new-manager').fill('E2E Manager');
+    await page.getByTestId('center-new-save').click();
     const row = page.locator('.centers-table tbody tr', { hasText: name });
     await expect(row).toHaveCount(1);
+    await expect(row).toContainText('1 Test St');
 
     // edit every field inline
     await row.getByTestId(/edit-center-/).click();

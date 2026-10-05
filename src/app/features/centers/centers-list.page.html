@@ -1,57 +1,37 @@
 <section class="page">
   <div class="page-head anim-rise">
-    <h1>{{ 'center.title' | translate }}</h1>
-  </div>
-
-  <form class="card anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="submit()">
-    <h2>{{ 'center.create' | translate }}</h2>
-    <div class="grid-auto">
-      <label class="field"
-        ><span>{{ 'center.name' | translate }} <span class="danger">*</span></span>
-        <input type="text" formControlName="name" data-testid="center-name" maxlength="150" />
-      </label>
-      <label class="field"
-        ><span>{{ 'center.city' | translate }}</span>
-        <input type="text" formControlName="city" data-testid="center-city" maxlength="100" />
-      </label>
-      <label class="field"
-        ><span>{{ 'center.phone' | translate }}</span>
-        <input type="tel" formControlName="phone" data-testid="center-phone" dir="ltr" />
-      </label>
-      <label class="field"
-        ><span>{{ 'center.manager' | translate }}</span>
-        <input
-          type="text"
-          formControlName="manager_name"
-          data-testid="center-manager"
-          maxlength="150"
-        />
-      </label>
-    </div>
-    <button
-      type="submit"
-      class="btn btn-primary"
-      data-testid="center-save"
-      [class.is-loading]="saving()"
-      [disabled]="form.invalid || saving()"
-    >
-      @if (saving()) {
-        <app-spinner />
-      } @else {
-        {{ 'common.save' | translate }}
+    <h1 class="with-add">
+      {{ 'center.title' | translate }}
+      @if (!creating()) {
+        <button
+          type="button"
+          class="btn btn-primary btn-plus"
+          data-testid="center-open-create"
+          [attr.aria-label]="'center.create' | translate"
+          [attr.title]="'center.create' | translate"
+          (click)="startCreate()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
       }
-    </button>
-    @if (createErrorKey()) {
-      <div class="banner danger">{{ createErrorKey()! | translate }}</div>
-    }
-  </form>
+    </h1>
+  </div>
 
   @if (centers.isLoading()) {
     <div class="stack" aria-hidden="true">
       <div class="skeleton sk-card"></div>
       <div class="skeleton sk-card"></div>
     </div>
-  } @else if ((centers.value() ?? []).length === 0) {
+  } @else if ((centers.value() ?? []).length === 0 && !creating()) {
     <app-empty-state />
   } @else {
     <div class="table-responsive">
@@ -60,6 +40,7 @@
           <tr>
             <th>{{ 'center.name' | translate }}</th>
             <th>{{ 'center.city' | translate }}</th>
+            <th>{{ 'center.address' | translate }}</th>
             <th>{{ 'center.manager' | translate }}</th>
             <th>{{ 'center.phone' | translate }}</th>
             <th class="ltr-num">∑</th>
@@ -67,12 +48,97 @@
           </tr>
         </thead>
         <tbody>
+          @if (creating()) {
+            <tr class="edit-row new-row">
+              <td colspan="7">
+                <div class="grid-auto">
+                  <label class="field"
+                    ><span>{{ 'center.name' | translate }} *</span>
+                    <input
+                      type="text"
+                      data-testid="center-new-name"
+                      [value]="createDraft().name"
+                      (input)="setCreate('name', $any($event.target).value)"
+                      maxlength="150"
+                    />
+                  </label>
+                  <label class="field"
+                    ><span>{{ 'center.city' | translate }}</span>
+                    <input
+                      type="text"
+                      data-testid="center-new-city"
+                      [value]="createDraft().city"
+                      (input)="setCreate('city', $any($event.target).value)"
+                      maxlength="100"
+                    />
+                  </label>
+                  <label class="field"
+                    ><span>{{ 'center.address' | translate }}</span>
+                    <input
+                      type="text"
+                      data-testid="center-new-address"
+                      [value]="createDraft().address"
+                      (input)="setCreate('address', $any($event.target).value)"
+                      maxlength="255"
+                    />
+                  </label>
+                  <label class="field"
+                    ><span>{{ 'center.phone' | translate }}</span>
+                    <input
+                      type="tel"
+                      data-testid="center-new-phone"
+                      [value]="createDraft().phone"
+                      (input)="setCreate('phone', $any($event.target).value)"
+                      dir="ltr"
+                    />
+                  </label>
+                  <label class="field"
+                    ><span>{{ 'center.manager' | translate }}</span>
+                    <input
+                      type="text"
+                      data-testid="center-new-manager"
+                      [value]="createDraft().manager"
+                      (input)="setCreate('manager', $any($event.target).value)"
+                      maxlength="150"
+                    />
+                  </label>
+                </div>
+                <div class="cluster">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    data-testid="center-new-save"
+                    [disabled]="createDraft().name.trim() === '' || saving()"
+                    (click)="saveCreate()"
+                  >
+                    @if (saving()) {
+                      <app-spinner />
+                    } @else {
+                      {{ 'common.save' | translate }}
+                    }
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    [disabled]="saving()"
+                    (click)="cancelCreate()"
+                  >
+                    {{ 'common.cancel' | translate }}
+                  </button>
+                </div>
+                @if (createErrorKey()) {
+                  <div class="banner danger">{{ createErrorKey()! | translate }}</div>
+                }
+              </td>
+            </tr>
+          }
           @for (c of centers.value() ?? []; track c.id) {
             <tr>
               <td>
                 <strong>{{ c.name }}</strong>
               </td>
               <td>{{ c.city ?? '—' }}</td>
+              <td>{{ c.address ?? '—' }}</td>
               <td>{{ c.manager_name ?? '—' }}</td>
               <td>
                 <span class="ltr-num" dir="ltr">{{ c.phone ?? '—' }}</span>
@@ -94,7 +160,7 @@
             </tr>
             @if (editingId() === c.id) {
               <tr class="edit-row">
-                <td colspan="6">
+                <td colspan="7">
                   <div class="grid-auto">
                     <label class="field"
                       ><span>{{ 'center.name' | translate }} *</span>

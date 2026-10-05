@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
@@ -15,6 +15,8 @@ interface CenterDraft {
   manager: string;
 }
 
+const EMPTY_DRAFT: CenterDraft = { name: '', city: '', address: '', phone: '', manager: '' };
+
 @Component({
   selector: 'app-centers-list-page',
   standalone: true,
@@ -29,15 +31,11 @@ export class CentersListPage {
   private readonly tick = signal(0);
   readonly saving = signal(false);
   readonly createErrorKey = signal<string | null>(null);
+  readonly creating = signal(false);
+  readonly createDraft = signal<CenterDraft>({ ...EMPTY_DRAFT });
 
   readonly editingId = signal<number | null>(null);
-  readonly draft = signal<CenterDraft>({
-    name: '',
-    city: '',
-    address: '',
-    phone: '',
-    manager: '',
-  });
+  readonly draft = signal<CenterDraft>({ ...EMPTY_DRAFT });
   readonly editSaving = signal(false);
   readonly editErrorKey = signal<string | null>(null);
 
@@ -46,32 +44,46 @@ export class CentersListPage {
     loader: () => firstValueFrom(this.centersSvc.list().pipe(map((p) => p.data))),
   });
 
-  readonly form = new FormGroup({
-    name: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(150)],
-    }),
-    city: new FormControl('', { nonNullable: true }),
-    phone: new FormControl('', { nonNullable: true }),
-    manager_name: new FormControl('', { nonNullable: true }),
-  });
+  private clean(v: string, max: number): string | null {
+    const t = v.trim();
+    return t === '' ? null : t.slice(0, max);
+  }
 
-  submit(): void {
-    if (this.form.invalid || this.saving()) return;
-    const v = this.form.getRawValue();
+  startCreate(): void {
+    this.editingId.set(null);
+    this.createDraft.set({ ...EMPTY_DRAFT });
+    this.createErrorKey.set(null);
+    this.creating.set(true);
+  }
+
+  setCreate(field: keyof CenterDraft, value: string): void {
+    this.createDraft.update((d) => ({ ...d, [field]: value }));
+  }
+
+  cancelCreate(): void {
+    this.creating.set(false);
+    this.createErrorKey.set(null);
+  }
+
+  saveCreate(): void {
+    const d = this.createDraft();
+    const name = d.name.trim();
+    if (name === '' || name.length > 150 || this.saving()) return;
     this.saving.set(true);
     this.createErrorKey.set(null);
     this.centersSvc
       .create({
-        name: v.name.trim(),
-        city: v.city.trim() || null,
-        phone: v.phone.trim() || null,
-        manager_name: v.manager_name.trim() || null,
+        name,
+        city: this.clean(d.city, 100),
+        address: this.clean(d.address, 255),
+        phone: this.clean(d.phone, 30),
+        manager_name: this.clean(d.manager, 150),
       })
       .subscribe({
         next: () => {
           this.saving.set(false);
-          this.form.reset();
+          this.creating.set(false);
+          this.createDraft.set({ ...EMPTY_DRAFT });
           this.tick.update((n) => n + 1);
         },
         error: (err: unknown) => {
@@ -91,6 +103,7 @@ export class CentersListPage {
       manager_name?: string | null;
     },
   ): void {
+    this.creating.set(false);
     this.editingId.set(id);
     this.draft.set({
       name: c.name,
@@ -117,17 +130,13 @@ export class CentersListPage {
     if (name === '' || name.length > 150 || this.editSaving()) return;
     this.editSaving.set(true);
     this.editErrorKey.set(null);
-    const opt = (v: string, max: number): string | null => {
-      const t = v.trim();
-      return t === '' ? null : t.slice(0, max);
-    };
     this.centersSvc
       .update(id, {
         name,
-        city: opt(d.city, 100),
-        address: opt(d.address, 255),
-        phone: opt(d.phone, 30),
-        manager_name: opt(d.manager, 150),
+        city: this.clean(d.city, 100),
+        address: this.clean(d.address, 255),
+        phone: this.clean(d.phone, 30),
+        manager_name: this.clean(d.manager, 150),
       })
       .subscribe({
         next: () => {

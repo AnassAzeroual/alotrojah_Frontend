@@ -20,8 +20,9 @@ export default defineConfig({
       url: 'http://127.0.0.1:8000/up',
       reuseExistingServer: true,
       timeout: 60000,
-      // E2E always hits the seeded clone, never dev (real env wins if set).
-      env: { DB_DATABASE: 'alotrojah_verify' },
+      // NOTE: DB routing lives in scripts/run-e2e.ps1 (.env swap, verified by
+      // a pre-run check). Do NOT rely on webServer.env here: a reused server
+      // keeps the DB it booted with, which once wrote e2e rows into dev.
     },
     {
       command: `"${NG}" serve --port 4201 --host 127.0.0.1`,

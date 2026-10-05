@@ -18,7 +18,7 @@ The two specs are the source of truth for current selectors and credentials — 
 - `testDir: './e2e'`, `testMatch: '**/*.e2e.ts'`, `baseURL: http://127.0.0.1:4201`.
 - `webServer` auto-starts PHP `artisan serve` (:8000) and `ng serve` (:4201) with `reuseExistingServer: true` — do not start them by hand.
 - Admin login used by the specs: `admin@example.org` / `password123`.
-- Run the suite with `npm run e2e` (or `npx playwright test`); UI mode is `npm run e2e:ui`.
+- Run the suite with `npm run e2e` (wrapper `scripts/run-e2e.ps1`: swaps backend `.env` to `alotrojah_verify`, verifies the swap, restores afterwards — run e2e ONLY this way; a reused API server keeps whatever DB it booted with and once wrote rows into dev). Raw `npx playwright test` is `npm run e2e:direct` for emergencies. UI mode is `npm run e2e:ui`.
 - Current suite = 14 tests (auth-flow, exams-flow, groups-flow, news-flow, seasons-flow, students-flow, users-flow); a healthy run is 14/14 green.
 
 ## Gotcha A — fill() does NOT fire Angular (change)

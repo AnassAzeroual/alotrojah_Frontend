@@ -19,12 +19,13 @@
     "test:watch": "ng test --watch",
     "pretest:cov": "node scripts/set-version.mjs",
     "test:cov": "ng test --watch=false --coverage",
-    "e2e": "playwright test",
+    "e2e": "powershell -ExecutionPolicy Bypass -File scripts/run-e2e.ps1",
     "e2e:ui": "playwright test --ui",
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\" playwright.config.ts",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\" playwright.config.ts",
     "pretypecheck": "node scripts/set-version.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "e2e:direct": "playwright test"
   },
   "engines": {
     "node": "^24"
