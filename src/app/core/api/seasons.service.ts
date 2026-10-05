@@ -31,6 +31,7 @@ export class SeasonsService {
 
   create(payload: {
     name: string;
+    center_id: number | null;
     start_date: string;
     hijri_year?: string;
     sessions_per_week?: number;

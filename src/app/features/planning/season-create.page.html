@@ -23,6 +23,18 @@
         ><span>{{ 'planning.start_date' | translate }}</span
         ><input type="date" formControlName="start_date" data-testid="season-start"
       /></label>
+      @if (isAdmin()) {
+        <label class="field"
+          ><span>{{ 'dash.center' | translate }} <span class="danger">*</span></span>
+          <app-dropdown
+            [options]="centerOptions()"
+            [value]="form.controls.center_id.value"
+            (valueChange)="form.controls.center_id.setValue(num($event))"
+            ariaLabelKey="dash.center"
+            testId="season-center"
+          />
+        </label>
+      }
       <label class="field"
         ><span>{{ 'planning.hijri' | translate }}</span
         ><input formControlName="hijri_year"
