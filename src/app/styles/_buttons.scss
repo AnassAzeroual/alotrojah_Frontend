@@ -124,6 +124,21 @@
   }
 }
 
+// Icon-only add buttons — one look on every list page. Accessible name comes
+// from aria-label/title (the same key the visible text used).
+.btn-icon {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  flex: none;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 .is-loading {
   position: relative;
   pointer-events: none;

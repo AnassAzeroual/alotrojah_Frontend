@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { fillStable } from './api';
+import { loginAs } from './api';
 
 test.describe.serial('Admin settings and center chip', () => {
   const stamp = Date.now();
@@ -91,26 +91,15 @@ test.describe.serial('Admin settings and center chip', () => {
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
 
-    // Settle + re-verify: the fresh login form can wipe fields filled during
-    // its init — fillStable alone only proves the value mid-fill.
-    await page.goto('/login');
-    const teacherMail = page.getByTestId('auth-email');
-    await fillStable(teacherMail, teacherEmail);
-    await fillStable(page.getByTestId('auth-password'), 'password123');
-    await expect(teacherMail).toHaveValue(teacherEmail);
-    await page.getByTestId('auth-submit').click();
+    // loginAs re-verifies the email post-fill (fresh forms can wipe mid-fill).
+    await loginAs(page, teacherEmail, 'password123');
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await expect(page.getByTestId('user-center')).toContainText('مركز النور القرآني');
     await expect(page.getByTestId('nav-settings')).toHaveCount(0);
     await page.getByTestId('nav-logout').click();
 
     // cleanup: the teacher owns nothing, so direct delete works
-    await page.goto('/login');
-    const adminMail = page.getByTestId('auth-email');
-    await fillStable(adminMail, 'admin@example.org');
-    await fillStable(page.getByTestId('auth-password'), 'password123');
-    await expect(adminMail).toHaveValue('admin@example.org');
-    await page.getByTestId('auth-submit').click();
+    await loginAs(page, 'admin@example.org', 'password123');
     await page.getByTestId('nav-users').click();
     const searchBox = page.getByTestId('users-search');
     await searchBox.fill(teacherName);

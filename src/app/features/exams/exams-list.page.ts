@@ -24,9 +24,24 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
       <div class="page-head anim-rise">
         <h1>{{ 'exam.title' | translate }}</h1>
         <div class="actions">
-          <a class="btn btn-primary" routerLink="/exams/new" data-testid="exams-new">{{
-            'exam.new' | translate
-          }}</a>
+          <a
+            class="btn btn-primary btn-icon"
+            routerLink="/exams/new"
+            data-testid="exams-new"
+            [attr.aria-label]="'exam.new' | translate"
+            [attr.title]="'exam.new' | translate"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </a>
         </div>
       </div>
       <div class="card anim-rise" style="--i: 1">

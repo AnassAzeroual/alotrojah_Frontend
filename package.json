@@ -25,7 +25,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\" playwright.config.ts",
     "pretypecheck": "node scripts/set-version.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "e2e:direct": "playwright test"
+    "e2e:direct": "playwright test",
+    "shots": "node scripts/shots.mjs"
   },
   "engines": {
     "node": "^24"

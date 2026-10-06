@@ -11,9 +11,24 @@
     </div>
     <div class="actions">
       @if (canCreate()) {
-        <a routerLink="/groups/new" class="btn btn-primary" data-testid="groups-new">{{
-          'grp.create' | translate
-        }}</a>
+        <a
+          routerLink="/groups/new"
+          class="btn btn-primary btn-icon"
+          data-testid="groups-new"
+          [attr.aria-label]="'grp.create' | translate"
+          [attr.title]="'grp.create' | translate"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </a>
       }
       <button type="button" class="btn btn-ghost" (click)="exportCsv()">
         {{ 'grp.export_csv' | translate }}

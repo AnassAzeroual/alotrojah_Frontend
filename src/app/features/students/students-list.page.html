@@ -1,8 +1,23 @@
 <section class="page">
   <div class="page-head anim-rise">
     <h1>{{ 'nav.students' | translate }}</h1>
-    <a routerLink="/students/new" class="btn btn-primary" data-testid="students-new">
-      {{ 'students.create' | translate }}
+    <a
+      routerLink="/students/new"
+      class="btn btn-primary btn-icon"
+      data-testid="students-new"
+      [attr.aria-label]="'students.create' | translate"
+      [attr.title]="'students.create' | translate"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M12 5v14M5 12h14" />
+      </svg>
     </a>
   </div>
 
@@ -49,7 +64,7 @@
         ariaLabelKey="list.mode"
       />
     </label>
-    <label class="field row">
+    <label class="chk">
       <input
         type="checkbox"
         data-testid="students-unassigned"

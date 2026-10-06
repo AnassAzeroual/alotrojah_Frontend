@@ -25,9 +25,24 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
       <div class="page-head anim-rise">
         <h1>{{ 'planning.title' | translate }}</h1>
         <div class="actions">
-          <a class="btn btn-primary" routerLink="/planning/new" data-testid="seasons-new">{{
-            'planning.new_season' | translate
-          }}</a>
+          <a
+            class="btn btn-primary btn-icon"
+            routerLink="/planning/new"
+            data-testid="seasons-new"
+            [attr.aria-label]="'planning.new_season' | translate"
+            [attr.title]="'planning.new_season' | translate"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </a>
         </div>
       </div>
       @if (seasons.isLoading()) {

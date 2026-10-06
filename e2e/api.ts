@@ -19,6 +19,39 @@ export async function apiToken(
   return body.data.access_token as string;
 }
 
+/** Shared login: every spec logs in the same way (single place to fix).
+ *  Re-verifies the email AFTER the password fill: a fresh login form can wipe
+ *  fields filled during its init, and fillStable alone only proves mid-fill. */
+export async function loginAs(
+  page: import('@playwright/test').Page,
+  email: string,
+  password: string,
+): Promise<void> {
+  const mail = page.getByTestId('auth-email');
+  const pw = page.getByTestId('auth-password');
+  const submit = page.getByTestId('auth-submit');
+  for (let i = 0; i < 2; i++) {
+    await page.goto('/login');
+    await fillStable(mail, email);
+    await fillStable(pw, password);
+    try {
+      await expect(mail).toHaveValue(email, { timeout: 2000 });
+      await submit.click();
+      return;
+    } catch {
+      // wiped beneath us again — one refill, then fail loudly
+    }
+  }
+  await expect(mail).toHaveValue(email);
+  await submit.click();
+}
+
+/** Shared admin login (verify admin, e2e password). */
+export async function adminLogin(page: import('@playwright/test').Page): Promise<void> {
+  await loginAs(page, 'admin@example.org', 'password123');
+  await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
+}
+
 /** Fill + verify, retrying across external form-state wipes (dev-server HMR
  *  swaps the form mid-test under full-suite load — observed 4× at one login
  *  step, green in isolation). Bounded: persistent breakage still fails. */
