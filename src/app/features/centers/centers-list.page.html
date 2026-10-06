@@ -83,16 +83,6 @@
                     />
                   </label>
                   <label class="field"
-                    ><span>{{ 'center.phone' | translate }}</span>
-                    <input
-                      type="tel"
-                      data-testid="center-new-phone"
-                      [value]="createDraft().phone"
-                      (input)="setCreate('phone', $any($event.target).value)"
-                      dir="ltr"
-                    />
-                  </label>
-                  <label class="field"
                     ><span>{{ 'center.manager' | translate }}</span>
                     <input
                       type="text"
@@ -100,6 +90,16 @@
                       [value]="createDraft().manager"
                       (input)="setCreate('manager', $any($event.target).value)"
                       maxlength="150"
+                    />
+                  </label>
+                  <label class="field"
+                    ><span>{{ 'center.phone' | translate }}</span>
+                    <input
+                      type="tel"
+                      data-testid="center-new-phone"
+                      [value]="createDraft().phone"
+                      (input)="setCreate('phone', $any($event.target).value)"
+                      dir="ltr"
                     />
                   </label>
                 </div>
@@ -193,16 +193,6 @@
                       />
                     </label>
                     <label class="field"
-                      ><span>{{ 'center.phone' | translate }}</span>
-                      <input
-                        type="tel"
-                        data-testid="center-edit-phone"
-                        [value]="draft().phone"
-                        (input)="setDraft('phone', $any($event.target).value)"
-                        dir="ltr"
-                      />
-                    </label>
-                    <label class="field"
                       ><span>{{ 'center.manager' | translate }}</span>
                       <input
                         type="text"
@@ -210,6 +200,16 @@
                         [value]="draft().manager"
                         (input)="setDraft('manager', $any($event.target).value)"
                         maxlength="150"
+                      />
+                    </label>
+                    <label class="field"
+                      ><span>{{ 'center.phone' | translate }}</span>
+                      <input
+                        type="tel"
+                        data-testid="center-edit-phone"
+                        [value]="draft().phone"
+                        (input)="setDraft('phone', $any($event.target).value)"
+                        dir="ltr"
                       />
                     </label>
                   </div>
