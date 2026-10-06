@@ -1,0 +1,19 @@
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+  font-size: var(--text-sm);
+
+  input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    accent-color: var(--green-600);
+  }
+
+  small {
+    display: block;
+    color: var(--color-text-muted);
+  }
+}

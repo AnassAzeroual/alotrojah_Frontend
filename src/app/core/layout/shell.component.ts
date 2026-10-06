@@ -12,6 +12,8 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../auth/auth.service';
 import { LanguageService } from '../i18n/language.service';
 import { LanguageSwitcherComponent } from './language-switcher.component';
+import { AdminPrefsService } from '../settings/admin-prefs.service';
+import { environment } from '../../../environments/environment';
 import { ThemeService } from '../theme/theme.service';
 import { Role } from '../api/api-models';
 import { APP_VERSION_SHORT } from '../version';
@@ -170,6 +172,7 @@ export class ShellComponent {
 
   readonly user = this.auth.currentUser;
   readonly version = APP_VERSION_SHORT;
+  readonly prefs = inject(AdminPrefsService);
   readonly collapsed = signal(false);
   readonly mobileOpen = signal(false);
   readonly now = signal(new Date());
@@ -241,6 +244,20 @@ export class ShellComponent {
   readonly items = computed(() => {
     const role = this.user()?.role;
     return ITEMS.filter((i) => role !== undefined && i.roles.includes(role));
+  });
+
+  /**
+   * T4: every non-admin sees their center NAME in the header chip; the numeric
+   * id is appended only in dev builds (never prod), and only when the display
+   * pref allows it. Admins are global — nothing extra.
+   */
+  readonly centerLabel = computed(() => {
+    const u = this.user();
+    if (!u || u.role === 'admin' || !u.center_name) return null;
+    if (!environment.production && this.prefs.showCenterId() && u.center_id !== null) {
+      return `${u.center_name} · #${u.center_id}`;
+    }
+    return u.center_name;
   });
 
   constructor() {

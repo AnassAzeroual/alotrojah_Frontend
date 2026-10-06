@@ -11,9 +11,14 @@ test.describe.serial('Levels management', () => {
     await page.getByTestId('nav-levels').click();
     await expect(page).toHaveURL(/\/levels$/);
 
+    // T1: shared-defaults banner, no reset affordance outside a center scope.
+    await expect(page.getByTestId('levels-scope-banner')).toBeVisible();
+    await expect(page.getByTestId('levels-reset')).toHaveCount(0);
+
     // scope to the first center (clone-on-first-edit happens server-side)
     await page.getByTestId('levels-center-scope').click();
     await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
+    await expect(page.getByTestId('levels-scope-banner')).toContainText('مركز النور القرآني');
 
     const row = page.locator('.levels-table tbody tr', { hasText: 'L1' }).first();
     await expect(row).toHaveCount(1);
@@ -33,6 +38,23 @@ test.describe.serial('Levels management', () => {
       (r) => r.url().includes('/api/v1/levels/') && r.request().method() === 'PUT',
     );
     await expect(row).toContainText('3');
+
+    // T2: reset deletes this spec's own override rows (self-cleaning); a 422
+    // means other runs' data references the overrides — assert the refusal.
+    await expect(page.getByTestId('levels-reset')).toBeVisible();
+    await expect(page.locator('.src-tag.override').first()).toBeVisible();
+    await page.getByTestId('levels-reset').click();
+    const [resp] = await Promise.all([
+      page.waitForResponse(
+        (r) => r.url().includes('/levels/reset') && r.request().method() === 'DELETE',
+      ),
+      page.getByTestId('confirm-levels-reset').click(),
+    ]);
+    if (resp.status() === 200) {
+      await expect(page.locator('.src-tag.override')).toHaveCount(0);
+    } else {
+      await expect(page.locator('.banner.danger')).toBeVisible();
+    }
 
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);

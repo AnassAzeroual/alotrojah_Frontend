@@ -45,4 +45,9 @@ export class LevelsService {
   remove(id: number): Observable<null> {
     return this.api.delete<null>(`/levels/${id}`);
   }
+
+  /** T2: delete one center's override set (all-or-nothing server-side). */
+  reset(centerId: number): Observable<{ deleted: number }> {
+    return this.api.delete<{ deleted: number }>('/levels/reset', { center_id: centerId });
+  }
 }

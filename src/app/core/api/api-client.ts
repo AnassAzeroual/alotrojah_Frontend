@@ -35,7 +35,14 @@ export class ApiClient {
     return this.http.patch<ApiResponse<T>>(`${this.base}${path}`, body).pipe(map((r) => r.data));
   }
 
-  delete<T>(path: string): Observable<T> {
-    return this.http.delete<ApiResponse<T>>(`${this.base}${path}`).pipe(map((r) => r.data));
+  delete<T>(path: string, params?: QueryParams): Observable<T> {
+    let httpParams: HttpParams | undefined;
+    if (params) {
+      httpParams = new HttpParams();
+      for (const [k, v] of Object.entries(params)) httpParams = httpParams.set(k, String(v));
+    }
+    return this.http
+      .delete<ApiResponse<T>>(`${this.base}${path}`, { params: httpParams })
+      .pipe(map((r) => r.data));
   }
 }

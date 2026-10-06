@@ -41,6 +41,13 @@ export class ScoringService {
     return this.api.delete<null>(`/scoring-modules/${id}`);
   }
 
+  /** T2: delete one center's override set (all-or-nothing server-side). */
+  reset(centerId: number): Observable<{ deleted: number }> {
+    return this.api.delete<{ deleted: number }>('/scoring-modules/reset', {
+      center_id: centerId,
+    });
+  }
+
   create(payload: {
     code: string;
     name_ar: string;

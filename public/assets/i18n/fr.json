@@ -25,7 +25,8 @@
     "menu": "Menu",
     "theme": "Theme",
     "light": "Clair",
-    "dark": "Sombre"
+    "dark": "Sombre",
+    "settings": "Paramètres"
   },
   "auth": {
     "login": "Connexion",
@@ -390,7 +391,13 @@
     "ahzabTerm": "Ahzab/trimestre",
     "ahzabDawra": "Ahzab/cycle",
     "duration": "Durée",
-    "totalAhzab": "Total ahzab"
+    "totalAhzab": "Total ahzab",
+    "scope_shared": "Valeurs partagées par défaut — s'appliquent à tous les centres",
+    "scope_center": "Dérogations pour {{name}} — les autres centres ne sont pas affectés",
+    "inherited_tag": "Défaut",
+    "override_tag": "Dérogation",
+    "reset": "Réinitialiser",
+    "reset_confirm": "Confirmer"
   },
   "sessionStatus": {
     "planned": "Planifiée",
@@ -442,7 +449,22 @@
     "scope": "Portée",
     "status": "Statut",
     "inactive": "Inactif",
-    "delete_confirm": "Confirmer la suppression"
+    "delete_confirm": "Confirmer la suppression",
+    "scope_shared": "Valeurs partagées par défaut — s'appliquent à tous les centres",
+    "scope_center": "Dérogations pour {{name}} — les autres centres ne sont pas affectés",
+    "inherited_tag": "Défaut",
+    "override_tag": "Dérogation",
+    "reset": "Réinitialiser",
+    "reset_confirm": "Confirmer"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "scope_section": "Modification de la portée",
+    "hide_scopes": "Masquer les sélecteurs de portée par centre",
+    "hide_scopes_hint": "Quand activé, la modification s'applique toujours aux valeurs partagées",
+    "display_section": "Affichage",
+    "show_center_id": "Afficher l'ID du centre",
+    "show_center_id_hint": "Versions dev uniquement — jamais affiché en production"
   },
   "entry": {
     "title": "Saisie du jour",

@@ -10,6 +10,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { apiErrorKey } from '../../core/api/api-errors';
+import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { CentersService } from '../../core/api/centers.service';
 import { Level, LevelsService } from '../../core/api/levels.service';
 import {
@@ -62,6 +63,7 @@ const draftOf = (l: Level): LevelDraft => ({
 export class LevelsPage {
   private readonly levelsSvc = inject(LevelsService);
   private readonly centersSvc = inject(CentersService);
+  protected readonly prefs = inject(AdminPrefsService);
 
   protected readonly txt = dropdownText;
   protected readonly num = dropdownNumber;
@@ -69,6 +71,11 @@ export class LevelsPage {
   private readonly tick = signal(0);
   /** NULL = shared default set; a center id edits that center's overrides. */
   readonly centerScope = signal<number | null>(null);
+
+  /** T3 kill-switch: hidden pickers force shared-defaults editing. */
+  readonly activeScope = computed(() =>
+    this.prefs.hideScopePickers() ? null : this.centerScope(),
+  );
 
   readonly centers = resource({
     loader: () => firstValueFrom(this.centersSvc.list().pipe(map((p) => p.data))),
@@ -79,8 +86,41 @@ export class LevelsPage {
     ...(this.centers.value() ?? []).map((c) => ({ value: String(c.id), label: c.name })),
   ]);
 
+  /** T1: persistent scope banner — shared defaults vs overrides for <center>. */
+  readonly centerName = computed(
+    () => (this.centers.value() ?? []).find((c) => c.id === this.centerScope())?.name ?? null,
+  );
+
+  /** Rows carrying this center's id are overrides; NULL-center rows are inherited defaults. */
+  isOverride(centerId: number | null | undefined): boolean {
+    return this.activeScope() !== null && centerId === this.activeScope();
+  }
+
+  readonly armingReset = signal(false);
+  readonly resetBusy = signal(false);
+  readonly resetErrorKey = signal<string | null>(null);
+
+  resetScope(): void {
+    const scope = this.activeScope();
+    if (scope === null || this.resetBusy()) return;
+    this.resetBusy.set(true);
+    this.resetErrorKey.set(null);
+    this.levelsSvc.reset(scope).subscribe({
+      next: () => {
+        this.resetBusy.set(false);
+        this.armingReset.set(false);
+        this.tick.update((n) => n + 1);
+      },
+      error: (err: unknown) => {
+        this.resetBusy.set(false);
+        this.armingReset.set(false);
+        this.resetErrorKey.set(apiErrorKey(err));
+      },
+    });
+  }
+
   readonly levels = resource({
-    params: () => ({ t: this.tick(), c: this.centerScope() }),
+    params: () => ({ t: this.tick(), c: this.activeScope() }),
     loader: ({ params }) => firstValueFrom(this.levelsSvc.list(params.c)),
   });
 
@@ -97,6 +137,8 @@ export class LevelsPage {
     this.centerScope.set(dropdownNumber(v));
     this.editingId.set(null);
     this.armingDeleteId.set(null);
+    this.armingReset.set(false);
+    this.resetErrorKey.set(null);
   }
 
   startEdit(l: Level): void {
@@ -145,7 +187,7 @@ export class LevelsPage {
         ahzab_per_dawra: d.ahzab_dawra ?? undefined,
         duration_label: d.duration.trim() || undefined,
         total_ahzab: d.total_ahzab ?? undefined,
-        center_id: this.centerScope(),
+        center_id: this.activeScope(),
       })
       .subscribe({
         next: () => {

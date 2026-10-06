@@ -75,6 +75,47 @@
   font-size: var(--text-xs);
 }
 
+// T1: persistent scope banner — shared defaults vs per-center overrides.
+.scope-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: space-between;
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-soft);
+  font-size: var(--text-sm);
+}
+
+// T1: override rows highlighted, inherited rows muted.
+.scoring-table tbody tr.is-override td {
+  background: color-mix(in srgb, var(--green-600) 7%, transparent);
+}
+
+.scoring-table tbody tr.is-inherited td {
+  color: var(--color-text-muted);
+}
+
+.src-tag {
+  display: inline-block;
+  margin-inline-start: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  border: 1px solid var(--color-border-strong);
+
+  &.override {
+    color: var(--green-700);
+    border-color: var(--green-600);
+  }
+
+  &.inherited {
+    color: var(--color-text-muted);
+  }
+}
+
 .btn-ghost {
   background: transparent;
   border-color: var(--color-border);

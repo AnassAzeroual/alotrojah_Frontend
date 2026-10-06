@@ -25,7 +25,8 @@
     "menu": "Menu",
     "theme": "Theme",
     "light": "Light",
-    "dark": "Dark"
+    "dark": "Dark",
+    "settings": "Settings"
   },
   "auth": {
     "login": "Sign in",
@@ -390,7 +391,13 @@
     "ahzabTerm": "Ahzab/term",
     "ahzabDawra": "Ahzab/cycle",
     "duration": "Duration",
-    "totalAhzab": "Total ahzab"
+    "totalAhzab": "Total ahzab",
+    "scope_shared": "Shared defaults — applies to all centers",
+    "scope_center": "Overrides for {{name}} — other centers unaffected",
+    "inherited_tag": "Default",
+    "override_tag": "Override",
+    "reset": "Reset to defaults",
+    "reset_confirm": "Confirm reset"
   },
   "sessionStatus": {
     "planned": "Planned",
@@ -442,7 +449,22 @@
     "scope": "Scope",
     "status": "Status",
     "inactive": "Inactive",
-    "delete_confirm": "Confirm delete"
+    "delete_confirm": "Confirm delete",
+    "scope_shared": "Shared defaults — applies to all centers",
+    "scope_center": "Overrides for {{name}} — other centers unaffected",
+    "inherited_tag": "Default",
+    "override_tag": "Override",
+    "reset": "Reset to defaults",
+    "reset_confirm": "Confirm reset"
+  },
+  "settings": {
+    "title": "Settings",
+    "scope_section": "Scope editing",
+    "hide_scopes": "Hide per-center scope pickers",
+    "hide_scopes_hint": "When on, editing always applies to the shared defaults",
+    "display_section": "Display",
+    "show_center_id": "Show center ID",
+    "show_center_id_hint": "Dev builds only — never shown in production"
   },
   "entry": {
     "title": "Daily entry",

@@ -20,6 +20,52 @@
     }
   </p>
 
+  <div class="scope-banner anim-rise" style="--i: 1" data-testid="scoring-scope-banner">
+    @if (activeScope() === null) {
+      <span>{{ 'scoring.scope_shared' | translate }}</span>
+    } @else {
+      <span>{{ 'scoring.scope_center' | translate: { name: centerName() ?? '' } }}</span>
+      @if (armingReset()) {
+        <span class="cluster">
+          <button
+            type="button"
+            class="btn btn-danger-solid btn-sm"
+            data-testid="confirm-scoring-reset"
+            [disabled]="resetBusy()"
+            (click)="resetScope()"
+          >
+            @if (resetBusy()) {
+              <app-spinner />
+            } @else {
+              {{ 'scoring.reset_confirm' | translate }}
+            }
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [disabled]="resetBusy()"
+            (click)="armingReset.set(false)"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+        </span>
+      } @else {
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          data-testid="scoring-reset"
+          [disabled]="resetBusy()"
+          (click)="armingReset.set(true)"
+        >
+          {{ 'scoring.reset' | translate }}
+        </button>
+      }
+    }
+  </div>
+  @if (resetErrorKey()) {
+    <div class="banner danger">{{ resetErrorKey()! | translate }}</div>
+  }
+
   <div class="toolbar card anim-rise" style="--i: 1">
     <label class="field search grow">
       <span class="sr-only">{{ 'list.search' | translate }}</span>
@@ -31,15 +77,17 @@
         (input)="q.set($any($event.target).value)"
       />
     </label>
-    <label class="field">
-      <app-dropdown
-        [options]="centerScopeOptions()"
-        [value]="txt(centerScope() ?? '')"
-        (valueChange)="setCenterScope($event)"
-        ariaLabelKey="dash.center"
-        testId="scoring-center-scope"
-      />
-    </label>
+    @if (!prefs.hideScopePickers()) {
+      <label class="field">
+        <app-dropdown
+          [options]="centerScopeOptions()"
+          [value]="txt(centerScope() ?? '')"
+          (valueChange)="setCenterScope($event)"
+          ariaLabelKey="dash.center"
+          testId="scoring-center-scope"
+        />
+      </label>
+    }
     <label class="field">
       <app-dropdown
         [options]="scopeOptions"
@@ -82,9 +130,19 @@
         </thead>
         <tbody>
           @for (m of rows(); track m.code) {
-            <tr>
+            <tr
+              [class.is-override]="isOverride(m.center_id)"
+              [class.is-inherited]="activeScope() !== null && !isOverride(m.center_id)"
+            >
               <td>
                 <strong>{{ m.name_ar }}</strong>
+                @if (activeScope() !== null) {
+                  @if (isOverride(m.center_id)) {
+                    <span class="src-tag override">{{ 'scoring.override_tag' | translate }}</span>
+                  } @else {
+                    <span class="src-tag inherited">{{ 'scoring.inherited_tag' | translate }}</span>
+                  }
+                }
               </td>
               <td>
                 <code class="ltr-num" dir="ltr">{{ m.code }}</code>

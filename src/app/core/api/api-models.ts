@@ -25,6 +25,8 @@ export interface CurrentUser {
   full_name: string;
   role: Role;
   center_id: number | null;
+  /** Resolved by /auth/me + login (T4) so the header chip needs no extra request. */
+  center_name?: string | null;
   teacher_type: TeacherType;
 }
 

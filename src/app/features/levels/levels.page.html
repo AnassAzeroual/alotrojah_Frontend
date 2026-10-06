@@ -4,16 +4,64 @@
   </div>
 
   <div class="toolbar card anim-rise" style="--i: 1">
-    <label class="field">
-      <app-dropdown
-        [options]="centerScopeOptions()"
-        [value]="txt(centerScope() ?? '')"
-        (valueChange)="setCenterScope($event)"
-        ariaLabelKey="dash.center"
-        testId="levels-center-scope"
-      />
-    </label>
+    @if (!prefs.hideScopePickers()) {
+      <label class="field">
+        <app-dropdown
+          [options]="centerScopeOptions()"
+          [value]="txt(centerScope() ?? '')"
+          (valueChange)="setCenterScope($event)"
+          ariaLabelKey="dash.center"
+          testId="levels-center-scope"
+        />
+      </label>
+    }
   </div>
+
+  <div class="scope-banner anim-rise" style="--i: 1" data-testid="levels-scope-banner">
+    @if (activeScope() === null) {
+      <span>{{ 'level.scope_shared' | translate }}</span>
+    } @else {
+      <span>{{ 'level.scope_center' | translate: { name: centerName() ?? '' } }}</span>
+      @if (armingReset()) {
+        <span class="cluster">
+          <button
+            type="button"
+            class="btn btn-danger-solid btn-sm"
+            data-testid="confirm-levels-reset"
+            [disabled]="resetBusy()"
+            (click)="resetScope()"
+          >
+            @if (resetBusy()) {
+              <app-spinner />
+            } @else {
+              {{ 'level.reset_confirm' | translate }}
+            }
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [disabled]="resetBusy()"
+            (click)="armingReset.set(false)"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+        </span>
+      } @else {
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          data-testid="levels-reset"
+          [disabled]="resetBusy()"
+          (click)="armingReset.set(true)"
+        >
+          {{ 'level.reset' | translate }}
+        </button>
+      }
+    }
+  </div>
+  @if (resetErrorKey()) {
+    <div class="banner danger">{{ resetErrorKey()! | translate }}</div>
+  }
 
   @if (levels.isLoading()) {
     <div class="stack" aria-hidden="true">
@@ -38,12 +86,22 @@
         </thead>
         <tbody>
           @for (l of levels.value() ?? []; track l.id) {
-            <tr>
+            <tr
+              [class.is-override]="isOverride(l.center_id)"
+              [class.is-inherited]="activeScope() !== null && !isOverride(l.center_id)"
+            >
               <td>
                 <code class="ltr-num" dir="ltr">{{ l.code }}</code>
               </td>
               <td>
                 <strong>{{ l.name_ar }}</strong>
+                @if (activeScope() !== null) {
+                  @if (isOverride(l.center_id)) {
+                    <span class="src-tag override">{{ 'level.override_tag' | translate }}</span>
+                  } @else {
+                    <span class="src-tag inherited">{{ 'level.inherited_tag' | translate }}</span>
+                  }
+                }
               </td>
               <td class="ltr-num">{{ l.sessions_per_week }}</td>
               <td class="ltr-num">{{ l.thumn_per_session_value }}</td>

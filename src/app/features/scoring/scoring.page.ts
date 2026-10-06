@@ -12,6 +12,7 @@ import { firstValueFrom, map } from 'rxjs';
 import { ScoringService } from '../../core/api/scoring.service';
 import { CentersService } from '../../core/api/centers.service';
 import { apiErrorKey } from '../../core/api/api-errors';
+import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import {
   DropdownComponent,
@@ -47,6 +48,7 @@ export class ScoringPage {
   private readonly centersSvc = inject(CentersService);
   private readonly i18n = inject(TranslateService);
   private readonly language = inject(LanguageService);
+  protected readonly prefs = inject(AdminPrefsService);
 
   private readonly tick = signal(0);
   readonly saving = signal(false);
@@ -57,7 +59,7 @@ export class ScoringPage {
   protected readonly num = dropdownNumber;
 
   readonly modules = resource({
-    params: () => ({ t: this.tick(), c: this.centerScope() }),
+    params: () => ({ t: this.tick(), c: this.activeScope() }),
     loader: ({ params }) => firstValueFrom(this.scoring.modules(params.c)),
   });
 
@@ -67,6 +69,11 @@ export class ScoringPage {
   /** NULL = shared default set; a center id edits that center's overrides. */
   readonly centerScope = signal<number | null>(null);
 
+  /** T3 kill-switch: hidden pickers force shared-defaults editing. */
+  readonly activeScope = computed(() =>
+    this.prefs.hideScopePickers() ? null : this.centerScope(),
+  );
+
   readonly centers = resource({
     loader: () => firstValueFrom(this.centersSvc.list().pipe(map((p) => p.data))),
   });
@@ -75,6 +82,40 @@ export class ScoringPage {
     { value: '', labelKey: 'list.all' },
     ...(this.centers.value() ?? []).map((c) => ({ value: String(c.id), label: c.name })),
   ]);
+
+  /** T1: persistent scope banner — shared defaults vs overrides for <center>. */
+  readonly centerName = computed(
+    () => (this.centers.value() ?? []).find((c) => c.id === this.centerScope())?.name ?? null,
+  );
+
+  /** Rows carrying this center's id are overrides; NULL-center rows are inherited defaults. */
+  isOverride(centerId: number | null | undefined): boolean {
+    return this.activeScope() !== null && centerId === this.activeScope();
+  }
+
+  readonly armingReset = signal(false);
+  readonly resetBusy = signal(false);
+  readonly resetErrorKey = signal<string | null>(null);
+
+  resetScope(): void {
+    const scope = this.activeScope();
+    if (scope === null || this.resetBusy()) return;
+    this.resetBusy.set(true);
+    this.resetErrorKey.set(null);
+    this.scoring.reset(scope).subscribe({
+      next: () => {
+        this.resetBusy.set(false);
+        this.armingReset.set(false);
+        this.drafts.set(new Map());
+        this.tick.update((n) => n + 1);
+      },
+      error: (err: unknown) => {
+        this.resetBusy.set(false);
+        this.armingReset.set(false);
+        this.resetErrorKey.set(apiErrorKey(err));
+      },
+    });
+  }
 
   readonly scopeOptions = [
     { value: '', labelKey: 'list.all' },
@@ -95,6 +136,8 @@ export class ScoringPage {
   setCenterScope(v: DropdownValue): void {
     this.centerScope.set(dropdownNumber(v));
     this.drafts.set(new Map());
+    this.armingReset.set(false);
+    this.resetErrorKey.set(null);
   }
 
   readonly rows = computed(() => {
@@ -170,7 +213,7 @@ export class ScoringPage {
     if (patches.length === 0) return;
     this.saving.set(true);
     this.error.set(null);
-    this.scoring.bulk(patches, this.centerScope()).subscribe({
+    this.scoring.bulk(patches, this.activeScope()).subscribe({
       next: () => {
         this.saving.set(false);
         this.drafts.set(new Map());
@@ -239,7 +282,7 @@ export class ScoringPage {
         scope: v.scope,
         is_active: true,
         is_in_weekly_total: v.is_in_weekly_total,
-        center_id: this.centerScope(),
+        center_id: this.activeScope(),
       })
       .subscribe({
         next: () => {
