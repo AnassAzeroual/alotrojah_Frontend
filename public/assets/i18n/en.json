@@ -77,7 +77,9 @@
     "active": "Active",
     "paused": "Paused",
     "graduated": "Graduated",
-    "left": "Left"
+    "left": "Left",
+    "unsaved_warn": "You have unsaved changes. Leave without saving?",
+    "unsaved_leave": "Leave"
   },
   "apiErrors": {
     "CROSS_CENTER": "This action belongs to another center",
@@ -101,6 +103,9 @@
     "GROUP_ROLE": "Group assignment is for teachers and students only",
     "SCORING_TOTAL": "Weekly total must stay 20",
     "INVALID_CREDENTIALS": "Invalid credentials",
+    "ADMIN_DELETE": "Admin accounts cannot be deleted",
+    "ADMIN_SELF_DISABLE": "Admins cannot deactivate their own account",
+    "ADMIN_LAST_ACTIVE": "The last active admin cannot be deactivated",
     "validation": "Check the entered fields",
     "forbidden": "Action not allowed",
     "notFound": "Item not found",
@@ -511,7 +516,10 @@
     "role": "Role",
     "teacher_type": "Teacher type",
     "center": "Center",
-    "is_active": "Active account"
+    "is_active": "Active account",
+    "self_off_warn": "Deactivating yourself logs you out immediately. You will need an admin to reactivate your account.",
+    "self_off_confirm": "Confirm deactivation",
+    "self_admin_locked": "You cannot deactivate your own account"
   },
   "students": {
     "create": "Create student",

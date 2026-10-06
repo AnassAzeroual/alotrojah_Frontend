@@ -3,6 +3,25 @@
     <h1>{{ 'result.season_title' | translate }}</h1>
   </div>
 
+  @if (leave.leaving()) {
+    <div class="banner danger" data-testid="unsaved-guard">
+      <span>{{ 'common.unsaved_warn' | translate }}</span>
+      <span class="cluster">
+        <button
+          type="button"
+          class="btn btn-danger-solid btn-sm"
+          data-testid="confirm-leave"
+          (click)="leave.allowLeave()"
+        >
+          {{ 'common.unsaved_leave' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </span>
+    </div>
+  }
+
   <div class="card anim-rise" style="--i: 1">
     <label class="field search"
       ><span>{{ 'planning.pick_student' | translate }}</span>

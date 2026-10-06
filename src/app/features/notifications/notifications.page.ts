@@ -1,15 +1,22 @@
 ﻿import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { NotificationsService } from '../../core/api/notifications.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, SpinnerComponent, EmptyStateComponent],
+  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, SpinnerComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './notifications.page.html',
 })
@@ -17,6 +24,12 @@ export class NotificationsPage {
   private readonly outbox = inject(NotificationsService);
   private readonly tick = signal(0);
   readonly saving = signal(false);
+
+  /** Dirty guard: a half-typed message blocks route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.form.dirty;
+  }
 
   readonly items = resource({
     params: () => ({ t: this.tick() }),

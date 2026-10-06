@@ -13,6 +13,25 @@
     </div>
   </div>
 
+  @if (leave.leaving()) {
+    <div class="banner danger" data-testid="unsaved-guard">
+      <span>{{ 'common.unsaved_warn' | translate }}</span>
+      <span class="cluster">
+        <button
+          type="button"
+          class="btn btn-danger-solid btn-sm"
+          data-testid="confirm-leave"
+          (click)="leave.allowLeave()"
+        >
+          {{ 'common.unsaved_leave' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </span>
+    </div>
+  }
+
   <section class="card anim-rise" style="--i: 1">
     <form [formGroup]="form" (ngSubmit)="submit()" class="stack" autocomplete="off">
       <label class="field"

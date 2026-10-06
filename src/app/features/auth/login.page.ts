@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
+import { PasswordFieldComponent } from '../../shared/ui/password-field/password-field.component';
 import { AuthArtComponent } from './auth-art.component';
 import { AuthTopbarComponent } from './auth-topbar.component';
 import { APP_VERSION_SHORT } from '../../core/version';
@@ -23,6 +24,7 @@ interface LoginForm {
     SpinnerComponent,
     AuthArtComponent,
     AuthTopbarComponent,
+    PasswordFieldComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.page.html',
@@ -35,7 +37,6 @@ export class LoginPage {
   readonly loading = signal(false);
   readonly failed = signal(false);
   readonly version = APP_VERSION_SHORT;
-  readonly showPw = signal(false);
 
   readonly form = new FormGroup<LoginForm>({
     email: new FormControl('', {

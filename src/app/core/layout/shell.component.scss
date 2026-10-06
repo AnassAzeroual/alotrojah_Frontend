@@ -267,6 +267,22 @@
   padding-top: var(--space-3);
 }
 
+// Pending waiting-room count on the registrations nav item.
+.nav-badge {
+  margin-inline-start: auto;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-danger);
+  color: #fff;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
 .foot-btn {
   display: flex;
   align-items: center;

@@ -6,11 +6,18 @@
   resource,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { ExamsService } from '../../core/api/exams.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
@@ -21,7 +28,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 @Component({
   selector: 'app-exam-new-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, DropdownComponent, SpinnerComponent],
+  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, DropdownComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './exam-new.page.html',
 })
@@ -71,6 +78,12 @@ export class ExamNewPage {
     ...(this.terms.value() ?? []).map((t) => ({ value: t.id, label: t.name_ar })),
   ]);
 
+  /** Dirty guard: a half-filled exam form blocks route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.form.dirty;
+  }
+
   readonly form = new FormGroup({
     exam_type: new FormControl<'hizb_completion' | 'term_batch' | 'final_season'>('term_batch', {
       nonNullable: true,
@@ -99,6 +112,7 @@ export class ExamNewPage {
       .subscribe({
         next: (e) => {
           this.saving.set(false);
+          this.form.markAsPristine();
           void this.router.navigate(['/exams', e.id]);
         },
         error: (err: unknown) => {

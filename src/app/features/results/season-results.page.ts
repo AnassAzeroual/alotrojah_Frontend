@@ -1,9 +1,10 @@
 ﻿import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ResultsService } from '../../core/api/results.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { StudentsService } from '../../core/api/students.service';
 import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
@@ -13,6 +14,7 @@ import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.
   selector: 'app-season-results-page',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
     DropdownComponent,
@@ -69,6 +71,12 @@ export class SeasonResultsPage {
     },
   });
 
+  /** Dirty guard: typed-but-unsaved result entries block route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.form.dirty;
+  }
+
   readonly form = new FormGroup({
     total_memorized_label: new FormControl('', { nonNullable: true }),
     overall_avg: new FormControl<number | null>(null),
@@ -85,6 +93,7 @@ export class SeasonResultsPage {
       board_report: e.board_report ?? '',
       honor_flag: e.honor_flag,
     });
+    this.form.markAsPristine();
   }
 
   submit(): void {
@@ -105,6 +114,7 @@ export class SeasonResultsPage {
       .subscribe({
         next: () => {
           this.saving.set(false);
+          this.form.markAsPristine();
           this.tick.update((n) => n + 1);
         },
         error: () => this.saving.set(false),

@@ -257,6 +257,7 @@ export interface CreateUserPayload {
   phone?: string | null;
   center_id?: number | null;
   teacher_type?: TeacherType;
+  is_active?: boolean;
 }
 
 export interface UpdateUserPayload {

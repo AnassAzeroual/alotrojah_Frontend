@@ -6,6 +6,7 @@ import {
   resource,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -15,6 +16,7 @@ import { apiErrorKey } from '../../core/api/api-errors';
 import { ReferenceService, Level } from '../../core/api/reference.service';
 import { UsersService } from '../../core/api/users.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import {
   DropdownComponent,
   dropdownNumber,
@@ -27,7 +29,7 @@ const WEEKDAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 @Component({
   selector: 'app-group-form-page',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, DropdownComponent, SpinnerComponent],
+  imports: [FormsModule, RouterLink, TranslatePipe, DropdownComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './group-form.page.html',
   styleUrl: './group-form.page.scss',
@@ -60,6 +62,19 @@ export class GroupFormPage {
   protected readonly effectiveCenterId = computed(() =>
     this.isAdmin() ? this.centerId() : (this.auth.currentUser()?.center_id ?? null),
   );
+
+  /** Dirty guard: any filled composer field blocks route leave. */
+  protected readonly leave = leaveController();
+  isDirty(): boolean {
+    return (
+      this.name().trim() !== '' ||
+      this.centerId() !== null ||
+      this.levelId() !== null ||
+      this.teacherId() !== null ||
+      this.capacity() !== null ||
+      this.days().length > 0
+    );
+  }
 
   protected readonly canSave = computed(
     () =>
@@ -143,6 +158,12 @@ export class GroupFormPage {
       .subscribe({
         next: () => {
           this.saving.set(false);
+          this.name.set('');
+          this.centerId.set(null);
+          this.levelId.set(null);
+          this.teacherId.set(null);
+          this.capacity.set(null);
+          this.days.set([]);
           void this.router.navigate(['/groups']);
         },
         error: (err: unknown) => {

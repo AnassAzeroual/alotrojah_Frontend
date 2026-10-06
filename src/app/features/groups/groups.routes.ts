@@ -1,5 +1,6 @@
 ﻿import { Routes } from '@angular/router';
 import { roleGuard } from '../../core/auth/role.guard';
+import { dirtyGuard } from '../../core/guards/dirty.guard';
 
 export const GROUPS_ROUTES: Routes = [
   {
@@ -12,6 +13,7 @@ export const GROUPS_ROUTES: Routes = [
     path: 'new',
     loadComponent: () => import('./group-form.page').then((m) => m.GroupFormPage),
     canActivate: [roleGuard],
+    canDeactivate: [dirtyGuard],
     data: { roles: ['admin', 'supervisor'] },
   },
   {

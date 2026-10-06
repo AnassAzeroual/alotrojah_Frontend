@@ -8,6 +8,7 @@ import {
   resource,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { EntryService, WeeklyGoal } from '../../../core/api/entry.service';
@@ -25,7 +26,7 @@ interface GoalRow {
 @Component({
   selector: 'app-goal-list',
   standalone: true,
-  imports: [TranslatePipe, SpinnerComponent],
+  imports: [FormsModule, TranslatePipe, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './goal-list.component.html',
 })
@@ -59,8 +60,8 @@ export class GoalListComponent {
       return {
         student: st,
         goal: existing,
-        target: d?.target ?? (existing?.target_text ?? ''),
-        done: d?.done ?? (existing?.is_completed ?? false),
+        target: d?.target ?? existing?.target_text ?? '',
+        done: d?.done ?? existing?.is_completed ?? false,
         saving: d?.saving ?? false,
       };
     });
@@ -85,7 +86,7 @@ export class GoalListComponent {
 
   save(row: GoalRow): void {
     const wid = this.weekId();
-    if (wid === null) return;
+    if (wid === null || this.drafts().get(row.student.id)?.saving) return;
     this.edit(row.student.id, {});
     this.drafts.update((m) => {
       const cur = m.get(row.student.id) ?? { target: row.target, done: row.done, saving: false };

@@ -23,10 +23,17 @@ import { apiErrorKey } from '../../core/api/api-errors';
 import { ReferenceService } from '../../core/api/reference.service';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -53,6 +60,7 @@ interface StudentForm {
     EmptyStateComponent,
     SpinnerComponent,
     StatusBadgeComponent,
+    FormsModule,
     ReactiveFormsModule,
     RouterLink,
   ],
@@ -215,10 +223,16 @@ export class StudentDetailPage {
   protected readonly assignValue = computed<DropdownValue>(() =>
     this.assignChosen() ? (this.assignPicked() ?? '') : (this.currentGroupId() ?? ''),
   );
-  protected readonly isDirty = computed(() => {
+  protected readonly assignDirty = computed(() => {
     if (!this.assignChosen()) return false;
     return this.assignPicked() !== this.currentGroupId();
   });
+
+  /** Dirty guard: unsaved form edits or a pending group assignment block leave. */
+  protected readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.form.dirty || this.assignDirty();
+  }
 
   protected readonly studentVal = () => this.student.value() ?? null;
   protected readonly summaryVal = () => this.summary.value() ?? null;
@@ -233,6 +247,7 @@ export class StudentDetailPage {
       const opts = this.centerOptions();
       if (this.isNew() && opts.length === 1 && this.form.controls.center_id.value === null) {
         this.form.controls.center_id.setValue(Number(opts[0].value));
+        this.form.markAsPristine();
       }
     });
     // Sync student to form when editing
@@ -253,6 +268,7 @@ export class StudentDetailPage {
             // API models might need notes in Student, let's keep it null if not present
             notes: (params.s as any).notes ?? null,
           });
+          this.form.markAsPristine();
         }
         return null;
       },
@@ -301,6 +317,7 @@ export class StudentDetailPage {
     req$.subscribe({
       next: (res) => {
         this.assignSaving.set(false);
+        this.form.markAsPristine();
         if (this.isNew()) {
           this.router.navigate(['/students', res.id]);
         } else {
@@ -322,7 +339,7 @@ export class StudentDetailPage {
 
   protected saveAssign(): void {
     const s = this.studentVal();
-    if (!s || !this.assignChosen() || !this.isDirty() || this.assignSaving()) return;
+    if (!s || !this.assignChosen() || !this.assignDirty() || this.assignSaving()) return;
     this.assignSaving.set(true);
     this.assignFailed.set(null);
     this.studentsSvc.update(s.id, { group_id: this.assignPicked() }).subscribe({

@@ -106,6 +106,10 @@
 
   --green-50: #0f2a24;
   --green-100: #14352d;
+  // Lightened so green-700/800 text reads on dark surfaces
+  // (#3ecfb3 8.55:1, #7de2cb 10.8:1 on --color-surface).
+  --green-700: #3ecfb3;
+  --green-800: #7de2cb;
 
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-2: 0 8px 24px rgb(0 0 0 / 0.45), 0 2px 8px rgb(0 184 169 / 0.12);

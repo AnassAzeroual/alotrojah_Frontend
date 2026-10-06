@@ -210,6 +210,11 @@
             </svg>
           </span>
           <span class="lbl">{{ item.key | translate }}</span>
+          @if (item.testId === 'nav-registrations' && (pendingRegistrations.value() ?? 0) > 0) {
+            <span class="nav-badge" data-testid="nav-registrations-count">{{
+              pendingRegistrations.value()
+            }}</span>
+          }
           <span class="glow" aria-hidden="true"></span>
         </a>
       }

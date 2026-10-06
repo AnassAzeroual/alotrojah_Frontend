@@ -7,6 +7,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ScoringModule, SessionScore, Student } from '../../../core/api/api-models';
 import { EntryService, SessionStudentScores } from '../../../core/api/entry.service';
@@ -27,7 +28,7 @@ interface Row {
 @Component({
   selector: 'app-score-sheet',
   standalone: true,
-  imports: [TranslatePipe, SpinnerComponent, ScoreInputComponent],
+  imports: [FormsModule, TranslatePipe, SpinnerComponent, ScoreInputComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './score-sheet.component.html',
   styleUrl: './score-sheet.component.scss',

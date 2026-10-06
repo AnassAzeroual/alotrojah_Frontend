@@ -10,105 +10,126 @@
     </h1>
   </div>
 
-  <div class="card form-card anim-rise" style="--i: 1">
-    <div class="form-grid">
-      <label class="field">
-        <span>{{ 'grp.col_name' | translate }} <span class="danger">*</span></span>
-        <input
-          type="text"
-          [value]="name()"
-          (input)="name.set($any($event.target).value)"
-          [attr.aria-label]="'grp.col_name' | translate"
-          data-testid="group-name"
-        />
-      </label>
+  @if (leave.leaving()) {
+    <div class="banner danger" data-testid="unsaved-guard">
+      <span>{{ 'common.unsaved_warn' | translate }}</span>
+      <span class="cluster">
+        <button
+          type="button"
+          class="btn btn-danger-solid btn-sm"
+          data-testid="confirm-leave"
+          (click)="leave.allowLeave()"
+        >
+          {{ 'common.unsaved_leave' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </span>
+    </div>
+  }
 
-      @if (isAdmin()) {
+  <div class="card form-card anim-rise" style="--i: 1">
+    <form (ngSubmit)="submit()" autocomplete="off">
+      <div class="form-grid">
         <label class="field">
-          <span>{{ 'dash.center' | translate }} <span class="danger">*</span></span>
-          <app-dropdown
-            [value]="centerId() ?? ''"
-            [options]="centerOptions()"
-            (valueChange)="onCenterChange(num($event))"
-            placeholderKey="registrations.pick_center"
-            ariaLabelKey="dash.center"
-            testId="group-center"
+          <span>{{ 'grp.col_name' | translate }} <span class="danger">*</span></span>
+          <input
+            type="text"
+            [value]="name()"
+            (input)="name.set($any($event.target).value)"
+            [attr.aria-label]="'grp.col_name' | translate"
+            data-testid="group-name"
           />
         </label>
-      }
 
-      <label class="field">
-        <span>{{ 'grp.col_level' | translate }} <span class="danger">*</span></span>
-        <app-dropdown
-          [value]="levelId() ?? ''"
-          [options]="levelOptions()"
-          (valueChange)="levelId.set(num($event))"
-          placeholderKey="grp.col_level"
-          ariaLabelKey="grp.col_level"
-          testId="group-level"
-        />
-      </label>
+        @if (isAdmin()) {
+          <label class="field">
+            <span>{{ 'dash.center' | translate }} <span class="danger">*</span></span>
+            <app-dropdown
+              [value]="centerId() ?? ''"
+              [options]="centerOptions()"
+              (valueChange)="onCenterChange(num($event))"
+              placeholderKey="registrations.pick_center"
+              ariaLabelKey="dash.center"
+              testId="group-center"
+            />
+          </label>
+        }
 
-      <label class="field">
-        <span>{{ 'grp.col_teacher' | translate }}</span>
-        <app-dropdown
-          [value]="teacherId() ?? ''"
-          [options]="teacherOptions()"
-          (valueChange)="teacherId.set(num($event))"
-          placeholderKey="grp.col_teacher"
-          ariaLabelKey="grp.col_teacher"
-          testId="group-teacher"
-        />
-      </label>
+        <label class="field">
+          <span>{{ 'grp.col_level' | translate }} <span class="danger">*</span></span>
+          <app-dropdown
+            [value]="levelId() ?? ''"
+            [options]="levelOptions()"
+            (valueChange)="levelId.set(num($event))"
+            placeholderKey="grp.col_level"
+            ariaLabelKey="grp.col_level"
+            testId="group-level"
+          />
+        </label>
 
-      <label class="field">
-        <span>{{ 'grp.col_capacity' | translate }}</span>
-        <input
-          type="number"
-          min="1"
-          inputmode="numeric"
-          [value]="capacity() ?? ''"
-          (input)="onCapacityInput($any($event.target).value)"
-          [attr.aria-label]="'grp.col_capacity' | translate"
-          data-testid="group-capacity"
-        />
-      </label>
+        <label class="field">
+          <span>{{ 'grp.col_teacher' | translate }}</span>
+          <app-dropdown
+            [value]="teacherId() ?? ''"
+            [options]="teacherOptions()"
+            (valueChange)="teacherId.set(num($event))"
+            placeholderKey="grp.col_teacher"
+            ariaLabelKey="grp.col_teacher"
+            testId="group-teacher"
+          />
+        </label>
 
-      <div class="field wide">
-        <span>{{ 'grp.schedule' | translate }}</span>
-        <div class="day-pick">
-          @for (d of weekdayKeys; track d) {
-            <button
-              type="button"
-              class="day-chip"
-              [class.on]="days().includes(d)"
-              [attr.aria-pressed]="days().includes(d)"
-              [attr.data-testid]="'day-' + d"
-              (click)="toggleDay(d)"
-            >
-              {{ 'grp.day.' + d | translate }}
-            </button>
-          }
+        <label class="field">
+          <span>{{ 'grp.col_capacity' | translate }}</span>
+          <input
+            type="number"
+            min="1"
+            inputmode="numeric"
+            [value]="capacity() ?? ''"
+            (input)="onCapacityInput($any($event.target).value)"
+            [attr.aria-label]="'grp.col_capacity' | translate"
+            data-testid="group-capacity"
+          />
+        </label>
+
+        <div class="field wide">
+          <span>{{ 'grp.schedule' | translate }}</span>
+          <div class="day-pick">
+            @for (d of weekdayKeys; track d) {
+              <button
+                type="button"
+                class="day-chip"
+                [class.on]="days().includes(d)"
+                [attr.aria-pressed]="days().includes(d)"
+                [attr.data-testid]="'day-' + d"
+                (click)="toggleDay(d)"
+              >
+                {{ 'grp.day.' + d | translate }}
+              </button>
+            }
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="form-actions">
-      <button
-        type="button"
-        class="btn btn-primary"
-        data-testid="group-save"
-        [disabled]="!canSave()"
-        (click)="submit()"
-      >
-        @if (saving()) {
-          <app-spinner />
-        } @else {
-          {{ 'common.save' | translate }}
-        }
-      </button>
-      <a routerLink="/groups" class="btn btn-ghost">{{ 'common.cancel' | translate }}</a>
-    </div>
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          data-testid="group-save"
+          [disabled]="!canSave()"
+          (click)="submit()"
+        >
+          @if (saving()) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+        <a routerLink="/groups" class="btn btn-ghost">{{ 'common.cancel' | translate }}</a>
+      </div>
+    </form>
     @if (saveFailed()) {
       <p class="field-error">{{ saveFailed()! | translate }}</p>
     }

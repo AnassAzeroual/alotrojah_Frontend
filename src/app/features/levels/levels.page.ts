@@ -6,11 +6,12 @@ import {
   resource,
   signal,
 } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { CentersService } from '../../core/api/centers.service';
 import { Level, LevelsService } from '../../core/api/levels.service';
 import {
@@ -50,6 +51,7 @@ const draftOf = (l: Level): LevelDraft => ({
   selector: 'app-levels-page',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
     DropdownComponent,
@@ -126,6 +128,17 @@ export class LevelsPage {
 
   readonly editingId = signal<number | null>(null);
   readonly draft = signal<LevelDraft | null>(null);
+  private readonly editSeed = signal<LevelDraft | null>(null);
+
+  /** Dirty guard: an edited-but-unsaved level row blocks route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    if (this.editingId() === null) return false;
+    const seed = this.editSeed();
+    const d = this.draft();
+    if (!seed || !d) return true;
+    return JSON.stringify(d) !== JSON.stringify(seed);
+  }
   readonly editSaving = signal(false);
   readonly editErrorKey = signal<string | null>(null);
 
@@ -145,6 +158,7 @@ export class LevelsPage {
     this.armingDeleteId.set(null);
     this.editingId.set(l.id);
     this.draft.set(draftOf(l));
+    this.editSeed.set(draftOf(l));
     this.editErrorKey.set(null);
   }
 
@@ -168,6 +182,7 @@ export class LevelsPage {
   cancelEdit(): void {
     this.editingId.set(null);
     this.draft.set(null);
+    this.editSeed.set(null);
     this.editErrorKey.set(null);
   }
 
@@ -194,6 +209,7 @@ export class LevelsPage {
           this.editSaving.set(false);
           this.editingId.set(null);
           this.draft.set(null);
+          this.editSeed.set(null);
           this.tick.update((n) => n + 1);
         },
         error: (err: unknown) => {

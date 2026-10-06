@@ -23,6 +23,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+
+      [data-theme='dark'] & {
+        color: #063325;
+      }
     }
 
     .name {

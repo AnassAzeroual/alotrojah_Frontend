@@ -98,8 +98,8 @@ export class UsersListPage {
     this.pendingReplace.set(null);
   }
 
-  canDelete(id: number): boolean {
-    return this.isAdmin() && id !== this.currentId();
+  canDelete(u: { id: number; role: Role }): boolean {
+    return this.isAdmin() && u.id !== this.currentId() && u.role !== 'admin';
   }
 
   armDelete(id: number): void {

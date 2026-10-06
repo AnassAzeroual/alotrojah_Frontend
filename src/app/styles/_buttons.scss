@@ -36,6 +36,11 @@
   color: #fff;
   box-shadow: var(--shadow-2);
 
+  // Dark: --green-700 lightens, so white text fails (1.95:1) — use green-900 (7.15:1).
+  [data-theme='dark'] & {
+    color: #063325;
+  }
+
   &:hover:not(:disabled) {
     box-shadow: var(--shadow-3);
     transform: translateY(-1px);

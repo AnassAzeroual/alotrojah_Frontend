@@ -77,7 +77,9 @@
     "active": "Actif",
     "paused": "En pause",
     "graduated": "Diplômé",
-    "left": "Parti"
+    "left": "Parti",
+    "unsaved_warn": "Vous avez des modifications non enregistrées. Partir sans enregistrer ?",
+    "unsaved_leave": "Partir"
   },
   "apiErrors": {
     "CROSS_CENTER": "Cette action concerne un autre centre",
@@ -101,6 +103,9 @@
     "GROUP_ROLE": "L'affectation au groupe est réservée aux enseignants et élèves",
     "SCORING_TOTAL": "Le total hebdomadaire doit rester à 20",
     "INVALID_CREDENTIALS": "Identifiants invalides",
+    "ADMIN_DELETE": "Les comptes administrateurs ne peuvent pas être supprimés",
+    "ADMIN_SELF_DISABLE": "Un administrateur ne peut pas désactiver son propre compte",
+    "ADMIN_LAST_ACTIVE": "Le dernier administrateur actif ne peut pas être désactivé",
     "validation": "Vérifiez les champs saisis",
     "forbidden": "Action non autorisée",
     "notFound": "Élément introuvable",
@@ -511,7 +516,10 @@
     "role": "Rôle",
     "teacher_type": "Type d'enseignement",
     "center": "Centre",
-    "is_active": "Compte actif"
+    "is_active": "Compte actif",
+    "self_off_warn": "Vous désactiver vous déconnecte immédiatement. Un administrateur devra réactiver votre compte.",
+    "self_off_confirm": "Confirmer la désactivation",
+    "self_admin_locked": "Vous ne pouvez pas désactiver votre propre compte"
   },
   "students": {
     "create": "Créer un élève",

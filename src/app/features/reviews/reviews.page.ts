@@ -6,13 +6,20 @@
   resource,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ReviewsService } from '../../core/api/reviews.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { StudentsService } from '../../core/api/students.service';
 import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
@@ -22,6 +29,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
   selector: 'app-reviews-page',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
     DropdownComponent,
@@ -99,6 +107,12 @@ export class ReviewsPage {
         ? Promise.resolve([])
         : firstValueFrom(this.reviews.logs({ student_id: params.st }).pipe(map((p) => p.data))),
   });
+
+  /** Dirty guard: a half-typed review cycle blocks route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.form.dirty;
+  }
 
   readonly form = new FormGroup({
     term_id: new FormControl<number | null>(null, { validators: [Validators.required] }),

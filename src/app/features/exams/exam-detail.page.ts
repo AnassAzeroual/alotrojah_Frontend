@@ -8,11 +8,18 @@
   resource,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ExamsService } from '../../core/api/exams.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -39,6 +46,7 @@ interface DraftRow {
   selector: 'app-exam-detail-page',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
     DropdownComponent,
@@ -138,6 +146,29 @@ export class ExamDetailPage {
 
   readonly reweighting = signal(false);
   readonly weights = signal<Record<number, number | null>>({});
+
+  /** Dirty guard: header edits, question composer, queued batch or reweight edits. */
+  readonly leave = leaveController();
+
+  private readonly editDirty = computed(() => {
+    const e = this.exam.value();
+    if (!e) return false;
+    return (
+      this.editDate() !== (e.exam_date ?? '') ||
+      this.editType() !== e.exam_type ||
+      this.editTerm() !== e.term_id
+    );
+  });
+
+  private readonly weightsDirty = computed(() => {
+    if (!this.reweighting()) return false;
+    const w = this.weights();
+    return (this.exam.value()?.questions ?? []).some((q) => (w[q.id] ?? null) !== q.max_score);
+  });
+
+  isDirty(): boolean {
+    return this.editDirty() || this.addForm.dirty || this.draft().length > 0 || this.weightsDirty();
+  }
   readonly reweightSaving = signal(false);
   readonly reweightErrorKey = signal<string | null>(null);
 
@@ -208,6 +239,13 @@ export class ExamDetailPage {
     this.examsSvc.remove(this.id()).subscribe({
       next: () => {
         this.deleteSaving.set(false);
+        // The record is gone: clear every dirty source so the dirty guard
+        // does not block the post-delete navigation (same rule as
+        // pristine-on-save, but for the delete path).
+        this.addForm.reset();
+        this.draft.set([]);
+        this.reweighting.set(false);
+        this.weights.set({});
         void this.router.navigate(['/exams']);
       },
       error: (err: unknown) => {

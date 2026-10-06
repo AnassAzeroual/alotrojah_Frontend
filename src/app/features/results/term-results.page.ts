@@ -6,12 +6,13 @@
   resource,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ResultsService } from '../../core/api/results.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { StudentsService } from '../../core/api/students.service';
 import {
   DropdownComponent,
@@ -27,6 +28,7 @@ const SCORE_FIELDS = ['hifz_total', 'murajaa_total', 'exam_score', 'general_avg'
   selector: 'app-term-results-page',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
     DropdownComponent,
@@ -97,6 +99,12 @@ export class TermResultsPage {
     },
   });
 
+  /** Dirty guard: typed-but-unsaved result entries block route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.form.dirty;
+  }
+
   readonly form = new FormGroup({
     hifz_total: new FormControl<number | null>(null),
     murajaa_total: new FormControl<number | null>(null),
@@ -120,6 +128,7 @@ export class TermResultsPage {
       supervisor_note: e.supervisor_note ?? '',
       honor_flag: e.honor_flag,
     });
+    this.form.markAsPristine();
   }
 
   submit(): void {
@@ -143,6 +152,7 @@ export class TermResultsPage {
       .subscribe({
         next: () => {
           this.saving.set(false);
+          this.form.markAsPristine();
           this.tick.update((n) => n + 1);
         },
         error: () => this.saving.set(false),

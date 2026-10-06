@@ -1,53 +1,57 @@
 <section class="card anim-rise" style="--i: 3">
   <h2>{{ 'entry.scores' | translate }}</h2>
 
-  @if (disabledAll()) {
-    <p class="notice">{{ 'entry.review_only_notice' | translate }}</p>
-  }
-
-  @for (row of rows(); track row.student.id) {
-    <div class="line anim-rise" [style.--i]="$index + 4">
-      <div class="head">
-        <span class="avatar-sm" aria-hidden="true">{{ row.student.full_name.slice(0, 1) }}</span>
-        <span class="name">{{ row.student.full_name }}</span>
-        <strong class="total ltr-num">{{ row.total ?? '—' }}{{ 'common.of20' | translate }}</strong>
-      </div>
-      <div class="total-bar" aria-hidden="true">
-        <span [style.width.%]="((row.total ?? 0) / 20) * 100"></span>
-      </div>
-      <div class="cells">
-        @for (cell of row.cells; track cell.module.code) {
-          <div
-            class="cell"
-            [class.off]="!cell.module.is_active"
-            [class.separate]="!cell.module.is_in_weekly_total"
-          >
-            <small>{{ cell.module.name_ar }}</small>
-            <app-score-input
-              [max]="cell.module.max_points"
-              [disabled]="disabledAll() || !cell.module.is_active"
-              [value]="cell.current"
-              (valueChange)="setScore(row.student.id, cell.module.code, $event)"
-            />
-          </div>
-        }
-      </div>
-    </div>
-  }
-
-  <p class="muted small">{{ 'entry.separate_note' | translate }}</p>
-
-  <button
-    type="button"
-    class="btn btn-primary btn-block save"
-    [class.is-loading]="saving()"
-    [disabled]="!dirty() || saving() || disabledAll()"
-    (click)="save()"
-  >
-    @if (saving()) {
-      <app-spinner />
-    } @else {
-      {{ 'entry.save_scores' | translate }}
+  <form (ngSubmit)="save()" autocomplete="off">
+    @if (disabledAll()) {
+      <p class="notice">{{ 'entry.review_only_notice' | translate }}</p>
     }
-  </button>
+
+    @for (row of rows(); track row.student.id) {
+      <div class="line anim-rise" [style.--i]="$index + 4">
+        <div class="head">
+          <span class="avatar-sm" aria-hidden="true">{{ row.student.full_name.slice(0, 1) }}</span>
+          <span class="name">{{ row.student.full_name }}</span>
+          <strong class="total ltr-num"
+            >{{ row.total ?? '—' }}{{ 'common.of20' | translate }}</strong
+          >
+        </div>
+        <div class="total-bar" aria-hidden="true">
+          <span [style.width.%]="((row.total ?? 0) / 20) * 100"></span>
+        </div>
+        <div class="cells">
+          @for (cell of row.cells; track cell.module.code) {
+            <div
+              class="cell"
+              [class.off]="!cell.module.is_active"
+              [class.separate]="!cell.module.is_in_weekly_total"
+            >
+              <small>{{ cell.module.name_ar }}</small>
+              <app-score-input
+                [max]="cell.module.max_points"
+                [disabled]="disabledAll() || !cell.module.is_active"
+                [value]="cell.current"
+                (valueChange)="setScore(row.student.id, cell.module.code, $event)"
+              />
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <p class="muted small">{{ 'entry.separate_note' | translate }}</p>
+
+    <button
+      type="submit"
+      class="btn btn-primary btn-block save"
+      [class.is-loading]="saving()"
+      [disabled]="!dirty() || saving() || disabledAll()"
+      (click)="save()"
+    >
+      @if (saving()) {
+        <app-spinner />
+      } @else {
+        {{ 'entry.save_scores' | translate }}
+      }
+    </button>
+  </form>
 </section>

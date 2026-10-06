@@ -7,9 +7,11 @@ import {
   resource,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
@@ -20,6 +22,7 @@ import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.
   selector: 'app-term-detail-page',
   standalone: true,
   imports: [
+    FormsModule,
     TranslatePipe,
     DropdownComponent,
     EmptyStateComponent,
@@ -45,6 +48,15 @@ export class TermDetailPage {
 
   readonly renaming = signal(false);
   readonly renameValue = signal('');
+
+  /** Dirty guard: a renamed-but-unsaved term title blocks route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    if (!this.renaming()) return false;
+    const cur = this.renameValue().trim();
+    if (cur === '') return false;
+    return cur !== (this.term.value()?.name_ar ?? '');
+  }
   readonly renameSaving = signal(false);
   readonly renameErrorKey = signal<string | null>(null);
 

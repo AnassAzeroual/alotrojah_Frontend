@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
@@ -20,7 +21,7 @@ const EMPTY_DRAFT: CenterDraft = { name: '', city: '', address: '', phone: '', m
 @Component({
   selector: 'app-centers-list-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, EmptyStateComponent, SpinnerComponent],
+  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, EmptyStateComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './centers-list.page.html',
   styleUrl: './centers-list.page.scss',
@@ -36,6 +37,34 @@ export class CentersListPage {
 
   readonly editingId = signal<number | null>(null);
   readonly draft = signal<CenterDraft>({ ...EMPTY_DRAFT });
+  /** Seed snapshot: an untouched edit row is clean even while open. */
+  private readonly editSeed = signal<CenterDraft | null>(null);
+
+  /** Dirty guard: typed-but-unsaved create/edit rows block route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    if (this.creating()) {
+      const d = this.createDraft();
+      return (
+        d.name.trim() !== '' ||
+        d.city.trim() !== '' ||
+        d.address.trim() !== '' ||
+        d.phone.trim() !== '' ||
+        d.manager.trim() !== ''
+      );
+    }
+    if (this.editingId() === null) return false;
+    const seed = this.editSeed();
+    if (!seed) return true;
+    const d = this.draft();
+    return (
+      d.name !== seed.name ||
+      d.city !== seed.city ||
+      d.address !== seed.address ||
+      d.phone !== seed.phone ||
+      d.manager !== seed.manager
+    );
+  }
   readonly editSaving = signal(false);
   readonly editErrorKey = signal<string | null>(null);
 
@@ -112,6 +141,7 @@ export class CentersListPage {
       phone: c.phone ?? '',
       manager: c.manager_name ?? '',
     });
+    this.editSeed.set({ ...this.draft() });
     this.editErrorKey.set(null);
   }
 
@@ -121,6 +151,7 @@ export class CentersListPage {
 
   cancelEdit(): void {
     this.editingId.set(null);
+    this.editSeed.set(null);
     this.editErrorKey.set(null);
   }
 
@@ -142,6 +173,7 @@ export class CentersListPage {
         next: () => {
           this.editSaving.set(false);
           this.editingId.set(null);
+          this.editSeed.set(null);
           this.tick.update((n) => n + 1);
         },
         error: (err: unknown) => {

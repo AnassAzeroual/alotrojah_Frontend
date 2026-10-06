@@ -133,6 +133,14 @@ describe('GroupFormPage', () => {
   const saveBtn = (): HTMLButtonElement =>
     el.querySelector<HTMLButtonElement>('.form-actions .btn-primary')!;
 
+  // jsdom never performs implicit form submission: clicks drive the direct
+  // handler here, while real browsers additionally submit the form on Enter
+  // (both paths share the same saving() guard, so double-fires collapse).
+  const submitForm = (): void => {
+    saveBtn().click();
+    fixture.detectChanges();
+  };
+
   beforeEach(async () => {
     localStorage.clear();
     role = 'admin';
@@ -180,7 +188,7 @@ describe('GroupFormPage', () => {
     el.querySelectorAll<HTMLButtonElement>('.day-pick .day-chip')[0].click();
     fixture.detectChanges();
 
-    saveBtn().click();
+    submitForm();
     const req = http.expectOne((r) => r.url.endsWith('/groups') && r.method === 'POST');
     expect(req.request.body).toEqual({
       name: 'حلقة E2E',
@@ -203,6 +211,11 @@ describe('GroupFormPage', () => {
         is_active: true,
       },
     });
+    // save resets the composer (guard-clean), which refires the levels feed
+    // at the next change detection — drain before AND after it.
+    flushLevels();
+    fixture.detectChanges();
+    flushLevels();
     fixture.detectChanges();
     expect(navigate).toHaveBeenCalledWith(['/groups']);
   });
@@ -235,7 +248,7 @@ describe('GroupFormPage', () => {
     pick('grp.col_level', 'المستوى الأول');
     type('input[type="text"]', 'حلقة المشرف');
 
-    saveBtn().click();
+    submitForm();
     const req = http.expectOne((r) => r.url.endsWith('/groups') && r.method === 'POST');
     expect(req.request.body).toEqual({
       name: 'حلقة المشرف',
@@ -258,6 +271,11 @@ describe('GroupFormPage', () => {
         is_active: true,
       },
     });
+    // save resets the composer (guard-clean), which refires the levels feed
+    // at the next change detection — drain before AND after it.
+    flushLevels();
+    fixture.detectChanges();
+    flushLevels();
     fixture.detectChanges();
     expect(navigate).toHaveBeenCalledWith(['/groups']);
   });

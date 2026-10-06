@@ -1,5 +1,6 @@
 ﻿import { Routes } from '@angular/router';
 import { roleGuard } from '../../core/auth/role.guard';
+import { dirtyGuard } from '../../core/guards/dirty.guard';
 
 const STAFF_FAMILY = ['admin', 'supervisor', 'teacher', 'student'] as const;
 
@@ -14,6 +15,7 @@ export const STUDENTS_ROUTES: Routes = [
     path: ':id',
     loadComponent: () => import('./student-detail.page').then((m) => m.StudentDetailPage),
     canActivate: [roleGuard],
+    canDeactivate: [dirtyGuard],
     data: { roles: [...STAFF_FAMILY] },
   },
 ];

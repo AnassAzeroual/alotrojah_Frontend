@@ -58,8 +58,11 @@ test.describe.serial('Users management', () => {
     await expect(page.getByTestId('user-error')).toContainText('مسجل مسبقاً');
     await expect(page).toHaveURL(/\/users\/new$/);
 
-    // logout
+    // logout (the half-filled duplicate form is dirty, so the unsaved
+    // guard holds the route until the leave is confirmed — by design)
     await page.getByTestId('nav-logout').click();
+    await expect(page.getByTestId('unsaved-guard')).toBeVisible();
+    await page.getByTestId('confirm-leave').click();
     await expect(page).toHaveURL(/\/login$/);
 
     // ---- teacher logs in, then admin deactivates, login fails ----
@@ -93,11 +96,21 @@ test.describe.serial('Users management', () => {
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
 
-    // Teacher tries login again (fillStable: full-suite load can wipe form
-    // state between fill and submit — observed, retried, still fails loudly)
-    await fillStable(page.getByTestId('auth-email'), teacherEmail);
-    await fillStable(page.getByTestId('auth-password'), teacherPassword);
-    await page.getByTestId('auth-submit').click();
+    // Teacher tries login again (hardened attempt: the fresh /login form
+    // can wipe mid-fill fields, leaving submit disabled — goto first,
+    // re-verify the email post-password, retry once, fail loudly)
+    await page.goto('/login');
+    for (let i = 0; i < 2; i++) {
+      await fillStable(page.getByTestId('auth-email'), teacherEmail);
+      await fillStable(page.getByTestId('auth-password'), teacherPassword);
+      await expect(page.getByTestId('auth-email')).toHaveValue(teacherEmail, { timeout: 2000 });
+      try {
+        await page.getByTestId('auth-submit').click({ timeout: 5000 });
+        break;
+      } catch {
+        // wiped/disabled beneath us again — one refill, then fail loudly below
+      }
+    }
 
     // Should see error and stay on login
     await expect(page.locator('.auth-error')).toBeVisible();

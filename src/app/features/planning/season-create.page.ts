@@ -13,6 +13,7 @@ import { firstValueFrom } from 'rxjs';
 import { SeasonsService, SeasonTerm } from '../../core/api/seasons.service';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import {
   DropdownComponent,
   DropdownOption,
@@ -96,6 +97,12 @@ export class SeasonCreatePage {
     (this.centersRes.value() ?? []).map((c) => ({ value: c.id, label: c.name })),
   );
 
+  /** Dirty guard: a half-built season (typed or templated) blocks leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.form.dirty;
+  }
+
   readonly form = new FormGroup<SeasonForm>({
     name: new FormControl('', {
       nonNullable: true,
@@ -166,6 +173,7 @@ export class SeasonCreatePage {
       .subscribe({
         next: () => {
           this.saving.set(false);
+          this.form.markAsPristine();
           void this.router.navigate(['/planning']);
         },
         error: (e) => {

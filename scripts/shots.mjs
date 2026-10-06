@@ -46,7 +46,10 @@ const PAGES = [
   { path: '/reports/term', name: 'reports-term', ready: 'تقرير الفصل' },
   { path: '/reports/season', name: 'reports-season', ready: 'تقرير الموسم' },
   { path: '/news', name: 'news', ready: 'نشر' },
-  { path: '/delegate', name: 'delegate', ready: 'توليد الرابط' },
+  // Picker-gated like reviews: the generate button ('توليد الرابط') only
+  // renders after picking a group, so the h1/sidebar text carries the wait
+  // and the pathname assert + settle carry the capture.
+  { path: '/delegate', name: 'delegate', ready: 'التفويض' },
   { path: '/notifications', name: 'notifications', ready: 'إضافة' },
   { path: '/registrations', name: 'registrations', readySelector: '.req-card, .empty' },
   { path: '/settings', name: 'settings', ready: 'تحرير النطاق' },

@@ -17,6 +17,7 @@ import { DropdownComponent, DropdownOption } from '../../shared/ui/dropdown/drop
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { AuthArtComponent } from './auth-art.component';
 import { AuthTopbarComponent } from './auth-topbar.component';
+import { PasswordFieldComponent } from '../../shared/ui/password-field/password-field.component';
 
 interface RegisterForm {
   full_name: FormControl<string>;
@@ -49,6 +50,7 @@ type RegisterErrorCode = 'email_taken' | 'in_waiting_room' | 'invalid';
     SpinnerComponent,
     AuthArtComponent,
     AuthTopbarComponent,
+    PasswordFieldComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './register.page.html',
@@ -60,8 +62,6 @@ export class RegisterPage {
   readonly loading = signal(false);
   readonly submitted = signal(false);
   readonly errorCode = signal<RegisterErrorCode | null>(null);
-  readonly showPw = signal(false);
-  readonly showPwConfirm = signal(false);
   readonly isTeacher = signal(false);
   readonly isStudent = signal(false);
   readonly today = new Date().toISOString().slice(0, 10);

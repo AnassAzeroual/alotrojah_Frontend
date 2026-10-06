@@ -4,12 +4,15 @@ import {
   computed,
   DestroyRef,
   inject,
+  resource,
   signal,
 } from '@angular/core';
 import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { filter, firstValueFrom } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
+import { RegistrationRequestsService } from '../api/registration-requests.service';
 import { LanguageService } from '../i18n/language.service';
 import { LanguageSwitcherComponent } from './language-switcher.component';
 import { AdminPrefsService } from '../settings/admin-prefs.service';
@@ -246,6 +249,20 @@ export class ShellComponent {
     return ITEMS.filter((i) => role !== undefined && i.roles.includes(role));
   });
 
+  private readonly regSvc = inject(RegistrationRequestsService);
+  private readonly router = inject(Router);
+  private readonly regTick = signal(0);
+
+  /** Pending waiting-room count for the red registrations badge (admin only). */
+  readonly pendingRegistrations = resource({
+    params: () => ({ admin: this.user()?.role === 'admin', t: this.regTick() }),
+    loader: async ({ params }) => {
+      if (!params.admin) return 0;
+      const p = await firstValueFrom(this.regSvc.list({ per_page: 1 }));
+      return p.meta.total;
+    },
+  });
+
   /**
    * T4: every non-admin sees their center NAME in the header chip; the numeric
    * id is appended only in dev builds (never prod), and only when the display
@@ -262,7 +279,12 @@ export class ShellComponent {
 
   constructor() {
     const timer = setInterval(() => this.now.set(new Date()), 30_000);
-    inject(DestroyRef).onDestroy(() => clearInterval(timer));
+    const destroy = inject(DestroyRef);
+    destroy.onDestroy(() => clearInterval(timer));
+    const nav = this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe(() => this.regTick.update((n) => n + 1));
+    destroy.onDestroy(() => nav.unsubscribe());
   }
 
   toggleSidebar(): void {

@@ -8,9 +8,27 @@
   <app-empty-state />
 } @else {
   <section class="page">
+    @if (leave.leaving()) {
+      <div class="banner danger" data-testid="unsaved-guard">
+        <span>{{ 'common.unsaved_warn' | translate }}</span>
+        <span class="cluster">
+          <button
+            type="button"
+            class="btn btn-danger-solid btn-sm"
+            data-testid="confirm-leave"
+            (click)="leave.allowLeave()"
+          >
+            {{ 'common.unsaved_leave' | translate }}
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+            {{ 'common.cancel' | translate }}
+          </button>
+        </span>
+      </div>
+    }
     <div class="page-head anim-rise">
       @if (renaming()) {
-        <div class="cluster">
+        <form class="cluster" (ngSubmit)="submitRename()" autocomplete="off">
           <input
             type="text"
             data-testid="term-name-input"
@@ -19,7 +37,7 @@
             maxlength="50"
           />
           <button
-            type="button"
+            type="submit"
             class="btn btn-primary btn-sm"
             [disabled]="renameValue().trim() === '' || renameSaving()"
             data-testid="term-name-save"
@@ -39,7 +57,7 @@
           >
             {{ 'common.cancel' | translate }}
           </button>
-        </div>
+        </form>
         @if (renameErrorKey()) {
           <div class="banner danger">{{ renameErrorKey()! | translate }}</div>
         }

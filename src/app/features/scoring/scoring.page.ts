@@ -6,13 +6,20 @@
   resource,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { ScoringService } from '../../core/api/scoring.service';
 import { CentersService } from '../../core/api/centers.service';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { LanguageService } from '../../core/i18n/language.service';
 import {
   DropdownComponent,
@@ -33,6 +40,7 @@ interface Draft {
   selector: 'app-scoring-page',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
     DropdownComponent,
@@ -55,6 +63,12 @@ export class ScoringPage {
   readonly error = signal<{ key: string; params?: Record<string, string | number> } | null>(null);
   readonly drafts = signal<ReadonlyMap<string, Draft>>(new Map());
   readonly showAdd = signal(false);
+
+  /** Dirty guard: unsent draft edits or a half-filled add form block leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.drafts().size > 0 || this.addForm.dirty;
+  }
   protected readonly txt = dropdownText;
   protected readonly num = dropdownNumber;
 
@@ -210,7 +224,7 @@ export class ScoringPage {
       is_active: d.active,
       is_in_weekly_total: d.inTotal,
     }));
-    if (patches.length === 0) return;
+    if (patches.length === 0 || this.saving()) return;
     this.saving.set(true);
     this.error.set(null);
     this.scoring.bulk(patches, this.activeScope()).subscribe({
