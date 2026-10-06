@@ -40,6 +40,14 @@
     gap: var(--space-2);
     flex-wrap: wrap;
   }
+
+  // Title-adjacent add button (centers pattern, all list pages): the icon
+  // sits inside the h1 instead of floating at the far edge.
+  .with-add {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
 }
 
 .grid-auto {

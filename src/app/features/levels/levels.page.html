@@ -3,8 +3,8 @@
     <h1>{{ 'level.title' | translate }}</h1>
   </div>
 
-  <div class="toolbar card anim-rise" style="--i: 1">
-    @if (!prefs.hideScopePickers()) {
+  @if (!prefs.hideScopePickers()) {
+    <div class="toolbar card anim-rise" style="--i: 1" data-testid="levels-toolbar">
       <label class="field">
         <app-dropdown
           [options]="centerScopeOptions()"
@@ -14,8 +14,8 @@
           testId="levels-center-scope"
         />
       </label>
-    }
-  </div>
+    </div>
+  }
 
   <div class="scope-banner anim-rise" style="--i: 1" data-testid="levels-scope-banner">
     @if (activeScope() === null) {

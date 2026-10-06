@@ -1,7 +1,7 @@
 <section class="page">
   <div class="page-head anim-rise">
-    <h1>{{ 'scoring.title' | translate }}</h1>
-    <div class="actions">
+    <h1 class="with-add">
+      {{ 'scoring.title' | translate }}
       <button
         type="button"
         class="btn btn-primary btn-icon"
@@ -21,7 +21,7 @@
           <path d="M12 5v14M5 12h14" />
         </svg>
       </button>
-    </div>
+    </h1>
   </div>
 
   <p class="sum anim-rise" style="--i: 1" [class.bad]="liveSum() !== 20">

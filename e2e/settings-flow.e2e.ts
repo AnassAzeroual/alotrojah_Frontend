@@ -47,6 +47,7 @@ test.describe.serial('Admin settings and center chip', () => {
       .poll(async () => page.locator('.levels-table tbody tr').count())
       .toBeGreaterThanOrEqual(1);
     await expect(page.getByTestId('levels-center-scope')).toHaveCount(0);
+    await expect(page.getByTestId('levels-toolbar')).toHaveCount(0);
 
     // kill-switch off → pickers are back (state restored for later runs).
     // Settle on the persisted-true box before trusting the toggle.

@@ -23,8 +23,8 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
   template: `
     <section class="page">
       <div class="page-head anim-rise">
-        <h1>{{ 'planning.title' | translate }}</h1>
-        <div class="actions">
+        <h1 class="with-add">
+          {{ 'planning.title' | translate }}
           <a
             class="btn btn-primary btn-icon"
             routerLink="/planning/new"
@@ -43,7 +43,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
               <path d="M12 5v14M5 12h14" />
             </svg>
           </a>
-        </div>
+        </h1>
       </div>
       @if (seasons.isLoading()) {
         <div class="stack" aria-hidden="true">

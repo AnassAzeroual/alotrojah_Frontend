@@ -1,7 +1,29 @@
 <section class="page">
   <div class="page-head anim-rise">
     <div>
-      <h1>{{ 'nav.groups' | translate }}</h1>
+      <h1 class="with-add">
+        {{ 'nav.groups' | translate }}
+        @if (canCreate()) {
+          <a
+            routerLink="/groups/new"
+            class="btn btn-primary btn-icon"
+            data-testid="groups-new"
+            [attr.aria-label]="'grp.create' | translate"
+            [attr.title]="'grp.create' | translate"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </a>
+        }
+      </h1>
       <p>{{ 'grp.subtitle' | translate }}</p>
       @if (seasonName()) {
         <p class="season">
@@ -10,26 +32,6 @@
       }
     </div>
     <div class="actions">
-      @if (canCreate()) {
-        <a
-          routerLink="/groups/new"
-          class="btn btn-primary btn-icon"
-          data-testid="groups-new"
-          [attr.aria-label]="'grp.create' | translate"
-          [attr.title]="'grp.create' | translate"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </a>
-      }
       <button type="button" class="btn btn-ghost" (click)="exportCsv()">
         {{ 'grp.export_csv' | translate }}
       </button>
