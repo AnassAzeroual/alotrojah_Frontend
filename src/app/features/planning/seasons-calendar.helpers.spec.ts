@@ -1,4 +1,12 @@
-import { dateToISODate, toCalEvent, termBand, type CalSession } from './seasons-calendar.helpers';
+import {
+  dateToISODate,
+  groupsForDay,
+  sessionsForDay,
+  toCalEvent,
+  termBand,
+  weekdayKey,
+  type CalSession,
+} from './seasons-calendar.helpers';
 
 const SESSION: CalSession = {
   id: 19,
@@ -45,5 +53,61 @@ describe('seasons-calendar helpers', () => {
 
   it('skips bands for dateless terms', () => {
     expect(termBand(2, 'الفصل الثاني', [])).toBeNull();
+  });
+
+  it('maps ISO dates to Mon..Sun keys without UTC shift', () => {
+    expect(weekdayKey('2026-11-18')).toBe('Wed');
+    expect(weekdayKey('2026-11-18T15:30:00')).toBe('Wed');
+    expect(weekdayKey('2026-11-22')).toBe('Sun');
+  });
+
+  it('keeps only active groups meeting that weekday, sorted by name', () => {
+    const groups = [
+      {
+        id: 2,
+        name: 'ب',
+        center_id: 1,
+        level_id: 1,
+        capacity: null,
+        schedule_days: 'Wed',
+        is_active: true,
+      },
+      {
+        id: 1,
+        name: 'أ',
+        center_id: 1,
+        level_id: 1,
+        capacity: null,
+        schedule_days: 'Mon,Wed',
+        is_active: true,
+      },
+      {
+        id: 3,
+        name: 'مؤرشفة',
+        center_id: 1,
+        level_id: 1,
+        capacity: null,
+        schedule_days: 'Wed',
+        is_active: false,
+      },
+      {
+        id: 4,
+        name: 'خميس',
+        center_id: 1,
+        level_id: 1,
+        capacity: null,
+        schedule_days: 'Thu',
+        is_active: true,
+      },
+    ];
+    expect(groupsForDay(groups, 'Wed').map((g) => g.id)).toEqual([1, 2]);
+  });
+
+  it('collects one date ordered by global session number', () => {
+    const second = { ...SESSION, id: 20, session_number_global: 20 };
+    const other = { ...SESSION, id: 21, planned_date: '2026-11-19', session_number_global: 21 };
+    expect(sessionsForDay([second, SESSION, other], '2026-11-18').map((s) => s.id)).toEqual([
+      19, 20,
+    ]);
   });
 });

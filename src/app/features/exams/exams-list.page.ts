@@ -66,7 +66,9 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
         <div class="grid-auto">
           @for (e of exams.value() ?? []; track e.id) {
             <a class="card anim-rise" [style.--i]="$index + 2" [routerLink]="['/exams', e.id]">
-              <strong>#{{ e.id }} · {{ 'examType.' + e.exam_type | translate }}</strong>
+              <strong
+                >{{ e.student_name ?? '—' }} · {{ 'examType.' + e.exam_type | translate }}</strong
+              >
               <small class="muted ltr-num"
                 >{{ e.exam_date ?? '—' }} · {{ e.overall_avg ?? '—'
                 }}{{ 'common.of20' | translate }}</small

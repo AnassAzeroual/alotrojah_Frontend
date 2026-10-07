@@ -97,8 +97,8 @@
                 }
               </td>
               <td>
-                @if (u.center_id) {
-                  <span>{{ u.center_id }}</span>
+                @if (centerName(u.center_id)) {
+                  <span>{{ centerName(u.center_id) }}</span>
                 } @else {
                   <span class="muted">—</span>
                 }

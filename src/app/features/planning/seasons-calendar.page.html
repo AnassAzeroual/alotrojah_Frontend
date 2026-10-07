@@ -22,7 +22,64 @@
     </div>
   } @else {
     <div class="card cal-card anim-rise" style="--i: 1">
-      <full-calendar [options]="options" />
+      <div class="cal-switch">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          (click)="dayBoard.set(!dayBoard())"
+          [attr.aria-pressed]="dayBoard()"
+          data-testid="cal-day-toggle"
+        >
+          {{ 'planning.day_view' | translate }}
+        </button>
+      </div>
+      @if (dayBoard()) {
+        @if (dayDate(); as day) {
+          <div class="day-board">
+            <div class="day-nav">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="shiftDay(-1)">‹</button>
+              <app-date-picker
+                [value]="day"
+                (valueChange)="dayDate.set($any($event))"
+                testId="cal-day"
+              />
+              <button type="button" class="btn btn-ghost btn-sm" (click)="shiftDay(1)">›</button>
+              <strong>{{ dayWeekday() }} · {{ day | appDate }}</strong>
+            </div>
+            <p class="muted">{{ 'planning.day_shared_note' | translate }}</p>
+            @if (dayGroups().length === 0) {
+              <app-empty-state />
+            } @else {
+              <div class="day-cols">
+                @for (g of dayGroups(); track g.id) {
+                  <div class="day-col">
+                    <header>
+                      <span class="avatar-sm" aria-hidden="true">{{ g.name.slice(0, 1) }}</span>
+                      <strong>{{ g.name }}</strong>
+                      <small class="muted">{{ g.teacher?.full_name ?? '—' }}</small>
+                    </header>
+                    @for (s of daySessions(); track s.id) {
+                      <button
+                        type="button"
+                        class="day-sess st-{{ s.session_type }} ss-{{ s.status }}"
+                        [class.sel]="selected()?.id === s.id"
+                        (click)="pickSession(s.id)"
+                      >
+                        <strong class="ltr-num">#{{ s.session_number_global }}</strong>
+                        <span>{{ 'sessionType.' + s.session_type | translate }}</span>
+                      </button>
+                    } @empty {
+                      <p class="muted">{{ 'common.empty' | translate }}</p>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <full-calendar [options]="options" />
+      }
     </div>
 
     @if (selected(); as sel) {

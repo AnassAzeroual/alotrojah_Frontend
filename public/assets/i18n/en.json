@@ -426,6 +426,8 @@
     "edit_season": "Edit season",
     "current": "Current",
     "activate": "Activate",
+    "day_view": "Day view",
+    "day_shared_note": "Sessions are shared calendar days — the sections below meet on this weekday",
     "delete_confirm": "Confirm delete",
     "rename_term": "Rename",
     "plans_title": "Term plans",

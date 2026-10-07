@@ -1,4 +1,5 @@
 import type { EventInput } from '@fullcalendar/core';
+import type { Group } from '../../core/api/api-models';
 
 /** One session flattened with its term/week context for the calendar. */
 export interface CalSession {
@@ -25,6 +26,31 @@ export function addDaysISO(iso: string, n: number): string {
   const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
   d.setDate(d.getDate() + n);
   return dateToISODate(d);
+}
+
+/** ISO yyyy-mm-dd -> Mon..Sun key (local midnight, no UTC shift). */
+export function weekdayKey(iso: string): string {
+  const names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  return names[new Date(`${iso.slice(0, 10)}T00:00:00`).getDay()]!;
+}
+
+/**
+ * Groups meeting on a weekday: active only, schedule_days fit. Sessions are
+ * group-blind by design, so the board maps them implicitly — a session on a
+ * date serves the groups whose weekday that date falls on.
+ */
+export function groupsForDay(groups: Group[], key: string): Group[] {
+  return groups
+    .filter((g) => g.is_active && g.schedule_days.split(',').includes(key))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Sessions of one date, ordered by global session number (the honest timeline — sessions carry dates, not clock times). */
+export function sessionsForDay(sessions: CalSession[], iso: string): CalSession[] {
+  const day = iso.slice(0, 10);
+  return sessions
+    .filter((s) => s.planned_date?.slice(0, 10) === day)
+    .sort((a, b) => a.session_number_global - b.session_number_global);
 }
 
 /**

@@ -77,6 +77,85 @@
   font-weight: 700;
 }
 
+// Day board (custom, MIT-clean): one column per group meeting the picked
+// weekday. Sessions carry dates, not clock times, so columns list them in
+// session-number order instead of a fake time grid. Colors mirror the grid's
+// type hooks above (same fixed contrast pairs).
+.cal-switch {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.day-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.day-cols {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-block: 8px;
+}
+
+.day-col {
+  flex: 1 0 220px;
+  min-width: 220px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  padding: 12px;
+}
+
+.day-col > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.day-sess {
+  display: block;
+  width: 100%;
+  text-align: start;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--green-600);
+  color: #063325;
+  cursor: pointer;
+}
+
+.day-sess.st-revision {
+  background: var(--color-gold);
+  color: #063325;
+}
+
+.day-sess.st-exam {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+.day-sess.ss-done,
+.day-sess.ss-cancelled {
+  opacity: 0.55;
+}
+
+.day-sess.ss-cancelled {
+  text-decoration: line-through;
+}
+
+.day-sess.sel {
+  outline: 2px solid var(--green-600);
+  outline-offset: 1px;
+}
+
 .fc-event {
   cursor: grab;
   border-radius: var(--radius-sm);

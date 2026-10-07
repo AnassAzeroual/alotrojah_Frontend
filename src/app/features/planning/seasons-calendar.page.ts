@@ -21,9 +21,12 @@ import interactionPlugin from '@fullcalendar/interaction';
 import arLocale from '@fullcalendar/core/locales/ar';
 import frLocale from '@fullcalendar/core/locales/fr';
 import { SeasonsService } from '../../core/api/seasons.service';
+import { GroupsService } from '../../core/api/groups.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { LanguageService } from '../../core/i18n/language.service';
+import { AppDatePipe } from '../../shared/ui/app-date/app-date.pipe';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import {
   DropdownComponent,
@@ -32,7 +35,16 @@ import {
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
-import { dateToISODate, termBand, toCalEvent, type CalSession } from './seasons-calendar.helpers';
+import {
+  dateToISODate,
+  addDaysISO,
+  groupsForDay,
+  sessionsForDay,
+  termBand,
+  toCalEvent,
+  weekdayKey,
+  type CalSession,
+} from './seasons-calendar.helpers';
 
 /**
  * Experimental full-calendar sandbox for seasons (the legacy season/term
@@ -48,6 +60,8 @@ import { dateToISODate, termBand, toCalEvent, type CalSession } from './seasons-
     RouterLink,
     DropdownComponent,
     DatePickerComponent,
+    AppDatePipe,
+    EmptyStateComponent,
     SpinnerComponent,
     FullCalendarModule,
   ],
@@ -56,6 +70,7 @@ import { dateToISODate, termBand, toCalEvent, type CalSession } from './seasons-
 })
 export class SeasonsCalendarPage {
   private readonly seasonsSvc = inject(SeasonsService);
+  private readonly groupsSvc = inject(GroupsService);
   private readonly planning = inject(PlanningService);
   private readonly router = inject(Router);
   private readonly language = inject(LanguageService);
@@ -69,6 +84,9 @@ export class SeasonsCalendarPage {
   readonly errorKey = signal<string | null>(null);
   readonly pickedSeason = signal<number | null>(null);
   readonly selectedId = signal<number | null>(null);
+  /** Day board (custom, MIT-clean): grid stays in FullCalendar, the day lens is ours. */
+  readonly dayBoard = signal(false);
+  readonly dayDate = signal<string | null>(null);
   private readonly tick = signal(0);
   private navigatedFor: number | null = null;
   private readonly focusedTerm = signal<number | null>(null);
@@ -102,6 +120,33 @@ export class SeasonsCalendarPage {
 
   /** Flat session feed with term/week context (local PATCHes edit in place). */
   private readonly allSessions = signal<CalSession[]>([]);
+
+  private readonly groupsRes = resource({
+    loader: () => this.groupsSvc.listAll(),
+  });
+
+  /** Weekday name in the current locale (zero new i18n keys). */
+  protected readonly dayWeekday = computed(() => {
+    const iso = this.dayDate();
+    if (!iso) return '';
+    return new Intl.DateTimeFormat(this.language.current(), { weekday: 'long' }).format(
+      new Date(`${iso.slice(0, 10)}T00:00:00`),
+    );
+  });
+
+  /** Groups meeting on the picked weekday (active only). */
+  protected readonly dayGroups = computed(() => {
+    const iso = this.dayDate();
+    if (!iso) return [];
+    return groupsForDay(this.groupsRes.value() ?? [], weekdayKey(iso));
+  });
+
+  /** That date's sessions, ordered by global session number. */
+  protected readonly daySessions = computed(() => {
+    const iso = this.dayDate();
+    if (!iso) return [];
+    return sessionsForDay(this.allSessions(), iso);
+  });
 
   protected readonly selected = computed(
     () => this.allSessions().find((s) => s.id === this.selectedId()) ?? null,
@@ -169,6 +214,16 @@ export class SeasonsCalendarPage {
       if (!first) return;
       this.navigatedFor = season;
       api.gotoDate(first.slice(0, 10));
+    });
+    // Day board lands on the same first date (independent effect — the board
+    // is a lens over allSessions, never a second source of truth).
+    effect(() => {
+      if (this.dayDate() !== null) return;
+      const first = this.allSessions()
+        .map((r) => r.planned_date)
+        .filter((d): d is string => !!d)
+        .sort()[0];
+      if (first) this.dayDate.set(first.slice(0, 10));
     });
     // Deep link: resolve the term's own season + first date, then drive the
     // normal pipeline (season pick -> load -> land effect above).
@@ -266,6 +321,16 @@ export class SeasonsCalendarPage {
 
   protected pickSeason(v: number | null): void {
     this.pickedSeason.set(v);
+  }
+
+  protected shiftDay(n: number): void {
+    const iso = this.dayDate();
+    if (!iso) return;
+    this.dayDate.set(addDaysISO(iso, n));
+  }
+
+  protected pickSession(id: number): void {
+    this.selectedId.set(id);
   }
 
   protected setDate(id: number, iso: string | null): void {

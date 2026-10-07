@@ -3,8 +3,8 @@
 
 [dir='rtl'] {
   .ltr-num {
-    direction: ltr;
-    unicode-bidi: embed;
+    //direction: ltr;
+    //unicode-bidi: embed;
   }
 
   input[type='number'],
@@ -19,6 +19,7 @@
 }
 
 [dir='ltr'] {
+
   input[type='number'],
   input[type='tel'],
   input[type='email'] {

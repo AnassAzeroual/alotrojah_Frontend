@@ -10,6 +10,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { UsersService } from '../../core/api/users.service';
+import { CentersService } from '../../core/api/centers.service';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -35,6 +36,7 @@ const ROLES: Role[] = ['admin', 'supervisor', 'teacher', 'student', 'board'];
 })
 export class UsersListPage {
   private readonly usersSvc = inject(UsersService);
+  private readonly centersSvc = inject(CentersService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly i18n = inject(TranslateService);
@@ -91,6 +93,16 @@ export class UsersListPage {
   readonly rows = () => this.query.value()?.data ?? [];
   readonly total = () => this.query.value()?.meta.total ?? 0;
   readonly loading = () => this.query.isLoading();
+
+  /** Center names for the table (ids are meaningless to readers). Cached GET. */
+  private readonly centers = resource({
+    loader: () => firstValueFrom(this.centersSvc.list()),
+  });
+
+  protected centerName(id: number | null): string | null {
+    if (id === null) return null;
+    return this.centers.value()?.data.find((c) => c.id === id)?.name ?? null;
+  }
 
   protected resetPage(): void {
     this.page.set(1);
