@@ -118,8 +118,8 @@ describe('RegistrationsPage', () => {
     expect(el.textContent).toContain('Fatima Zahra');
     expect(el.textContent).toContain('fatima@example.com');
     expect(el.textContent).toContain('teacher_type.murajaa');
-    expect(el.textContent).toContain('2012-05-10');
-    expect(el.textContent).toContain('2026-10-01');
+    expect(el.textContent).toContain('10/05/2012');
+    expect(el.textContent).toContain('01/10/2026');
   });
 
   it('accepts a request with the chosen center and reloads the list', async () => {

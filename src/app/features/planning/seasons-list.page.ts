@@ -74,6 +74,57 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
                     'planning.terms' | translate
                   }}</a>
                 }
+                @if (canManage()) {
+                  @if (renamingId() === s.id) {
+                    <input
+                      type="text"
+                      [value]="renameValue()"
+                      (input)="renameValue.set($any($event.target).value)"
+                      maxlength="50"
+                      [attr.aria-label]="'planning.rename_term' | translate"
+                      [attr.data-testid]="'rename-season-input-' + s.id"
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm"
+                      [disabled]="renameValue().trim() === '' || renameSaving()"
+                      [attr.data-testid]="'rename-season-save-' + s.id"
+                      (click)="submitRename(s.id)"
+                    >
+                      @if (renameSaving()) {
+                        <app-spinner />
+                      } @else {
+                        {{ 'common.save' | translate }}
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm"
+                      [disabled]="renameSaving()"
+                      (click)="cancelRename()"
+                    >
+                      {{ 'common.cancel' | translate }}
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm"
+                      [attr.data-testid]="'rename-season-' + s.id"
+                      [attr.aria-label]="'planning.rename_term' | translate"
+                      (click)="startRename(s)"
+                    >
+                      {{ 'planning.rename_term' | translate }}
+                    </button>
+                  }
+                  <a
+                    class="btn btn-ghost btn-sm"
+                    [routerLink]="['/planning', s.id, 'edit']"
+                    [attr.data-testid]="'edit-season-' + s.id"
+                    [attr.aria-label]="'planning.edit_season' | translate"
+                  >
+                    {{ 'planning.edit_season' | translate }}
+                  </a>
+                }
                 @if (canDelete()) {
                   @if (!s.is_current) {
                     @if (armingDeleteId() === s.id) {
@@ -115,6 +166,9 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
               @if (deleteFailed()?.id === s.id) {
                 <div class="banner danger">{{ deleteFailed()!.key | translate }}</div>
               }
+              @if (renameFailed()?.id === s.id) {
+                <div class="banner danger">{{ renameFailed()!.key | translate }}</div>
+              }
             </div>
           }
         </div>
@@ -128,9 +182,15 @@ export class SeasonsListPage {
 
   /** Season delete is admin-only (policy); supervisors see the page read-only. */
   readonly canDelete = computed(() => this.auth.role() === 'admin');
+  /** Rename follows the manage ability (admin/supervisor, center-laned server-side). */
+  readonly canManage = computed(() => ['admin', 'supervisor'].includes(this.auth.role() ?? ''));
   readonly armingDeleteId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
   readonly deleteFailed = signal<{ id: number; key: string } | null>(null);
+  readonly renamingId = signal<number | null>(null);
+  readonly renameValue = signal('');
+  readonly renameSaving = signal(false);
+  readonly renameFailed = signal<{ id: number; key: string } | null>(null);
 
   protected readonly seasons = resource({
     params: () => ({}),
@@ -165,6 +225,36 @@ export class SeasonsListPage {
         this.busyId.set(null);
         this.armingDeleteId.set(null);
         this.deleteFailed.set({ id, key: apiErrorKey(err) });
+      },
+    });
+  }
+
+  startRename(s: { id: number; name: string }): void {
+    this.renamingId.set(s.id);
+    this.renameValue.set(s.name);
+    this.renameFailed.set(null);
+  }
+
+  cancelRename(): void {
+    this.renamingId.set(null);
+    this.renameFailed.set(null);
+  }
+
+  submitRename(id: number): void {
+    const name = this.renameValue().trim();
+    if (name === '' || name.length > 50 || this.renameSaving()) return;
+    this.renameSaving.set(true);
+    this.renameFailed.set(null);
+    this.seasonsSvc.update(id, { name }).subscribe({
+      next: () => {
+        this.renameSaving.set(false);
+        this.renamingId.set(null);
+        this.seasons.reload();
+      },
+      // 422 on duplicate names (unique rule) surfaces here, translated.
+      error: (err: unknown) => {
+        this.renameSaving.set(false);
+        this.renameFailed.set({ id, key: apiErrorKey(err) });
       },
     });
   }

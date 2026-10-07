@@ -27,7 +27,7 @@ test.describe.serial('Exam question cap (roadmap S23 / F4 silent dead queue butt
     await pick.click();
     await page.getByTestId('exam-term').click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
-    await page.getByTestId('exam-date').fill('2026-10-06');
+    await page.getByTestId('exam-date').fill('06/10/2026');
     await page.getByTestId('exam-submit').click();
     await expect(page).toHaveURL(/\/exams\/\d+$/);
     const examId = page.url().match(/\/exams\/(\d+)$/)?.[1];

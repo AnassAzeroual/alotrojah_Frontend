@@ -12,6 +12,7 @@ export interface Season {
   total_weeks: number;
   total_sessions: number;
   is_current: boolean;
+  center_id: number | null;
   terms_count?: number;
   first_term_id?: number | null;
 }
@@ -43,6 +44,24 @@ export class SeasonsService {
 
   activate(id: number): Observable<Season> {
     return this.api.post<Season>(`/seasons/${id}/activate`, {});
+  }
+
+  /** One season (edit form seeds from it). */
+  get(id: number): Observable<Season> {
+    return this.api.get<Season>(`/seasons/${id}`);
+  }
+
+  /** Rename / adjust dates (UpdateSeasonRequest: sometimes-rules). */
+  update(
+    id: number,
+    payload: {
+      name?: string;
+      start_date?: string;
+      end_date?: string | null;
+      hijri_year?: string | null;
+    },
+  ): Observable<Season> {
+    return this.api.put<Season>(`/seasons/${id}`, payload);
   }
 
   remove(id: number): Observable<null> {

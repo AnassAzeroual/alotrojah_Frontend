@@ -145,9 +145,28 @@ app-dropdown.ng-touched.ng-invalid .dd-btn {
 // Dynamic form rows (season terms): inputs + delete share a row
 .term-row {
   display: grid;
-  grid-template-columns: 1fr 90px auto;
+  grid-template-columns: 1fr 120px auto;
   gap: var(--space-2);
   align-items: center;
+
+  // Weeks-count cell: number + unit label share the narrow column.
+  .weeks-unit {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+
+    input {
+      flex: 1;
+    }
+
+    small {
+      flex: none;
+      color: var(--color-muted);
+      font-size: var(--text-xs);
+      font-weight: 700;
+    }
+  }
 
   input {
     font-family: inherit;

@@ -5,7 +5,7 @@ const TEACHER = 'teach1a.nour@example.org';
 const STUDENT = 'أحمد بن يوسف';
 
 async function pickSession1(page: import('@playwright/test').Page): Promise<void> {
-  await page.getByRole('button', { name: 'الحلقة', exact: true }).click();
+  await page.getByRole('button', { name: 'القسم', exact: true }).click();
   await page.locator('.dd.open [role="option"]').nth(1).click();
   await page.getByRole('button', { name: 'الأسبوع', exact: true }).click();
   await page.locator('.dd.open [role="option"]').nth(1).click();

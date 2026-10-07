@@ -1,114 +1,108 @@
 <section class="page">
   <div class="page-head anim-rise">
-    <h1>{{ 'planning.new_season' | translate }}</h1>
-    <div class="actions">
-      <button
-        type="button"
-        class="btn btn-ghost"
-        data-testid="seasons-template"
-        (click)="fillTemplate()"
-      >
-        {{ 'planning.use_template' | translate }}
-      </button>
-    </div>
+    <h1>
+      @if (isNew()) {
+        {{ 'planning.new_season' | translate }}
+      } @else {
+        {{ 'planning.edit_season' | translate }}
+      }
+    </h1>
+    @if (isNew()) {
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" data-testid="seasons-template" (click)="fillTemplate()">
+          {{ 'planning.use_template' | translate }}
+        </button>
+      </div>
+    }
   </div>
 
   @if (leave.leaving()) {
-    <div class="banner danger" data-testid="unsaved-guard">
-      <span>{{ 'common.unsaved_warn' | translate }}</span>
-      <span class="cluster">
-        <button
-          type="button"
-          class="btn btn-danger-solid btn-sm"
-          data-testid="confirm-leave"
-          (click)="leave.allowLeave()"
-        >
-          {{ 'common.unsaved_leave' | translate }}
-        </button>
-        <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
-          {{ 'common.cancel' | translate }}
-        </button>
-      </span>
-    </div>
+  <div class="banner danger" data-testid="unsaved-guard">
+    <span>{{ 'common.unsaved_warn' | translate }}</span>
+    <span class="cluster">
+      <button type="button" class="btn btn-danger-solid btn-sm" data-testid="confirm-leave"
+        (click)="leave.allowLeave()">
+        {{ 'common.unsaved_leave' | translate }}
+      </button>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+        {{ 'common.cancel' | translate }}
+      </button>
+    </span>
+  </div>
   }
 
   <section class="card anim-rise" style="--i: 1">
     <form [formGroup]="form" (ngSubmit)="submit()" class="stack" autocomplete="off">
-      <label class="field"
-        ><span>{{ 'planning.name' | translate }}</span
-        ><input formControlName="name" data-testid="season-name"
-      /></label>
-      <label class="field"
-        ><span>{{ 'planning.start_date' | translate }}</span
-        ><input type="date" formControlName="start_date" data-testid="season-start"
-      /></label>
-      @if (isAdmin()) {
+      <label class="field"><span>{{ 'planning.name' | translate }}</span><input formControlName="name"
+          data-testid="season-name" /></label>
+      <label class="field"><span>{{ 'planning.start_date' | translate }}</span><app-date-picker
+          formControlName="start_date" testId="season-start" /></label>
+      @if (!isNew()) {
         <label class="field"
-          ><span>{{ 'dash.center' | translate }} <span class="danger">*</span></span>
-          <app-dropdown
-            [options]="centerOptions()"
-            [value]="form.controls.center_id.value"
-            (valueChange)="form.controls.center_id.setValue(num($event))"
-            ariaLabelKey="dash.center"
-            testId="season-center"
-          />
-        </label>
+          ><span>{{ 'planning.end_date' | translate }}</span
+          ><app-date-picker formControlName="end_date" testId="season-end"
+        /></label>
       }
-      <label class="field"
-        ><span>{{ 'planning.hijri' | translate }}</span
-        ><input formControlName="hijri_year"
-      /></label>
-      <label class="field"
-        ><span>{{ 'planning.sessions_per_week' | translate }}</span>
-        <input type="number" class="ltr-num" formControlName="sessions_per_week" min="1" max="7" />
+      @if (isAdmin() && isNew()) {
+      <label class="field"><span>{{ 'dash.center' | translate }} <span class="danger">*</span></span>
+        <app-dropdown [options]="centerOptions()" [value]="form.controls.center_id.value"
+          (valueChange)="form.controls.center_id.setValue(num($event))" ariaLabelKey="dash.center"
+          testId="season-center" />
       </label>
-      <label class="field"
-        ><span>{{ 'planning.review_weeks' | translate }}</span>
-        <input
-          type="number"
-          class="ltr-num"
-          formControlName="review_weeks_per_term"
-          min="0"
-          max="3"
-        />
-      </label>
+      }
+      <label class="field"><span>{{ 'planning.hijri' | translate }}</span><input formControlName="hijri_year" /></label>
+      @if (isNew()) {
+        <label class="field"><span>{{ 'planning.sessions_per_week' | translate }}</span>
+          <input type="number" class="ltr-num" formControlName="sessions_per_week" min="1" max="7" />
+        </label>
+        <label class="field"><span>{{ 'planning.review_weeks' | translate }}</span>
+          <input type="number" class="ltr-num" formControlName="review_weeks_per_term" min="0" max="3" />
+        </label>
 
-      <h2>{{ 'planning.terms' | translate }}</h2>
-      <div formArrayName="terms" class="stack">
-        @for (row of form.controls.terms.controls; track $index) {
-          <div class="term-row anim-rise" [style.--i]="$index + 2" [formGroupName]="$index">
-            <input formControlName="name" [placeholder]="'planning.name' | translate" />
-            <input type="number" formControlName="weeks" min="1" max="12" class="ltr-num" />
-            <button
-              type="button"
-              class="btn btn-danger-ghost"
-              [attr.aria-label]="'common.delete' | translate"
-              (click)="removeTerm($index)"
-            >
-              {{ 'common.delete' | translate }}
-            </button>
-          </div>
-        }
-      </div>
-      <button type="button" class="btn btn-ghost" (click)="addTerm()">
-        + {{ 'planning.terms' | translate }}
-      </button>
+        <h2>{{ 'planning.terms' | translate }}</h2>
+        <div formArrayName="terms" class="stack">
+          @for (row of form.controls.terms.controls; track $index) {
+            <div class="term-row anim-rise" [style.--i]="$index + 2" [formGroupName]="$index">
+              <input formControlName="name" [placeholder]="'planning.name' | translate" />
+              <span class="weeks-unit">
+                <small>{{ 'planning.weeks_unit' | translate }} : </small>
+                <input
+                  type="number"
+                  formControlName="weeks"
+                  min="1"
+                  max="12"
+                  class="ltr-num"
+                  [attr.aria-label]="'planning.weeks_unit' | translate"
+                />
+              </span>
+              <button
+                type="button"
+                class="btn btn-danger-ghost"
+                [attr.aria-label]="'common.delete' | translate"
+                (click)="removeTerm($index)"
+              >
+                {{ 'common.delete' | translate }}
+              </button>
+            </div>
+          }
+        </div>
+        <button type="button" class="btn btn-ghost" (click)="addTerm()">
+          + {{ 'planning.terms' | translate }}
+        </button>
+      }
 
       @if (error()) {
-        <p class="field-error">{{ error() }}</p>
+      <p class="field-error">{{ error() }}</p>
       }
 
-      <button
-        type="submit"
-        class="btn btn-primary btn-block"
-        data-testid="season-save"
-        [class.is-loading]="saving()"
-        [disabled]="form.invalid || saving()"
-      >
+      <button type="submit" class="btn btn-primary btn-block" data-testid="season-save" [class.is-loading]="saving()"
+        [disabled]="form.invalid || saving()">
         @if (saving()) {
           <app-spinner />
-        } @else {
+        } @else if (isNew()) {
           {{ 'planning.create' | translate }}
+        } @else {
+          {{ 'common.save' | translate }}
         }
       </button>
     </form>

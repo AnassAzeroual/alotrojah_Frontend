@@ -17,6 +17,16 @@ export const GROUPS_ROUTES: Routes = [
     data: { roles: ['admin', 'supervisor'] },
   },
   {
+    // NOTE: ':id/edit' (two segments) never collides with ':id' (one), but it
+    // stays above it so the intent reads top-down. Owner-teachers keep the
+    // inline edit on detail — roleGuard cannot check ownership.
+    path: ':id/edit',
+    loadComponent: () => import('./group-form.page').then((m) => m.GroupFormPage),
+    canActivate: [roleGuard],
+    canDeactivate: [dirtyGuard],
+    data: { roles: ['admin', 'supervisor'] },
+  },
+  {
     path: ':id',
     loadComponent: () => import('./group-detail.page').then((m) => m.GroupDetailPage),
     canActivate: [roleGuard],

@@ -1,12 +1,20 @@
 <section class="page">
   <div class="page-head anim-rise">
     <h1>
-      <a routerLink="/groups" class="btn btn-icon btn-ghost" aria-label="Back">
+      <a
+        [routerLink]="isNew() ? '/groups' : ['/groups', editId()]"
+        class="btn btn-icon btn-ghost"
+        aria-label="Back"
+      >
         <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24">
           <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
         </svg>
       </a>
-      {{ 'grp.create' | translate }}
+      @if (isNew()) {
+        {{ 'grp.create' | translate }}
+      } @else {
+        {{ 'grp.edit' | translate }}
+      }
     </h1>
   </div>
 
@@ -43,7 +51,7 @@
           />
         </label>
 
-        @if (isAdmin()) {
+        @if (isAdmin() && isNew()) {
           <label class="field">
             <span>{{ 'dash.center' | translate }} <span class="danger">*</span></span>
             <app-dropdown
@@ -94,6 +102,18 @@
           />
         </label>
 
+        @if (!isNew()) {
+          <label class="chk">
+            <input
+              type="checkbox"
+              [checked]="active()"
+              (change)="active.set($any($event.target).checked)"
+              data-testid="group-active"
+            />
+            <span>{{ 'common.active' | translate }}</span>
+          </label>
+        }
+
         <div class="field wide">
           <span>{{ 'grp.schedule' | translate }}</span>
           <div class="day-pick">
@@ -127,7 +147,9 @@
             {{ 'common.save' | translate }}
           }
         </button>
-        <a routerLink="/groups" class="btn btn-ghost">{{ 'common.cancel' | translate }}</a>
+        <a [routerLink]="isNew() ? '/groups' : ['/groups', editId()]" class="btn btn-ghost">{{
+          'common.cancel' | translate
+        }}</a>
       </div>
     </form>
     @if (saveFailed()) {

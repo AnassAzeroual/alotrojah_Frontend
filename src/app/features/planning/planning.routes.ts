@@ -19,6 +19,15 @@ export const PLANNING_ROUTES: Routes = [
     data: { roles: MANAGER },
   },
   {
+    // Full edit form (name/dates/hijri only — terms/sessions are generated
+    // once and immutable afterwards, or recorded facts would orphan).
+    path: ':id/edit',
+    loadComponent: () => import('./season-create.page').then((m) => m.SeasonCreatePage),
+    canActivate: [roleGuard],
+    canDeactivate: [dirtyGuard],
+    data: { roles: MANAGER },
+  },
+  {
     path: 'terms/:id',
     loadComponent: () => import('./term-detail.page').then((m) => m.TermDetailPage),
     canActivate: [roleGuard],

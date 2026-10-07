@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
+  input,
   resource,
   signal,
 } from '@angular/core';
@@ -25,6 +27,16 @@ import {
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 const WEEKDAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+
+/** Loaded-state snapshot for the edit-mode dirty comparison. */
+interface GroupEditSeed {
+  name: string;
+  levelId: number | null;
+  teacherId: number | null;
+  capacity: number | null;
+  days: string;
+  active: boolean;
+}
 
 @Component({
   selector: 'app-group-form-page',
@@ -54,6 +66,17 @@ export class GroupFormPage {
   protected readonly teacherId = signal<number | null>(null);
   protected readonly capacity = signal<number | null>(null);
   protected readonly days = signal<string[]>([]);
+  protected readonly active = signal(true);
+
+  /** Edit mode: router binds :id via withComponentInputBinding (`/groups/new` has none). */
+  readonly id = input<number | null, string | null>(null, {
+    transform: (v: string | null) => (v === null || v === '' ? null : Number(v)),
+  });
+  protected readonly editId = computed(() => {
+    const v = this.id();
+    return v !== null && Number.isInteger(v) && v > 0 ? v : null;
+  });
+  protected readonly isNew = computed(() => this.editId() === null);
 
   /** Only admins choose the center; supervisors are scoped server-side. */
   protected readonly isAdmin = computed(() => this.auth.role() === 'admin');
@@ -66,6 +89,21 @@ export class GroupFormPage {
   /** Dirty guard: any filled composer field blocks route leave. */
   protected readonly leave = leaveController();
   isDirty(): boolean {
+    const seed = this.editSeed();
+    if (this.editId() !== null) {
+      // Edit mode compares against the loaded snapshot (centers/levels
+      // row-edit pattern); an unloaded form counts as dirty.
+      if (!seed) return true;
+      const cur = this.snapshot();
+      return (
+        cur.name !== seed.name ||
+        cur.levelId !== seed.levelId ||
+        cur.teacherId !== seed.teacherId ||
+        cur.capacity !== seed.capacity ||
+        cur.days !== seed.days ||
+        cur.active !== seed.active
+      );
+    }
     return (
       this.name().trim() !== '' ||
       this.centerId() !== null ||
@@ -115,6 +153,43 @@ export class GroupFormPage {
     },
   });
 
+  /** Edit mode: load the group once, then seed the composer (never clobber user edits on refires). */
+  private readonly editSeed = signal<GroupEditSeed | null>(null);
+  private readonly seededFor = signal<number | null>(null);
+  private readonly detailRes = resource({
+    params: () => ({ id: this.editId() }),
+    loader: ({ params }) =>
+      params.id === null ? Promise.resolve(null) : firstValueFrom(this.groupsSvc.detail(params.id)),
+  });
+
+  constructor() {
+    effect(() => {
+      const id = this.editId();
+      const g = this.detailRes.value()?.group;
+      if (id === null || !g || this.seededFor() === id) return;
+      this.name.set(g.name);
+      this.centerId.set(g.center_id);
+      this.levelId.set(g.level?.id ?? null);
+      this.teacherId.set(g.teacher?.id ?? null);
+      this.capacity.set(g.capacity);
+      this.days.set(g.schedule_days ? g.schedule_days.split(',').filter((d) => d !== '') : []);
+      this.active.set(g.is_active);
+      this.editSeed.set(this.snapshot());
+      this.seededFor.set(id);
+    });
+  }
+
+  private snapshot(): GroupEditSeed {
+    return {
+      name: this.name().trim(),
+      levelId: this.levelId(),
+      teacherId: this.teacherId(),
+      capacity: this.capacity(),
+      days: this.days().join(','),
+      active: this.active(),
+    };
+  }
+
   protected readonly teacherOptions = computed<DropdownOption[]>(() => {
     const opts: DropdownOption[] = (this.teachersRes.value() ?? []).map((u) => ({
       value: u.id,
@@ -143,6 +218,38 @@ export class GroupFormPage {
   }
 
   protected submit(): void {
+    if (!this.canSave()) return;
+    const id = this.editId();
+    if (id === null) {
+      this.submitCreate();
+      return;
+    }
+    this.saving.set(true);
+    this.saveFailed.set(null);
+    this.groupsSvc
+      .update(id, {
+        name: this.name().trim(),
+        level_id: this.levelId()!,
+        teacher_id: this.teacherId(),
+        capacity: this.capacity(),
+        schedule_days: this.days().join(','),
+        is_active: this.active(),
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          // Re-snapshot so the guard is clean for the ride back to detail.
+          this.editSeed.set(this.snapshot());
+          void this.router.navigate(['/groups', id]);
+        },
+        error: (err: unknown) => {
+          this.saving.set(false);
+          this.saveFailed.set(apiErrorKey(err));
+        },
+      });
+  }
+
+  private submitCreate(): void {
     if (!this.canSave()) return;
     this.saving.set(true);
     this.saveFailed.set(null);

@@ -19,6 +19,7 @@ import { ReferenceService, Level } from '../../core/api/reference.service';
 import { UsersService } from '../../core/api/users.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
+import { AppDatePipe } from '../../shared/ui/app-date/app-date.pipe';
 import { ChartComponent } from '../../shared/ui/chart/chart.component';
 import {
   DropdownComponent,
@@ -51,6 +52,7 @@ const WEEKDAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
     DropdownComponent,
     EmptyStateComponent,
     SpinnerComponent,
+    AppDatePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './group-detail.page.html',

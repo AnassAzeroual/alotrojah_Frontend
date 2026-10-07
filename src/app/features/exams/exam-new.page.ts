@@ -22,13 +22,21 @@ import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
+import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 @Component({
   selector: 'app-exam-new-page',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, DropdownComponent, SpinnerComponent],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    TranslatePipe,
+    DatePickerComponent,
+    DropdownComponent,
+    SpinnerComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './exam-new.page.html',
 })

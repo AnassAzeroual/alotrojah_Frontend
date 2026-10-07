@@ -79,12 +79,10 @@
           @if (isStudent()) {
             <div class="field-pair">
               <div class="auth-input">
-                <input
-                  type="date"
+                <app-date-picker
                   formControlName="birth_date"
-                  dir="ltr"
-                  [attr.max]="today"
-                  [attr.aria-label]="'auth.birth_date' | translate"
+                  [max]="today"
+                  ariaLabelKey="auth.birth_date"
                 />
               </div>
               <app-dropdown

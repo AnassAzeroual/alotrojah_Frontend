@@ -14,6 +14,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { RegisterPayload, RegisterRole, TeacherType } from '../../core/api/api-models';
 import { DropdownComponent, DropdownOption } from '../../shared/ui/dropdown/dropdown.component';
+import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { AuthArtComponent } from './auth-art.component';
 import { AuthTopbarComponent } from './auth-topbar.component';
@@ -46,6 +47,7 @@ type RegisterErrorCode = 'email_taken' | 'in_waiting_room' | 'invalid';
     ReactiveFormsModule,
     RouterLink,
     TranslatePipe,
+    DatePickerComponent,
     DropdownComponent,
     SpinnerComponent,
     AuthArtComponent,

@@ -1,5 +1,6 @@
 /* Global styles: tokens + base, mobile first. */
 @use 'app/styles/tokens' as *;
+@use 'app/styles/flatpickr';
 @use 'app/styles/layout';
 @use 'app/styles/buttons';
 @use 'app/styles/forms';

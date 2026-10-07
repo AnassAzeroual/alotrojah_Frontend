@@ -231,6 +231,28 @@ tbody td {
   }
 }
 
+// Row edit pencil: same footprint as the expander, sits beside it.
+.pencil {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--green-800);
+  text-decoration: none;
+
+  [data-theme='dark'] & {
+    color: var(--green-300);
+  }
+
+  &:hover {
+    border-color: var(--green-500);
+  }
+}
+
 .mut {
   color: var(--color-muted);
 }

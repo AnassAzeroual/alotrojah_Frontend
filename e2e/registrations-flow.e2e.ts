@@ -15,7 +15,7 @@ test.describe.serial('Registration requests (roadmap S31, S5, S6)', () => {
     await page.getByLabel('رقم الهاتف').fill('+212600000001');
     await page.getByRole('button', { name: 'الصفة' }).click();
     await page.locator('.dd.open [role="option"]', { hasText: 'طالب' }).click();
-    await page.getByLabel('تاريخ الميلاد').fill('2000-01-01');
+    await page.getByLabel('تاريخ الميلاد').fill('01/01/2000');
     await page.getByRole('button', { name: 'الجنس' }).click();
     await page.locator('.dd.open [role="option"]', { hasText: 'ذكر' }).click();
     await page.getByLabel('كلمة المرور', { exact: true }).fill(password);

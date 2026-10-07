@@ -61,7 +61,7 @@ describe('RegisterPage', () => {
     expect(page).toBeTruthy();
     expect(page.isTeacher()).toBe(false);
     expect(page.isStudent()).toBe(false);
-    expect(fixture.nativeElement.querySelector('input[type="date"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-date-picker')).toBeNull();
   });
 
   it('reveals teacher_type only for teachers and student fields only for students', () => {
@@ -77,14 +77,14 @@ describe('RegisterPage', () => {
     fixture.detectChanges();
     expect(page.isTeacher()).toBe(false);
     expect(page.isStudent()).toBe(true);
-    expect(fixture.nativeElement.querySelector('input[type="date"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-date-picker')).not.toBeNull();
     expect(formDropdowns()).toBe(2); // role + gender
     expect(page.form.controls.teacher_type.value).toBeNull();
 
     page.form.controls.role.setValue('board');
     fixture.detectChanges();
     expect(page.isStudent()).toBe(false);
-    expect(fixture.nativeElement.querySelector('input[type="date"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-date-picker')).toBeNull();
     expect(formDropdowns()).toBe(1); // role only
     expect(page.form.controls.birth_date.value).toBe('');
     expect(page.form.controls.gender.value).toBeNull();

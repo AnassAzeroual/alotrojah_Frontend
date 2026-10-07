@@ -32,7 +32,7 @@ test.describe.serial('Comms (roadmap S28 authorship, S29 delegation, S30 wa.me q
     await page.goto('/delegate');
     await expect(page).toHaveURL(/\/delegate$/);
 
-    await page.getByRole('button', { name: 'الحلقة', exact: true }).click();
+    await page.getByRole('button', { name: 'القسم', exact: true }).click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
     await page.getByRole('button', { name: 'المدة (دقائق)', exact: true }).click();
     await page.locator('.dd.open [role="option"]', { hasText: '60' }).click();
@@ -57,12 +57,12 @@ test.describe.serial('Comms (roadmap S28 authorship, S29 delegation, S30 wa.me q
     await loginAs(p2, TEACH_C, 'password123');
     await expect(p2).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await p2.goto(url);
-    await expect(p2.getByText('تم منح الدخول للمجموعة')).toBeVisible();
+    await expect(p2.getByText('تم منح الدخول للقسم')).toBeVisible();
 
     // the token binds to the FIRST redeeming teacher; the same teacher
     // re-entering is idempotently re-granted (not refused)
     await p2.goto(url);
-    await expect(p2.getByText('تم منح الدخول للمجموعة')).toBeVisible();
+    await expect(p2.getByText('تم منح الدخول للقسم')).toBeVisible();
     await ctx.close();
 
     // a DIFFERENT teacher is refused (403 'Link bound to another teacher.')

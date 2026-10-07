@@ -24,6 +24,7 @@ import { leaveController } from '../../core/guards/leave-controller';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import {
   DropdownComponent,
   DropdownOption,
@@ -52,6 +53,7 @@ interface DraftRow {
     FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
+    DatePickerComponent,
     DropdownComponent,
     SpinnerComponent,
     EmptyStateComponent,

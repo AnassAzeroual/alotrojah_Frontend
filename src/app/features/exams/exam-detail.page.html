@@ -83,12 +83,11 @@
         <div class="grid" style="--cols: 3">
           <label class="field"
             ><span>{{ 'exam.date' | translate }}</span>
-            <input
-              type="date"
+            <app-date-picker
               class="ltr-num"
-              data-testid="exam-date"
+              testId="exam-date"
               [value]="editDate()"
-              (input)="editDate.set($any($event.target).value)"
+              (valueChange)="editDate.set($any($event))"
             />
           </label>
           <label class="field"
