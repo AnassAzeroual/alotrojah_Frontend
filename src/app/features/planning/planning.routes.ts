@@ -19,6 +19,14 @@ export const PLANNING_ROUTES: Routes = [
     data: { roles: MANAGER },
   },
   {
+    // Experimental full-calendar sandbox: all seasons/terms/weeks/sessions
+    // visible with drag-drop dates. The legacy pages stay untouched.
+    path: 'calendar',
+    loadComponent: () => import('./seasons-calendar.page').then((m) => m.SeasonsCalendarPage),
+    canActivate: [roleGuard],
+    data: { roles: MANAGER },
+  },
+  {
     // Full edit form (name/dates/hijri only — terms/sessions are generated
     // once and immutable afterwards, or recorded facts would orphan).
     path: ':id/edit',

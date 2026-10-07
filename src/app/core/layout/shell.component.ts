@@ -87,6 +87,13 @@ const ITEMS: readonly NavItem[] = [
     testId: 'nav-planning',
   },
   {
+    path: '/planning/calendar',
+    key: 'nav.calendar',
+    icon: 'calendar',
+    roles: ['admin', 'supervisor'],
+    testId: 'nav-calendar',
+  },
+  {
     path: '/scoring',
     key: 'nav.scoring',
     icon: 'chart',

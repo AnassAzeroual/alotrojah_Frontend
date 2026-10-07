@@ -73,6 +73,14 @@
           >
             {{ 'planning.rename_term' | translate }}
           </button>
+          <a
+            class="btn btn-ghost btn-sm"
+            [routerLink]="['/planning/calendar']"
+            [queryParams]="{ term: id() }"
+            data-testid="term-calendar"
+          >
+            {{ 'nav.calendar' | translate }}
+          </a>
         </h1>
       }
       <div class="actions">

@@ -1,0 +1,50 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'nav.calendar' | translate }}</h1>
+    <div class="actions">
+      <app-dropdown
+        [options]="seasonOptions()"
+        [value]="txt(pickedSeason())"
+        (valueChange)="pickSeason(num($event))"
+        ariaLabelKey="planning.pick_season"
+        testId="cal-season"
+      />
+    </div>
+  </div>
+
+  @if (errorKey()) {
+    <div class="banner danger">{{ errorKey()! | translate }}</div>
+  }
+
+  @if (loading()) {
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+    </div>
+  } @else {
+    <div class="card cal-card anim-rise" style="--i: 1">
+      <full-calendar [options]="options" />
+    </div>
+
+    @if (selected(); as sel) {
+      <div class="card anim-rise" style="--i: 2">
+        <span class="row-top">
+          <strong class="ltr-num">#{{ sel.session_number_global }}</strong>
+          <span class="muted"
+            >{{ sel.termName }} · {{ 'common.week' | translate }} {{ sel.weekNumber }}</span
+          >
+        </span>
+        <div class="cluster">
+          <span class="muted">{{ 'sessionType.' + sel.session_type | translate }}</span>
+          <app-date-picker
+            [value]="sel.planned_date"
+            (valueChange)="setDate(sel.id, $any($event))"
+            [testId]="'cal-date-' + sel.id"
+          />
+          <a class="btn btn-ghost btn-sm" [routerLink]="['/planning/terms', sel.term_id]">
+            {{ 'planning.terms' | translate }}
+          </a>
+        </div>
+      </div>
+    }
+  }
+</section>

@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
@@ -31,6 +31,7 @@ import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.
   standalone: true,
   imports: [
     FormsModule,
+    RouterLink,
     TranslatePipe,
     DatePickerComponent,
     DropdownComponent,
