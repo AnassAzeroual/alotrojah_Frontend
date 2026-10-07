@@ -32,7 +32,9 @@ export const appConfig: ApplicationConfig = {
     provideMissingTranslationHandler(() => new LogMissingTranslationHandler()),
     provideAppInitializer(() => {
       inject(LanguageService).init();
-      return inject(AuthService).init();
+      // Fire-and-forget: first paint must not block on /auth/me. Guards wait on
+      // AuthService.ready before making login/role decisions.
+      inject(AuthService).init();
     }),
   ],
 };

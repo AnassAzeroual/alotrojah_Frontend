@@ -29,7 +29,8 @@ const SWIPE_PX = 40;
           [class.on]="i === index()"
           [src]="s.src"
           [alt]="s.caption | translate"
-          loading="eager"
+          [loading]="i === 0 ? 'eager' : 'lazy'"
+          [attr.fetchpriority]="i === 0 ? 'high' : null"
           draggable="false"
         />
       }

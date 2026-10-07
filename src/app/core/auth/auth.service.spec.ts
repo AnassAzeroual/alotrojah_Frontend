@@ -74,4 +74,59 @@ describe('AuthService', () => {
     });
     expect(results).toEqual(['N', 'N']);
   });
+
+  it('init settles immediately with no token and fires no request', async () => {
+    let settled = false;
+    void auth.ready.then(() => (settled = true));
+    auth.init();
+    await Promise.resolve();
+    expect(settled).toBe(true);
+    expect(auth.sessionProbed()).toBe(true);
+    expect(auth.currentUser()).toBeNull();
+    http.verify();
+  });
+
+  it('init restores the session on a live token', async () => {
+    auth.token.set('T');
+    auth.init();
+    http
+      .expectOne((r) => r.url.endsWith('/auth/me'))
+      .flush({ success: true, message: null, data: USER });
+    await auth.ready;
+    expect(auth.sessionProbed()).toBe(true);
+    expect(auth.currentUser()).toEqual(USER);
+    expect(auth.isLoggedIn()).toBe(true);
+  });
+
+  it('init clears a dead token and still settles ready', async () => {
+    auth.token.set('T');
+    localStorage.setItem('alotrojah_token', 'T');
+    auth.init();
+    http
+      .expectOne((r) => r.url.endsWith('/auth/me'))
+      .flush('Unauthenticated.', { status: 401, statusText: 'Unauthorized' });
+    await auth.ready;
+    expect(auth.sessionProbed()).toBe(true);
+    expect(auth.token()).toBeNull();
+    expect(auth.currentUser()).toBeNull();
+    expect(localStorage.getItem('alotrojah_token')).toBeNull();
+  });
+
+  it('init does not clobber a login that wins the race', async () => {
+    auth.token.set('OLD');
+    auth.init(); // probe in flight with OLD
+    auth.login('a@b.c', 'password123').subscribe(); // user logs in mid-probe
+    const reqs = http.match((r) => r.url.endsWith('/auth/login'));
+    reqs[0].flush({
+      success: true,
+      message: null,
+      data: { access_token: 'NEW', token_type: 'bearer', expires_in: 3600, user: USER },
+    });
+    http
+      .expectOne((r) => r.url.endsWith('/auth/me'))
+      .flush({ success: true, message: null, data: USER });
+    await auth.ready;
+    expect(auth.token()).toBe('NEW');
+    expect(auth.isLoggedIn()).toBe(true);
+  });
 });

@@ -159,7 +159,11 @@ export class DashboardPage {
       // §2.16: the seasons feed 403s for students; /me resolves the season.
       if (this.auth.role() === 'student') return Promise.resolve(null);
       return firstValueFrom(this.ref.seasons()).then(
-        (r) => r.data.find((s) => s.is_current)?.id ?? r.data[0]?.id ?? 1,
+        // Empty feed (no seasons yet) resolves null — the center/weekly
+        // loaders already treat null as "no data". Never fabricate an id:
+        // a stale `?? 1` fires dashboard/center?season_id=1 into a 422
+        // `exists` failure on an empty DB instead of a graceful empty state.
+        (r) => r.data.find((s) => s.is_current)?.id ?? r.data[0]?.id ?? null,
       );
     },
   });

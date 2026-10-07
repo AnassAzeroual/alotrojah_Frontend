@@ -5,6 +5,7 @@
   effect,
   inject,
   input,
+  OnDestroy,
   resource,
   signal,
 } from '@angular/core';
@@ -34,6 +35,8 @@ import { ScoreInputComponent } from '../../shared/ui/score-input/score-input.com
 
 type ExamType = 'hizb_completion' | 'term_batch' | 'final_season';
 
+const SCORE_DEBOUNCE_MS = 400;
+
 interface DraftRow {
   key: number;
   question_no: number;
@@ -58,7 +61,7 @@ interface DraftRow {
   templateUrl: './exam-detail.page.html',
   styleUrl: './exam-detail.page.scss',
 })
-export class ExamDetailPage {
+export class ExamDetailPage implements OnDestroy {
   readonly id = input.required<number, string>({ transform: (v: string) => Number(v) });
 
   private readonly examsSvc = inject(ExamsService);
@@ -255,12 +258,91 @@ export class ExamDetailPage {
     });
   }
 
+  /**
+   * Locally-typed scores not yet acked by the server. Feeding these to the
+   * inputs shields in-progress typing from reload clobbering: another
+   * question's save bumps tick(), and a bare [value]="q.score" would snap
+   * this input back to the stale server value mid-typing.
+   */
+  readonly scoreEdits = signal<Record<number, number>>({});
+  private readonly scoreTimers = new Map<number, ReturnType<typeof setTimeout>>();
+  private readonly scoreInFlight = new Set<number>();
+  private destroyed = false;
+
   setScore(qid: number, score: number | null): void {
     if (score === null) return;
-    this.examsSvc.updateQuestion(qid, { score }).subscribe(() => this.tick.update((n) => n + 1));
+    this.scoreEdits.update((m) => ({ ...m, [qid]: score }));
+    const prev = this.scoreTimers.get(qid);
+    if (prev !== undefined) clearTimeout(prev);
+    this.scoreTimers.set(
+      qid,
+      setTimeout(() => this.flushScore(qid), SCORE_DEBOUNCE_MS),
+    );
+  }
+
+  /** Blur/navigation flush — sends the pending PATCH immediately. */
+  flushScore(qid: number): void {
+    const timer = this.scoreTimers.get(qid);
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      this.scoreTimers.delete(qid);
+    }
+    const score = this.scoreEdits()[qid];
+    if (score === undefined) return;
+    if (this.scoreInFlight.has(qid)) {
+      this.scoreTimers.set(
+        qid,
+        setTimeout(() => this.flushScore(qid), SCORE_DEBOUNCE_MS),
+      );
+      return;
+    }
+    this.scoreInFlight.add(qid);
+    this.examsSvc.updateQuestion(qid, { score }).subscribe({
+      next: () => {
+        this.scoreInFlight.delete(qid);
+        this.dropEdit(qid, score);
+        if (!this.destroyed) this.tick.update((n) => n + 1);
+      },
+      error: () => {
+        // Silent like the pre-debounce path; dropping the edit resyncs the input to server truth.
+        this.scoreInFlight.delete(qid);
+        this.dropEdit(qid, score);
+      },
+    });
+  }
+
+  private dropEdit(qid: number, sent: number): void {
+    this.scoreEdits.update((m) => {
+      if (m[qid] !== sent) return m; // a newer keystroke replaced this one mid-flight
+      const rest = { ...m };
+      delete rest[qid];
+      return rest;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    for (const t of this.scoreTimers.values()) clearTimeout(t);
+    this.scoreTimers.clear();
+    // Fire every still-pending score without the trailing reload (view is gone).
+    for (const [qid, score] of Object.entries(this.scoreEdits())) {
+      this.examsSvc.updateQuestion(Number(qid), { score }).subscribe({ error: () => undefined });
+    }
+    this.scoreEdits.set({});
   }
 
   deleteQuestion(qid: number): void {
+    const timer = this.scoreTimers.get(qid);
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      this.scoreTimers.delete(qid);
+    }
+    this.scoreEdits.update((m) => {
+      if (!(qid in m)) return m;
+      const rest = { ...m };
+      delete rest[qid];
+      return rest;
+    });
     this.examsSvc.deleteQuestion(qid).subscribe(() => this.tick.update((n) => n + 1));
   }
 

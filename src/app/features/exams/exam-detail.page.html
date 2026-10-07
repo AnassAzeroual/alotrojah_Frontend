@@ -196,8 +196,9 @@
             } @else {
               <app-score-input
                 [max]="q.max_score"
-                [value]="q.score"
+                [value]="scoreEdits()[q.id] ?? q.score"
                 (valueChange)="setScore(q.id, $event)"
+                (blurred)="flushScore(q.id)"
               />
             }
             @if (canEdit()) {
