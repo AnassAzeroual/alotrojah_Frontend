@@ -102,6 +102,7 @@ export class AuthService {
   }
 
   clearLocal(): void {
+    this.api.clearCache();
     localStorage.removeItem(TOKEN_KEY);
     this.token.set(null);
     this.currentUser.set(null);

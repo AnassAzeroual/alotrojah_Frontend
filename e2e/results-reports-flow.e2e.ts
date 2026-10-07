@@ -27,7 +27,8 @@ test.describe.serial('Term results & reports (roadmap S25, S26, S27)', () => {
 
     // seed: hifz 19.00, murajaa 18.80, exam 17.60, avg 18.47, honor تشجيع
     await expect(page.getByText('18.47')).toBeVisible();
-    await expect(page.getByText('تشجيع')).toBeVisible();
+    // honor also appears in the honor-form dropdown after fill() — scope to the badge
+    await expect(page.locator('app-status-badge').getByText('تشجيع')).toBeVisible();
 
     const hifz = page.locator('form').getByLabel('الحفظ', { exact: true });
     await expect(hifz).toHaveValue('19');

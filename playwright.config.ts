@@ -12,6 +12,19 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:4201',
     trace: 'retain-on-failure',
+    // Disables the ApiClient GET cache in every e2e context (delta-count
+    // assertions are stale-cache-sensitive). Key literal must stay in sync
+    // with E2E_CACHE_BYPASS_KEY in src/app/core/api/api-client.ts — the config
+    // can't import it (Angular deps).
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: 'http://127.0.0.1:4201',
+          localStorage: [{ name: 'alotrojah_e2e_no_http_cache', value: '1' }],
+        },
+      ],
+    },
   },
   webServer: [
     {
