@@ -38,18 +38,22 @@ test.describe.serial('Registration requests (roadmap S31, S5, S6)', () => {
     await expect(page.locator('.reg-success h1')).toHaveText('تم استلام طلبك');
   });
 
-  test('admin accepts the student (center, no group) and rejects the teacher', async ({ page }) => {
+  test('admin accepts the student into a group and rejects the teacher', async ({ page }) => {
     await adminLogin(page);
 
     await page.getByTestId('nav-registrations').click();
     await expect(page).toHaveURL(/\/registrations$/);
 
-    // accept the student into center 1 (مركز النور القرآني), no group
+    // accept the student into center 1 and an active group
     const studentCard = page.locator('.req-card', { hasText: studentEmail });
     await expect(studentCard).toHaveCount(1);
     await studentCard.getByRole('button', { name: 'قبول', exact: true }).click();
     await page.getByRole('button', { name: 'اختر المركز' }).click();
     await page.locator('.dd.open [role="option"]', { hasText: 'النور' }).click();
+    await page.getByRole('button', { name: 'اختر القسم' }).click();
+    await page.locator('.dd.open [role="option"]').first().click();
+    await page.getByRole('button', { name: 'المستوى' }).click();
+    await page.locator('.dd.open [role="option"]').first().click();
     const accepted = page.waitForResponse(
       (r) => r.url().includes('registration-requests') && r.request().method() === 'POST',
     );

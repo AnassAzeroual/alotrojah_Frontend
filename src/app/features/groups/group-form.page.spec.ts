@@ -181,6 +181,7 @@ describe('GroupFormPage', () => {
     await settle();
 
     pick('grp.col_level', 'المستوى الأول');
+    pick('grp.col_teacher', 'ياسين العلوي');
     type('input[type="text"]', 'حلقة E2E');
     type('input[type="number"]', '20');
     // WEEKDAY_KEYS order: Mon..Sun → index 5 = Sat, index 0 = Mon.
@@ -194,7 +195,7 @@ describe('GroupFormPage', () => {
       name: 'حلقة E2E',
       center_id: 1,
       level_id: 1,
-      teacher_id: null,
+      teacher_id: 3,
       capacity: 20,
       schedule_days: ['Sat', 'Mon'],
     });
@@ -246,6 +247,7 @@ describe('GroupFormPage', () => {
     expect(el.textContent).not.toContain('registrations.pick_center');
 
     pick('grp.col_level', 'المستوى الأول');
+    pick('grp.col_teacher', 'ياسين العلوي');
     type('input[type="text"]', 'حلقة المشرف');
 
     submitForm();
@@ -254,7 +256,7 @@ describe('GroupFormPage', () => {
       name: 'حلقة المشرف',
       center_id: 1,
       level_id: 1,
-      teacher_id: null,
+      teacher_id: 3,
       capacity: null,
       schedule_days: [],
     });
@@ -299,6 +301,9 @@ describe('GroupFormPage', () => {
     expect(saveBtn().disabled).toBe(true);
 
     pick('grp.col_level', 'المستوى الأول');
+    expect(saveBtn().disabled).toBe(true);
+
+    pick('grp.col_teacher', 'ياسين العلوي');
     expect(saveBtn().disabled).toBe(false);
     expect(page.saving()).toBe(false);
   });
@@ -311,7 +316,7 @@ describe('GroupFormPage', () => {
         name: 'حلقة قديمة',
         center_id: 1,
         level: { id: 1, name_ar: 'المستوى الأول' },
-        teacher: null,
+        teacher: { id: 3, full_name: 'ياسين العلوي', phone: null, teacher_type: 'hifz' },
         academic_year: null,
         schedule_days: 'Mon',
         is_active: true,
@@ -362,7 +367,7 @@ describe('GroupFormPage', () => {
       expect(req.request.body).toEqual({
         name: 'حلقة محدثة',
         level_id: 1,
-        teacher_id: null,
+        teacher_id: 3,
         capacity: 20,
         schedule_days: ['Mon'],
         is_active: true,

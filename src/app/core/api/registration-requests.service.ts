@@ -14,13 +14,19 @@ export class RegistrationRequestsService {
 
   /**
    * Copies the request into users (+ students when student) and removes it.
-   * groupId optionally links the new account to a group of the chosen center
-   * (teacher → groups.teacher_id, student → students.group_id).
+   * groupId places teacher/student accounts in the selected section; levelId
+   * is required when accepting a student.
    */
-  accept(id: number, centerId: number, groupId: number | null = null): Observable<User> {
+  accept(
+    id: number,
+    centerId: number,
+    groupId: number | null = null,
+    levelId: number | null = null,
+  ): Observable<User> {
     return this.api.post<User>(`/registration-requests/${id}/accept`, {
       center_id: centerId,
       ...(groupId !== null ? { group_id: groupId } : {}),
+      ...(levelId !== null ? { level_id: levelId } : {}),
     });
   }
 

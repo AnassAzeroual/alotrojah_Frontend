@@ -49,22 +49,26 @@
           }
 
           <label class="field">
-            <span>{{ 'list.group' | translate }}</span>
+            <span>{{ 'list.group' | translate }} <span class="danger">*</span></span>
             <app-dropdown
               [options]="groupOptions()"
               [value]="num(form.controls.group_id.value)"
               (valueChange)="form.controls.group_id.setValue(num($event))"
+              placeholderKey="list.group"
               ariaLabelKey="list.group"
+              testId="student-group"
             />
           </label>
 
           <label class="field">
-            <span>{{ 'list.level' | translate }}</span>
+            <span>{{ 'list.level' | translate }} <span class="danger">*</span></span>
             <app-dropdown
               [options]="levelOptions()"
               [value]="num(form.controls.level_id.value)"
               (valueChange)="form.controls.level_id.setValue(num($event))"
+              placeholderKey="list.level"
               ariaLabelKey="list.level"
+              testId="student-level"
             />
           </label>
         </div>

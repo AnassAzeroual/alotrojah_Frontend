@@ -65,12 +65,22 @@
                   ariaLabelKey="registrations.pick_group"
                 />
               }
+              @if (requiresLevel()) {
+                <app-dropdown
+                  [value]="levelId()"
+                  [options]="levelOptions()"
+                  [disabled]="centerId() === null"
+                  (valueChange)="levelId.set(num($event))"
+                  placeholderKey="list.level"
+                  ariaLabelKey="list.level"
+                />
+              }
             </div>
             <div class="req-accept-actions">
               <button
                 type="button"
                 class="btn btn-primary"
-                [disabled]="centerId() === null || busyId() === r.id"
+                [disabled]="!canAccept() || busyId() === r.id"
                 (click)="confirmAccept(r.id)"
               >
                 @if (busyId() === r.id) {

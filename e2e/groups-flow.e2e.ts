@@ -91,7 +91,7 @@ test('admin creates a group and finds it in the overview', async ({ page, reques
   await page.getByTestId('group-teacher').click();
   await expect(page.getByRole('option', { name: center1[0] })).toBeVisible();
   await expect(page.getByRole('option', { name: center2[0] })).toHaveCount(0);
-  await page.getByRole('option', { name: 'بدون معلم' }).click(); // keep it teacherless + close
+  await page.getByRole('option', { name: center1[0] }).click();
 
   await page.getByTestId('group-level').click();
   await page.getByRole('option', { name: /المستوى الأول/ }).click();

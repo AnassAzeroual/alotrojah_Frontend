@@ -12,6 +12,7 @@ import { firstValueFrom, map } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { RegistrationRequestsService } from '../../core/api/registration-requests.service';
+import { ReferenceService } from '../../core/api/reference.service';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { AppDatePipe } from '../../shared/ui/app-date/app-date.pipe';
 import { DropdownComponent, dropdownNumber } from '../../shared/ui/dropdown/dropdown.component';
@@ -38,6 +39,7 @@ export class RegistrationsPage {
   private readonly requestsSvc = inject(RegistrationRequestsService);
   private readonly centersSvc = inject(CentersService);
   private readonly groupsSvc = inject(GroupsService);
+  private readonly refSvc = inject(ReferenceService);
 
   readonly page = signal(1);
   private readonly tick = signal(0);
@@ -45,8 +47,10 @@ export class RegistrationsPage {
   /** Card currently in accept mode (center/group selection). */
   readonly acceptingId = signal<number | null>(null);
   readonly centerId = signal<number | null>(null);
-  /** Optional group of the chosen center (teachers/students only). */
+  /** Required group of the chosen center for teachers/students. */
   readonly groupId = signal<number | null>(null);
+  /** Required placement level when accepting a student. */
+  readonly levelId = signal<number | null>(null);
   /** Two-step cancel: card armed for the confirming click. */
   readonly armingCancelId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
@@ -68,6 +72,14 @@ export class RegistrationsPage {
   protected readonly canPickGroup = computed(() =>
     ['teacher', 'student'].includes(this.acceptingRow()?.role ?? ''),
   );
+  protected readonly requiresLevel = computed(() => this.acceptingRow()?.role === 'student');
+  protected readonly canAccept = computed(
+    () =>
+      this.centerId() !== null &&
+      (!this.canPickGroup() || this.groupId() !== null) &&
+      (!this.requiresLevel() || this.levelId() !== null) &&
+      this.busyId() === null,
+  );
 
   /** Groups of the picked center; reloads whenever the center changes. */
   private readonly groupsRes = resource({
@@ -80,6 +92,17 @@ export class RegistrationsPage {
 
   protected readonly groupOptions = computed(() =>
     (this.groupsRes.value()?.data ?? []).map((g) => ({ value: g.id, label: g.name })),
+  );
+
+  private readonly levelsRes = resource({
+    params: () => ({ centerId: this.centerId() }),
+    loader: ({ params }) =>
+      params.centerId === null
+        ? Promise.resolve([])
+        : firstValueFrom(this.refSvc.levels(params.centerId)),
+  });
+  protected readonly levelOptions = computed(() =>
+    (this.levelsRes.value() ?? []).map((level) => ({ value: level.id, label: level.name_ar })),
   );
 
   private readonly query = resource({
@@ -96,6 +119,7 @@ export class RegistrationsPage {
     this.acceptingId.set(id);
     this.centerId.set(null);
     this.groupId.set(null);
+    this.levelId.set(null);
     this.armingCancelId.set(null);
     this.actionFailed.set(null);
   }
@@ -104,20 +128,22 @@ export class RegistrationsPage {
     this.acceptingId.set(null);
     this.centerId.set(null);
     this.groupId.set(null);
+    this.levelId.set(null);
   }
 
   /** Center change invalidates any previously picked group. */
   protected onCenterChange(id: number | null): void {
     this.centerId.set(id);
     this.groupId.set(null);
+    this.levelId.set(null);
   }
 
   confirmAccept(id: number): void {
     const centerId = this.centerId();
-    if (centerId === null || this.busyId() !== null) return;
+    if (!this.canAccept() || centerId === null) return;
     this.busyId.set(id);
     this.actionFailed.set(null);
-    this.requestsSvc.accept(id, centerId, this.groupId()).subscribe({
+    this.requestsSvc.accept(id, centerId, this.groupId(), this.levelId()).subscribe({
       next: () => {
         this.busyId.set(null);
         this.cancelAccept();

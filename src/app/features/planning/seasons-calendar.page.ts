@@ -12,45 +12,49 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
-import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
-import { type CalendarOptions, type EventInput } from '@fullcalendar/core';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import listPlugin from '@fullcalendar/list';
-import multiMonthPlugin from '@fullcalendar/multimonth';
-import interactionPlugin from '@fullcalendar/interaction';
-import arLocale from '@fullcalendar/core/locales/ar';
-import frLocale from '@fullcalendar/core/locales/fr';
+import {
+  AgendaService,
+  DayService,
+  MonthService,
+  ScheduleComponent,
+  ScheduleModule,
+  TimelineMonthService,
+  TimelineViewsService,
+  WeekService,
+  YearService,
+  type ActionEventArgs,
+  type DragEventArgs,
+  type EventClickArgs,
+  type EventRenderedArgs,
+} from '@syncfusion/ej2-angular-schedule';
 import { SeasonsService } from '../../core/api/seasons.service';
 import { GroupsService } from '../../core/api/groups.service';
+import './seasons-calendar.vendor.css';
 import { PlanningService } from '../../core/api/planning.service';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { LanguageService } from '../../core/i18n/language.service';
-import { AppDatePipe } from '../../shared/ui/app-date/app-date.pipe';
-import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import {
   DropdownComponent,
-  DropdownOption,
   dropdownNumber,
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
-import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import {
   dateToISODate,
-  addDaysISO,
-  groupsForDay,
-  sessionsForDay,
-  termBand,
-  toCalEvent,
-  weekdayKey,
+  groupResources,
+  toEj2Event,
   type CalSession,
+  type Ej2SessionEvent,
 } from './seasons-calendar.helpers';
+import { ensureSchedulerLocale } from './seasons-calendar.locale';
 
 /**
- * Experimental full-calendar sandbox for seasons (the legacy season/term
- * pages stay untouched): every session of the picked season on one grid,
- * drag-drop to move dates, click a session for details. Mutations reuse the
- * existing PATCH endpoints — this page adds no backend surface.
+ * Experimental season calendar (the legacy season/term pages stay
+ * untouched): every session of the picked season on one scheduler, grouped
+ * by section, drag-drop to move dates, click a session for details.
+ * Mutations reuse the existing PATCH endpoints — this page adds no backend
+ * surface. EJ2 callbacks are not Angular-aware under zoneless, but the
+ * handlers below only write signals, which always notify.
  */
 @Component({
   selector: 'app-seasons-calendar-page',
@@ -60,10 +64,16 @@ import {
     RouterLink,
     DropdownComponent,
     DatePickerComponent,
-    AppDatePipe,
-    EmptyStateComponent,
-    SpinnerComponent,
-    FullCalendarModule,
+    ScheduleModule,
+  ],
+  providers: [
+    DayService,
+    WeekService,
+    MonthService,
+    YearService,
+    AgendaService,
+    TimelineViewsService,
+    TimelineMonthService,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './seasons-calendar.page.html',
@@ -75,18 +85,13 @@ export class SeasonsCalendarPage {
   private readonly router = inject(Router);
   private readonly language = inject(LanguageService);
   private readonly i18n = inject(TranslateService);
-  private readonly cal = viewChild(FullCalendarComponent);
-
-  protected readonly txt = dropdownText;
-  protected readonly num = dropdownNumber;
+  private readonly sched = viewChild(ScheduleComponent);
 
   readonly saving = signal(false);
   readonly errorKey = signal<string | null>(null);
   readonly pickedSeason = signal<number | null>(null);
   readonly selectedId = signal<number | null>(null);
-  /** Day board (custom, MIT-clean): grid stays in FullCalendar, the day lens is ours. */
-  readonly dayBoard = signal(false);
-  readonly dayDate = signal<string | null>(null);
+  readonly selectedDate = signal<Date>(new Date());
   private readonly tick = signal(0);
   private navigatedFor: number | null = null;
   private readonly focusedTerm = signal<number | null>(null);
@@ -96,14 +101,23 @@ export class SeasonsCalendarPage {
   });
   private readonly focusDate = signal<string | null>(null);
 
+  protected readonly ejLocale = computed(() =>
+    this.language.current() === 'ar' ? 'ar' : this.language.current() === 'fr' ? 'fr' : 'en',
+  );
+  protected readonly isRtl = computed(() => this.language.current() === 'ar');
+  protected readonly resourceTitle = computed(() => {
+    this.language.current();
+    return this.i18n.instant('list.group');
+  });
+
+  protected readonly seasonOptions = computed(() => {
+    const data = this.seasonsRes.value()?.data ?? [];
+    return data.map((s) => ({ value: String(s.id), label: s.name }));
+  });
+
   private readonly seasonsRes = resource({
     params: () => ({}),
     loader: () => firstValueFrom(this.seasonsSvc.list()),
-  });
-
-  protected readonly seasonOptions = computed<DropdownOption[]>(() => {
-    const data = this.seasonsRes.value()?.data ?? [];
-    return data.map((s) => ({ value: String(s.id), label: s.name }));
   });
 
   private readonly detailsRes = resource({
@@ -118,41 +132,71 @@ export class SeasonsCalendarPage {
     },
   });
 
-  /** Flat session feed with term/week context (local PATCHes edit in place). */
-  private readonly allSessions = signal<CalSession[]>([]);
-
   private readonly groupsRes = resource({
     loader: () => this.groupsSvc.listAll(),
   });
 
-  /** Weekday name in the current locale (zero new i18n keys). */
-  protected readonly dayWeekday = computed(() => {
-    const iso = this.dayDate();
-    if (!iso) return '';
-    return new Intl.DateTimeFormat(this.language.current(), { weekday: 'long' }).format(
-      new Date(`${iso.slice(0, 10)}T00:00:00`),
-    );
+  /** Flat session feed with term/week context, derived during render (never
+   * a post-render effect write — EJ2 must see rows at creation time). */
+  private readonly flatRows = computed<CalSession[]>(() => {
+    const loaded = this.detailsRes.value();
+    if (!loaded) return [];
+    const overlay = this.patchOverlay();
+    const rows: CalSession[] = [];
+    for (const d of loaded.details) {
+      const term = loaded.terms.find((t) => t.id === d.id);
+      for (const w of d.weeks) {
+        for (const s of w.sessions ?? []) {
+          rows.push({
+            id: s.id,
+            planned_date: overlay[s.id]?.planned_date ?? s.planned_date,
+            start_time: s.start_time ?? null,
+            end_time: s.end_time ?? null,
+            group_id: s.group_id ?? null,
+            session_type: s.session_type,
+            status: s.status,
+            session_number_global: s.session_number_global,
+            term_id: d.id,
+            termName: term?.name_ar ?? '',
+            week_id: w.id,
+            weekNumber: w.week_number_global,
+            weekType: w.week_type,
+          });
+        }
+      }
+    }
+    return rows;
   });
 
-  /** Groups meeting on the picked weekday (active only). */
-  protected readonly dayGroups = computed(() => {
-    const iso = this.dayDate();
-    if (!iso) return [];
-    return groupsForDay(this.groupsRes.value() ?? [], weekdayKey(iso));
+  /** Optimistic date commits (cleared on server reload). */
+  private readonly patchOverlay = signal<Record<number, { planned_date?: string }>>({});
+
+  protected readonly ejEvents = computed<Ej2SessionEvent[]>(() => {
+    this.language.current();
+    const label = (t: string): string => this.i18n.instant(`sessionType.${t}`);
+    const out: Ej2SessionEvent[] = [];
+    for (const s of this.flatRows()) {
+      const e = toEj2Event(s, label(s.session_type));
+      if (e) out.push(e);
+    }
+    return out;
   });
 
-  /** That date's sessions, ordered by global session number. */
-  protected readonly daySessions = computed(() => {
-    const iso = this.dayDate();
-    if (!iso) return [];
-    return sessionsForDay(this.allSessions(), iso);
-  });
+  protected readonly ejResources = computed(() => groupResources(this.groupsRes.value() ?? []));
+
+  protected readonly ejSettings = computed(() => ({ dataSource: this.ejEvents() }));
+
+  protected readonly ejGroup = { resources: ['Groups'], allowGroupEdit: false };
 
   protected readonly selected = computed(
-    () => this.allSessions().find((s) => s.id === this.selectedId()) ?? null,
+    () => this.flatRows().find((s) => s.id === this.selectedId()) ?? null,
   );
 
-  protected readonly loading = () => this.seasonsRes.isLoading() || this.detailsRes.isLoading();
+  protected readonly loading = () =>
+    this.seasonsRes.isLoading() || this.detailsRes.isLoading() || this.groupsRes.isLoading();
+
+  protected readonly txt = dropdownText;
+  protected readonly num = dropdownNumber;
 
   constructor() {
     // Default to the current season, then the first one.
@@ -163,46 +207,33 @@ export class SeasonsCalendarPage {
       const cur = data.find((s) => s.is_current) ?? data[0];
       this.pickedSeason.set(cur.id);
     });
-    // Flatten once per load; season switches clear the selection.
+    // Season switches clear the selection (rows derive during render).
     effect(() => {
-      const loaded = this.detailsRes.value();
-      if (!loaded) return;
-      const rows: CalSession[] = [];
-      for (const d of loaded.details) {
-        const term = loaded.terms.find((t) => t.id === d.id);
-        for (const w of d.weeks) {
-          for (const s of w.sessions ?? []) {
-            rows.push({
-              id: s.id,
-              planned_date: s.planned_date,
-              session_type: s.session_type,
-              status: s.status,
-              session_number_global: s.session_number_global,
-              term_id: d.id,
-              termName: term?.name_ar ?? '',
-              week_id: w.id,
-              weekNumber: w.week_number_global,
-              weekType: w.week_type,
-            });
-          }
-        }
-      }
-      this.allSessions.set(rows);
+      this.pickedSeason();
       this.selectedId.set(null);
     });
-    // Land the grid on the season's first dated session. Separate effect
-    // (not inside the flatten one): the calendar view may not exist yet when
-    // data lands, and local PATCHes must never yank the view back.
+    // Async rows need one explicit kick: EJ2 builds its initial paint from
+    // whatever dataSource is present at creation (usually still empty while
+    // details stream in) and does not reliably repaint on later binding
+    // updates. dataBind() is idempotent — reruns are harmless.
+    effect(() => {
+      const events = this.ejEvents();
+      const api = this.sched();
+      if (!api || events.length === 0) return;
+      api.eventSettings.dataSource = events;
+      api.dataBind();
+    });
+    // Land on the season's first dated session. One-shot per season —
+    // local PATCHes must never yank the view back.
     effect(() => {
       const season = this.pickedSeason();
-      const rows = this.allSessions();
-      const api = this.api();
-      if (season === null || rows.length === 0 || !api) return;
+      const rows = this.flatRows();
+      if (season === null || rows.length === 0) return;
       const focus = this.focusDate();
       if (focus) {
         // One-shot deep link (?term=): land, then hand control back.
         this.focusDate.set(null);
-        api.gotoDate(focus.slice(0, 10));
+        this.selectedDate.set(new Date(`${focus.slice(0, 10)}T00:00:00`));
         this.navigatedFor = season;
         return;
       }
@@ -213,17 +244,7 @@ export class SeasonsCalendarPage {
         .sort()[0];
       if (!first) return;
       this.navigatedFor = season;
-      api.gotoDate(first.slice(0, 10));
-    });
-    // Day board lands on the same first date (independent effect — the board
-    // is a lens over allSessions, never a second source of truth).
-    effect(() => {
-      if (this.dayDate() !== null) return;
-      const first = this.allSessions()
-        .map((r) => r.planned_date)
-        .filter((d): d is string => !!d)
-        .sort()[0];
-      if (first) this.dayDate.set(first.slice(0, 10));
+      this.selectedDate.set(new Date(`${first.slice(0, 10)}T00:00:00`));
     });
     // Deep link: resolve the term's own season + first date, then drive the
     // normal pipeline (season pick -> load -> land effect above).
@@ -243,94 +264,45 @@ export class SeasonsCalendarPage {
         })
         .catch(() => undefined);
     });
-    // Language switch re-localises + repaints (labels are instant-read).
+    // EJ2 locale bootstrap follows the app language (CLDR loads once).
     effect(() => {
-      const lang = this.language.current();
-      const api = this.cal()?.getApi();
-      if (!api) return;
-      api.setOption('locale', lang === 'ar' ? 'ar' : lang === 'fr' ? 'fr' : 'en');
-      api.setOption('direction', lang === 'ar' ? 'rtl' : 'ltr');
-      api.refetchEvents();
+      ensureSchedulerLocale(this.language.current());
     });
   }
 
-  private api(): ReturnType<FullCalendarComponent['getApi']> | undefined {
-    return this.cal()?.getApi();
+  protected onEventClick(args: EventClickArgs): void {
+    const rec = args.event as { Id?: unknown } | undefined;
+    const id = typeof rec?.Id === 'number' ? rec.Id : Number(rec?.Id);
+    if (Number.isInteger(id)) this.pickSession(id);
   }
 
-  protected readonly options: CalendarOptions = {
-    plugins: [dayGridPlugin, multiMonthPlugin, listPlugin, interactionPlugin],
-    locales: [arLocale, frLocale],
-    locale:
-      this.language.current() === 'ar' ? 'ar' : this.language.current() === 'fr' ? 'fr' : 'en',
-    direction: this.language.current() === 'ar' ? 'rtl' : 'ltr',
-    initialView: 'dayGridMonth',
-    headerToolbar: {
-      start: 'prev,next today',
-      center: 'title',
-      end: 'dayGridMonth,multiMonthYear,listWeek',
-    },
-    height: 'auto',
-    displayEventTime: false,
-    editable: true,
-    eventStartEditable: true,
-    eventDurationEditable: false,
-    events: (info, success) => success(this.eventsFor(info.start, info.end)),
-    eventDrop: (info) => this.onDrop(info.event.id, info.event.start, info.revert),
-    eventClick: (info) => {
-      const props = info.event.extendedProps as { kind?: string; termId?: number };
-      if (props.kind === 'term' && props.termId !== undefined) {
-        void this.router.navigate(['/planning/terms', props.termId]);
-        return;
-      }
-      this.selectedId.set(Number(info.event.id));
-    },
-  };
+  protected onDragStop(args: DragEventArgs): void {
+    const rec = (Array.isArray(args.data) ? args.data[0] : args.data) as
+      { Id?: unknown; StartTime?: unknown } | undefined;
+    const start = rec?.StartTime instanceof Date ? rec.StartTime : null;
+    if (typeof rec?.Id !== 'number' && typeof rec?.Id !== 'string') return;
+    if (!start) return;
+    this.patchDate(Number(rec.Id), dateToISODate(start));
+  }
 
-  private eventsFor(start: Date, end: Date): EventInput[] {
-    const out: EventInput[] = [];
-    const from = isoDay(start);
-    const to = isoDay(end);
-    for (const s of this.allSessions()) {
-      if (!s.planned_date) continue;
-      if (s.planned_date < from || s.planned_date >= to) continue;
-      const e = toCalEvent(s, this.i18n.instant(`sessionType.${s.session_type}`));
-      if (e) out.push(e);
-    }
-    // One band per term overlapping the window (titles make terms visible).
-    const loaded = this.detailsRes.value();
-    if (loaded) {
-      for (const t of loaded.terms) {
-        const band = termBand(
-          t.id,
-          t.name_ar,
-          this.allSessions()
-            .filter((s) => s.term_id === t.id)
-            .map((s) => s.planned_date)
-            .filter((d): d is string => !!d),
-        );
-        if (!band) continue;
-        const bs = typeof band.start === 'string' ? band.start : '';
-        const be = typeof band.end === 'string' ? band.end : '';
-        if (!bs || !be || be <= from || bs >= to) continue;
-        out.push(band);
-      }
-    }
-    return out;
+  /** No quick-create (M4 session endpoints are still pending): grid is move + inspect only. */
+  protected onActionBegin(args: ActionEventArgs): void {
+    if (args.requestType === 'eventCreate') args.cancel = true;
+  }
+
+  /** No built-in editor/quick-info: the detail card below owns edits. */
+  protected onPopupOpen(args: { cancel: boolean }): void {
+    args.cancel = true;
+  }
+
+  protected onEventRendered(args: EventRenderedArgs): void {
+    const rec = args.data as { sessionType?: unknown; status?: unknown } | undefined;
+    if (typeof rec?.sessionType === 'string') args.element?.classList.add(`st-${rec.sessionType}`);
+    if (typeof rec?.status === 'string') args.element?.classList.add(`ss-${rec.status}`);
   }
 
   protected pickSeason(v: number | null): void {
     this.pickedSeason.set(v);
-  }
-
-  protected shiftDay(n: number): void {
-    const iso = this.dayDate();
-    if (!iso) return;
-    this.dayDate.set(addDaysISO(iso, n));
-  }
-
-  protected pickSession(id: number): void {
-    this.selectedId.set(id);
   }
 
   protected setDate(id: number, iso: string | null): void {
@@ -338,42 +310,30 @@ export class SeasonsCalendarPage {
     this.patchDate(id, iso);
   }
 
-  private onDrop(id: string | number, start: Date | null, revert: () => void): void {
-    if (!start) {
-      revert();
-      return;
-    }
-    this.patchDate(Number(id), dateToISODate(start), revert);
+  protected pickSession(id: number): void {
+    this.selectedId.set(id);
   }
 
-  private patchDate(id: number, iso: string, revert?: () => void): void {
-    if (this.saving()) {
-      revert?.();
-      return;
-    }
+  private patchDate(id: number, iso: string): void {
+    if (this.saving()) return;
     this.saving.set(true);
     this.errorKey.set(null);
     this.planning.updateSession(id, { planned_date: iso }).subscribe({
       next: () => {
         this.saving.set(false);
-        this.allSessions.update((rows) =>
-          rows.map((r) => (r.id === id ? { ...r, planned_date: iso } : r)),
-        );
-        this.api()?.refetchEvents();
+        this.patchOverlay.update((m) => ({ ...m, [id]: { planned_date: iso } }));
       },
       error: (err: unknown) => {
         this.saving.set(false);
-        revert?.();
         this.errorKey.set(apiErrorKey(err));
         // The detail picker already committed optimistically: reload truth.
+        this.patchOverlay.update((m) => {
+          const next = { ...m };
+          delete next[id];
+          return next;
+        });
         this.tick.update((n) => n + 1);
       },
     });
   }
-}
-
-/** Local-midnight yyyy-mm-dd for range filtering (matches stored shape). */
-function isoDay(d: Date): string {
-  const p = (n: number): string => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }

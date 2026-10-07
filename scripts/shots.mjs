@@ -35,6 +35,7 @@ const PAGES = [
   { path: '/planning', name: 'planning', ready: 'الفصول' },
   { path: '/planning/new', name: 'planning-new', ready: 'موسم جديد' },
   { path: '/planning/plans', name: 'planning-plans', ready: 'خطط الفصول' },
+  { path: '/planning/calendar', name: 'calendar', readySelector: '.e-schedule' },
   { path: '/scoring', name: 'scoring', ready: 'المجموع الأسبوعي' },
   { path: '/exams', name: 'exams', ready: 'النوع' },
   { path: '/exams/new', name: 'exams-new', ready: 'اختبار جديد' },

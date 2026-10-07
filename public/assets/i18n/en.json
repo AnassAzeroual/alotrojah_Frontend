@@ -103,6 +103,7 @@
     "RANGE_INVALID": "Invalid range",
     "GROUP_ROLE": "Section assignment is for teachers and students only",
     "PLACEMENT_REQUIRED": "Student approval requires a section and a level",
+    "SESSION_TIME_ORDER": "End time must be after the start time",
     "SCORING_TOTAL": "Weekly total must stay 20",
     "INVALID_CREDENTIALS": "Invalid credentials",
     "ADMIN_DELETE": "Admin accounts cannot be deleted",
@@ -136,8 +137,8 @@
     "cancel": "Reject request",
     "cancel_confirm": "Confirm rejection",
     "pick_center": "Choose a center",
-    "pick_group": "Choose a section (optional)",
-    "accept_hint": "Pick the center this account will belong to"
+    "pick_group": "Choose a section",
+    "accept_hint": "Choose this account's placement"
   },
   "attendance": {
     "present": "Present",
@@ -192,8 +193,7 @@
     "final": "Final score"
   },
   "studentDetail": {
-    "assign_group": "Assign section",
-    "no_group": "No section"
+    "assign_group": "Assign section"
   },
   "list": {
     "search": "Search by name",
@@ -244,7 +244,6 @@
     "open": "Open section",
     "create": "Add section",
     "edit": "Edit section",
-    "no_teacher": "No teacher",
     "schedule": "Schedule",
     "year": "Academic year",
     "phone": "Phone",
@@ -426,8 +425,6 @@
     "edit_season": "Edit season",
     "current": "Current",
     "activate": "Activate",
-    "day_view": "Day view",
-    "day_shared_note": "Sessions are shared calendar days — the sections below meet on this weekday",
     "delete_confirm": "Confirm delete",
     "rename_term": "Rename",
     "plans_title": "Term plans",
