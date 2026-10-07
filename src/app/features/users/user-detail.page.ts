@@ -22,6 +22,8 @@ import {
   dropdownNumber,
 } from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
+import { PasswordFieldComponent } from '../../shared/ui/password-field/password-field.component';
+import { leaveController } from '../../core/guards/leave-controller';
 import { Role, TeacherType } from '../../core/api/api-models';
 
 interface UserForm {
@@ -38,7 +40,14 @@ interface UserForm {
 @Component({
   selector: 'app-user-detail-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TranslatePipe, DropdownComponent, SpinnerComponent],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    TranslatePipe,
+    DropdownComponent,
+    SpinnerComponent,
+    PasswordFieldComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-detail.page.html',
   styleUrl: './user-detail.page.scss',
@@ -56,6 +65,20 @@ export class UserDetailPage {
 
   readonly isNew = computed(() => this.id() === 'new');
   readonly isAdmin = computed(() => this.auth.role() === 'admin');
+  /** Own row: non-admins confirm self-deactivation; admins get a locked box. */
+  readonly isSelf = computed(() => {
+    const me = this.auth.currentUser();
+    return !this.isNew() && me !== null && Number(this.id()) === me.id;
+  });
+  readonly selfAdminLock = computed(() => {
+    const me = this.auth.currentUser();
+    return this.isSelf() && me?.role === 'admin';
+  });
+  readonly armingSelfOff = signal(false);
+
+  /** Dirty guard: any unsaved edit blocks route leave (confirmed inline). */
+  readonly leave = leaveController();
+  isDirty = (): boolean => this.form.dirty;
   protected readonly num = dropdownNumber;
 
   readonly roleOptions: DropdownOption[] = [
@@ -101,6 +124,10 @@ export class UserDetailPage {
   });
 
   readonly isTeacher = signal(false);
+  /** Center is required for every role except admin — but only when the
+   * creator can see the field (admin creator). Supervisors never see it:
+   * the backend forces their own center on store. (§2.8) */
+  readonly centerRequired = signal(false);
 
   private readonly userRes = resource({
     params: () => ({ id: this.id() }),
@@ -134,6 +161,7 @@ export class UserDetailPage {
           teacher_type: u.teacher_type,
           is_active: u.is_active,
         });
+        this.form.markAsPristine();
       }
     });
 
@@ -147,7 +175,45 @@ export class UserDetailPage {
         tt.setValue(null);
       }
       tt.updateValueAndValidity();
+      const cc = this.form.controls.center_id;
+      this.centerRequired.set(this.isAdmin() && r !== null && r !== 'admin');
+      if (this.centerRequired()) {
+        cc.addValidators(Validators.required);
+      } else {
+        cc.clearValidators();
+      }
+      cc.updateValueAndValidity();
     });
+
+    // Own admin row: the Active box is locked (no surprise self-deactivation).
+    effect(() => {
+      const ctl = this.form.controls.is_active;
+      if (this.selfAdminLock() && ctl.enabled) ctl.disable();
+      if (!this.selfAdminLock() && ctl.disabled) ctl.enable();
+    });
+  }
+
+  onActiveChange(checked: boolean): void {
+    if (!checked && this.isSelf() && !this.selfAdminLock()) {
+      // Self-deactivation arms a confirm step: leave the box unchecked while
+      // armed (reverting here makes the control unclickable to assistive tech
+      // and to Playwright's check/uncheck assertions).
+      this.armingSelfOff.set(true);
+      return;
+    }
+    this.armingSelfOff.set(false);
+  }
+
+  confirmSelfOff(): void {
+    this.armingSelfOff.set(false);
+    this.form.controls.is_active.setValue(false);
+    this.submit();
+  }
+
+  cancelSelfOff(): void {
+    // Restore the checked box so cancelling returns to a clean state.
+    this.form.controls.is_active.setValue(true);
+    this.armingSelfOff.set(false);
   }
 
   submit(): void {
@@ -167,6 +233,7 @@ export class UserDetailPage {
           phone: v.phone || null,
           center_id: v.center_id,
           teacher_type: v.teacher_type || undefined,
+          is_active: v.is_active,
         })
       : this.usersSvc.update(Number(this.id()), {
           full_name: v.full_name,
@@ -182,6 +249,13 @@ export class UserDetailPage {
     req$.subscribe({
       next: () => {
         this.saving.set(false);
+        this.form.markAsPristine();
+        if (this.isSelf() && this.form.getRawValue().is_active === false) {
+          // Self-deactivated: drop the session immediately.
+          this.auth.clearLocal();
+          void this.router.navigate(['/login']);
+          return;
+        }
         this.router.navigate(['/users']);
       },
       error: (err: unknown) => {

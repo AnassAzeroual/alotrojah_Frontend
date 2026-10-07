@@ -10,6 +10,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { DelegationsService, GeneratedDelegation } from '../../core/api/delegations.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { GroupsService } from '../../core/api/groups.service';
 import {
   DropdownComponent,
@@ -55,6 +56,12 @@ export class DelegatePage {
       params.g === null ? Promise.resolve([]) : firstValueFrom(this.delegations.forGroup(params.g)),
   });
 
+  /** Dirty guard: changed minutes before generating block route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.form.dirty;
+  }
+
   readonly form = new FormGroup({
     minutes: new FormControl(30, { nonNullable: true, validators: [Validators.required] }),
   });
@@ -72,6 +79,7 @@ export class DelegatePage {
     this.delegations.generate(g, this.form.controls.minutes.value).subscribe({
       next: (d) => {
         this.saving.set(false);
+        this.form.markAsPristine();
         this.generated.set(d);
         this.tick.update((n) => n + 1);
       },

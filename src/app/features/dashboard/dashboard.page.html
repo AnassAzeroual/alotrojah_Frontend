@@ -42,51 +42,88 @@
     </div>
   </div>
 
-  <div class="kpis">
-    <div class="kpi card anim">
-      <span class="kpi-ico">◉</span>
-      <div class="kpi-txt">
-        <small>{{ 'dash.totalStudents' | translate }}</small>
-        <strong class="ltr-num">{{ kpis().students ?? '—' }}</strong>
+  @if (isStudent()) {
+    @if (!me.isLoading() && !me.value()) {
+      <app-empty-state messageKey="dash.noPupil" />
+    } @else {
+      <div class="kpis">
+        <div class="kpi card anim">
+          <span class="kpi-ico">◎</span>
+          <div class="kpi-txt">
+            <small>{{ 'dash.avgScore' | translate }}</small>
+            <strong class="ltr-num">{{ meKpis().avgScore ?? '—' }}</strong>
+          </div>
+        </div>
+        <div class="kpi card anim" style="--d: 60ms">
+          <span class="kpi-ico">▣</span>
+          <div class="kpi-txt">
+            <small>{{ 'dash.avgSarraj' | translate }}</small>
+            <strong class="ltr-num">{{ meKpis().avgSarraj ?? '—' }}</strong>
+          </div>
+        </div>
+        <div class="kpi card anim" style="--d: 120ms">
+          <div class="kpi-txt">
+            <small>{{ 'dash.commitRate' | translate }}</small>
+            <strong class="ltr-num">{{
+              meKpis().rate === null ? '—' : meKpis().rate + '%'
+            }}</strong>
+          </div>
+        </div>
+        <div class="kpi card anim" style="--d: 180ms">
+          <div class="kpi-txt">
+            <small>{{ 'dash.myFinal' | translate }}</small>
+            <strong class="ltr-num">{{ meKpis().final ?? '—' }}</strong>
+          </div>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="kpis">
+      <div class="kpi card anim">
+        <span class="kpi-ico">◉</span>
+        <div class="kpi-txt">
+          <small>{{ 'dash.totalStudents' | translate }}</small>
+          <strong class="ltr-num">{{ kpis().students ?? '—' }}</strong>
+        </div>
+      </div>
+      <div class="kpi card anim" style="--d: 60ms">
+        <span class="kpi-ico">◎</span>
+        <div class="kpi-txt">
+          <small>{{ 'dash.avgScore' | translate }}</small>
+          <strong class="ltr-num">{{ kpis().avgScore ?? '—' }}</strong>
+        </div>
+      </div>
+      <div class="kpi card anim" style="--d: 120ms">
+        <span class="kpi-ico">▣</span>
+        <div class="kpi-txt">
+          <small>{{ 'dash.avgSarraj' | translate }}</small>
+          <strong class="ltr-num">{{ kpis().avgSarraj ?? '—' }}</strong>
+        </div>
+      </div>
+      <div class="kpi card ring-card anim" style="--d: 180ms">
+        <div class="kpi-txt">
+          <small>{{ 'dash.commitRate' | translate }}</small>
+          <strong class="ltr-num">{{ kpis().rate === null ? '—' : kpis().rate + '%' }}</strong>
+        </div>
+        <svg
+          class="ring"
+          viewBox="0 0 84 84"
+          role="img"
+          [attr.aria-label]="kpis().rate === null ? '—' : kpis().rate + '%'"
+        >
+          <circle cx="42" cy="42" r="34" class="track" />
+          <circle cx="42" cy="42" r="34" class="val" [attr.stroke-dasharray]="ringDash()" />
+          <defs>
+            <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#00b8a9" />
+              <stop offset="1" stop-color="#8b5cf6" />
+            </linearGradient>
+          </defs>
+          <text x="42" y="47">{{ kpis().rate === null ? '—' : kpis().rate + '%' }}</text>
+        </svg>
       </div>
     </div>
-    <div class="kpi card anim" style="--d: 60ms">
-      <span class="kpi-ico">◎</span>
-      <div class="kpi-txt">
-        <small>{{ 'dash.avgScore' | translate }}</small>
-        <strong class="ltr-num">{{ kpis().avgScore ?? '—' }}</strong>
-      </div>
-    </div>
-    <div class="kpi card anim" style="--d: 120ms">
-      <span class="kpi-ico">▣</span>
-      <div class="kpi-txt">
-        <small>{{ 'dash.avgSarraj' | translate }}</small>
-        <strong class="ltr-num">{{ kpis().avgSarraj ?? '—' }}</strong>
-      </div>
-    </div>
-    <div class="kpi card ring-card anim" style="--d: 180ms">
-      <div class="kpi-txt">
-        <small>{{ 'dash.commitRate' | translate }}</small>
-        <strong class="ltr-num">{{ kpis().rate === null ? '—' : kpis().rate + '%' }}</strong>
-      </div>
-      <svg
-        class="ring"
-        viewBox="0 0 84 84"
-        role="img"
-        [attr.aria-label]="kpis().rate === null ? '—' : kpis().rate + '%'"
-      >
-        <circle cx="42" cy="42" r="34" class="track" />
-        <circle cx="42" cy="42" r="34" class="val" [attr.stroke-dasharray]="ringDash()" />
-        <defs>
-          <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#00b8a9" />
-            <stop offset="1" stop-color="#8b5cf6" />
-          </linearGradient>
-        </defs>
-        <text x="42" y="47">{{ kpis().rate === null ? '—' : kpis().rate + '%' }}</text>
-      </svg>
-    </div>
-  </div>
+  }
 
   <div class="panel card">
     @if (rows().length > 0 || students.isLoading()) {
@@ -146,12 +183,20 @@
         <h2>{{ 'dash.monthlyEval' | translate }}</h2>
         <small>{{ 'dash.last6' | translate }}</small>
       </div>
-      @if (pickedStudent() === null) {
+      @if (pickedStudent() === null && !isStudent()) {
         <p class="pick-hint">{{ 'dash.pickStudent' | translate }}</p>
-      } @else if ((weekly.value() ?? []).length === 0) {
+      } @else if (
+        isStudent()
+          ? (studentChart().labels ?? []).length === 0
+          : (weekly.value() ?? []).length === 0
+      ) {
         <app-empty-state />
       } @else {
-        <app-chart type="line" [data]="monthlyChart()" label="monthly" />
+        <app-chart
+          type="line"
+          [data]="isStudent() ? studentChart() : monthlyChart()"
+          label="monthly"
+        />
       }
     </div>
     <div class="card chart-card sm">

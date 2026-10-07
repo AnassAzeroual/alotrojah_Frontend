@@ -16,23 +16,46 @@ export class AuthService {
   readonly isLoggedIn = computed(() => this.token() !== null && this.currentUser() !== null);
   readonly role = computed(() => this.currentUser()?.role ?? null);
 
+  /** True once the boot-time session probe has settled (live token, dead token, or none). */
+  readonly sessionProbed = signal(false);
+
+  private readyResolve!: () => void;
+  /** Resolves when sessionProbed flips true — route guards await this before deciding. */
+  readonly ready: Promise<void>;
+
   private inflightRefresh: Observable<string> | null = null;
 
-  /** Called once at boot (APP_INITIALIZER): restores the session or clears a dead token. */
-  init(): Promise<void> {
-    if (!this.token()) return Promise.resolve();
-    return new Promise((resolve) => {
-      this.api.get<CurrentUser>('/auth/me').subscribe({
-        next: (u) => {
-          this.currentUser.set(u);
-          resolve();
-        },
-        error: () => {
-          this.clearLocal();
-          resolve();
-        },
-      });
+  constructor() {
+    this.ready = new Promise<void>((resolve) => (this.readyResolve = resolve));
+  }
+
+  /**
+   * Boot probe, deliberately fire-and-forget: APP_INITIALIZER no longer awaits
+   * it, so first paint no longer blocks on a /auth/me round trip. Role guards
+   * gate on `ready` instead. The captured token is checked in each handler so
+   * a login/logout that wins the race against the probe is never clobbered.
+   */
+  init(): void {
+    const t = this.token();
+    if (!t) {
+      this.settleProbe();
+      return;
+    }
+    this.api.get<CurrentUser>('/auth/me').subscribe({
+      next: (u) => {
+        if (this.token() === t) this.currentUser.set(u);
+        this.settleProbe();
+      },
+      error: () => {
+        if (this.token() === t) this.clearLocal();
+        this.settleProbe();
+      },
     });
+  }
+
+  private settleProbe(): void {
+    this.sessionProbed.set(true);
+    this.readyResolve();
   }
 
   login(email: string, password: string): Observable<LoginData> {
@@ -79,6 +102,7 @@ export class AuthService {
   }
 
   clearLocal(): void {
+    this.api.clearCache();
     localStorage.removeItem(TOKEN_KEY);
     this.token.set(null);
     this.currentUser.set(null);

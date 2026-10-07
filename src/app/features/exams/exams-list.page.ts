@@ -22,12 +22,27 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
   template: `
     <section class="page">
       <div class="page-head anim-rise">
-        <h1>{{ 'exam.title' | translate }}</h1>
-        <div class="actions">
-          <a class="btn btn-primary" routerLink="/exams/new" data-testid="exams-new">{{
-            'exam.new' | translate
-          }}</a>
-        </div>
+        <h1 class="with-add">
+          {{ 'exam.title' | translate }}
+          <a
+            class="btn btn-primary btn-icon"
+            routerLink="/exams/new"
+            data-testid="exams-new"
+            [attr.aria-label]="'exam.new' | translate"
+            [attr.title]="'exam.new' | translate"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </a>
+        </h1>
       </div>
       <div class="card anim-rise" style="--i: 1">
         <label class="field"

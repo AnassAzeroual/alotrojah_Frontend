@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { fillStable } from './api';
+import { adminLogin, fillStable, loginAs } from './api';
 
 test.describe.serial('Users management', () => {
   const stamp = Date.now();
@@ -7,13 +7,9 @@ test.describe.serial('Users management', () => {
   const teacherName = `E2E Teacher ${stamp}`;
   const teacherPassword = 'password123';
 
-  test('admin creates teacher and sees list', async ({ page }) => {
-    // login as admin
-    await page.goto('/login');
-    await page.getByTestId('auth-email').fill('admin@example.org');
-    await page.getByTestId('auth-password').fill('password123');
-    await page.getByTestId('auth-submit').click();
-    await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
+  test('admin creates, deactivates, deletes and replaces teachers', async ({ page }) => {
+    // ---- create (one admin login for the whole flow) ----
+    await adminLogin(page);
 
     // go to users
     await page.getByTestId('nav-users').click();
@@ -39,6 +35,10 @@ test.describe.serial('Users management', () => {
     await page.getByTestId('user-teacher-type').click();
     await page.getByRole('option', { name: /حفظ ومراجعة/ }).click();
 
+    // center (required for non-admin roles; first option is the placeholder)
+    await page.getByTestId('user-center').click();
+    await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
+
     await page.getByTestId('user-submit').click();
     await expect(page).toHaveURL(/\/users$/);
 
@@ -52,31 +52,28 @@ test.describe.serial('Users management', () => {
     await page.getByRole('option', { name: /معلم/ }).click();
     await page.getByTestId('user-teacher-type').click();
     await page.getByRole('option', { name: /حفظ ومراجعة/ }).click();
+    await page.getByTestId('user-center').click();
+    await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
     await page.getByTestId('user-submit').click();
     await expect(page.getByTestId('user-error')).toContainText('مسجل مسبقاً');
     await expect(page).toHaveURL(/\/users\/new$/);
 
-    // logout
+    // logout (the half-filled duplicate form is dirty, so the unsaved
+    // guard holds the route until the leave is confirmed — by design)
     await page.getByTestId('nav-logout').click();
+    await expect(page.getByTestId('unsaved-guard')).toBeVisible();
+    await page.getByTestId('confirm-leave').click();
     await expect(page).toHaveURL(/\/login$/);
-  });
 
-  test('created teacher logs in, then admin deactivates, login fails', async ({ page }) => {
-    // Teacher logs in
-    await page.goto('/login');
-    await page.getByTestId('auth-email').fill(teacherEmail);
-    await page.getByTestId('auth-password').fill(teacherPassword);
-    await page.getByTestId('auth-submit').click();
+    // ---- teacher logs in, then admin deactivates, login fails ----
+    await loginAs(page, teacherEmail, teacherPassword);
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
 
     // Logout
     await page.getByTestId('nav-logout').click();
 
     // Admin logs in to deactivate
-    await page.goto('/login');
-    await page.getByTestId('auth-email').fill('admin@example.org');
-    await page.getByTestId('auth-password').fill('password123');
-    await page.getByTestId('auth-submit').click();
+    await adminLogin(page);
 
     // Find the created teacher through the search box (stable test-id locator).
     await page.getByTestId('nav-users').click();
@@ -99,53 +96,48 @@ test.describe.serial('Users management', () => {
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
 
-    // Teacher tries login again (fillStable: full-suite load can wipe form
-    // state between fill and submit — observed, retried, still fails loudly)
-    await fillStable(page.getByTestId('auth-email'), teacherEmail);
-    await fillStable(page.getByTestId('auth-password'), teacherPassword);
-    await page.getByTestId('auth-submit').click();
+    // Teacher tries login again (hardened attempt: the fresh /login form
+    // can wipe mid-fill fields, leaving submit disabled — goto first,
+    // re-verify the email post-password, retry once, fail loudly)
+    await page.goto('/login');
+    for (let i = 0; i < 2; i++) {
+      await fillStable(page.getByTestId('auth-email'), teacherEmail);
+      await fillStable(page.getByTestId('auth-password'), teacherPassword);
+      await expect(page.getByTestId('auth-email')).toHaveValue(teacherEmail, { timeout: 2000 });
+      try {
+        await page.getByTestId('auth-submit').click({ timeout: 5000 });
+        break;
+      } catch {
+        // wiped/disabled beneath us again — one refill, then fail loudly below
+      }
+    }
 
     // Should see error and stay on login
     await expect(page.locator('.auth-error')).toBeVisible();
     await expect(page).toHaveURL(/\/login$/);
-  });
 
-  test('admin deletes the teacher and the row disappears', async ({ page }) => {
-    await page.goto('/login');
-    await page.getByTestId('auth-email').fill('admin@example.org');
-    await page.getByTestId('auth-password').fill('password123');
-    await page.getByTestId('auth-submit').click();
-    await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
+    // ---- admin deletes the teacher and the row disappears ----
+    await adminLogin(page);
 
     await page.getByTestId('nav-users').click();
     await expect(page).toHaveURL(/\/users$/);
 
-    const searchBox = page.getByTestId('users-search');
-    await searchBox.fill(teacherName);
-    await searchBox.press('Enter');
-    const teacherRow = page.locator('.users-table tbody tr', { hasText: teacherName });
-    await expect(teacherRow).toHaveCount(1);
+    const searchBox2 = page.getByTestId('users-search');
+    await searchBox2.fill(teacherName);
+    await searchBox2.press('Enter');
+    const teacherRow2 = page.locator('.users-table tbody tr', { hasText: teacherName });
+    await expect(teacherRow2).toHaveCount(1);
 
-    await teacherRow.locator('button[data-testid^="delete-user-"]').click();
-    await teacherRow.locator('button[data-testid^="confirm-delete-user-"]').click();
-    await expect(teacherRow).toHaveCount(0);
+    await teacherRow2.locator('button[data-testid^="delete-user-"]').click();
+    await teacherRow2.locator('button[data-testid^="confirm-delete-user-"]').click();
+    await expect(teacherRow2).toHaveCount(0);
 
-    await page.getByTestId('nav-logout').click();
-    await expect(page).toHaveURL(/\/login$/);
-  });
-
-  test('admin transfers a group-owning teacher to a replacer and deletes', async ({ page }) => {
+    // ---- replacer flow continues in the same admin session (no re-login) ----
     const oldName = `E2E Old ${stamp}`;
     const newName = `E2E New ${stamp}`;
     const oldEmail = `e2e_old_${stamp}@example.org`;
     const newEmail = `e2e_new_${stamp}@example.org`;
     const groupName = `RPLC ${stamp}`;
-
-    await page.goto('/login');
-    await page.getByTestId('auth-email').fill('admin@example.org');
-    await page.getByTestId('auth-password').fill('password123');
-    await page.getByTestId('auth-submit').click();
-    await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
 
     // two hifz teachers in center 1
     for (const [name, email] of [
@@ -189,9 +181,9 @@ test.describe.serial('Users management', () => {
     // deleting the old teacher is blocked → replacer dialog
     await page.getByTestId('nav-users').click();
     await expect(page).toHaveURL(/\/users$/);
-    const searchBox = page.getByTestId('users-search');
-    await searchBox.fill(oldName);
-    await searchBox.press('Enter');
+    const searchBox3 = page.getByTestId('users-search');
+    await searchBox3.fill(oldName);
+    await searchBox3.press('Enter');
     const oldRow = page.locator('.users-table tbody tr', { hasText: oldName });
     await expect(oldRow).toHaveCount(1);
     await oldRow.locator('button[data-testid^="delete-user-"]').click();
@@ -208,8 +200,8 @@ test.describe.serial('Users management', () => {
     await expect(page).toHaveURL(/\/users$/);
 
     // old teacher is gone
-    await searchBox.fill(oldName);
-    await searchBox.press('Enter');
+    await searchBox3.fill(oldName);
+    await searchBox3.press('Enter');
     await expect(page.locator('.users-table tbody tr', { hasText: oldName })).toHaveCount(0);
 
     // the group survived the transfer
@@ -225,8 +217,8 @@ test.describe.serial('Users management', () => {
     await expect(page).toHaveURL(/\/users$/);
     await page.getByTestId('users-role').click();
     await page.getByRole('option', { name: 'معلم', exact: true }).click();
-    await searchBox.fill(newName);
-    await searchBox.press('Enter');
+    await searchBox3.fill(newName);
+    await searchBox3.press('Enter');
     const newRow = page.locator('.users-table tbody tr', { hasText: newName });
     await expect(newRow).toHaveCount(1);
     await page.getByTestId('users-unassigned').check();

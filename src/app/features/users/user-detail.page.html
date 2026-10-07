@@ -18,37 +18,71 @@
       <app-spinner />
     </div>
   } @else {
-    <form class="card stack anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="submit()">
+    <form
+      class="card stack anim-rise"
+      style="--i: 1"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      autocomplete="off"
+    >
       @if (errorKey()) {
         <div class="banner danger" data-testid="user-error">
           {{ errorKey()! | translate }}
         </div>
       }
 
+      @if (leave.leaving()) {
+        <div class="banner danger" data-testid="unsaved-guard">
+          <span>{{ 'common.unsaved_warn' | translate }}</span>
+          <span class="cluster">
+            <button
+              type="button"
+              class="btn btn-danger-solid btn-sm"
+              data-testid="confirm-leave"
+              (click)="leave.allowLeave()"
+            >
+              {{ 'common.unsaved_leave' | translate }}
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+              {{ 'common.cancel' | translate }}
+            </button>
+          </span>
+        </div>
+      }
+
       <div class="grid" style="--cols: 2">
         <label class="field">
           <span>{{ 'auth.name' | translate }} <span class="danger">*</span></span>
-          <input type="text" formControlName="full_name" data-testid="user-name" />
+          <input
+            type="text"
+            formControlName="full_name"
+            data-testid="user-name"
+            autocomplete="off"
+          />
         </label>
         <label class="field">
           <span>{{ 'auth.email' | translate }} <span class="danger">*</span></span>
-          <input type="email" formControlName="email" dir="ltr" data-testid="user-email" />
+          <input
+            type="email"
+            formControlName="email"
+            dir="ltr"
+            data-testid="user-email"
+            autocomplete="off"
+          />
         </label>
 
         <label class="field">
           <span>{{ 'auth.phone' | translate }}</span>
-          <input type="tel" formControlName="phone" dir="ltr" />
+          <input type="tel" formControlName="phone" dir="ltr" autocomplete="off" />
         </label>
 
-        <label class="field">
-          <span
-            >{{ 'auth.password' | translate }}
-            @if (isNew()) {
-              <span class="danger">*</span>
-            }
-          </span>
-          <input type="password" formControlName="password" dir="ltr" data-testid="user-password" />
-        </label>
+        <app-password-field
+          [control]="form.controls.password"
+          testId="user-password"
+          autocomplete="new-password"
+          labelKey="auth.password"
+          [required]="isNew()"
+        />
 
         <label class="field">
           <span>{{ 'auth.role' | translate }} <span class="danger">*</span></span>
@@ -76,13 +110,16 @@
 
         @if (isAdmin()) {
           <label class="field">
-            <span>{{ 'dash.center' | translate }}</span>
+            <span
+              >{{ 'dash.center' | translate }}
+              @if (centerRequired()) {
+                <span class="danger">*</span>
+              }
+            </span>
             <app-dropdown
               [options]="centerOptions()"
-              [value]="
-                form.controls.center_id.value ? form.controls.center_id.value.toString() : ''
-              "
-              (valueChange)="form.controls.center_id.setValue($event ? num($event) : null)"
+              [value]="form.controls.center_id.value"
+              (valueChange)="form.controls.center_id.setValue(num($event))"
               ariaLabelKey="dash.center"
               testId="user-center"
             />
@@ -90,11 +127,35 @@
         }
       </div>
 
-      @if (!isNew()) {
-        <label class="field row">
-          <input type="checkbox" formControlName="is_active" data-testid="user-active" />
-          <span>{{ 'common.active' | translate }}</span>
-        </label>
+      <label class="chk">
+        <input
+          type="checkbox"
+          formControlName="is_active"
+          data-testid="user-active"
+          (change)="onActiveChange($any($event.target).checked)"
+        />
+        <span>{{ 'common.active' | translate }}</span>
+      </label>
+      @if (selfAdminLock()) {
+        <small class="muted">{{ 'users.self_admin_locked' | translate }}</small>
+      }
+      @if (armingSelfOff()) {
+        <div class="banner danger" data-testid="user-self-off">
+          <span>{{ 'users.self_off_warn' | translate }}</span>
+          <span class="cluster">
+            <button
+              type="button"
+              class="btn btn-danger-solid btn-sm"
+              data-testid="confirm-user-self-off"
+              (click)="confirmSelfOff()"
+            >
+              {{ 'users.self_off_confirm' | translate }}
+            </button>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="cancelSelfOff()">
+              {{ 'common.cancel' | translate }}
+            </button>
+          </span>
+        </div>
       }
 
       <div class="actions" style="margin-top: 1rem">

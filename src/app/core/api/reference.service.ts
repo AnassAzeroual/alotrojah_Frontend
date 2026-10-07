@@ -24,8 +24,11 @@ export interface Season {
 export class ReferenceService {
   private readonly api = inject(ApiClient);
 
-  levels(): Observable<Level[]> {
-    return this.api.get<Level[]>('/reference/levels');
+  levels(centerId?: number | null): Observable<Level[]> {
+    return this.api.get<Level[]>(
+      '/reference/levels',
+      centerId ? { center_id: centerId } : undefined,
+    );
   }
 
   surahs(q?: string): Observable<Surah[]> {

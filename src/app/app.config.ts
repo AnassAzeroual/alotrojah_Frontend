@@ -6,12 +6,8 @@ import {
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import {
-  provideTranslateLoader,
-  provideMissingTranslationHandler,
-  provideTranslateService,
-} from '@ngx-translate/core';
-import { provideTranslateHttpLoader, TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { provideMissingTranslationHandler, provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { routes } from './app.routes';
 import { AuthService } from './core/auth/auth.service';
 import { authInterceptor } from './core/auth/auth.interceptor';
@@ -26,13 +22,14 @@ export const appConfig: ApplicationConfig = {
     provideTranslateService({
       lang: 'ar',
       fallbackLang: 'en',
-      loader: provideTranslateLoader(() => new TranslateHttpLoader()),
     }),
     provideTranslateHttpLoader(),
     provideMissingTranslationHandler(() => new LogMissingTranslationHandler()),
     provideAppInitializer(() => {
       inject(LanguageService).init();
-      return inject(AuthService).init();
+      // Fire-and-forget: first paint must not block on /auth/me. Guards wait on
+      // AuthService.ready before making login/role decisions.
+      inject(AuthService).init();
     }),
   ],
 };

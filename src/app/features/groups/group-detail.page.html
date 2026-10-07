@@ -303,11 +303,11 @@
                       </div>
                       <div class="d-item">
                         <small>{{ 'grp.birth_date' | translate }}</small>
-                        <span class="ltr-num">{{ s.birth_date ?? '—' }}</span>
+                        <span class="ltr-num">{{ s.birth_date | appDate }}</span>
                       </div>
                       <div class="d-item">
                         <small>{{ 'grp.enrolled' | translate }}</small>
-                        <span class="ltr-num">{{ s.enrollment_date ?? '—' }}</span>
+                        <span class="ltr-num">{{ s.enrollment_date | appDate }}</span>
                       </div>
                       <div class="d-item wide">
                         <small>{{ 'grp.notes' | translate }}</small>

@@ -6,10 +6,17 @@
   resource,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { AnnouncementsService } from '../../core/api/announcements.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import { GroupsService } from '../../core/api/groups.service';
@@ -21,6 +28,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
   selector: 'app-news-page',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
     DropdownComponent,
@@ -53,6 +61,17 @@ export class NewsPage {
   readonly editingId = signal<number | null>(null);
   readonly draftTitle = signal('');
   readonly draftBody = signal('');
+  private readonly editSeed = signal<{ title: string; body: string } | null>(null);
+
+  /** Dirty guard: half-typed post or touched edit row blocks route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    if (this.form.dirty) return true;
+    if (this.editingId() === null) return false;
+    const seed = this.editSeed();
+    if (!seed) return true;
+    return this.draftTitle() !== seed.title || this.draftBody() !== seed.body;
+  }
   readonly editSaving = signal(false);
   readonly editErrorKey = signal<string | null>(null);
 
@@ -65,10 +84,12 @@ export class NewsPage {
     this.editingId.set(id);
     this.draftTitle.set(title);
     this.draftBody.set(body);
+    this.editSeed.set({ title, body });
   }
 
   cancelEdit(): void {
     this.editingId.set(null);
+    this.editSeed.set(null);
     this.editErrorKey.set(null);
   }
 
@@ -82,6 +103,7 @@ export class NewsPage {
       next: () => {
         this.editSaving.set(false);
         this.editingId.set(null);
+        this.editSeed.set(null);
         this.tick.update((n) => n + 1);
       },
       error: (err: unknown) => {

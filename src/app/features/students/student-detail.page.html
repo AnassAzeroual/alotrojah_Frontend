@@ -17,6 +17,7 @@
         style="--i: 1"
         [formGroup]="form"
         (ngSubmit)="submitForm()"
+        autocomplete="off"
       >
         <label class="field">
           <span>{{ 'users.name' | translate }} <span class="danger">*</span></span>
@@ -29,14 +30,20 @@
         </label>
 
         <div class="grid-auto">
-          @if (centerOptions().length > 1) {
+          @if (centerOptions().length > 0) {
             <label class="field">
-              <span>{{ 'registrations.pick_center' | translate }}</span>
+              <span
+                >{{ 'registrations.pick_center' | translate }}
+                @if (showCenterAdmin()) {
+                  <span class="danger">*</span>
+                }
+              </span>
               <app-dropdown
                 [options]="centerOptions()"
                 [value]="num(form.controls.center_id.value)"
                 (valueChange)="form.controls.center_id.setValue(num($event))"
                 ariaLabelKey="registrations.pick_center"
+                testId="student-center"
               />
             </label>
           }
@@ -131,6 +138,24 @@
         @if (assignFailed()) {
           <p class="field-error">{{ assignFailed()! | translate }}</p>
         }
+        @if (leave.leaving()) {
+          <div class="banner danger" data-testid="unsaved-guard">
+            <span>{{ 'common.unsaved_warn' | translate }}</span>
+            <span class="cluster">
+              <button
+                type="button"
+                class="btn btn-danger-solid btn-sm"
+                data-testid="confirm-leave"
+                (click)="leave.allowLeave()"
+              >
+                {{ 'common.unsaved_leave' | translate }}
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+                {{ 'common.cancel' | translate }}
+              </button>
+            </span>
+          </div>
+        }
       </form>
     } @else {
       <div class="page-head anim-rise">
@@ -190,7 +215,7 @@
             <button
               type="button"
               class="btn btn-primary"
-              [disabled]="!isDirty() || assignSaving()"
+              [disabled]="!assignDirty() || assignSaving()"
               (click)="saveAssign()"
             >
               @if (assignSaving()) {

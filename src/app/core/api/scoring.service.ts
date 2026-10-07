@@ -20,18 +20,32 @@ export interface ScoringCheck {
 export class ScoringService {
   private readonly api = inject(ApiClient);
 
-  modules(): Observable<ScoringModule[]> {
-    return this.api.get<ScoringModule[]>('/scoring-modules');
+  modules(centerId?: number | null): Observable<ScoringModule[]> {
+    return this.api.get<ScoringModule[]>(
+      '/scoring-modules',
+      centerId ? { center_id: centerId } : undefined,
+    );
   }
 
-  bulk(patches: ModulePatch[]): Observable<{ modules: ScoringModule[]; check: ScoringCheck }> {
+  bulk(
+    patches: ModulePatch[],
+    centerId?: number | null,
+  ): Observable<{ modules: ScoringModule[]; check: ScoringCheck }> {
     return this.api.put<{ modules: ScoringModule[]; check: ScoringCheck }>('/scoring-modules', {
+      center_id: centerId ?? null,
       modules: patches,
     });
   }
 
   remove(id: number): Observable<null> {
     return this.api.delete<null>(`/scoring-modules/${id}`);
+  }
+
+  /** T2: delete one center's override set (all-or-nothing server-side). */
+  reset(centerId: number): Observable<{ deleted: number }> {
+    return this.api.delete<{ deleted: number }>('/scoring-modules/reset', {
+      center_id: centerId,
+    });
   }
 
   create(payload: {
@@ -41,6 +55,7 @@ export class ScoringService {
     scope: 'weekly' | 'murajaa';
     is_active?: boolean;
     is_in_weekly_total?: boolean;
+    center_id?: number | null;
   }): Observable<ScoringModule> {
     return this.api.post<ScoringModule>('/scoring-modules', payload);
   }

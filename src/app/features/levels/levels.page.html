@@ -1,0 +1,319 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'level.title' | translate }}</h1>
+  </div>
+
+  @if (leave.leaving()) {
+    <div class="banner danger" data-testid="unsaved-guard">
+      <span>{{ 'common.unsaved_warn' | translate }}</span>
+      <span class="cluster">
+        <button
+          type="button"
+          class="btn btn-danger-solid btn-sm"
+          data-testid="confirm-leave"
+          (click)="leave.allowLeave()"
+        >
+          {{ 'common.unsaved_leave' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </span>
+    </div>
+  }
+
+  @if (!prefs.hideScopePickers()) {
+    <div class="toolbar card anim-rise" style="--i: 1" data-testid="levels-toolbar">
+      <label class="field">
+        <app-dropdown
+          [options]="centerScopeOptions()"
+          [value]="txt(centerScope() ?? '')"
+          (valueChange)="setCenterScope($event)"
+          ariaLabelKey="dash.center"
+          testId="levels-center-scope"
+        />
+      </label>
+    </div>
+  }
+
+  <div class="scope-banner anim-rise" style="--i: 1" data-testid="levels-scope-banner">
+    @if (activeScope() === null) {
+      <span>{{ 'level.scope_shared' | translate }}</span>
+    } @else {
+      <span>{{ 'level.scope_center' | translate: { name: centerName() ?? '' } }}</span>
+      @if (armingReset()) {
+        <span class="cluster">
+          <button
+            type="button"
+            class="btn btn-danger-solid btn-sm"
+            data-testid="confirm-levels-reset"
+            [disabled]="resetBusy()"
+            (click)="resetScope()"
+          >
+            @if (resetBusy()) {
+              <app-spinner />
+            } @else {
+              {{ 'level.reset_confirm' | translate }}
+            }
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [disabled]="resetBusy()"
+            (click)="armingReset.set(false)"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+        </span>
+      } @else {
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          data-testid="levels-reset"
+          [disabled]="resetBusy()"
+          (click)="armingReset.set(true)"
+        >
+          {{ 'level.reset' | translate }}
+        </button>
+      }
+    }
+  </div>
+  @if (resetErrorKey()) {
+    <div class="banner danger">{{ resetErrorKey()! | translate }}</div>
+  }
+
+  @if (levels.isLoading()) {
+    <div class="stack" aria-hidden="true">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
+  } @else if ((levels.value() ?? []).length === 0) {
+    <app-empty-state />
+  } @else {
+    <div class="table-responsive">
+      <table class="levels-table">
+        <thead>
+          <tr>
+            <th>{{ 'level.code' | translate }}</th>
+            <th>{{ 'level.name' | translate }}</th>
+            <th class="ltr-num">{{ 'level.sessions' | translate }}</th>
+            <th class="ltr-num">{{ 'level.thumnSession' | translate }}</th>
+            <th class="ltr-num">{{ 'level.thumnWeek' | translate }}</th>
+            <th class="ltr-num">{{ 'level.ahzabTerm' | translate }}</th>
+            <th class="actions-col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of levels.value() ?? []; track l.id) {
+            <tr
+              [class.is-override]="isOverride(l.center_id)"
+              [class.is-inherited]="activeScope() !== null && !isOverride(l.center_id)"
+            >
+              <td>
+                <code class="ltr-num" dir="ltr">{{ l.code }}</code>
+              </td>
+              <td>
+                <strong>{{ l.name_ar }}</strong>
+                @if (activeScope() !== null) {
+                  @if (isOverride(l.center_id)) {
+                    <span class="src-tag override">{{ 'level.override_tag' | translate }}</span>
+                  } @else {
+                    <span class="src-tag inherited">{{ 'level.inherited_tag' | translate }}</span>
+                  }
+                }
+              </td>
+              <td class="ltr-num">{{ l.sessions_per_week }}</td>
+              <td class="ltr-num">{{ l.thumn_per_session_value }}</td>
+              <td class="ltr-num">{{ l.thumn_per_week_value }}</td>
+              <td class="ltr-num">{{ l.ahzab_per_term }}</td>
+              <td class="actions-col">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  [attr.data-testid]="'edit-level-' + l.id"
+                  [attr.aria-label]="'center.edit' | translate"
+                  (click)="startEdit(l)"
+                >
+                  {{ 'center.edit' | translate }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-danger-ghost btn-sm"
+                  [attr.data-testid]="'delete-level-' + l.id"
+                  [attr.aria-label]="'common.delete' | translate"
+                  (click)="armDelete(l.id)"
+                >
+                  {{ 'common.delete' | translate }}
+                </button>
+              </td>
+            </tr>
+            @if (editingId() === l.id && draft()) {
+              <tr class="edit-row">
+                <td colspan="7">
+                  <form (ngSubmit)="saveEdit(l.id)" autocomplete="off">
+                    <div class="grid-auto">
+                      <label class="field"
+                        ><span>{{ 'level.name' | translate }} *</span>
+                        <input
+                          type="text"
+                          data-testid="level-edit-name"
+                          [value]="draft()!.name_ar"
+                          (input)="setDraft('name_ar', $any($event.target).value)"
+                          maxlength="100"
+                        />
+                      </label>
+                      <label class="field"
+                        ><span>{{ 'level.sessions' | translate }}</span>
+                        <input
+                          type="number"
+                          class="ltr-num"
+                          data-testid="level-edit-sessions"
+                          [value]="draft()!.sessions_per_week"
+                          (input)="setDraft('sessions_per_week', $any($event.target).value)"
+                          min="1"
+                          max="7"
+                        />
+                      </label>
+                      <label class="field"
+                        ><span>{{ 'level.thumnSessionLabel' | translate }}</span>
+                        <input
+                          type="text"
+                          data-testid="level-edit-thumn-label"
+                          [value]="draft()!.thumn_session_label"
+                          (input)="setDraft('thumn_session_label', $any($event.target).value)"
+                          maxlength="50"
+                        />
+                      </label>
+                      <label class="field"
+                        ><span>{{ 'level.thumnSession' | translate }}</span>
+                        <input
+                          type="number"
+                          class="ltr-num"
+                          [value]="draft()!.thumn_session_value"
+                          (input)="setDraft('thumn_session_value', $any($event.target).value)"
+                          min="0"
+                          step="0.01"
+                        />
+                      </label>
+                      <label class="field"
+                        ><span>{{ 'level.thumnWeek' | translate }}</span>
+                        <input
+                          type="number"
+                          class="ltr-num"
+                          [value]="draft()!.thumn_week_value"
+                          (input)="setDraft('thumn_week_value', $any($event.target).value)"
+                          min="0"
+                          step="0.01"
+                        />
+                      </label>
+                      <label class="field"
+                        ><span>{{ 'level.ahzabTerm' | translate }}</span>
+                        <input
+                          type="number"
+                          class="ltr-num"
+                          [value]="draft()!.ahzab_term"
+                          (input)="setDraft('ahzab_term', $any($event.target).value)"
+                          min="0"
+                          step="0.01"
+                        />
+                      </label>
+                      <label class="field"
+                        ><span>{{ 'level.ahzabDawra' | translate }}</span>
+                        <input
+                          type="number"
+                          class="ltr-num"
+                          [value]="draft()!.ahzab_dawra"
+                          (input)="setDraft('ahzab_dawra', $any($event.target).value)"
+                          min="0"
+                          step="0.01"
+                        />
+                      </label>
+                      <label class="field"
+                        ><span>{{ 'level.duration' | translate }}</span>
+                        <input
+                          type="text"
+                          [value]="draft()!.duration"
+                          (input)="setDraft('duration', $any($event.target).value)"
+                          maxlength="100"
+                        />
+                      </label>
+                      <label class="field"
+                        ><span>{{ 'level.totalAhzab' | translate }}</span>
+                        <input
+                          type="number"
+                          class="ltr-num"
+                          [value]="draft()!.total_ahzab"
+                          (input)="setDraft('total_ahzab', $any($event.target).value)"
+                          min="1"
+                          max="60"
+                        />
+                      </label>
+                    </div>
+                    <div class="cluster">
+                      <button
+                        type="submit"
+                        class="btn btn-primary btn-sm"
+                        data-testid="level-edit-save"
+                        [disabled]="draft()!.name_ar.trim() === '' || editSaving()"
+                        (click)="saveEdit(l.id)"
+                      >
+                        @if (editSaving()) {
+                          <app-spinner />
+                        } @else {
+                          {{ 'common.save' | translate }}
+                        }
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-ghost btn-sm"
+                        [disabled]="editSaving()"
+                        (click)="cancelEdit()"
+                      >
+                        {{ 'common.cancel' | translate }}
+                      </button>
+                    </div>
+                    @if (editErrorKey()) {
+                      <div class="banner danger">{{ editErrorKey()! | translate }}</div>
+                    }
+                  </form>
+                </td>
+              </tr>
+            }
+            @if (armingDeleteId() === l.id) {
+              <tr class="edit-row">
+                <td colspan="7">
+                  <div class="cluster">
+                    <button
+                      type="button"
+                      class="btn btn-danger-solid btn-sm"
+                      [disabled]="busyId() === l.id"
+                      [attr.data-testid]="'confirm-delete-level-' + l.id"
+                      (click)="remove(l.id)"
+                    >
+                      @if (busyId() === l.id) {
+                        <app-spinner />
+                      } @else {
+                        {{ 'scoring.delete_confirm' | translate }}
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm"
+                      [disabled]="busyId() === l.id"
+                      (click)="disarmDelete()"
+                    >
+                      {{ 'common.cancel' | translate }}
+                    </button>
+                  </div>
+                  @if (deleteErrorKey()) {
+                    <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

@@ -3,7 +3,32 @@
     <h1>{{ 'notif.title' | translate }}</h1>
   </div>
 
-  <form class="card anim-rise" style="--i: 1" [formGroup]="form" (ngSubmit)="queue()">
+  @if (leave.leaving()) {
+    <div class="banner danger" data-testid="unsaved-guard">
+      <span>{{ 'common.unsaved_warn' | translate }}</span>
+      <span class="cluster">
+        <button
+          type="button"
+          class="btn btn-danger-solid btn-sm"
+          data-testid="confirm-leave"
+          (click)="leave.allowLeave()"
+        >
+          {{ 'common.unsaved_leave' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </span>
+    </div>
+  }
+
+  <form
+    class="card anim-rise"
+    style="--i: 1"
+    [formGroup]="form"
+    (ngSubmit)="queue()"
+    autocomplete="off"
+  >
     <label class="field"
       ><span>{{ 'notif.phone' | translate }}</span>
       <input formControlName="recipient_phone" inputmode="tel" dir="ltr" />

@@ -86,11 +86,6 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'dashboard',
-        loadChildren: () =>
-          import('./features/dashboard/dashboard.routes').then((m) => m.DASHBOARD_ROUTES),
-      },
-      {
         path: 'users',
         loadChildren: () => import('./features/users/users.routes').then((m) => m.USERS_ROUTES),
       },
@@ -98,6 +93,15 @@ export const routes: Routes = [
         path: 'centers',
         loadChildren: () =>
           import('./features/centers/centers.routes').then((m) => m.CENTERS_ROUTES),
+      },
+      {
+        path: 'levels',
+        loadChildren: () => import('./features/levels/levels.routes').then((m) => m.LEVELS_ROUTES),
+      },
+      {
+        path: 'settings',
+        loadChildren: () =>
+          import('./features/settings/settings.routes').then((m) => m.SETTINGS_ROUTES),
       },
       // F11+ append feature routes here
     ],

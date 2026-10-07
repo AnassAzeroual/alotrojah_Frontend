@@ -29,6 +29,10 @@ test.describe.serial('Students management', () => {
 
     await page.getByTestId('student-name').fill(studentName);
 
+    // center (required for admin now — any center works)
+    await page.getByTestId('student-center').click();
+    await page.getByRole('option').first().click();
+
     // mode: surah
     await page.getByTestId('student-mode').click();
     await page.getByRole('option', { name: /بالسورة/ }).click();

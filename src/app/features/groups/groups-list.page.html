@@ -1,7 +1,29 @@
 <section class="page">
   <div class="page-head anim-rise">
     <div>
-      <h1>{{ 'nav.groups' | translate }}</h1>
+      <h1 class="with-add">
+        {{ 'nav.groups' | translate }}
+        @if (canCreate()) {
+          <a
+            routerLink="/groups/new"
+            class="btn btn-primary btn-icon"
+            data-testid="groups-new"
+            [attr.aria-label]="'grp.create' | translate"
+            [attr.title]="'grp.create' | translate"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </a>
+        }
+      </h1>
       <p>{{ 'grp.subtitle' | translate }}</p>
       @if (seasonName()) {
         <p class="season">
@@ -10,11 +32,6 @@
       }
     </div>
     <div class="actions">
-      @if (canCreate()) {
-        <a routerLink="/groups/new" class="btn btn-primary" data-testid="groups-new">{{
-          'grp.create' | translate
-        }}</a>
-      }
       <button type="button" class="btn btn-ghost" (click)="exportCsv()">
         {{ 'grp.export_csv' | translate }}
       </button>
@@ -219,6 +236,32 @@
                     >
                       {{ expandedId() === g.id ? '▾' : '▸' }}
                     </button>
+                    @if (canEditRow(g)) {
+                      <a
+                        [routerLink]="['/groups', g.id, 'edit']"
+                        (click)="$event.stopPropagation()"
+                        class="pencil"
+                        [attr.aria-label]="'grp.edit' | translate"
+                        [attr.title]="'grp.edit' | translate"
+                        [attr.data-testid]="'edit-group-' + g.id"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          aria-hidden="true"
+                          focusable="false"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </a>
+                    }
                     <span class="avatar-sm" aria-hidden="true">{{ g.name.slice(0, 1) }}</span>
                     <strong>{{ g.name }}</strong>
                   </span>

@@ -1,9 +1,26 @@
 <section class="page">
   <div class="page-head anim-rise">
-    <h1>{{ 'nav.users' | translate }}</h1>
-    <a routerLink="/users/new" class="btn btn-primary" data-testid="users-new">{{
-      'users.create' | translate
-    }}</a>
+    <h1 class="with-add">
+      {{ 'nav.users' | translate }}
+      <a
+        routerLink="/users/new"
+        class="btn btn-primary btn-icon"
+        data-testid="users-new"
+        [attr.aria-label]="'users.create' | translate"
+        [attr.title]="'users.create' | translate"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </a>
+    </h1>
   </div>
 
   <div class="toolbar card anim-rise" style="--i: 1">
@@ -26,7 +43,7 @@
         testId="users-role"
       />
     </label>
-    <label class="field row">
+    <label class="chk">
       <input
         type="checkbox"
         data-testid="users-unassigned"
@@ -116,7 +133,7 @@
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                   </a>
-                  @if (canDelete(u.id)) {
+                  @if (canDelete(u)) {
                     @if (armingDeleteId() === u.id) {
                       <button
                         type="button"

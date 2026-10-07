@@ -1,17 +1,27 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   input,
   resource,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { apiErrorKey } from '../../core/api/api-errors';
-import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
+import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+  dropdownNumber,
+  dropdownText,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
@@ -20,7 +30,10 @@ import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.
   selector: 'app-term-detail-page',
   standalone: true,
   imports: [
+    FormsModule,
+    RouterLink,
     TranslatePipe,
+    DatePickerComponent,
     DropdownComponent,
     EmptyStateComponent,
     SpinnerComponent,
@@ -33,6 +46,7 @@ export class TermDetailPage {
   readonly id = input.required<number, string>({ transform: (v: string) => Number(v) });
 
   private readonly planning = inject(PlanningService);
+  private readonly router = inject(Router);
   private readonly tick = signal(0);
 
   protected readonly term = resource({
@@ -40,11 +54,39 @@ export class TermDetailPage {
     loader: ({ params }) => firstValueFrom(this.planning.termDetail(params.id)),
   });
 
+  /** Sibling terms of the same season — the terms list this page was missing. */
+  private readonly siblings = resource({
+    params: () => ({ s: this.term.value()?.season_id ?? null }),
+    loader: ({ params }) =>
+      params.s === null ? Promise.resolve([]) : firstValueFrom(this.planning.terms(params.s)),
+  });
+
+  protected readonly termOptions = computed<DropdownOption[]>(() =>
+    (this.siblings.value() ?? []).map((t) => ({ value: String(t.id), label: t.name_ar })),
+  );
+
+  protected readonly num = dropdownNumber;
+
+  protected goTerm(v: number | null): void {
+    if (v === null || v === this.id()) return;
+    void this.router.navigate(['/planning/terms', v]);
+  }
+
   protected openWeek = signal<number | null>(null);
+  private readonly expandedSeed = signal<number | null>(null);
   protected readonly txt = dropdownText;
 
   readonly renaming = signal(false);
   readonly renameValue = signal('');
+
+  /** Dirty guard: a renamed-but-unsaved term title blocks route leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    if (!this.renaming()) return false;
+    const cur = this.renameValue().trim();
+    if (cur === '') return false;
+    return cur !== (this.term.value()?.name_ar ?? '');
+  }
   readonly renameSaving = signal(false);
   readonly renameErrorKey = signal<string | null>(null);
 
@@ -52,6 +94,12 @@ export class TermDetailPage {
     effect(() => {
       const t = this.term.value();
       if (t && !this.renaming()) this.renameValue.set(t.name_ar);
+      // Never render a wall of collapsed cards: open the first week on each
+      // fresh term load (user toggles afterwards are never overridden).
+      if (t && this.expandedSeed() !== this.id()) {
+        this.expandedSeed.set(this.id());
+        this.openWeek.set(t.weeks[0]?.id ?? null);
+      }
     });
   }
 
@@ -105,8 +153,4 @@ export class TermDetailPage {
     { value: 'done', labelKey: 'sessionStatus.done' },
     { value: 'cancelled', labelKey: 'sessionStatus.cancelled' },
   ];
-
-  protected sessVal(event: Event): string {
-    return (event.target as HTMLInputElement).value;
-  }
 }

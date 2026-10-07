@@ -7,6 +7,24 @@
   <app-empty-state />
 } @else {
   <section class="page">
+    @if (leave.leaving()) {
+      <div class="banner danger" data-testid="unsaved-guard">
+        <span>{{ 'common.unsaved_warn' | translate }}</span>
+        <span class="cluster">
+          <button
+            type="button"
+            class="btn btn-danger-solid btn-sm"
+            data-testid="confirm-leave"
+            (click)="leave.allowLeave()"
+          >
+            {{ 'common.unsaved_leave' | translate }}
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+            {{ 'common.cancel' | translate }}
+          </button>
+        </span>
+      </div>
+    }
     <section class="card hero anim-rise">
       <div>
         <h1>#{{ exam.value()!.id }} · {{ 'examType.' + exam.value()!.exam_type | translate }}</h1>
@@ -65,12 +83,11 @@
         <div class="grid" style="--cols: 3">
           <label class="field"
             ><span>{{ 'exam.date' | translate }}</span>
-            <input
-              type="date"
+            <app-date-picker
               class="ltr-num"
-              data-testid="exam-date"
+              testId="exam-date"
               [value]="editDate()"
-              (input)="editDate.set($any($event.target).value)"
+              (valueChange)="editDate.set($any($event))"
             />
           </label>
           <label class="field"
@@ -119,7 +136,9 @@
     <section class="card anim-rise" style="--i: 1">
       <h2>{{ 'exam.questions' | translate }}</h2>
       <p class="muted ltr-num">
-        {{ 'exam.weights' | translate: { total: weightsTotal() } }}
+        {{
+          'exam.weights' | translate: { total: reweighting() ? reweightTotal() : weightsTotal() }
+        }}
       </p>
       @if (canEdit()) {
         <div class="cluster">
@@ -127,7 +146,7 @@
             <button
               type="button"
               class="btn btn-primary btn-sm"
-              [disabled]="reweightSaving()"
+              [disabled]="reweightSaving() || !reweightValid()"
               (click)="submitReweight()"
             >
               @if (reweightSaving()) {
@@ -167,6 +186,7 @@
                 class="ltr-num"
                 [value]="weights()[q.id] ?? ''"
                 (input)="setWeight(q.id, $any($event.target).value)"
+                (keydown.enter)="submitReweight()"
                 min="0.01"
                 max="20"
                 step="0.01"
@@ -175,8 +195,9 @@
             } @else {
               <app-score-input
                 [max]="q.max_score"
-                [value]="q.score"
+                [value]="scoreEdits()[q.id] ?? q.score"
                 (valueChange)="setScore(q.id, $event)"
+                (blurred)="flushScore(q.id)"
               />
             }
             @if (canEdit()) {
@@ -194,7 +215,13 @@
       }
     </section>
 
-    <form class="card anim-rise" style="--i: 2" [formGroup]="addForm" (ngSubmit)="addQuestion()">
+    <form
+      class="card anim-rise"
+      style="--i: 2"
+      [formGroup]="addForm"
+      (ngSubmit)="addQuestion()"
+      autocomplete="off"
+    >
       <h2>{{ 'exam.add_question' | translate }}</h2>
       <label class="field"
         ><span>{{ 'exam.q_no' | translate }}</span>

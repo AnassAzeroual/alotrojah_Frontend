@@ -8,9 +8,27 @@
   <app-empty-state />
 } @else {
   <section class="page">
-    <div class="page-head anim-rise">
+    @if (leave.leaving()) {
+      <div class="banner danger" data-testid="unsaved-guard">
+        <span>{{ 'common.unsaved_warn' | translate }}</span>
+        <span class="cluster">
+          <button
+            type="button"
+            class="btn btn-danger-solid btn-sm"
+            data-testid="confirm-leave"
+            (click)="leave.allowLeave()"
+          >
+            {{ 'common.unsaved_leave' | translate }}
+          </button>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+            {{ 'common.cancel' | translate }}
+          </button>
+        </span>
+      </div>
+    }
+    <div class="page-head anim-rise term-head">
       @if (renaming()) {
-        <div class="cluster">
+        <form class="cluster" (ngSubmit)="submitRename()" autocomplete="off">
           <input
             type="text"
             data-testid="term-name-input"
@@ -19,7 +37,7 @@
             maxlength="50"
           />
           <button
-            type="button"
+            type="submit"
             class="btn btn-primary btn-sm"
             [disabled]="renameValue().trim() === '' || renameSaving()"
             data-testid="term-name-save"
@@ -39,7 +57,7 @@
           >
             {{ 'common.cancel' | translate }}
           </button>
-        </div>
+        </form>
         @if (renameErrorKey()) {
           <div class="banner danger">{{ renameErrorKey()! | translate }}</div>
         }
@@ -55,37 +73,65 @@
           >
             {{ 'planning.rename_term' | translate }}
           </button>
+          <a
+            class="btn btn-ghost btn-sm"
+            [routerLink]="['/planning/calendar']"
+            [queryParams]="{ term: id() }"
+            data-testid="term-calendar"
+          >
+            {{ 'nav.calendar' | translate }}
+          </a>
         </h1>
       }
+      <div class="actions">
+        <app-dropdown
+          [options]="termOptions()"
+          [value]="txt(id())"
+          (valueChange)="goTerm(num($event))"
+          ariaLabelKey="planning.pick_term"
+          testId="term-switch"
+        />
+      </div>
     </div>
 
     @for (w of term.value()!.weeks; track w.id) {
       <div class="card week anim-rise" [style.--i]="$index">
-        <button type="button" class="whead" (click)="toggleWeek(w.id)">
+        <button
+          type="button"
+          class="whead"
+          (click)="toggleWeek(w.id)"
+          [attr.aria-expanded]="openWeek() === w.id"
+        >
           <strong>{{ 'common.week' | translate }} {{ w.week_number_global }}</strong>
+          <span class="wmeta">
+            <span class="ltr-num">{{
+              'planning.sessions_n' | translate: { count: (w.sessions ?? []).length }
+            }}</span>
+            <span class="chev" aria-hidden="true">{{ openWeek() === w.id ? '▾' : '▸' }}</span>
+          </span>
           <app-status-badge kind="week" [value]="w.week_type" />
         </button>
 
-        <div class="segmented" role="group">
-          <button
-            type="button"
-            [class.on]="w.week_type === 'study'"
-            [disabled]="w.week_type === 'study'"
-            (click)="setWeekType(w.id, 'study')"
-          >
-            {{ 'weekType.study' | translate }}
-          </button>
-          <button
-            type="button"
-            [class.on]="w.week_type === 'review'"
-            [disabled]="w.week_type === 'review'"
-            (click)="setWeekType(w.id, 'review')"
-          >
-            {{ 'weekType.review' | translate }}
-          </button>
-        </div>
-
         @if (openWeek() === w.id) {
+          <div class="segmented" role="group">
+            <button
+              type="button"
+              [class.on]="w.week_type === 'study'"
+              [disabled]="w.week_type === 'study'"
+              (click)="setWeekType(w.id, 'study')"
+            >
+              {{ 'weekType.study' | translate }}
+            </button>
+            <button
+              type="button"
+              [class.on]="w.week_type === 'review'"
+              [disabled]="w.week_type === 'review'"
+              (click)="setWeekType(w.id, 'review')"
+            >
+              {{ 'weekType.review' | translate }}
+            </button>
+          </div>
+
           @for (s of w.sessions ?? []; track s.id) {
             <div class="sess anim-fade">
               <span class="ltr-num">#{{ s.session_number_global }}</span>
@@ -101,10 +147,9 @@
                 (valueChange)="setSession(s.id, { status: txt($event) })"
                 ariaLabelKey="sessionStatus.planned"
               />
-              <input
-                type="date"
-                [value]="s.planned_date ?? ''"
-                (change)="setSession(s.id, { planned_date: sessVal($event) })"
+              <app-date-picker
+                [value]="s.planned_date ?? null"
+                (valueChange)="setSession(s.id, { planned_date: $any($event) })"
               />
             </div>
           }

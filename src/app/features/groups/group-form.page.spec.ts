@@ -75,9 +75,10 @@ describe('GroupFormPage', () => {
   };
 
   const flushLevels = (): void => {
+    // The levels feed refires whenever the center scope changes.
     http
-      .expectOne((r) => r.url.endsWith('/reference/levels') && r.method === 'GET')
-      .flush({ success: true, message: null, data: LEVELS });
+      .match((r) => r.url.includes('/reference/levels') && r.method === 'GET')
+      .forEach((req) => req.flush({ success: true, message: null, data: LEVELS }));
   };
 
   const flushCenters = (): void => {
@@ -132,6 +133,14 @@ describe('GroupFormPage', () => {
   const saveBtn = (): HTMLButtonElement =>
     el.querySelector<HTMLButtonElement>('.form-actions .btn-primary')!;
 
+  // jsdom never performs implicit form submission: clicks drive the direct
+  // handler here, while real browsers additionally submit the form on Enter
+  // (both paths share the same saving() guard, so double-fires collapse).
+  const submitForm = (): void => {
+    saveBtn().click();
+    fixture.detectChanges();
+  };
+
   beforeEach(async () => {
     localStorage.clear();
     role = 'admin';
@@ -167,6 +176,7 @@ describe('GroupFormPage', () => {
 
     pick('dash.center', 'المركز الأول');
     await settle();
+    flushLevels();
     flushTeachers();
     await settle();
 
@@ -178,7 +188,7 @@ describe('GroupFormPage', () => {
     el.querySelectorAll<HTMLButtonElement>('.day-pick .day-chip')[0].click();
     fixture.detectChanges();
 
-    saveBtn().click();
+    submitForm();
     const req = http.expectOne((r) => r.url.endsWith('/groups') && r.method === 'POST');
     expect(req.request.body).toEqual({
       name: 'حلقة E2E',
@@ -201,6 +211,11 @@ describe('GroupFormPage', () => {
         is_active: true,
       },
     });
+    // save resets the composer (guard-clean), which refires the levels feed
+    // at the next change detection — drain before AND after it.
+    flushLevels();
+    fixture.detectChanges();
+    flushLevels();
     fixture.detectChanges();
     expect(navigate).toHaveBeenCalledWith(['/groups']);
   });
@@ -213,6 +228,7 @@ describe('GroupFormPage', () => {
 
     pick('dash.center', 'المركز الأول');
     await settle();
+    flushLevels();
     flushTeachers();
     await settle();
 
@@ -232,7 +248,7 @@ describe('GroupFormPage', () => {
     pick('grp.col_level', 'المستوى الأول');
     type('input[type="text"]', 'حلقة المشرف');
 
-    saveBtn().click();
+    submitForm();
     const req = http.expectOne((r) => r.url.endsWith('/groups') && r.method === 'POST');
     expect(req.request.body).toEqual({
       name: 'حلقة المشرف',
@@ -255,6 +271,11 @@ describe('GroupFormPage', () => {
         is_active: true,
       },
     });
+    // save resets the composer (guard-clean), which refires the levels feed
+    // at the next change detection — drain before AND after it.
+    flushLevels();
+    fixture.detectChanges();
+    flushLevels();
     fixture.detectChanges();
     expect(navigate).toHaveBeenCalledWith(['/groups']);
   });
@@ -272,6 +293,7 @@ describe('GroupFormPage', () => {
 
     pick('dash.center', 'المركز الأول');
     await settle();
+    flushLevels();
     flushTeachers();
     await settle();
     expect(saveBtn().disabled).toBe(true);
@@ -279,5 +301,87 @@ describe('GroupFormPage', () => {
     pick('grp.col_level', 'المستوى الأول');
     expect(saveBtn().disabled).toBe(false);
     expect(page.saving()).toBe(false);
+  });
+
+  describe('edit mode (/groups/:id/edit)', () => {
+    const DETAIL = {
+      season_name: null,
+      group: {
+        id: 9,
+        name: 'حلقة قديمة',
+        center_id: 1,
+        level: { id: 1, name_ar: 'المستوى الأول' },
+        teacher: null,
+        academic_year: null,
+        schedule_days: 'Mon',
+        is_active: true,
+        capacity: 20,
+        students_count: 0,
+        fill_pct: null,
+        avg_score: null,
+        attendance_pct: null,
+        thumn_total: 0,
+        breakdown: [],
+      },
+      breakdown: [],
+      trend: [],
+      students: [],
+    };
+
+    const mountEdit = async (): Promise<void> => {
+      fixture = TestBed.createComponent(GroupFormPage);
+      fixture.componentRef.setInput('id', '9');
+      page = fixture.componentInstance;
+      el = fixture.nativeElement;
+      fixture.detectChanges();
+      flushCenters(); // admin feed fires on mount, before the detail lands
+      http
+        .expectOne((r) => r.url.endsWith('/groups/9/detail') && r.method === 'GET')
+        .flush({ success: true, message: null, data: DETAIL });
+      await settle();
+      flushLevels();
+      flushTeachers();
+      await settle();
+    };
+
+    it('seeds the composer from the loaded group and PUTs back to detail', async () => {
+      await mountEdit();
+
+      expect(el.querySelector<HTMLInputElement>('input[type="text"]')!.value).toBe('حلقة قديمة');
+      expect(el.querySelector<HTMLInputElement>('[data-testid="group-active"]')!.checked).toBe(
+        true,
+      );
+      expect(saveBtn().disabled).toBe(false);
+      expect(page.isDirty()).toBe(false);
+
+      type('input[type="text"]', 'حلقة محدثة');
+      expect(page.isDirty()).toBe(true);
+
+      submitForm();
+      const req = http.expectOne((r) => r.url.endsWith('/groups/9') && r.method === 'PUT');
+      expect(req.request.body).toEqual({
+        name: 'حلقة محدثة',
+        level_id: 1,
+        teacher_id: null,
+        capacity: 20,
+        schedule_days: 'Mon',
+        is_active: true,
+      });
+      req.flush({ success: true, message: null, data: { id: 9 } });
+      fixture.detectChanges();
+      expect(navigate).toHaveBeenCalledWith(['/groups', 9]);
+    });
+
+    it('marks the guard dirty when active is switched off', async () => {
+      await mountEdit();
+      expect(page.isDirty()).toBe(false);
+
+      const box = el.querySelector<HTMLInputElement>('[data-testid="group-active"]')!;
+      box.checked = false;
+      box.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+
+      expect(page.isDirty()).toBe(true);
+    });
   });
 });

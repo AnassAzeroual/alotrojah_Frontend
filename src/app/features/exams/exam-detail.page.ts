@@ -5,17 +5,26 @@
   effect,
   inject,
   input,
+  OnDestroy,
   resource,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ExamsService } from '../../core/api/exams.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import {
   DropdownComponent,
   DropdownOption,
@@ -26,6 +35,8 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { ScoreInputComponent } from '../../shared/ui/score-input/score-input.component';
 
 type ExamType = 'hizb_completion' | 'term_batch' | 'final_season';
+
+const SCORE_DEBOUNCE_MS = 400;
 
 interface DraftRow {
   key: number;
@@ -39,8 +50,10 @@ interface DraftRow {
   selector: 'app-exam-detail-page',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
+    DatePickerComponent,
     DropdownComponent,
     SpinnerComponent,
     EmptyStateComponent,
@@ -50,7 +63,7 @@ interface DraftRow {
   templateUrl: './exam-detail.page.html',
   styleUrl: './exam-detail.page.scss',
 })
-export class ExamDetailPage {
+export class ExamDetailPage implements OnDestroy {
   readonly id = input.required<number, string>({ transform: (v: string) => Number(v) });
 
   private readonly examsSvc = inject(ExamsService);
@@ -138,8 +151,46 @@ export class ExamDetailPage {
 
   readonly reweighting = signal(false);
   readonly weights = signal<Record<number, number | null>>({});
+
+  /** Dirty guard: header edits, question composer, queued batch or reweight edits. */
+  readonly leave = leaveController();
+
+  private readonly editDirty = computed(() => {
+    const e = this.exam.value();
+    if (!e) return false;
+    return (
+      this.editDate() !== (e.exam_date ?? '') ||
+      this.editType() !== e.exam_type ||
+      this.editTerm() !== e.term_id
+    );
+  });
+
+  private readonly weightsDirty = computed(() => {
+    if (!this.reweighting()) return false;
+    const w = this.weights();
+    return (this.exam.value()?.questions ?? []).some((q) => (w[q.id] ?? null) !== q.max_score);
+  });
+
+  isDirty(): boolean {
+    return this.editDirty() || this.addForm.dirty || this.draft().length > 0 || this.weightsDirty();
+  }
   readonly reweightSaving = signal(false);
   readonly reweightErrorKey = signal<string | null>(null);
+
+  /** Live total of the reweight draft — must read exactly 20 (§2.10). */
+  readonly reweightTotal = computed(() => {
+    const sum: number = Object.values(this.weights()).reduce<number>((s, v) => s + (v ?? 0), 0);
+    return Math.round(sum * 100) / 100;
+  });
+  readonly reweightValid = computed(() => {
+    const list = this.exam.value()?.questions ?? [];
+    if (list.length === 0) return false;
+    const w = this.weights();
+    const vals = list.map((q) => w[q.id]);
+    if (vals.some((v) => v === null || v === undefined)) return false;
+    if ((vals as number[]).some((v) => v < 0.01 || v > 20)) return false;
+    return this.reweightTotal() === 20;
+  });
 
   constructor() {
     effect(() => {
@@ -193,6 +244,13 @@ export class ExamDetailPage {
     this.examsSvc.remove(this.id()).subscribe({
       next: () => {
         this.deleteSaving.set(false);
+        // The record is gone: clear every dirty source so the dirty guard
+        // does not block the post-delete navigation (same rule as
+        // pristine-on-save, but for the delete path).
+        this.addForm.reset();
+        this.draft.set([]);
+        this.reweighting.set(false);
+        this.weights.set({});
         void this.router.navigate(['/exams']);
       },
       error: (err: unknown) => {
@@ -202,12 +260,91 @@ export class ExamDetailPage {
     });
   }
 
+  /**
+   * Locally-typed scores not yet acked by the server. Feeding these to the
+   * inputs shields in-progress typing from reload clobbering: another
+   * question's save bumps tick(), and a bare [value]="q.score" would snap
+   * this input back to the stale server value mid-typing.
+   */
+  readonly scoreEdits = signal<Record<number, number>>({});
+  private readonly scoreTimers = new Map<number, ReturnType<typeof setTimeout>>();
+  private readonly scoreInFlight = new Set<number>();
+  private destroyed = false;
+
   setScore(qid: number, score: number | null): void {
     if (score === null) return;
-    this.examsSvc.updateQuestion(qid, { score }).subscribe(() => this.tick.update((n) => n + 1));
+    this.scoreEdits.update((m) => ({ ...m, [qid]: score }));
+    const prev = this.scoreTimers.get(qid);
+    if (prev !== undefined) clearTimeout(prev);
+    this.scoreTimers.set(
+      qid,
+      setTimeout(() => this.flushScore(qid), SCORE_DEBOUNCE_MS),
+    );
+  }
+
+  /** Blur/navigation flush — sends the pending PATCH immediately. */
+  flushScore(qid: number): void {
+    const timer = this.scoreTimers.get(qid);
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      this.scoreTimers.delete(qid);
+    }
+    const score = this.scoreEdits()[qid];
+    if (score === undefined) return;
+    if (this.scoreInFlight.has(qid)) {
+      this.scoreTimers.set(
+        qid,
+        setTimeout(() => this.flushScore(qid), SCORE_DEBOUNCE_MS),
+      );
+      return;
+    }
+    this.scoreInFlight.add(qid);
+    this.examsSvc.updateQuestion(qid, { score }).subscribe({
+      next: () => {
+        this.scoreInFlight.delete(qid);
+        this.dropEdit(qid, score);
+        if (!this.destroyed) this.tick.update((n) => n + 1);
+      },
+      error: () => {
+        // Silent like the pre-debounce path; dropping the edit resyncs the input to server truth.
+        this.scoreInFlight.delete(qid);
+        this.dropEdit(qid, score);
+      },
+    });
+  }
+
+  private dropEdit(qid: number, sent: number): void {
+    this.scoreEdits.update((m) => {
+      if (m[qid] !== sent) return m; // a newer keystroke replaced this one mid-flight
+      const rest = { ...m };
+      delete rest[qid];
+      return rest;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    for (const t of this.scoreTimers.values()) clearTimeout(t);
+    this.scoreTimers.clear();
+    // Fire every still-pending score without the trailing reload (view is gone).
+    for (const [qid, score] of Object.entries(this.scoreEdits())) {
+      this.examsSvc.updateQuestion(Number(qid), { score }).subscribe({ error: () => undefined });
+    }
+    this.scoreEdits.set({});
   }
 
   deleteQuestion(qid: number): void {
+    const timer = this.scoreTimers.get(qid);
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      this.scoreTimers.delete(qid);
+    }
+    this.scoreEdits.update((m) => {
+      if (!(qid in m)) return m;
+      const rest = { ...m };
+      delete rest[qid];
+      return rest;
+    });
     this.examsSvc.deleteQuestion(qid).subscribe(() => this.tick.update((n) => n + 1));
   }
 
@@ -289,13 +426,13 @@ export class ExamDetailPage {
   }
 
   submitReweight(): void {
+    if (this.reweightSaving()) return;
+    if (!this.reweightValid()) {
+      this.reweightErrorKey.set('validation.required');
+      return;
+    }
     const list = this.exam.value()?.questions ?? [];
     const payload = list.map((q) => ({ id: q.id, max_score: this.weights()[q.id] }));
-    if (
-      this.reweightSaving() ||
-      payload.some((p) => p.max_score === null || p.max_score < 0.01 || p.max_score > 20)
-    )
-      return;
     this.reweightSaving.set(true);
     this.reweightErrorKey.set(null);
     this.examsSvc.reweight(this.id(), payload as { id: number; max_score: number }[]).subscribe({

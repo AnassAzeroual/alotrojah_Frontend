@@ -39,6 +39,19 @@ export interface FinalData {
   final: number | null;
 }
 
+export interface MeDashboard {
+  student: {
+    id: number;
+    full_name: string;
+    group: { id: number; name: string } | null;
+    memorization_mode: string;
+    status: string;
+  };
+  season: SeasonDashboard | null;
+  weekly: WeeklyPoint[];
+  final: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private readonly api = inject(ApiClient);
@@ -69,5 +82,10 @@ export class DashboardService {
       center_id: centerId,
       season_id: seasonId,
     });
+  }
+
+  /** §2.16: the logged-in student's own dashboard (null when unlinked). */
+  me(): Observable<MeDashboard | null> {
+    return this.api.get<MeDashboard | null>('/dashboard/me');
   }
 }

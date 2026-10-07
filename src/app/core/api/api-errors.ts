@@ -21,12 +21,16 @@ export const API_ERROR_CODES = [
   'SCORE_OVER_MAX',
   'SEASON_HAS_FACTS',
   'MODULE_HAS_SCORES',
+  'LEVEL_IN_USE',
   'TERM_REQUIRED',
   'SPAN_INVALID',
   'RANGE_INVALID',
   'GROUP_ROLE',
   'SCORING_TOTAL',
   'INVALID_CREDENTIALS',
+  'ADMIN_DELETE',
+  'ADMIN_SELF_DISABLE',
+  'ADMIN_LAST_ACTIVE',
 ] as const;
 
 export function apiErrorKey(err: unknown): string {

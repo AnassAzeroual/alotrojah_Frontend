@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
@@ -19,6 +19,7 @@ import { TranslatePipe } from '@ngx-translate/core';
         [value]="value() ?? ''"
         [disabled]="disabled()"
         (input)="onInput($event)"
+        (blur)="onBlur()"
       />
       <span class="muted">/ {{ max() }}</span>
     </label>
@@ -43,9 +44,15 @@ export class ScoreInputComponent {
   readonly value = model<number | null>(null);
   readonly max = input.required<number>();
   readonly disabled = input(false);
+  /** Current value at blur — lets parents flush a pending debounced save. */
+  readonly blurred = output<number | null>();
 
   protected onInput(event: Event): void {
     const raw = (event.target as HTMLInputElement).value;
     this.value.set(raw === '' ? null : Number(raw));
+  }
+
+  protected onBlur(): void {
+    this.blurred.emit(this.value());
   }
 }

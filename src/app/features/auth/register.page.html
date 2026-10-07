@@ -79,12 +79,10 @@
           @if (isStudent()) {
             <div class="field-pair">
               <div class="auth-input">
-                <input
-                  type="date"
+                <app-date-picker
                   formControlName="birth_date"
-                  dir="ltr"
-                  [attr.max]="today"
-                  [attr.aria-label]="'auth.birth_date' | translate"
+                  [max]="today"
+                  ariaLabelKey="auth.birth_date"
                 />
               </div>
               <app-dropdown
@@ -96,133 +94,18 @@
             </div>
           }
 
-          <div class="auth-input with-eye">
-            <svg
-              class="pw-lock"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            <input
-              [type]="showPw() ? 'text' : 'password'"
-              formControlName="password"
-              autocomplete="new-password"
-              dir="ltr"
-              [placeholder]="'auth.password' | translate"
-              [attr.aria-label]="'auth.password' | translate"
-            />
-            <button
-              type="button"
-              class="pw-eye"
-              (click)="showPw.set(!showPw())"
-              [attr.aria-label]="
-                (showPw() ? 'auth.hide_password' : 'auth.show_password') | translate
-              "
-            >
-              @if (showPw()) {
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path
-                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"
-                  />
-                  <path
-                    d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"
-                  />
-                  <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-                  <path d="M1 1l22 22" />
-                </svg>
-              } @else {
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              }
-            </button>
-          </div>
+          <app-password-field
+            [control]="form.controls.password"
+            testId="register-password"
+            autocomplete="new-password"
+          />
 
-          <div class="auth-input with-eye">
-            <svg
-              class="pw-lock"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            <input
-              [type]="showPwConfirm() ? 'text' : 'password'"
-              formControlName="passwordConfirm"
-              autocomplete="new-password"
-              dir="ltr"
-              [placeholder]="'auth.confirm_password' | translate"
-              [attr.aria-label]="'auth.confirm_password' | translate"
-            />
-            <button
-              type="button"
-              class="pw-eye"
-              (click)="showPwConfirm.set(!showPwConfirm())"
-              [attr.aria-label]="
-                (showPwConfirm() ? 'auth.hide_password' : 'auth.show_password') | translate
-              "
-            >
-              @if (showPwConfirm()) {
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path
-                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"
-                  />
-                  <path
-                    d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"
-                  />
-                  <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-                  <path d="M1 1l22 22" />
-                </svg>
-              } @else {
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              }
-            </button>
-          </div>
+          <app-password-field
+            [control]="form.controls.passwordConfirm"
+            testId="register-password-confirm"
+            autocomplete="new-password"
+            textKey="auth.confirm_password"
+          />
 
           @if (form.controls.passwordConfirm.touched && form.hasError('passwordMismatch')) {
             <p class="field-error">{{ 'auth.password_mismatch' | translate }}</p>

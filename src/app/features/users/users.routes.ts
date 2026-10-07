@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { roleGuard } from '../../core/auth/role.guard';
+import { dirtyGuard } from '../../core/guards/dirty.guard';
 
 export const USERS_ROUTES: Routes = [
   {
@@ -20,6 +21,7 @@ export const USERS_ROUTES: Routes = [
     path: ':id',
     loadComponent: () => import('./user-detail.page').then((m) => m.UserDetailPage),
     canActivate: [roleGuard],
+    canDeactivate: [dirtyGuard],
     data: { roles: ['admin', 'supervisor'] },
   },
 ];

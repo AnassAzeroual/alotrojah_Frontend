@@ -13,6 +13,7 @@ import { CentersService } from '../../core/api/centers.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { RegistrationRequestsService } from '../../core/api/registration-requests.service';
 import { apiErrorKey } from '../../core/api/api-errors';
+import { AppDatePipe } from '../../shared/ui/app-date/app-date.pipe';
 import { DropdownComponent, dropdownNumber } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { PaginatorComponent } from '../../shared/ui/paginator/paginator.component';
@@ -27,6 +28,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
     EmptyStateComponent,
     PaginatorComponent,
     SpinnerComponent,
+    AppDatePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './registrations.page.html',

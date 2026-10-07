@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   resource,
@@ -22,10 +23,17 @@ import { apiErrorKey } from '../../core/api/api-errors';
 import { ReferenceService } from '../../core/api/reference.service';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -52,6 +60,7 @@ interface StudentForm {
     EmptyStateComponent,
     SpinnerComponent,
     StatusBadgeComponent,
+    FormsModule,
     ReactiveFormsModule,
     RouterLink,
   ],
@@ -114,8 +123,8 @@ export class StudentDetailPage {
 
   // Form Options
   readonly genderOptions: DropdownOption[] = [
-    { value: 'male', labelKey: 'common.male' },
-    { value: 'female', labelKey: 'common.female' },
+    { value: 'male', labelKey: 'gender.male' },
+    { value: 'female', labelKey: 'gender.female' },
   ];
   readonly typeOptions: DropdownOption[] = [
     { value: 'child', labelKey: 'grp.type_child' },
@@ -132,7 +141,8 @@ export class StudentDetailPage {
   ];
 
   private readonly levelsRes = resource({
-    loader: () => firstValueFrom(this.ref.levels()),
+    params: () => ({ c: this.formCenterId() ?? this.auth.currentUser()?.center_id ?? null }),
+    loader: ({ params }) => firstValueFrom(this.ref.levels(params.c)),
   });
   readonly levelOptions = computed<DropdownOption[]>(() => {
     return (this.levelsRes.value() ?? []).map((l) => ({ value: l.id, label: l.name_ar }));
@@ -146,6 +156,8 @@ export class StudentDetailPage {
   readonly centerOptions = computed<DropdownOption[]>(() => {
     return (this.centersRes.value()?.data ?? []).map((c) => ({ value: c.id, label: c.name }));
   });
+  /** The center is choosable (and effectively required) only for the admin. */
+  protected readonly showCenterAdmin = computed(() => this.auth.role() === 'admin');
 
   // Form State
   readonly form = new FormGroup<StudentForm>({
@@ -211,10 +223,16 @@ export class StudentDetailPage {
   protected readonly assignValue = computed<DropdownValue>(() =>
     this.assignChosen() ? (this.assignPicked() ?? '') : (this.currentGroupId() ?? ''),
   );
-  protected readonly isDirty = computed(() => {
+  protected readonly assignDirty = computed(() => {
     if (!this.assignChosen()) return false;
     return this.assignPicked() !== this.currentGroupId();
   });
+
+  /** Dirty guard: unsaved form edits or a pending group assignment block leave. */
+  protected readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.form.dirty || this.assignDirty();
+  }
 
   protected readonly studentVal = () => this.student.value() ?? null;
   protected readonly summaryVal = () => this.summary.value() ?? null;
@@ -223,6 +241,15 @@ export class StudentDetailPage {
     this.student.isLoading() || this.season.isLoading() || this.summary.isLoading();
 
   constructor() {
+    // §2.1: on a single-center deployment the only center is pre-selected so
+    // the group dropdown loads and the pupil can never be born center-less.
+    effect(() => {
+      const opts = this.centerOptions();
+      if (this.isNew() && opts.length === 1 && this.form.controls.center_id.value === null) {
+        this.form.controls.center_id.setValue(Number(opts[0].value));
+        this.form.markAsPristine();
+      }
+    });
     // Sync student to form when editing
     resource({
       params: () => ({ s: this.studentVal(), editing: this.editing() }),
@@ -241,6 +268,7 @@ export class StudentDetailPage {
             // API models might need notes in Student, let's keep it null if not present
             notes: (params.s as any).notes ?? null,
           });
+          this.form.markAsPristine();
         }
         return null;
       },
@@ -270,6 +298,17 @@ export class StudentDetailPage {
     if (this.isNew() && (role === 'teacher' || role === 'student')) {
       v.center_id = this.auth.currentUser()?.center_id ?? null;
     }
+    // §2.1: admin/supervisor must not submit a center-less pupil. A single
+    // center is auto-applied; with several, the selector is mandatory.
+    if (this.isNew() && (role === 'admin' || role === 'supervisor') && v.center_id === null) {
+      const opts = this.centerOptions();
+      if (opts.length === 1) {
+        v.center_id = Number(opts[0].value);
+      } else {
+        this.assignFailed.set('validation.required');
+        return;
+      }
+    }
 
     const req$ = this.isNew()
       ? this.studentsSvc.create(v as any)
@@ -278,6 +317,7 @@ export class StudentDetailPage {
     req$.subscribe({
       next: (res) => {
         this.assignSaving.set(false);
+        this.form.markAsPristine();
         if (this.isNew()) {
           this.router.navigate(['/students', res.id]);
         } else {
@@ -299,7 +339,7 @@ export class StudentDetailPage {
 
   protected saveAssign(): void {
     const s = this.studentVal();
-    if (!s || !this.assignChosen() || !this.isDirty() || this.assignSaving()) return;
+    if (!s || !this.assignChosen() || !this.assignDirty() || this.assignSaving()) return;
     this.assignSaving.set(true);
     this.assignFailed.set(null);
     this.studentsSvc.update(s.id, { group_id: this.assignPicked() }).subscribe({

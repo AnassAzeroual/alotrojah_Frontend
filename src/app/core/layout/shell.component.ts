@@ -4,14 +4,19 @@ import {
   computed,
   DestroyRef,
   inject,
+  resource,
   signal,
 } from '@angular/core';
 import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { filter, firstValueFrom } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
+import { RegistrationRequestsService } from '../api/registration-requests.service';
 import { LanguageService } from '../i18n/language.service';
 import { LanguageSwitcherComponent } from './language-switcher.component';
+import { AdminPrefsService } from '../settings/admin-prefs.service';
+import { environment } from '../../../environments/environment';
 import { ThemeService } from '../theme/theme.service';
 import { Role } from '../api/api-models';
 import { APP_VERSION_SHORT } from '../version';
@@ -38,6 +43,13 @@ const ITEMS: readonly NavItem[] = [
     icon: 'building',
     roles: ['admin'],
     testId: 'nav-centers',
+  },
+  {
+    path: '/levels',
+    key: 'nav.levels',
+    icon: 'grid',
+    roles: ['admin'],
+    testId: 'nav-levels',
   },
   {
     path: '/students',
@@ -75,10 +87,17 @@ const ITEMS: readonly NavItem[] = [
     testId: 'nav-planning',
   },
   {
+    path: '/planning/calendar',
+    key: 'nav.calendar',
+    icon: 'calendar',
+    roles: ['admin', 'supervisor'],
+    testId: 'nav-calendar',
+  },
+  {
     path: '/scoring',
     key: 'nav.scoring',
     icon: 'chart',
-    roles: ['admin', 'supervisor'],
+    roles: ['admin'],
     testId: 'nav-scoring',
   },
   {
@@ -163,6 +182,7 @@ export class ShellComponent {
 
   readonly user = this.auth.currentUser;
   readonly version = APP_VERSION_SHORT;
+  readonly prefs = inject(AdminPrefsService);
   readonly collapsed = signal(false);
   readonly mobileOpen = signal(false);
   readonly now = signal(new Date());
@@ -236,9 +256,42 @@ export class ShellComponent {
     return ITEMS.filter((i) => role !== undefined && i.roles.includes(role));
   });
 
+  private readonly regSvc = inject(RegistrationRequestsService);
+  private readonly router = inject(Router);
+  private readonly regTick = signal(0);
+
+  /** Pending waiting-room count for the red registrations badge (admin only). */
+  readonly pendingRegistrations = resource({
+    params: () => ({ admin: this.user()?.role === 'admin', t: this.regTick() }),
+    loader: async ({ params }) => {
+      if (!params.admin) return 0;
+      const p = await firstValueFrom(this.regSvc.list({ per_page: 1 }));
+      return p.meta.total;
+    },
+  });
+
+  /**
+   * T4: every non-admin sees their center NAME in the header chip; the numeric
+   * id is appended only in dev builds (never prod), and only when the display
+   * pref allows it. Admins are global — nothing extra.
+   */
+  readonly centerLabel = computed(() => {
+    const u = this.user();
+    if (!u || u.role === 'admin' || !u.center_name) return null;
+    if (!environment.production && this.prefs.showCenterId() && u.center_id !== null) {
+      return `${u.center_name} · #${u.center_id}`;
+    }
+    return u.center_name;
+  });
+
   constructor() {
     const timer = setInterval(() => this.now.set(new Date()), 30_000);
-    inject(DestroyRef).onDestroy(() => clearInterval(timer));
+    const destroy = inject(DestroyRef);
+    destroy.onDestroy(() => clearInterval(timer));
+    const nav = this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe(() => this.regTick.update((n) => n + 1));
+    destroy.onDestroy(() => nav.unsubscribe());
   }
 
   toggleSidebar(): void {

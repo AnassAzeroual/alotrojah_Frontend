@@ -14,9 +14,11 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { RegisterPayload, RegisterRole, TeacherType } from '../../core/api/api-models';
 import { DropdownComponent, DropdownOption } from '../../shared/ui/dropdown/dropdown.component';
+import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { AuthArtComponent } from './auth-art.component';
 import { AuthTopbarComponent } from './auth-topbar.component';
+import { PasswordFieldComponent } from '../../shared/ui/password-field/password-field.component';
 
 interface RegisterForm {
   full_name: FormControl<string>;
@@ -45,10 +47,12 @@ type RegisterErrorCode = 'email_taken' | 'in_waiting_room' | 'invalid';
     ReactiveFormsModule,
     RouterLink,
     TranslatePipe,
+    DatePickerComponent,
     DropdownComponent,
     SpinnerComponent,
     AuthArtComponent,
     AuthTopbarComponent,
+    PasswordFieldComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './register.page.html',
@@ -60,8 +64,6 @@ export class RegisterPage {
   readonly loading = signal(false);
   readonly submitted = signal(false);
   readonly errorCode = signal<RegisterErrorCode | null>(null);
-  readonly showPw = signal(false);
-  readonly showPwConfirm = signal(false);
   readonly isTeacher = signal(false);
   readonly isStudent = signal(false);
   readonly today = new Date().toISOString().slice(0, 10);
@@ -76,8 +78,6 @@ export class RegisterPage {
   readonly roleOptions: DropdownOption[] = [
     { value: 'teacher', labelKey: 'role.teacher' },
     { value: 'student', labelKey: 'role.student' },
-    { value: 'supervisor', labelKey: 'role.supervisor' },
-    { value: 'board', labelKey: 'role.board' },
   ];
   readonly teacherTypeOptions: DropdownOption[] = [
     { value: 'hifz', labelKey: 'teacher_type.hifz' },

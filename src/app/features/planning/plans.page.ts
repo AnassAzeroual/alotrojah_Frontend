@@ -6,10 +6,11 @@
   resource,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { ReferenceService, Surah } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
 import {
@@ -22,7 +23,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 @Component({
   selector: 'app-plans-page',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe, DropdownComponent, SpinnerComponent],
+  imports: [FormsModule, ReactiveFormsModule, TranslatePipe, DropdownComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './plans.page.html',
 })
@@ -91,6 +92,10 @@ export class PlansPage {
     },
   });
 
+  /** Dirty guard: a typed-but-unsaved plan blocks route leave. */
+  readonly leave = leaveController();
+  isDirty = (): boolean => this.form.dirty;
+
   readonly form = new FormGroup({
     plan_mode: new FormControl<'thumn' | 'surah'>('thumn', { nonNullable: true }),
     goal_text: new FormControl('', { nonNullable: true }),
@@ -126,6 +131,7 @@ export class PlansPage {
       expected_hifz_term_ahzab: p.expected_hifz_term_ahzab,
       khatm_expected_at: p.khatm_expected_at ?? '',
     });
+    this.form.markAsPristine();
   }
 
   submit(): void {
@@ -172,6 +178,7 @@ export class PlansPage {
       .subscribe({
         next: () => {
           this.saving.set(false);
+          this.form.markAsPristine();
           this.savedTick.update((n) => n + 1);
         },
         error: (e) => {

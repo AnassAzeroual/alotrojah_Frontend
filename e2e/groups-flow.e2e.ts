@@ -60,7 +60,7 @@ test('admin drills into a group, then flips theme and locale', async ({ page }) 
   await page.getByTestId('lang-switcher').click();
   await page.getByRole('option', { name: 'Français' }).click();
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
-  await expect(page.getByRole('heading', { name: 'Cercles' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sections' })).toBeVisible();
   await expect(page.locator('.kpi')).toHaveCount(5);
 });
 

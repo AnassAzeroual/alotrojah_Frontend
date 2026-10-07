@@ -32,7 +32,7 @@
           @if (r.role === 'student' && r.birth_date) {
             <li>
               {{ 'auth.birth_date' | translate }}:
-              <span dir="ltr" class="ltr-num">{{ r.birth_date }}</span>
+              <span dir="ltr" class="ltr-num">{{ r.birth_date | appDate }}</span>
               @if (r.gender) {
                 · {{ 'gender.' + r.gender | translate }}
               }
@@ -40,7 +40,7 @@
           }
           <li>
             {{ 'registrations.requested' | translate }}:
-            <span dir="ltr" class="ltr-num">{{ r.requested_at.slice(0, 10) }}</span>
+            <span dir="ltr" class="ltr-num">{{ r.requested_at | appDate }}</span>
           </li>
         </ul>
 

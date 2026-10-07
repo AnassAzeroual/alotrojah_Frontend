@@ -18,7 +18,9 @@ test.describe.serial('Seasons management', () => {
 
     await page.getByTestId('seasons-template').click();
     await page.getByTestId('season-name').fill(seasonName);
-    await page.getByTestId('season-start').fill('2026-09-01');
+    await page.getByTestId('season-start').fill('01/09/2026');
+    await page.getByTestId('season-center').click();
+    await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
     await page.getByTestId('season-save').click();
     await expect(page).toHaveURL(/\/planning$/);
 

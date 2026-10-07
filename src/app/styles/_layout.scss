@@ -24,6 +24,12 @@
   gap: var(--space-3);
   flex-wrap: wrap;
 
+  // Term header: the sibling-term switcher sits with the title (flex
+  // start = right in RTL), not orphaned at the far edge.
+  &.term-head {
+    justify-content: flex-start;
+  }
+
   h1 {
     margin: 0;
     font-size: var(--text-2xl);
@@ -39,6 +45,22 @@
     display: flex;
     gap: var(--space-2);
     flex-wrap: wrap;
+  }
+
+  // Title-adjacent add button (centers pattern, all list pages): the icon
+  // sits inside the h1 instead of floating at the far edge.
+  .with-add {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  // Open header dropdowns (term switcher) must paint above the cards below:
+  // the same fill-retained-animation trap .card:has(.dd.open) solves, but
+  // the dropdown lives here, not in a card.
+  &:has(.dd.open) {
+    position: relative;
+    z-index: var(--z-dropdown);
   }
 }
 
@@ -131,6 +153,19 @@
     strong {
       color: var(--green-800);
     }
+
+    .wmeta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--color-muted);
+      font-size: var(--text-sm);
+      font-weight: 700;
+
+      .chev {
+        font-size: 0.85em;
+      }
+    }
   }
 
   .sess {
@@ -143,6 +178,14 @@
     background: var(--green-50);
     font-size: var(--text-sm);
 
+    // Open dropdowns must paint above the rows below them: the same trap
+    // .card:has(.dd.open) solves one level up — fill-retained row
+    // animations keep later rows on top otherwise.
+    &:has(.dd.open) {
+      position: relative;
+      z-index: var(--z-dropdown);
+    }
+
     input,
     select {
       font-family: inherit;
@@ -153,6 +196,16 @@
       border-radius: var(--radius-sm);
       background: var(--color-surface);
       min-width: 0;
+    }
+
+    // Date picker host dissolves into the grid so its text input takes the
+    // full-width date slot like the native control it replaces.
+    app-date-picker {
+      display: contents;
+    }
+
+    input[type='text'] {
+      grid-column: 1 / -1;
     }
 
     input[type='date'] {
@@ -184,7 +237,19 @@
     opacity: 0.85;
   }
 
+  // Dark: same gradient-end problem as .stat-card.final — re-point at
+  // --green-500 and use green-900 text (5.59:1+ both stops).
+  [data-theme='dark'] & {
+    background: linear-gradient(135deg, var(--green-700), var(--green-500));
+    color: #063325;
+  }
+
   &.bad {
     background: linear-gradient(135deg, var(--color-danger), #8e2b20);
+
+    // Danger gradient stays dark in both themes — keep white text (4.70:1+).
+    [data-theme='dark'] & {
+      color: #fff;
+    }
   }
 }

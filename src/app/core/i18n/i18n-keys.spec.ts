@@ -98,6 +98,20 @@ describe('i18n dictionaries', () => {
     }
   });
 
+  it('covers every backend error code in all locales', () => {
+    // api-errors.ts API_ERROR_CODES must each resolve under apiErrors in
+    // ar/fr/en — otherwise the UI falls back to a generic message (or worse).
+    // Codes are read from source so the list cannot drift from the parser.
+    const src = readFileSync(join(cwd(), 'src', 'app', 'core', 'api', 'api-errors.ts'), 'utf8');
+    const list = [...src.matchAll(/'([A-Z][A-Z_]+)'/g)].map((m) => m[1]);
+    expect(list.length).toBeGreaterThan(0);
+    for (const locale of locales) {
+      const dict = JSON.parse(raw(locale)) as Record<string, Record<string, unknown>>;
+      const missing = [...new Set(list)].filter((c) => !(c in (dict['apiErrors'] ?? {})));
+      expect({ locale, missing }).toEqual({ locale, missing: [] });
+    }
+  });
+
   it('covers every status-badge value union', () => {
     // status-badge builds `prefix.value` at runtime, so static template
     // scanning cannot see these — enumerate the unions instead.

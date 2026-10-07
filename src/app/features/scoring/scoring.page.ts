@@ -6,13 +6,27 @@
   resource,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 import { ScoringService } from '../../core/api/scoring.service';
+import { CentersService } from '../../core/api/centers.service';
 import { apiErrorKey } from '../../core/api/api-errors';
+import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
+import { leaveController } from '../../core/guards/leave-controller';
 import { LanguageService } from '../../core/i18n/language.service';
-import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
+import {
+  DropdownComponent,
+  dropdownNumber,
+  DropdownValue,
+  dropdownText,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
@@ -26,6 +40,7 @@ interface Draft {
   selector: 'app-scoring-page',
   standalone: true,
   imports: [
+    FormsModule,
     ReactiveFormsModule,
     TranslatePipe,
     DropdownComponent,
@@ -38,24 +53,83 @@ interface Draft {
 })
 export class ScoringPage {
   private readonly scoring = inject(ScoringService);
+  private readonly centersSvc = inject(CentersService);
   private readonly i18n = inject(TranslateService);
   private readonly language = inject(LanguageService);
+  protected readonly prefs = inject(AdminPrefsService);
 
   private readonly tick = signal(0);
   readonly saving = signal(false);
   readonly error = signal<{ key: string; params?: Record<string, string | number> } | null>(null);
   readonly drafts = signal<ReadonlyMap<string, Draft>>(new Map());
   readonly showAdd = signal(false);
+
+  /** Dirty guard: unsent draft edits or a half-filled add form block leave. */
+  readonly leave = leaveController();
+  isDirty(): boolean {
+    return this.drafts().size > 0 || this.addForm.dirty;
+  }
   protected readonly txt = dropdownText;
+  protected readonly num = dropdownNumber;
 
   readonly modules = resource({
-    params: () => ({ t: this.tick() }),
-    loader: () => firstValueFrom(this.scoring.modules()),
+    params: () => ({ t: this.tick(), c: this.activeScope() }),
+    loader: ({ params }) => firstValueFrom(this.scoring.modules(params.c)),
   });
 
   readonly q = signal('');
   readonly scope = signal<string | null>(null);
   readonly status = signal<string | null>(null);
+  /** NULL = shared default set; a center id edits that center's overrides. */
+  readonly centerScope = signal<number | null>(null);
+
+  /** T3 kill-switch: hidden pickers force shared-defaults editing. */
+  readonly activeScope = computed(() =>
+    this.prefs.hideScopePickers() ? null : this.centerScope(),
+  );
+
+  readonly centers = resource({
+    loader: () => firstValueFrom(this.centersSvc.list().pipe(map((p) => p.data))),
+  });
+
+  readonly centerScopeOptions = computed(() => [
+    { value: '', labelKey: 'list.all' },
+    ...(this.centers.value() ?? []).map((c) => ({ value: String(c.id), label: c.name })),
+  ]);
+
+  /** T1: persistent scope banner — shared defaults vs overrides for <center>. */
+  readonly centerName = computed(
+    () => (this.centers.value() ?? []).find((c) => c.id === this.centerScope())?.name ?? null,
+  );
+
+  /** Rows carrying this center's id are overrides; NULL-center rows are inherited defaults. */
+  isOverride(centerId: number | null | undefined): boolean {
+    return this.activeScope() !== null && centerId === this.activeScope();
+  }
+
+  readonly armingReset = signal(false);
+  readonly resetBusy = signal(false);
+  readonly resetErrorKey = signal<string | null>(null);
+
+  resetScope(): void {
+    const scope = this.activeScope();
+    if (scope === null || this.resetBusy()) return;
+    this.resetBusy.set(true);
+    this.resetErrorKey.set(null);
+    this.scoring.reset(scope).subscribe({
+      next: () => {
+        this.resetBusy.set(false);
+        this.armingReset.set(false);
+        this.drafts.set(new Map());
+        this.tick.update((n) => n + 1);
+      },
+      error: (err: unknown) => {
+        this.resetBusy.set(false);
+        this.armingReset.set(false);
+        this.resetErrorKey.set(apiErrorKey(err));
+      },
+    });
+  }
 
   readonly scopeOptions = [
     { value: '', labelKey: 'list.all' },
@@ -71,6 +145,14 @@ export class ScoringPage {
       { value: 'inactive', labelKey: 'scoring.inactive' },
     ];
   });
+
+  /** Switching scope discards unsaved drafts (they belong to the old set). */
+  setCenterScope(v: DropdownValue): void {
+    this.centerScope.set(dropdownNumber(v));
+    this.drafts.set(new Map());
+    this.armingReset.set(false);
+    this.resetErrorKey.set(null);
+  }
 
   readonly rows = computed(() => {
     const needle = this.q().trim().toLowerCase();
@@ -142,10 +224,10 @@ export class ScoringPage {
       is_active: d.active,
       is_in_weekly_total: d.inTotal,
     }));
-    if (patches.length === 0) return;
+    if (patches.length === 0 || this.saving()) return;
     this.saving.set(true);
     this.error.set(null);
-    this.scoring.bulk(patches).subscribe({
+    this.scoring.bulk(patches, this.activeScope()).subscribe({
       next: () => {
         this.saving.set(false);
         this.drafts.set(new Map());
@@ -214,6 +296,7 @@ export class ScoringPage {
         scope: v.scope,
         is_active: true,
         is_in_weekly_total: v.is_in_weekly_total,
+        center_id: this.activeScope(),
       })
       .subscribe({
         next: () => {

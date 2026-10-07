@@ -1,0 +1,37 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <h1>{{ 'settings.title' | translate }}</h1>
+  </div>
+
+  <div class="card stack anim-rise" style="--i: 1">
+    <h2>{{ 'settings.scope_section' | translate }}</h2>
+    <label class="check">
+      <input
+        type="checkbox"
+        data-testid="settings-hide-scopes"
+        [checked]="prefs.hideScopePickers()"
+        (click)="prefs.setHideScopePickers(!prefs.hideScopePickers())"
+      />
+      <span>
+        {{ 'settings.hide_scopes' | translate }}
+        <small>{{ 'settings.hide_scopes_hint' | translate }}</small>
+      </span>
+    </label>
+  </div>
+
+  <div class="card stack anim-rise" style="--i: 2">
+    <h2>{{ 'settings.display_section' | translate }}</h2>
+    <label class="check">
+      <input
+        type="checkbox"
+        data-testid="settings-show-center-id"
+        [checked]="prefs.showCenterId()"
+        (click)="prefs.setShowCenterId(!prefs.showCenterId())"
+      />
+      <span>
+        {{ 'settings.show_center_id' | translate }}
+        <small>{{ 'settings.show_center_id_hint' | translate }}</small>
+      </span>
+    </label>
+  </div>
+</section>

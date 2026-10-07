@@ -31,7 +31,7 @@ test.describe.serial('Exams management', () => {
     await pick.click();
     await page.getByTestId('exam-term').click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
-    await page.getByTestId('exam-date').fill('2026-10-06');
+    await page.getByTestId('exam-date').fill('06/10/2026');
     await page.getByTestId('exam-submit').click();
     await expect(page).toHaveURL(/\/exams\/\d+$/);
     const examId = page.url().match(/\/exams\/(\d+)$/)?.[1];
@@ -77,14 +77,14 @@ test.describe.serial('Exams management', () => {
     await expect(heroAvg).toHaveText('20/ 20');
 
     // date edit persists after reload
-    await page.getByTestId('exam-date').fill('2026-10-07');
+    await page.getByTestId('exam-date').fill('07/10/2026');
     const patched = page.waitForResponse(
       (r) => r.url().includes(`/exams/${examId}`) && r.request().method() === 'PATCH',
     );
     await page.getByTestId('save-exam-edit').click();
     await patched;
     await page.reload();
-    await expect(page.getByTestId('exam-date')).toHaveValue('2026-10-07');
+    await expect(page.getByTestId('exam-date')).toHaveValue('07/10/2026');
 
     // delete: questions cascade, exam leaves the list
     await page.getByTestId('delete-exam').click();

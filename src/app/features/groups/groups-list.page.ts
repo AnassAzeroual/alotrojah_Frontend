@@ -74,6 +74,13 @@ export class GroupsListPage {
   /** GroupPolicy::create allows admin/supervisor only. */
   readonly canCreate = computed(() => ['admin', 'supervisor'].includes(this.auth.role() ?? ''));
 
+  /** Row pencil mirrors detail canEdit: admin/supervisor, or the owning teacher. */
+  protected canEditRow(g: GroupStatsRow): boolean {
+    const role = this.auth.role();
+    if (role === 'admin' || role === 'supervisor') return true;
+    return role === 'teacher' && (g.teacher?.id ?? null) === this.auth.currentUser()?.id;
+  }
+
   private readonly stats = resource({
     params: () => ({}),
     loader: () => firstValueFrom(this.groupsSvc.stats()),

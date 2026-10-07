@@ -25,6 +25,8 @@ export interface CurrentUser {
   full_name: string;
   role: Role;
   center_id: number | null;
+  /** Resolved by /auth/me + login (T4) so the header chip needs no extra request. */
+  center_name?: string | null;
   teacher_type: TeacherType;
 }
 
@@ -159,6 +161,7 @@ export interface ScoringModule {
   id: number;
   code: string;
   name_ar: string;
+  center_id?: number | null;
   max_points: number;
   scope: 'weekly' | 'murajaa';
   is_active: boolean;
@@ -254,6 +257,7 @@ export interface CreateUserPayload {
   phone?: string | null;
   center_id?: number | null;
   teacher_type?: TeacherType;
+  is_active?: boolean;
 }
 
 export interface UpdateUserPayload {

@@ -1,0 +1,84 @@
+// FullCalendar v6 theme mapped onto the app tokens (light + dark adapt
+// automatically — every --fc-* below references a token, never a hex).
+// No separate CSS import: v6 ships its styles inside the JS bundles.
+.fc {
+  --fc-border-color: var(--color-border);
+  --fc-page-bg-color: var(--color-surface);
+  --fc-neutral-bg-color: var(--color-surface-2);
+  --fc-today-bg-color: rgb(0 184 169 / 0.1);
+  --fc-highlight-color: rgb(0 184 169 / 0.14);
+  --fc-non-business-color: transparent;
+  --fc-event-bg-color: var(--green-600);
+  --fc-event-border-color: var(--green-600);
+  --fc-event-text-color: #fff;
+  --fc-button-text-color: var(--green-800);
+  --fc-button-bg-color: var(--color-surface);
+  --fc-button-border-color: var(--color-border-strong);
+  --fc-button-hover-bg-color: var(--green-100);
+  --fc-button-hover-border-color: var(--green-500);
+  --fc-button-active-bg-color: var(--green-600);
+  --fc-button-active-border-color: var(--green-600);
+  font-family: var(--font-stack);
+  font-size: var(--text-sm);
+}
+
+.fc .fc-button {
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  min-height: 40px;
+}
+
+.fc .fc-button-active {
+  color: #063325;
+}
+
+.fc .fc-toolbar-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--green-800);
+}
+
+// Session-type coloring (classNames from the event mapper). Text colors are
+// fixed pairs verified both themes (tokens behind them shift in dark mode,
+// so white-on-green would fail there): dark text on green/gold, white on red.
+.fc-event {
+  --fc-event-bg-color: var(--green-600);
+  --fc-event-border-color: var(--green-600);
+  --fc-event-text-color: #063325;
+}
+
+.fc-event.st-revision {
+  --fc-event-bg-color: var(--color-gold);
+  --fc-event-border-color: var(--color-gold);
+  --fc-event-text-color: #063325;
+}
+
+.fc-event.st-exam {
+  --fc-event-bg-color: var(--color-danger);
+  --fc-event-border-color: var(--color-danger);
+  --fc-event-text-color: #fff;
+}
+
+.fc-event.ss-done {
+  opacity: 0.55;
+}
+
+.fc-event.ss-cancelled {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+// Term bands: hollow labeled spans across each term's dated range. Clicking
+// one opens the term page (handled by extendedProps.kind).
+.fc-event.term-band {
+  background: transparent;
+  border: 1px dashed var(--green-600);
+  color: var(--green-800);
+  font-weight: 700;
+}
+
+.fc-event {
+  cursor: grab;
+  border-radius: var(--radius-sm);
+  padding-inline: 4px;
+}

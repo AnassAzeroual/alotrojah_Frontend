@@ -111,6 +111,10 @@ button.card {
     border-color: var(--green-700);
     color: #fff;
     box-shadow: var(--shadow-2);
+
+    [data-theme='dark'] & {
+      color: #063325;
+    }
   }
 }
 
@@ -146,6 +150,10 @@ button.card {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
+  [data-theme='dark'] & {
+    color: #063325;
+  }
 }
 
 .avatar-lg {
@@ -161,6 +169,10 @@ button.card {
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-2);
+
+  [data-theme='dark'] & {
+    color: #063325;
+  }
 }
 
 // Detail hero header + final highlight
@@ -206,6 +218,21 @@ button.card {
 
   &::before {
     background: var(--color-gold);
+  }
+
+  // Dark: --green-900 stays near-black, so no single text color fits the
+  // light→dark gradient — re-point the dark end at --green-500 (5.59:1+ both
+  // stops for green-900 text) instead of only swapping the text.
+  [data-theme='dark'] & {
+    background: linear-gradient(135deg, var(--green-700), var(--green-500));
+
+    .stat-label {
+      color: rgb(6 51 37 / 0.75);
+    }
+
+    .stat-value {
+      color: #063325;
+    }
   }
 }
 

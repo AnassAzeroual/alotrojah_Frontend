@@ -19,12 +19,14 @@
     "test:watch": "ng test --watch",
     "pretest:cov": "node scripts/set-version.mjs",
     "test:cov": "ng test --watch=false --coverage",
-    "e2e": "playwright test",
+    "e2e": "powershell -ExecutionPolicy Bypass -File scripts/run-e2e.ps1",
     "e2e:ui": "playwright test --ui",
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\" playwright.config.ts",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\" playwright.config.ts",
     "pretypecheck": "node scripts/set-version.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "e2e:direct": "playwright test",
+    "shots": "node scripts/shots.mjs"
   },
   "engines": {
     "node": "^24"
@@ -38,9 +40,16 @@
     "@angular/forms": "^22.2.0",
     "@angular/platform-browser": "^22.2.0",
     "@angular/router": "^22.2.0",
+    "@fullcalendar/angular": "^6.1.21",
+    "@fullcalendar/core": "^6.1.21",
+    "@fullcalendar/daygrid": "^6.1.21",
+    "@fullcalendar/interaction": "^6.1.21",
+    "@fullcalendar/list": "^6.1.21",
+    "@fullcalendar/multimonth": "^6.1.21",
     "@ngx-translate/core": "^18.0.0",
     "@ngx-translate/http-loader": "^18.0.0",
     "chart.js": "^4.5.1",
+    "flatpickr": "^4.6.13",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

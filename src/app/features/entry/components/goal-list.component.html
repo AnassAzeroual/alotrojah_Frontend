@@ -2,7 +2,7 @@
   <h2>{{ 'entry.goal' | translate }}</h2>
 
   @for (row of rows(); track row.student.id) {
-    <div class="line anim-rise" [style.--i]="$index + 5">
+    <form class="line anim-rise" [style.--i]="$index + 5" (ngSubmit)="save(row)" autocomplete="off">
       <span class="name">{{ row.student.full_name }}</span>
       <label class="field">
         <span class="sr-only">{{ row.student.full_name }}</span>
@@ -22,7 +22,7 @@
           />
           {{ 'entry.done' | translate }}
         </label>
-        <button type="button" class="btn btn-ghost" [disabled]="row.saving" (click)="save(row)">
+        <button type="submit" class="btn btn-ghost" [disabled]="row.saving" (click)="save(row)">
           @if (row.saving) {
             <app-spinner />
           } @else {
@@ -30,6 +30,6 @@
           }
         </button>
       </div>
-    </div>
+    </form>
   }
 </section>

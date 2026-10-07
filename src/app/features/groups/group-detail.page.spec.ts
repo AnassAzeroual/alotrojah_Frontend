@@ -289,8 +289,8 @@ describe('GroupDetailPage', () => {
     expect(detailRow.textContent).toContain('gender.male');
     expect(detailRow.textContent).toContain('mode.thumn');
     expect(detailRow.textContent).toContain('3');
-    expect(detailRow.textContent).toContain('2012-04-01');
-    expect(detailRow.textContent).toContain('2025-09-15');
+    expect(detailRow.textContent).toContain('01/04/2012');
+    expect(detailRow.textContent).toContain('15/09/2025');
   });
 
   it('saves the inline edit and reloads the detail', async () => {

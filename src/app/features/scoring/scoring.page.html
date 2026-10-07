@@ -1,17 +1,47 @@
 <section class="page">
   <div class="page-head anim-rise">
-    <h1>{{ 'scoring.title' | translate }}</h1>
-    <div class="actions">
+    <h1 class="with-add">
+      {{ 'scoring.title' | translate }}
       <button
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary btn-icon"
         data-testid="scoring-open-add"
+        [attr.aria-label]="'scoring.add_book' | translate"
+        [attr.title]="'scoring.add_book' | translate"
         (click)="showAdd.set(true)"
       >
-        {{ 'scoring.add_book' | translate }}
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M12 5v14M5 12h14" />
+        </svg>
       </button>
-    </div>
+    </h1>
   </div>
+
+  @if (leave.leaving()) {
+    <div class="banner danger" data-testid="unsaved-guard">
+      <span>{{ 'common.unsaved_warn' | translate }}</span>
+      <span class="cluster">
+        <button
+          type="button"
+          class="btn btn-danger-solid btn-sm"
+          data-testid="confirm-leave"
+          (click)="leave.allowLeave()"
+        >
+          {{ 'common.unsaved_leave' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </span>
+    </div>
+  }
 
   <p class="sum anim-rise" style="--i: 1" [class.bad]="liveSum() !== 20">
     {{ 'scoring.sum' | translate }}: <strong class="ltr-num">{{ liveSum() }} / 20</strong>
@@ -19,6 +49,52 @@
       <small>{{ 'scoring.sum_bad' | translate }}</small>
     }
   </p>
+
+  <div class="scope-banner anim-rise" style="--i: 1" data-testid="scoring-scope-banner">
+    @if (activeScope() === null) {
+      <span>{{ 'scoring.scope_shared' | translate }}</span>
+    } @else {
+      <span>{{ 'scoring.scope_center' | translate: { name: centerName() ?? '' } }}</span>
+      @if (armingReset()) {
+        <span class="cluster">
+          <button
+            type="button"
+            class="btn btn-danger-solid btn-sm"
+            data-testid="confirm-scoring-reset"
+            [disabled]="resetBusy()"
+            (click)="resetScope()"
+          >
+            @if (resetBusy()) {
+              <app-spinner />
+            } @else {
+              {{ 'scoring.reset_confirm' | translate }}
+            }
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [disabled]="resetBusy()"
+            (click)="armingReset.set(false)"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+        </span>
+      } @else {
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          data-testid="scoring-reset"
+          [disabled]="resetBusy()"
+          (click)="armingReset.set(true)"
+        >
+          {{ 'scoring.reset' | translate }}
+        </button>
+      }
+    }
+  </div>
+  @if (resetErrorKey()) {
+    <div class="banner danger">{{ resetErrorKey()! | translate }}</div>
+  }
 
   <div class="toolbar card anim-rise" style="--i: 1">
     <label class="field search grow">
@@ -31,6 +107,17 @@
         (input)="q.set($any($event.target).value)"
       />
     </label>
+    @if (!prefs.hideScopePickers()) {
+      <label class="field">
+        <app-dropdown
+          [options]="centerScopeOptions()"
+          [value]="txt(centerScope() ?? '')"
+          (valueChange)="setCenterScope($event)"
+          ariaLabelKey="dash.center"
+          testId="scoring-center-scope"
+        />
+      </label>
+    }
     <label class="field">
       <app-dropdown
         [options]="scopeOptions"
@@ -58,141 +145,155 @@
   } @else if (rows().length === 0) {
     <app-empty-state />
   } @else {
-    <div class="table-responsive">
-      <table class="scoring-table">
-        <thead>
-          <tr>
-            <th>{{ 'scoring.name' | translate }}</th>
-            <th>{{ 'scoring.code' | translate }}</th>
-            <th>{{ 'scoring.max' | translate }}</th>
-            <th>{{ 'scoring.scope' | translate }}</th>
-            <th>{{ 'scoring.active' | translate }}</th>
-            <th>{{ 'scoring.in_total' | translate }}</th>
-            <th class="actions-col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (m of rows(); track m.code) {
+    <form (ngSubmit)="save()" autocomplete="off">
+      <div class="table-responsive">
+        <table class="scoring-table">
+          <thead>
             <tr>
-              <td>
-                <strong>{{ m.name_ar }}</strong>
-              </td>
-              <td>
-                <code class="ltr-num" dir="ltr">{{ m.code }}</code>
-              </td>
-              <td>
-                <input
-                  type="number"
-                  class="ltr-num mini"
-                  [value]="m.max_points"
-                  min="0"
-                  max="20"
-                  step="0.5"
-                  [attr.aria-label]="'scoring.max' | translate"
-                  (change)="
-                    edit(
-                      m.code,
-                      { max: +$any($event.target).value },
-                      { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
-                    )
-                  "
-                />
-              </td>
-              <td>{{ 'scopeType.' + m.scope | translate }}</td>
-              <td>
-                <input
-                  type="checkbox"
-                  [checked]="m.is_active"
-                  [attr.aria-label]="'scoring.active' | translate"
-                  (change)="
-                    edit(
-                      m.code,
-                      { active: $any($event.target).checked },
-                      { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
-                    )
-                  "
-                />
-              </td>
-              <td>
-                @if (m.scope === 'weekly') {
+              <th>{{ 'scoring.name' | translate }}</th>
+              <th>{{ 'scoring.code' | translate }}</th>
+              <th>{{ 'scoring.max' | translate }}</th>
+              <th>{{ 'scoring.scope' | translate }}</th>
+              <th>{{ 'scoring.active' | translate }}</th>
+              <th>{{ 'scoring.in_total' | translate }}</th>
+              <th class="actions-col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of rows(); track m.code) {
+              <tr
+                [class.is-override]="isOverride(m.center_id)"
+                [class.is-inherited]="activeScope() !== null && !isOverride(m.center_id)"
+              >
+                <td>
+                  <strong>{{ m.name_ar }}</strong>
+                  @if (activeScope() !== null) {
+                    @if (isOverride(m.center_id)) {
+                      <span class="src-tag override">{{ 'scoring.override_tag' | translate }}</span>
+                    } @else {
+                      <span class="src-tag inherited">{{
+                        'scoring.inherited_tag' | translate
+                      }}</span>
+                    }
+                  }
+                </td>
+                <td>
+                  <code class="ltr-num" dir="ltr">{{ m.code }}</code>
+                </td>
+                <td>
                   <input
-                    type="checkbox"
-                    [checked]="m.is_in_weekly_total"
-                    [attr.aria-label]="'scoring.in_total' | translate"
+                    type="number"
+                    class="ltr-num mini"
+                    [value]="m.max_points"
+                    min="0"
+                    max="20"
+                    step="0.5"
+                    [attr.aria-label]="'scoring.max' | translate"
                     (change)="
                       edit(
                         m.code,
-                        { inTotal: $any($event.target).checked },
+                        { max: +$any($event.target).value },
                         { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
                       )
                     "
                   />
-                } @else {
-                  <span class="muted">—</span>
-                }
-              </td>
-              <td class="actions-col">
-                @if (armingDeleteId() === m.id) {
-                  <button
-                    type="button"
-                    class="btn btn-danger-solid btn-sm"
-                    [disabled]="busyId() === m.id"
-                    [attr.data-testid]="'confirm-delete-module-' + m.id"
-                    (click)="remove(m.id)"
-                  >
-                    @if (busyId() === m.id) {
-                      <app-spinner />
-                    } @else {
-                      {{ 'scoring.delete_confirm' | translate }}
-                    }
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-ghost btn-sm"
-                    [disabled]="busyId() === m.id"
-                    (click)="disarmDelete()"
-                  >
-                    {{ 'common.cancel' | translate }}
-                  </button>
-                } @else {
-                  <button
-                    type="button"
-                    class="btn btn-danger-ghost btn-sm"
-                    [attr.data-testid]="'delete-module-' + m.id"
-                    [attr.aria-label]="'common.delete' | translate"
-                    (click)="armDelete(m.id)"
-                  >
-                    {{ 'common.delete' | translate }}
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    @if (deleteErrorKey()) {
-      <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
-    }
+                </td>
+                <td>{{ 'scopeType.' + m.scope | translate }}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    [checked]="m.is_active"
+                    [attr.aria-label]="'scoring.active' | translate"
+                    (change)="
+                      edit(
+                        m.code,
+                        { active: $any($event.target).checked },
+                        { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
+                      )
+                    "
+                  />
+                </td>
+                <td>
+                  @if (m.scope === 'weekly') {
+                    <input
+                      type="checkbox"
+                      [checked]="m.is_in_weekly_total"
+                      [attr.aria-label]="'scoring.in_total' | translate"
+                      (change)="
+                        edit(
+                          m.code,
+                          { inTotal: $any($event.target).checked },
+                          { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
+                        )
+                      "
+                    />
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+                <td class="actions-col">
+                  @if (armingDeleteId() === m.id) {
+                    <button
+                      type="button"
+                      class="btn btn-danger-solid btn-sm"
+                      [disabled]="busyId() === m.id"
+                      [attr.data-testid]="'confirm-delete-module-' + m.id"
+                      (click)="remove(m.id)"
+                    >
+                      @if (busyId() === m.id) {
+                        <app-spinner />
+                      } @else {
+                        {{ 'scoring.delete_confirm' | translate }}
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-sm"
+                      [disabled]="busyId() === m.id"
+                      (click)="disarmDelete()"
+                    >
+                      {{ 'common.cancel' | translate }}
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn btn-danger-ghost btn-sm"
+                      [attr.data-testid]="'delete-module-' + m.id"
+                      [attr.aria-label]="'common.delete' | translate"
+                      (click)="armDelete(m.id)"
+                    >
+                      {{ 'common.delete' | translate }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (deleteErrorKey()) {
+        <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
+      }
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        [class.is-loading]="saving()"
+        [disabled]="saving()"
+        data-testid="scoring-save"
+        (click)="save()"
+      >
+        @if (saving()) {
+          <app-spinner />
+        } @else {
+          {{ 'common.save' | translate }}
+        }
+      </button>
+    </form>
   }
 
   @if (error(); as e) {
     <p class="field-error">{{ e.key | translate: e.params }}</p>
   }
-
-  <button
-    type="button"
-    class="btn btn-primary btn-block"
-    [class.is-loading]="saving()"
-    [disabled]="saving()"
-    (click)="save()"
-  >
-    @if (saving()) {
-      <app-spinner />
-    } @else {
-      {{ 'common.save' | translate }}
-    }
-  </button>
 
   @if (showAdd()) {
     <div class="modal-backdrop" (click)="showAdd.set(false)">
@@ -202,7 +303,7 @@
         role="dialog"
         aria-modal="true"
       >
-        <form [formGroup]="addForm" (ngSubmit)="addBook()" class="stack">
+        <form [formGroup]="addForm" (ngSubmit)="addBook()" class="stack" autocomplete="off">
           <h2>{{ 'scoring.add_book' | translate }}</h2>
           <label class="field"
             ><span>{{ 'scoring.code' | translate }}</span>

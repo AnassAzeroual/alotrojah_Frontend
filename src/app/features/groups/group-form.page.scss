@@ -62,6 +62,10 @@
       background: linear-gradient(135deg, var(--green-500), var(--green-700));
       border-color: var(--green-600);
       color: #fff;
+
+      [data-theme='dark'] & {
+        color: #063325;
+      }
     }
   }
 }
