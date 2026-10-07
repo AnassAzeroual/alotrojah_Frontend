@@ -102,6 +102,7 @@
     "SPAN_INVALID": "Review must cover 1 to 3 weeks",
     "RANGE_INVALID": "Invalid range",
     "GROUP_ROLE": "Section assignment is for teachers and students only",
+    "PLACEMENT_REQUIRED": "Student approval requires a section and a level",
     "SCORING_TOTAL": "Weekly total must stay 20",
     "INVALID_CREDENTIALS": "Invalid credentials",
     "ADMIN_DELETE": "Admin accounts cannot be deleted",

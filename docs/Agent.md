@@ -43,7 +43,7 @@
 - Dev-server Lighthouse numbers are meaningless (unminified); npm `RemoteException` stderr noise is harmless; `.angular` cache lies (clean it).
 
 ## §DB — you don't own databases (backend does)
-- E2E target `alotrojah_verify` is selected by the wrapper — never point probes at `alotrojah_dev` (user's manual QA) or `alotrojah_audit` (hands off).
+- E2E target `alotrojah_verify` is selected by the wrapper — never point probes at `alotrojah_dev` (user's manual QA) or `alotrojah_audit` (hands off — freeze reinstated 2026-10-07 after the DB refactoring; see backend R3).
 - Seed users ship NULL passwords (reset needed after reseeds); counts drift on shared DBs (floors, self-cleaning specs).
 
 ## §STACK — house rules (locked)
@@ -74,6 +74,8 @@ Angular 22 zoneless standalone, signals, `inject()`, `input()/output()/model()`,
 - Calendar terms + year view + term deep link (user-requested, gated prettier/typecheck/build/Vitest 131/131 + shots): term bands (dashed labeled spans via `termBand` helper, non-draggable, click → term page by `extendedProps.kind`); `multiMonthYear` whole-season view; `?term=` deep link (term page gained a التقويم jump button; one-shot `focusedTerm` guard; land effect prefers it then hands control back). Shots confirms bands + toggle in RTL dark.
 - M5 teacher_type scope (backend, no frontend changes needed): non-teachers now store NULL instead of `'both'` — see backend docs/Agent.md log. Frontend null-safe already (role-gated displays); e2e teacher flows unaffected. Note: verify DB still carries old `'both'` rows — migrate it before the next e2e gate.
 - 1NF group_weekdays frontend close-out (gated prettier/typecheck/Vitest 131/131, no commits): payloads already arrays (create/update/detail); this session normalized `group-form.page.spec.ts` line endings (CRLF recovery artifact → LF; blob is LF, siblings LF) + joined the over-split `.toBe()` line per prettier (printWidth 100) — file `--check` green. Full `format:check` still flags pre-existing `src/app/app.html` (prior-session MM file, untouched — needs hand-fix or owner call). R11 clean (formatting only, nothing orphaned). Backend 000018 applied to verify (69 groups → 79 rows); M5 stale-note above corrected 2026-10-07 (verify holds 0 non-teacher typed rows). E2E re-verify pending.
+- FK NOT NULL enforcement (backend `000019`, no frontend changes yet): 9 FK columns NOT NULL on testing/verify/dev. Vitest still 131/131 (frontend untouched). Frontend fallout pending: mandatory teacher/group/level pickers, unassigned-filter + accept-without-group + global-announcement flows, spec updates. E2E gate blocked until backend/frontend adapted.
+- R10 `PLACEMENT_REQUIRED` wired (2026-10-07): `API_ERROR_CODES` + ar/en/fr strings (JSON-validated ×3); Vitest parity still 131/131.
 
 ## §OPEN
 - User mid-manual-QA on dev; triage via QA-page JSON. No honors bar exists (do not build one unasked).

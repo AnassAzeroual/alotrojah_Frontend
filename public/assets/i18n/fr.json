@@ -102,6 +102,7 @@
     "SPAN_INVALID": "La révision doit couvrir 1 à 3 semaines",
     "RANGE_INVALID": "Plage invalide",
     "GROUP_ROLE": "L'affectation à la section est réservée aux enseignants et élèves",
+    "PLACEMENT_REQUIRED": "L'approbation de l'élève exige une section et un niveau",
     "SCORING_TOTAL": "Le total hebdomadaire doit rester à 20",
     "INVALID_CREDENTIALS": "Identifiants invalides",
     "ADMIN_DELETE": "Les comptes administrateurs ne peuvent pas être supprimés",
