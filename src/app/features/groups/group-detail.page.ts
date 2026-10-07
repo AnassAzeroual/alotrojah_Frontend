@@ -178,7 +178,7 @@ export class GroupDetailPage {
         level_id: levelId,
         ...(this.canPickTeacher() ? { teacher_id: this.editTeacherId() } : {}),
         capacity: this.editCapacity(),
-        schedule_days: this.editDays().join(','),
+        schedule_days: this.editDays(),
         is_active: this.editActive(),
       })
       .subscribe({

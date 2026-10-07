@@ -232,7 +232,7 @@ export class GroupFormPage {
         level_id: this.levelId()!,
         teacher_id: this.teacherId(),
         capacity: this.capacity(),
-        schedule_days: this.days().join(','),
+        schedule_days: this.days(),
         is_active: this.active(),
       })
       .subscribe({
@@ -260,7 +260,7 @@ export class GroupFormPage {
         level_id: this.levelId()!,
         teacher_id: this.teacherId(),
         capacity: this.capacity(),
-        schedule_days: this.days().join(','),
+        schedule_days: this.days(),
       })
       .subscribe({
         next: () => {

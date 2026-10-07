@@ -196,7 +196,7 @@ describe('GroupFormPage', () => {
       level_id: 1,
       teacher_id: null,
       capacity: 20,
-      schedule_days: 'Sat,Mon',
+      schedule_days: ['Sat', 'Mon'],
     });
     req.flush({
       success: true,
@@ -207,7 +207,7 @@ describe('GroupFormPage', () => {
         center_id: 1,
         level_id: 1,
         capacity: 20,
-        schedule_days: 'Sat,Mon',
+        schedule_days: ['Sat', 'Mon'],
         is_active: true,
       },
     });
@@ -256,7 +256,7 @@ describe('GroupFormPage', () => {
       level_id: 1,
       teacher_id: null,
       capacity: null,
-      schedule_days: '',
+      schedule_days: [],
     });
     req.flush({
       success: true,
@@ -267,7 +267,7 @@ describe('GroupFormPage', () => {
         center_id: 1,
         level_id: 1,
         capacity: null,
-        schedule_days: '',
+        schedule_days: [],
         is_active: true,
       },
     });
@@ -364,7 +364,7 @@ describe('GroupFormPage', () => {
         level_id: 1,
         teacher_id: null,
         capacity: 20,
-        schedule_days: 'Mon',
+        schedule_days: ['Mon'],
         is_active: true,
       });
       req.flush({ success: true, message: null, data: { id: 9 } });
