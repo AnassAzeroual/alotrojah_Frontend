@@ -113,22 +113,22 @@
   cursor: pointer;
 }
 
-// Per-type card treatment — memorization mint, revision warm yellow (soft
-// tints) and exam solid crimson, each with its label color and a `1px
-// solid` border in the type's strong hue.
+// Per-type card treatment — memorization, revision and exam each carry their
+// own label color and `1px solid` border from the same tokens the week/day
+// views read via `event.color`.
 .cal-month-view .cal-event.st-memorization {
-  color: var(--green-900);
-  border: 1px solid var(--green-600);
+  color: var(--color-memorization-text);
+  border: 1px solid var(--color-memorization-border);
 }
 
 .cal-month-view .cal-event.st-revision {
-  color: var(--color-amber-dark);
-  border: 1px solid var(--color-gold);
+  color: var(--color-revision-text);
+  border: 1px solid var(--color-revision-border);
 }
 
 .cal-month-view .cal-event.st-exam {
-  color: #fff;
-  border: 1px solid var(--color-burgundy);
+  color: var(--color-exam-text);
+  border: 1px solid var(--color-exam-border);
 }
 
 .cal-event.ss-done,
@@ -152,6 +152,45 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+// Month open-day box: clicking a day reveals that day's sessions. The library
+// ships a dark gray panel with a heavy inset shadow — retheme it to tokens and
+// make each row an obvious click target (its title opens the detail card).
+.cal-month-view .cal-open-day-events {
+  color: var(--color-text);
+  background-color: var(--color-surface-2);
+  box-shadow: inset 0 0 15px 0 rgba(0, 0, 0, 0.06);
+}
+
+.cal-month-view .cal-open-day-events > div {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  cursor: pointer;
+}
+
+.cal-month-view .cal-open-day-events > div:hover .cal-event-title {
+  text-decoration: underline;
+}
+
+.cal-month-view .cal-open-day-events .cal-event {
+  flex: 0 0 auto;
+}
+
+// Angular's `animate.leave` removes the open-day box only once the leave
+// animation fires `animationend`. The library disables that animation under
+// `prefers-reduced-motion`, which would strand `.cal-open-day-events-closing`
+// in the DOM. Re-enable a 1ms animation so the node is always removed.
+@media (prefers-reduced-motion: reduce) {
+  .cal-month-view .cal-open-day-events {
+    animation: cal-slide-down 1ms linear;
+  }
+
+  .cal-month-view .cal-open-day-events.cal-open-day-events-closing {
+    animation: cal-slide-up 1ms linear;
+  }
 }
 
 // Tooltip: inverted text/background on the theme's text color.

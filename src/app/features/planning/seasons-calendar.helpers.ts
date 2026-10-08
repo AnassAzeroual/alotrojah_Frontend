@@ -51,6 +51,58 @@ export function dateToISODate(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+/** The session fields a drag can rewrite (all optional but the payload's own id). */
+export interface SessionPatch {
+  planned_date?: string;
+  start_time?: string;
+  end_time?: string;
+}
+
+/** A resolved drag: the session to patch plus exactly what moved. */
+export interface WeekDrop extends SessionPatch {
+  id: number;
+}
+
+/** Local Date -> 24h `HH:MM`, the API's `date_format:H:i` clock. */
+export function dateToClockTime(d: Date): string {
+  const p = (n: number): string => String(n).padStart(2, '0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/**
+ * Resolve a week-view drag into the fields it actually changed. angular-calendar
+ * reports the drop's `newStart` plus a `newEnd` shifted by the same amount, so
+ * one gesture can move the day, the time, or both while the duration survives.
+ * Only fields that differ from the stored row come back — a drop that lands
+ * nowhere new is null and the caller snaps back.
+ */
+export function resolveWeekDrop(
+  eventId: unknown,
+  newStart: Date,
+  newEnd: Date | undefined,
+  rows: CalSession[],
+): WeekDrop | null {
+  const id = Number(eventId);
+  if (!Number.isInteger(id)) return null;
+  const current = rows.find((r) => r.id === id);
+  if (!current || !current.planned_date || !current.start_time || !current.end_time) return null;
+
+  const drop: WeekDrop = { id };
+  const iso = dateToISODate(newStart);
+  if (current.planned_date.slice(0, 10) !== iso) drop.planned_date = iso;
+
+  const storedStart = current.start_time.slice(0, 5);
+  const storedEnd = current.end_time.slice(0, 5);
+  const start = dateToClockTime(newStart);
+  const end = newEnd === undefined ? storedEnd : dateToClockTime(newEnd);
+  if (start !== storedStart || end !== storedEnd) {
+    drop.start_time = start;
+    drop.end_time = end;
+  }
+
+  return drop.planned_date === undefined && drop.start_time === undefined ? null : drop;
+}
+
 /**
  * Session -> calendar event. Undated, untimed or group-less sessions are
  * skipped by the caller (the generator always dates, times and places them;

@@ -18,6 +18,7 @@ import {
   CalendarDateFormatter,
   CalendarDatePipe,
   CalendarDayViewComponent,
+  CalendarEventTimesChangedEventType,
   CalendarEventTitleComponent,
   CalendarMonthViewComponent,
   CalendarNextViewDirective,
@@ -28,12 +29,15 @@ import {
   DateAdapter,
   provideCalendar,
   type CalendarEvent,
+  type CalendarEventTimesChangedEvent,
+  type CalendarMonthViewDay,
 } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { SeasonsService } from '../../core/api/seasons.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { apiErrorKey } from '../../core/api/api-errors';
+import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import {
@@ -41,7 +45,14 @@ import {
   dropdownNumber,
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
-import { toCalendarEvent, type CalSession, type CalSessionEvent } from './seasons-calendar.helpers';
+import {
+  resolveWeekDrop,
+  toCalendarEvent,
+  type CalSession,
+  type CalSessionEvent,
+  type SessionPatch,
+  type WeekDrop,
+} from './seasons-calendar.helpers';
 import { SeasonsCalendarFormatter } from './seasons-calendar.formatter';
 
 // The a11y pipe inside angular-calendar formats accessible labels via
@@ -56,8 +67,10 @@ registerLocaleData(localeFr);
  * untouched): every session of the picked season on one calendar with
  * month/week/day views, click a session for details, date edits via the
  * detail card. Mutations reuse the existing PATCH endpoints — this page
- * adds no backend surface. Drag-to-move and per-group lanes are intentionally
- * not wired yet (queued follow-up): drags are refused or snapped back.
+ * adds no backend surface. Week-view drag rewrites a session's day, its time,
+ * or both through the same PATCH (`planned_date`, `start_time`, `end_time`);
+ * resizes — duration edits — still snap back. Per-group lanes remain a queued
+ * follow-up.
  */
 @Component({
   selector: 'app-seasons-calendar-page',
@@ -90,6 +103,7 @@ export class SeasonsCalendarPage {
   private readonly planning = inject(PlanningService);
   private readonly language = inject(LanguageService);
   private readonly i18n = inject(TranslateService);
+  private readonly auth = inject(AuthService);
 
   readonly saving = signal(false);
   readonly errorKey = signal<string | null>(null);
@@ -111,8 +125,14 @@ export class SeasonsCalendarPage {
   protected readonly weekStartsOn = 1;
   /** Manual re-render trigger: an unhandled drag snaps back to the data. */
   protected readonly refresh = new Subject<void>();
-  /** Drag/resize stay off until the queued follow-up wires them to PATCH. */
-  protected readonly denyMove = (): boolean => false;
+  /** Week view: a drag may rewrite day and/or time; resizes stay refused. */
+  protected readonly allowDrag = (e: CalendarEventTimesChangedEvent): boolean =>
+    e.type !== CalendarEventTimesChangedEventType.Resize;
+  /** Month view: the clicked day whose sessions show in the open-day box. */
+  protected readonly activeDay = signal<Date | null>(null);
+  protected readonly activeDayIsOpen = signal(false);
+  /** The current-view events JSON debug panel is admin-only. */
+  protected readonly isAdmin = computed(() => this.auth.role() === 'admin');
 
   protected readonly seasonOptions = computed(() => {
     const data = this.seasonsRes.value()?.data ?? [];
@@ -161,8 +181,8 @@ export class SeasonsCalendarPage {
           rows.push({
             id: s.id,
             planned_date: overlay[s.id]?.planned_date ?? s.planned_date,
-            start_time: s.start_time ?? null,
-            end_time: s.end_time ?? null,
+            start_time: overlay[s.id]?.start_time ?? s.start_time ?? null,
+            end_time: overlay[s.id]?.end_time ?? s.end_time ?? null,
             group_id: s.group_id ?? null,
             session_type: s.session_type,
             status: s.status,
@@ -179,8 +199,8 @@ export class SeasonsCalendarPage {
     return rows;
   });
 
-  /** Optimistic date commits (cleared on server reload). */
-  private readonly patchOverlay = signal<Record<number, { planned_date?: string }>>({});
+  /** Optimistic day/time commits (cleared on server reload). */
+  private readonly patchOverlay = signal<Record<number, SessionPatch>>({});
 
   private readonly groupNames = computed(() => {
     const map = new Map<number, string>();
@@ -202,9 +222,18 @@ export class SeasonsCalendarPage {
   });
 
   /**
-   * TEST-ONLY: events inside the period the calendar is currently showing —
-   * day view = that day, week view = its Mon..Sun span, month view = the whole
-   * visible grid (leading/trailing days included).
+   * Week view only: angular-calendar enables a drag exclusively on events
+   * flagged `draggable`, so the week view gets a flagged copy. Month (custom
+   * cell template) and day views never set it, so they stay non-draggable.
+   */
+  protected readonly weekEvents = computed<CalSessionEvent[]>(() =>
+    this.calEvents().map((e) => ({ ...e, draggable: true })),
+  );
+
+  /**
+   * Debug panel (admin-only): events inside the period the calendar is
+   * currently showing — day view = that day, week view = its Mon..Sun span,
+   * month view = the whole visible grid (leading/trailing days included).
    */
   protected readonly visibleEvents = computed<CalendarEvent[]>(() => {
     const vd = this.viewDate();
@@ -259,6 +288,7 @@ export class SeasonsCalendarPage {
     effect(() => {
       this.pickedSeason();
       this.selectedId.set(null);
+      this.activeDayIsOpen.set(false);
     });
     // Land on the season's first dated session. One-shot per season —
     // local PATCHes must never yank the view back.
@@ -308,9 +338,39 @@ export class SeasonsCalendarPage {
     if (Number.isInteger(id)) this.pickSession(id);
   }
 
-  /** Unhandled month-view drags re-render from the unchanged data (snap back). */
-  protected onTimesChanged(): void {
-    this.refresh.next();
+  /**
+   * Month view: clicking a day toggles the open-day box listing that day's
+   * sessions. Deliberately does NOT change the view date — only the panel.
+   */
+  protected onDayClick(args: { day: CalendarMonthViewDay }): void {
+    const { date, events } = args.day;
+    if (events.length === 0) {
+      this.activeDayIsOpen.set(false);
+      return;
+    }
+    const sameDay =
+      this.activeDay() !== null && this.activeDay()!.toDateString() === date.toDateString();
+    this.activeDay.set(date);
+    this.activeDayIsOpen.set(!(sameDay && this.activeDayIsOpen()));
+  }
+
+  /**
+   * Week view: a drag persists whatever it actually changed — the day, the
+   * time, or both — through the session PATCH. A drop that lands nowhere new,
+   * and any resize (refused up front), snaps back. The library already confines
+   * drops to the visible week, so a move can never cross a week boundary.
+   */
+  protected onWeekTimesChanged(evt: CalendarEventTimesChangedEvent): void {
+    if (evt.type === CalendarEventTimesChangedEventType.Resize) {
+      this.refresh.next();
+      return;
+    }
+    const drop = resolveWeekDrop(evt.event.id, evt.newStart, evt.newEnd, this.flatRows());
+    if (drop === null) {
+      this.refresh.next();
+      return;
+    }
+    this.patchSession(drop);
   }
 
   protected groupLabel(id: number | null): string | null {
@@ -330,19 +390,29 @@ export class SeasonsCalendarPage {
     this.selectedId.set(id);
   }
 
+  /** Optimistically move a session to a new day, then persist via PATCH. */
   private patchDate(id: number, iso: string): void {
+    this.patchSession({ id, planned_date: iso });
+  }
+
+  /**
+   * Optimistically apply a day/time change, then persist via PATCH. The
+   * week-view drag and the detail date-picker share this path; on failure the
+   * overlay is rolled back and the truth is reloaded.
+   */
+  private patchSession(drop: WeekDrop): void {
     if (this.saving()) return;
+    const { id, ...patch } = drop;
     this.saving.set(true);
     this.errorKey.set(null);
-    this.planning.updateSession(id, { planned_date: iso }).subscribe({
+    this.patchOverlay.update((m) => ({ ...m, [id]: { ...m[id], ...patch } }));
+    this.planning.updateSession(id, patch).subscribe({
       next: () => {
         this.saving.set(false);
-        this.patchOverlay.update((m) => ({ ...m, [id]: { planned_date: iso } }));
       },
       error: (err: unknown) => {
         this.saving.set(false);
         this.errorKey.set(apiErrorKey(err));
-        // The detail picker already committed optimistically: reload truth.
         this.patchOverlay.update((m) => {
           const next = { ...m };
           delete next[id];
