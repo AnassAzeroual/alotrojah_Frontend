@@ -7,29 +7,31 @@ import {
   input,
   resource,
   signal,
-  viewChild,
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
+import { JsonPipe, registerLocaleData } from '@angular/common';
+import localeAr from '@angular/common/locales/ar';
+import localeFr from '@angular/common/locales/fr';
 import {
-  AgendaService,
-  DayService,
-  MonthService,
-  ScheduleComponent,
-  ScheduleModule,
-  TimelineMonthService,
-  TimelineViewsService,
-  WeekService,
-  YearService,
-  type ActionEventArgs,
-  type DragEventArgs,
-  type EventClickArgs,
-  type EventRenderedArgs,
-} from '@syncfusion/ej2-angular-schedule';
+  CalendarDateFormatter,
+  CalendarDatePipe,
+  CalendarDayViewComponent,
+  CalendarEventTitleComponent,
+  CalendarMonthViewComponent,
+  CalendarNextViewDirective,
+  CalendarPreviousViewDirective,
+  CalendarTodayDirective,
+  CalendarView,
+  CalendarWeekViewComponent,
+  DateAdapter,
+  provideCalendar,
+  type CalendarEvent,
+} from 'angular-calendar';
+import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { SeasonsService } from '../../core/api/seasons.service';
 import { GroupsService } from '../../core/api/groups.service';
-import './seasons-calendar.vendor.css';
 import { PlanningService } from '../../core/api/planning.service';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -39,22 +41,23 @@ import {
   dropdownNumber,
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
-import {
-  dateToISODate,
-  groupResources,
-  toEj2Event,
-  type CalSession,
-  type Ej2SessionEvent,
-} from './seasons-calendar.helpers';
-import { ensureSchedulerLocale } from './seasons-calendar.locale';
+import { toCalendarEvent, type CalSession, type CalSessionEvent } from './seasons-calendar.helpers';
+import { SeasonsCalendarFormatter } from './seasons-calendar.formatter';
+
+// The a11y pipe inside angular-calendar formats accessible labels via
+// Angular's DatePipe, which needs registered locale data (our custom view
+// formatter is Intl-based and unaffected). Registered from this lazy chunk,
+// once per app run.
+registerLocaleData(localeAr);
+registerLocaleData(localeFr);
 
 /**
  * Experimental season calendar (the legacy season/term pages stay
- * untouched): every session of the picked season on one scheduler, grouped
- * by section, drag-drop to move dates, click a session for details.
- * Mutations reuse the existing PATCH endpoints — this page adds no backend
- * surface. EJ2 callbacks are not Angular-aware under zoneless, but the
- * handlers below only write signals, which always notify.
+ * untouched): every session of the picked season on one calendar with
+ * month/week/day views, click a session for details, date edits via the
+ * detail card. Mutations reuse the existing PATCH endpoints — this page
+ * adds no backend surface. Drag-to-move and per-group lanes are intentionally
+ * not wired yet (queued follow-up): drags are refused or snapped back.
  */
 @Component({
   selector: 'app-seasons-calendar-page',
@@ -62,18 +65,21 @@ import { ensureSchedulerLocale } from './seasons-calendar.locale';
   imports: [
     TranslatePipe,
     RouterLink,
+    JsonPipe,
     DropdownComponent,
     DatePickerComponent,
-    ScheduleModule,
+    CalendarPreviousViewDirective,
+    CalendarTodayDirective,
+    CalendarNextViewDirective,
+    CalendarDatePipe,
+    CalendarMonthViewComponent,
+    CalendarWeekViewComponent,
+    CalendarDayViewComponent,
+    CalendarEventTitleComponent,
   ],
   providers: [
-    DayService,
-    WeekService,
-    MonthService,
-    YearService,
-    AgendaService,
-    TimelineViewsService,
-    TimelineMonthService,
+    provideCalendar({ provide: DateAdapter, useFactory: adapterFactory }),
+    { provide: CalendarDateFormatter, useClass: SeasonsCalendarFormatter },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './seasons-calendar.page.html',
@@ -82,16 +88,15 @@ export class SeasonsCalendarPage {
   private readonly seasonsSvc = inject(SeasonsService);
   private readonly groupsSvc = inject(GroupsService);
   private readonly planning = inject(PlanningService);
-  private readonly router = inject(Router);
   private readonly language = inject(LanguageService);
   private readonly i18n = inject(TranslateService);
-  private readonly sched = viewChild(ScheduleComponent);
 
   readonly saving = signal(false);
   readonly errorKey = signal<string | null>(null);
   readonly pickedSeason = signal<number | null>(null);
   readonly selectedId = signal<number | null>(null);
-  readonly selectedDate = signal<Date>(new Date());
+  readonly viewDate = signal<Date>(new Date());
+  readonly view = signal<CalendarView>(CalendarView.Month);
   private readonly tick = signal(0);
   private navigatedFor: number | null = null;
   private readonly focusedTerm = signal<number | null>(null);
@@ -101,19 +106,26 @@ export class SeasonsCalendarPage {
   });
   private readonly focusDate = signal<string | null>(null);
 
-  protected readonly ejLocale = computed(() =>
-    this.language.current() === 'ar' ? 'ar' : this.language.current() === 'fr' ? 'fr' : 'en',
-  );
-  protected readonly isRtl = computed(() => this.language.current() === 'ar');
-  protected readonly resourceTitle = computed(() => {
-    this.language.current();
-    return this.i18n.instant('list.group');
-  });
+  /** Template access to the view enum + the backend week grain (Mon..Sun). */
+  protected readonly CalendarView = CalendarView;
+  protected readonly weekStartsOn = 1;
+  /** Manual re-render trigger: an unhandled drag snaps back to the data. */
+  protected readonly refresh = new Subject<void>();
+  /** Drag/resize stay off until the queued follow-up wires them to PATCH. */
+  protected readonly denyMove = (): boolean => false;
 
   protected readonly seasonOptions = computed(() => {
     const data = this.seasonsRes.value()?.data ?? [];
     return data.map((s) => ({ value: String(s.id), label: s.name }));
   });
+
+  protected readonly titleKey = computed(() =>
+    this.view() === CalendarView.Month
+      ? 'monthViewTitle'
+      : this.view() === CalendarView.Week
+        ? 'weekViewTitle'
+        : 'dayViewTitle',
+  );
 
   private readonly seasonsRes = resource({
     params: () => ({}),
@@ -136,8 +148,7 @@ export class SeasonsCalendarPage {
     loader: () => this.groupsSvc.listAll(),
   });
 
-  /** Flat session feed with term/week context, derived during render (never
-   * a post-render effect write — EJ2 must see rows at creation time). */
+  /** Flat session feed with term/week context, derived during render. */
   private readonly flatRows = computed<CalSession[]>(() => {
     const loaded = this.detailsRes.value();
     if (!loaded) return [];
@@ -171,22 +182,59 @@ export class SeasonsCalendarPage {
   /** Optimistic date commits (cleared on server reload). */
   private readonly patchOverlay = signal<Record<number, { planned_date?: string }>>({});
 
-  protected readonly ejEvents = computed<Ej2SessionEvent[]>(() => {
+  private readonly groupNames = computed(() => {
+    const map = new Map<number, string>();
+    for (const g of this.groupsRes.value() ?? []) map.set(g.id, g.name);
+    return map;
+  });
+
+  protected readonly calEvents = computed<CalSessionEvent[]>(() => {
     this.language.current();
-    const label = (t: string): string => this.i18n.instant(`sessionType.${t}`);
-    const out: Ej2SessionEvent[] = [];
+    const names = this.groupNames();
+    const out: CalSessionEvent[] = [];
     for (const s of this.flatRows()) {
-      const e = toEj2Event(s, label(s.session_type));
+      const typeLabel: string = this.i18n.instant(`sessionType.${s.session_type}`);
+      const groupLabel = s.group_id === null ? null : (names.get(s.group_id) ?? null);
+      const e = toCalendarEvent(s, typeLabel, groupLabel);
       if (e) out.push(e);
     }
     return out;
   });
 
-  protected readonly ejResources = computed(() => groupResources(this.groupsRes.value() ?? []));
+  /**
+   * TEST-ONLY: events inside the period the calendar is currently showing —
+   * day view = that day, week view = its Mon..Sun span, month view = the whole
+   * visible grid (leading/trailing days included).
+   */
+  protected readonly visibleEvents = computed<CalendarEvent[]>(() => {
+    const vd = this.viewDate();
+    const all = this.calEvents();
+    let start: Date;
+    let end: Date;
+    if (this.view() === CalendarView.Day) {
+      start = new Date(vd.getFullYear(), vd.getMonth(), vd.getDate());
+      end = new Date(start);
+      end.setDate(end.getDate() + 1);
+    } else if (this.view() === CalendarView.Week) {
+      start = this.startOfWeek(vd);
+      end = new Date(start);
+      end.setDate(end.getDate() + 7);
+    } else {
+      // Month grid: from the week holding the 1st to the week holding the last day.
+      start = this.startOfWeek(new Date(vd.getFullYear(), vd.getMonth(), 1));
+      end = this.startOfWeek(new Date(vd.getFullYear(), vd.getMonth() + 1, 0));
+      end.setDate(end.getDate() + 7);
+    }
+    return all.filter((e) => e.start >= start && e.start < end);
+  });
 
-  protected readonly ejSettings = computed(() => ({ dataSource: this.ejEvents() }));
-
-  protected readonly ejGroup = { resources: ['Groups'], allowGroupEdit: false };
+  /** Local midnight of the Monday on/before `d` (weekStartsOn = 1). */
+  private startOfWeek(d: Date): Date {
+    const out = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const shift = (out.getDay() + 6) % 7;
+    out.setDate(out.getDate() - shift);
+    return out;
+  }
 
   protected readonly selected = computed(
     () => this.flatRows().find((s) => s.id === this.selectedId()) ?? null,
@@ -212,17 +260,6 @@ export class SeasonsCalendarPage {
       this.pickedSeason();
       this.selectedId.set(null);
     });
-    // Async rows need one explicit kick: EJ2 builds its initial paint from
-    // whatever dataSource is present at creation (usually still empty while
-    // details stream in) and does not reliably repaint on later binding
-    // updates. dataBind() is idempotent — reruns are harmless.
-    effect(() => {
-      const events = this.ejEvents();
-      const api = this.sched();
-      if (!api || events.length === 0) return;
-      api.eventSettings.dataSource = events;
-      api.dataBind();
-    });
     // Land on the season's first dated session. One-shot per season —
     // local PATCHes must never yank the view back.
     effect(() => {
@@ -233,7 +270,7 @@ export class SeasonsCalendarPage {
       if (focus) {
         // One-shot deep link (?term=): land, then hand control back.
         this.focusDate.set(null);
-        this.selectedDate.set(new Date(`${focus.slice(0, 10)}T00:00:00`));
+        this.viewDate.set(new Date(`${focus.slice(0, 10)}T00:00:00`));
         this.navigatedFor = season;
         return;
       }
@@ -244,7 +281,7 @@ export class SeasonsCalendarPage {
         .sort()[0];
       if (!first) return;
       this.navigatedFor = season;
-      this.selectedDate.set(new Date(`${first.slice(0, 10)}T00:00:00`));
+      this.viewDate.set(new Date(`${first.slice(0, 10)}T00:00:00`));
     });
     // Deep link: resolve the term's own season + first date, then drive the
     // normal pipeline (season pick -> load -> land effect above).
@@ -264,41 +301,20 @@ export class SeasonsCalendarPage {
         })
         .catch(() => undefined);
     });
-    // EJ2 locale bootstrap follows the app language (CLDR loads once).
-    effect(() => {
-      ensureSchedulerLocale(this.language.current());
-    });
   }
 
-  protected onEventClick(args: EventClickArgs): void {
-    const rec = args.event as { Id?: unknown } | undefined;
-    const id = typeof rec?.Id === 'number' ? rec.Id : Number(rec?.Id);
+  protected onEventClick(args: { event: CalendarEvent }): void {
+    const id = Number(args.event.id);
     if (Number.isInteger(id)) this.pickSession(id);
   }
 
-  protected onDragStop(args: DragEventArgs): void {
-    const rec = (Array.isArray(args.data) ? args.data[0] : args.data) as
-      { Id?: unknown; StartTime?: unknown } | undefined;
-    const start = rec?.StartTime instanceof Date ? rec.StartTime : null;
-    if (typeof rec?.Id !== 'number' && typeof rec?.Id !== 'string') return;
-    if (!start) return;
-    this.patchDate(Number(rec.Id), dateToISODate(start));
+  /** Unhandled month-view drags re-render from the unchanged data (snap back). */
+  protected onTimesChanged(): void {
+    this.refresh.next();
   }
 
-  /** No quick-create (M4 session endpoints are still pending): grid is move + inspect only. */
-  protected onActionBegin(args: ActionEventArgs): void {
-    if (args.requestType === 'eventCreate') args.cancel = true;
-  }
-
-  /** No built-in editor/quick-info: the detail card below owns edits. */
-  protected onPopupOpen(args: { cancel: boolean }): void {
-    args.cancel = true;
-  }
-
-  protected onEventRendered(args: EventRenderedArgs): void {
-    const rec = args.data as { sessionType?: unknown; status?: unknown } | undefined;
-    if (typeof rec?.sessionType === 'string') args.element?.classList.add(`st-${rec.sessionType}`);
-    if (typeof rec?.status === 'string') args.element?.classList.add(`ss-${rec.status}`);
+  protected groupLabel(id: number | null): string | null {
+    return id === null ? null : (this.groupNames().get(id) ?? null);
   }
 
   protected pickSeason(v: number | null): void {

@@ -6,6 +6,7 @@
   resource,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
@@ -13,9 +14,10 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { CalendarService } from '../../core/api/calendar.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ReviewsService } from '../../core/api/reviews.service';
@@ -42,9 +44,11 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 export class ReviewsPage {
   private readonly reviews = inject(ReviewsService);
   private readonly studentsSvc = inject(StudentsService);
+  private readonly calendar = inject(CalendarService);
   private readonly planning = inject(PlanningService);
   private readonly ref = inject(ReferenceService);
   private readonly auth = inject(AuthService);
+  private readonly i18n = inject(TranslateService);
 
   readonly canEnter = computed(() => {
     const t = this.auth.currentUser()?.teacher_type;
@@ -76,15 +80,49 @@ export class ReviewsPage {
     loader: () => firstValueFrom(this.ref.seasons()),
   });
 
+  readonly form = new FormGroup({
+    term_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
+    session_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
+    week_from: new FormControl<number | null>(null, {
+      validators: [Validators.required, Validators.min(1)],
+    }),
+    week_to: new FormControl<number | null>(null, {
+      validators: [Validators.required, Validators.min(1)],
+    }),
+    score: new FormControl<number | null>(null, {
+      validators: [Validators.required, Validators.min(0), Validators.max(20)],
+    }),
+  });
+
   readonly terms = resource({
     params: () => ({ s: this.currentSeasonId() }),
     loader: ({ params }) =>
       params.s === null ? Promise.resolve([]) : firstValueFrom(this.planning.terms(params.s)),
   });
 
+  private readonly selectedTerm = toSignal(this.form.controls.term_id.valueChanges, {
+    initialValue: null,
+  });
+
   readonly termOptions = computed(() => [
     { value: '', label: '—' },
     ...(this.terms.value() ?? []).map((t) => ({ value: t.id, label: t.name_ar })),
+  ]);
+
+  readonly sessions = resource({
+    params: () => ({ term: this.selectedTerm() }),
+    loader: ({ params }) =>
+      params.term === null
+        ? Promise.resolve([])
+        : firstValueFrom(this.calendar.sessions({ term_id: params.term }).pipe(map((p) => p.data))),
+  });
+
+  readonly sessionOptions = computed(() => [
+    { value: '', label: '—' },
+    ...(this.sessions.value() ?? []).map((s) => ({
+      value: s.id,
+      label: `${this.i18n.instant('common.session')} ${s.session_number_global}`,
+    })),
   ]);
 
   private currentSeasonId(): number | null {
@@ -114,24 +152,17 @@ export class ReviewsPage {
     return this.form.dirty;
   }
 
-  readonly form = new FormGroup({
-    term_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
-    week_from: new FormControl<number | null>(null, {
-      validators: [Validators.required, Validators.min(1)],
-    }),
-    week_to: new FormControl<number | null>(null, {
-      validators: [Validators.required, Validators.min(1)],
-    }),
-    score: new FormControl<number | null>(null, {
-      validators: [Validators.required, Validators.min(0), Validators.max(20)],
-    }),
-  });
-
   submit(): void {
     const st = this.pickedStudent();
     const v = this.form.getRawValue();
     if (st === null || this.form.invalid || this.saving()) return;
-    if (v.term_id === null || v.week_from === null || v.week_to === null || v.score === null)
+    if (
+      v.term_id === null ||
+      v.session_id === null ||
+      v.week_from === null ||
+      v.week_to === null ||
+      v.score === null
+    )
       return;
     const span = v.week_to - v.week_from + 1;
     if (span < 1 || span > 3) return; // backend enforces too (422)
@@ -140,6 +171,7 @@ export class ReviewsPage {
       .createCycle({
         student_id: st,
         term_id: v.term_id,
+        session_id: v.session_id,
         week_from: v.week_from,
         week_to: v.week_to,
         score: v.score,

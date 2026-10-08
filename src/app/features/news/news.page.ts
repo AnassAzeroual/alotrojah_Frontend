@@ -131,7 +131,7 @@ export class NewsPage {
 
   readonly form = new FormGroup({
     audience: new FormControl('all', { nonNullable: true, validators: [Validators.required] }),
-    group_id: new FormControl<number | null>(null),
+    group_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
     title: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(200)],
@@ -142,12 +142,13 @@ export class NewsPage {
   submit(): void {
     if (this.form.invalid || this.saving()) return;
     const v = this.form.getRawValue();
+    if (v.group_id === null) return;
     this.saving.set(true);
     this.submitErrorKey.set(null);
     this.news
       .create({
         audience: v.audience,
-        group_id: v.audience === 'my_students' ? (v.group_id ?? undefined) : undefined,
+        group_id: v.group_id,
         title: v.title,
         body: v.body,
       })

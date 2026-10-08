@@ -1,8 +1,43 @@
-// Syncfusion Scheduler bridge: the Material theme CSS arrives via
-// angular.json (base + schedule + chrome). Here the scheduler is tied to the
-// app tokens so light/dark follow the theme switch, and session events reuse
-// the old fixed-contrast pairs (dark text on green/gold, white on red).
-.e-schedule {
+// angular-calendar bridge: the library stylesheet ships as a fixed light
+// palette and loads via angular.json BEFORE styles.scss, so equal-or-deeper
+// selectors below win the cascade. Everything is tied to app tokens so
+// light/dark follow the theme switch, and session-event cards get a per-type
+// treatment — soft tint backgrounds (memorization/revision) or solid (exam),
+// each with a 1px border and label in the type's own hue. In week/day views
+// the library colors the event natively from `event.color` (background =
+// secondary, border = primary, text = secondaryText), so only the custom
+// month-cell pills need per-type CSS here.
+
+.cal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.cal-title {
+  flex: 1;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.cal-nav {
+  display: flex;
+  gap: var(--space-1);
+}
+
+// The ‹ › glyphs are written LTR; mirror them so "previous" points forward
+// in RTL reading order.
+[dir='rtl'] .cal-prev,
+[dir='rtl'] .cal-next {
+  transform: scaleX(-1);
+}
+
+.cal-month-view,
+.cal-week-view,
+.cal-day-view {
   background: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-border);
@@ -11,56 +46,132 @@
   font-size: var(--text-sm);
 }
 
-.e-schedule .e-table-container,
-.e-schedule .e-table-wrap,
-.e-schedule .e-content-wrap,
-.e-schedule .e-timeline-view .e-content-wrap {
-  background: var(--color-surface);
-}
-
-.e-schedule .e-header-cells,
-.e-schedule .e-work-cells,
-.e-schedule .e-date-header-wrap .e-date-header,
-.e-schedule .e-resource-cells,
-.e-schedule .e-timeline-view .e-resource-left-td {
-  background: var(--color-surface);
-  color: var(--color-text);
+// Grid lines: the library paints #e1e1e1 one selector deeper (or one
+// [dir=rtl] attribute deeper), so mirror the shapes here.
+.cal-month-view .cal-days,
+.cal-month-view .cal-day-cell:not(:last-child),
+.cal-month-view .cal-days .cal-cell-row,
+.cal-week-view .cal-day-headers,
+.cal-week-view .cal-day-headers .cal-header:not(:last-child),
+.cal-week-view .cal-day-headers .cal-header:first-child,
+.cal-week-view .cal-day-column,
+.cal-week-view .cal-all-day-events,
+.cal-week-view .cal-time-events,
+.cal-week-view .cal-hour:not(:last-child) .cal-hour-segment,
+.cal-week-view .cal-hour:last-child :not(:last-child) .cal-hour-segment,
+[dir='rtl'] .cal-month-view .cal-day-cell:not(:last-child),
+[dir='rtl'] .cal-week-view .cal-day-headers .cal-header:not(:last-child),
+[dir='rtl'] .cal-week-view .cal-day-headers .cal-header:first-child,
+[dir='rtl'] .cal-week-view .cal-day-column {
   border-color: var(--color-border);
 }
 
-.e-schedule .e-appointment {
-  background: var(--green-600);
-  border-color: var(--green-600);
-  color: #063325;
+// That one library rule declares a full border with !important in RTL.
+[dir='rtl'] .cal-week-view .cal-day-headers .cal-header:not(:last-child) {
+  border-color: var(--color-border) !important;
+}
+
+// Hover / open / zebra / today / weekend — fixed light hexes -> tokens.
+.cal-month-view .cal-cell-row:hover,
+.cal-month-view .cal-cell-row .cal-cell:hover,
+.cal-month-view .cal-cell.cal-has-events.cal-open,
+.cal-week-view .cal-day-headers .cal-header:hover,
+.cal-week-view .cal-day-headers .cal-drag-over,
+.cal-week-view .cal-time-events .cal-day-columns:not(.cal-resize-active) .cal-hour-segment:hover,
+.cal-week-view .cal-drag-over .cal-hour-segment {
+  background-color: var(--color-surface-2);
+}
+
+.cal-week-view .cal-hour-odd {
+  background-color: var(--color-bg-soft);
+}
+
+.cal-month-view .cal-day-cell.cal-today,
+.cal-week-view .cal-header.cal-today {
+  background-color: var(--green-100);
+}
+
+.cal-month-view .cal-day-cell.cal-weekend .cal-day-number,
+.cal-week-view .cal-header.cal-weekend span {
+  color: var(--color-gold-dark);
+}
+
+.cal-week-view .cal-current-time-marker,
+.cal-day-view .cal-current-time-marker {
+  background-color: var(--color-danger);
+}
+
+// Session events: per-view selectors because the library colors each view
+// one level deeper than a bare `.cal-event`. The custom month-cell pill takes
+// its tint background inline from `event.color.secondary`; text, shape and
+// the per-type border live here (week/day views style natively from color).
+.cal-month-view .cal-event,
+.cal-week-view .cal-event,
+.cal-day-view .cal-event,
+.cal-month-view .cal-open-day-events .cal-event {
   border-radius: var(--radius-sm);
-  cursor: grab;
+  cursor: pointer;
 }
 
-.e-schedule .e-appointment.st-revision {
-  background: var(--color-gold);
-  border-color: var(--color-gold);
-  color: #063325;
+// Per-type card treatment — memorization mint, revision warm yellow (soft
+// tints) and exam solid crimson, each with its label color and a `1px
+// solid` border in the type's strong hue.
+.cal-month-view .cal-event.st-memorization {
+  color: var(--green-900);
+  border: 1px solid var(--green-600);
 }
 
-.e-schedule .e-appointment.st-exam {
-  background: var(--color-danger);
-  border-color: var(--color-danger);
+.cal-month-view .cal-event.st-revision {
+  color: var(--color-amber-dark);
+  border: 1px solid var(--color-gold);
+}
+
+.cal-month-view .cal-event.st-exam {
   color: #fff;
+  border: 1px solid var(--color-burgundy);
 }
 
-.e-schedule .e-appointment.ss-done,
-.e-schedule .e-appointment.ss-cancelled {
+.cal-event.ss-done,
+.cal-event.ss-cancelled {
   opacity: 0.55;
 }
 
-.e-schedule .e-appointment.ss-cancelled {
+.cal-event.ss-cancelled {
   text-decoration: line-through;
 }
 
-// Our UX never uses EJ2 dialogs: the detail card owns edits, creation is
-// refused until the M4 session endpoints land (actionBegin + popupOpen
-// cancel as backstops). Prerendered dialog shells must never paint.
-.e-dialog.e-schedule-dialog,
-.e-dialog.e-quick-dialog {
-  display: none !important;
+// Month pills now carry a visible title (custom cell template): room for
+// the text, truncated instead of clipped.
+.cal-month-view .cal-event {
+  padding: var(--space-1) var(--space-2);
+  line-height: 1.2;
+}
+
+.cal-month-view .cal-event-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Tooltip: inverted text/background on the theme's text color.
+.cal-tooltip-inner {
+  color: var(--color-surface);
+  background-color: var(--color-text);
+}
+
+.cal-tooltip.cal-tooltip-top .cal-tooltip-arrow {
+  border-top-color: var(--color-text);
+}
+
+.cal-tooltip.cal-tooltip-right .cal-tooltip-arrow {
+  border-right-color: var(--color-text);
+}
+
+.cal-tooltip.cal-tooltip-bottom .cal-tooltip-arrow {
+  border-bottom-color: var(--color-text);
+}
+
+.cal-tooltip.cal-tooltip-left .cal-tooltip-arrow {
+  border-left-color: var(--color-text);
 }

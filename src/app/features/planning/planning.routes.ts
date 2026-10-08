@@ -19,8 +19,8 @@ export const PLANNING_ROUTES: Routes = [
     data: { roles: MANAGER },
   },
   {
-    // Experimental full-calendar sandbox: all seasons/terms/weeks/sessions
-    // visible with drag-drop dates. The legacy pages stay untouched.
+    // Experimental season calendar: all seasons/terms/weeks/sessions on
+    // month/week/day views. The legacy pages stay untouched.
     path: 'calendar',
     loadComponent: () => import('./seasons-calendar.page').then((m) => m.SeasonsCalendarPage),
     canActivate: [roleGuard],

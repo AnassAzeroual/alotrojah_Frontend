@@ -1,4 +1,4 @@
-import type { Group } from '../../core/api/api-models';
+import type { CalendarEvent } from 'angular-calendar';
 
 /** One session flattened with its term/week context for the calendar. */
 export interface CalSession {
@@ -17,20 +17,33 @@ export interface CalSession {
   weekType: 'study' | 'review';
 }
 
-/** Session shaped for the Syncfusion event engine (local wall-clock times). */
-export interface Ej2SessionEvent {
-  Id: number;
-  Subject: string;
-  StartTime: Date;
-  EndTime: Date;
-  IsAllDay: boolean;
-  Description: string;
-  GroupId: number;
-  sessionId: number;
-  sessionType: string;
-  status: string;
-  termId: number;
-}
+/** Session event on the angular-calendar grid; `id` is the session id. */
+export type CalSessionEvent = CalendarEvent;
+
+/**
+ * Session-event palette — matches how angular-calendar renders week/day events
+ * natively: `primary` is the border, `secondary` the card background and
+ * `secondaryText` the label (the custom month cell pinches the same contract).
+ * Memorization/revision are soft-tinted cards with a strong 1px accent border;
+ * exam stays a solid high-contrast badge.
+ */
+const EVENT_COLORS: Record<CalSession['session_type'], CalSessionEvent['color']> = {
+  memorization: {
+    primary: 'var(--color-memorization-border)',
+    secondary: 'var(--color-memorization-bg)',
+    secondaryText: 'var(--color-memorization-text)',
+  },
+  revision: {
+    primary: 'var(--color-revision-border)',
+    secondary: 'var(--color-revision-bg)',
+    secondaryText: 'var(--color-revision-text)',
+  },
+  exam: {
+    primary: 'var(--color-exam-border)',
+    secondary: 'var(--color-exam-bg)',
+    secondaryText: 'var(--color-exam-text)',
+  },
+};
 
 /** Local-midnight Date -> ISO yyyy-mm-dd (no UTC shift). */
 export function dateToISODate(d: Date): string {
@@ -39,37 +52,27 @@ export function dateToISODate(d: Date): string {
 }
 
 /**
- * Session -> scheduler event. Undated, untimed or group-less sessions cannot
- * sit on a grouped timeline and are skipped by the caller (the generator
- * always dates, times and places them; null means hand-built data).
+ * Session -> calendar event. Undated, untimed or group-less sessions are
+ * skipped by the caller (the generator always dates, times and places them;
+ * null means hand-built data). `groupLabel` rides the title — the grouped
+ * lanes that used to carry it are queued as a follow-up.
  */
-export function toEj2Event(s: CalSession, typeLabel: string): Ej2SessionEvent | null {
+export function toCalendarEvent(
+  s: CalSession,
+  typeLabel: string,
+  groupLabel: string | null,
+): CalSessionEvent | null {
   if (!s.planned_date || !s.start_time || !s.end_time || s.group_id === null) return null;
   const day = s.planned_date.slice(0, 10);
+  const title = [`#${s.session_number_global}`, typeLabel, groupLabel]
+    .filter((part): part is string => !!part)
+    .join(' · ');
   return {
-    Id: s.id,
-    Subject: `#${s.session_number_global} · ${typeLabel}`,
-    StartTime: new Date(`${day}T${s.start_time.slice(0, 5)}`),
-    EndTime: new Date(`${day}T${s.end_time.slice(0, 5)}`),
-    IsAllDay: false,
-    Description: s.termName,
-    GroupId: s.group_id,
-    sessionId: s.id,
-    sessionType: s.session_type,
-    status: s.status,
-    termId: s.term_id,
+    id: s.id,
+    title,
+    start: new Date(`${day}T${s.start_time.slice(0, 5)}`),
+    end: new Date(`${day}T${s.end_time.slice(0, 5)}`),
+    color: EVENT_COLORS[s.session_type],
+    cssClass: `st-${s.session_type} ss-${s.status}`,
   };
-}
-
-/** Active groups as scheduler resources, sorted by name. */
-export function groupResources(groups: Group[]): {
-  text: string;
-  name: string;
-  id: number;
-  teacher: string | null;
-}[] {
-  return groups
-    .filter((g) => g.is_active)
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((g) => ({ text: g.name, name: g.name, id: g.id, teacher: g.teacher?.full_name ?? null }));
 }

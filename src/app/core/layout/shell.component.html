@@ -31,7 +31,7 @@
     <nav class="side-nav" [attr.aria-label]="'app.title' | translate">
       <p class="nav-caption">{{ 'nav.main' | translate }}</p>
       @for (item of items(); track item.path) {
-      <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+      <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: !!item.exact }"
         (click)="closeMobile()" [attr.data-icon]="item.icon" [attr.data-testid]="item.testId"
         [attr.title]="collapsed() ? (item.key | translate) : null">
         <span class="ico" aria-hidden="true" [ngSwitch]="item.icon">

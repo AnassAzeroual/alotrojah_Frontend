@@ -3,6 +3,14 @@
     "title": "AlOtrojah",
     "subtitle": "Quran memorization tracking"
   },
+  "cal": {
+    "month": "Month",
+    "week": "Week",
+    "day": "Day",
+    "today": "Today",
+    "prev": "Previous",
+    "next": "Next"
+  },
   "nav": {
     "dashboard": "Home",
     "entry": "Daily entry",

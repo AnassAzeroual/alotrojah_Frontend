@@ -27,6 +27,8 @@ interface NavItem {
   icon: string;
   roles: readonly Role[];
   testId: string;
+  /** Match the URL exactly, so sibling routes don't also light up (e.g. /planning vs /planning/calendar). */
+  exact?: boolean;
 }
 
 const ITEMS: readonly NavItem[] = [
@@ -36,6 +38,7 @@ const ITEMS: readonly NavItem[] = [
     icon: 'home',
     roles: ['admin', 'supervisor', 'teacher', 'student', 'board'],
     testId: 'nav-dashboard',
+    exact: true,
   },
   {
     path: '/centers',
@@ -85,6 +88,7 @@ const ITEMS: readonly NavItem[] = [
     icon: 'calendar',
     roles: ['admin', 'supervisor'],
     testId: 'nav-planning',
+    exact: true,
   },
   {
     path: '/planning/calendar',

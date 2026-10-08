@@ -38,16 +38,15 @@
           ariaLabelKey="news.audience"
         />
       </label>
-      @if (form.controls.audience.value === 'my_students') {
-        <label class="field"
-          ><span>{{ 'entry.pick_group' | translate }}</span>
-          <app-dropdown
-            [formControl]="form.controls.group_id"
-            [options]="groupOptions()"
-            ariaLabelKey="entry.pick_group"
-          />
-        </label>
-      }
+      <label class="field"
+        ><span>{{ 'entry.pick_group' | translate }}</span>
+        <app-dropdown
+          [formControl]="form.controls.group_id"
+          [options]="groupOptions()"
+          ariaLabelKey="entry.pick_group"
+          testId="news-group"
+        />
+      </label>
       <label class="field"
         ><span>{{ 'news.title' | translate }}</span
         ><input formControlName="title" data-testid="news-title"

@@ -3,6 +3,14 @@
     "title": "AlOtrojah",
     "subtitle": "Suivi de la mémorisation du Coran"
   },
+  "cal": {
+    "month": "Mois",
+    "week": "Semaine",
+    "day": "Jour",
+    "today": "Aujourd'hui",
+    "prev": "Précédent",
+    "next": "Suivant"
+  },
   "nav": {
     "dashboard": "Accueil",
     "entry": "Saisie du jour",

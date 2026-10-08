@@ -100,6 +100,8 @@ test.describe.serial('Term results & reports (roadmap S25, S26, S27)', () => {
     // dashboard: KPIs + rows aggregated across every center
     await page.getByTestId('nav-dashboard').click();
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
+    await page.getByRole('button', { name: 'المركز' }).click();
+    await page.getByRole('option', { name: 'المركز: الكل', exact: true }).click();
     await expect(page.locator('.kpi')).toHaveCount(4);
     const rows = page.locator('tbody tr');
     await expect.poll(async () => rows.count(), { timeout: 15000 }).toBeGreaterThanOrEqual(5);
