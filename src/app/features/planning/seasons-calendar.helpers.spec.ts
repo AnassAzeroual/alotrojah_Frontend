@@ -1,9 +1,12 @@
+import { CalendarView } from 'angular-calendar';
 import {
   clampClock,
   dateToClockTime,
   dateToISODate,
   resolveWeekDrop,
+  startOfWeek,
   toCalendarEvent,
+  viewRange,
   type CalSession,
 } from './seasons-calendar.helpers';
 
@@ -76,6 +79,36 @@ describe('seasons-calendar helpers', () => {
   it('formats a local Date as the API 24h clock', () => {
     expect(dateToClockTime(new Date(2026, 10, 18, 8, 5))).toBe('08:05');
     expect(dateToClockTime(new Date(2026, 10, 18, 23, 0))).toBe('23:00');
+  });
+
+  describe('viewRange', () => {
+    const iso = (d: Date): string =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    it('covers exactly one calendar day in day view', () => {
+      const { start, end } = viewRange(CalendarView.Day, new Date(2026, 9, 8, 15, 30));
+      expect(iso(start)).toBe('2026-10-08');
+      expect(iso(end)).toBe('2026-10-09');
+    });
+
+    it('covers the Mon–Sun span in week view', () => {
+      // Thu 2026-10-08 → Mon 05 → next Mon 12.
+      const { start, end } = viewRange(CalendarView.Week, new Date(2026, 9, 8));
+      expect(iso(start)).toBe('2026-10-05');
+      expect(iso(end)).toBe('2026-10-12');
+    });
+
+    it('covers the full visible grid in month view', () => {
+      // October 2026: the 1st is a Thursday → grid Mon 28 Sep … Sun 1 Nov.
+      const { start, end } = viewRange(CalendarView.Month, new Date(2026, 9, 15));
+      expect(iso(start)).toBe('2026-09-28');
+      expect(iso(end)).toBe('2026-11-02');
+    });
+
+    it('starts weeks on Monday', () => {
+      expect(iso(startOfWeek(new Date(2026, 9, 11)))).toBe('2026-10-05'); // a Sunday
+      expect(iso(startOfWeek(new Date(2026, 9, 12)))).toBe('2026-10-12'); // a Monday
+    });
   });
 
   describe('clampClock', () => {

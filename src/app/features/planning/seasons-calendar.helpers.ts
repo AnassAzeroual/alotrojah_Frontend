@@ -1,4 +1,5 @@
 import type { CalendarEvent } from 'angular-calendar';
+import { CalendarView } from 'angular-calendar';
 
 /** One session flattened with its term/week context for the calendar. */
 export interface CalSession {
@@ -44,6 +45,39 @@ const EVENT_COLORS: Record<CalSession['session_type'], CalSessionEvent['color']>
     secondaryText: 'var(--color-exam-text)',
   },
 };
+
+/** Local midnight of the Monday on/before `d` (weekStartsOn = 1). */
+export function startOfWeek(d: Date): Date {
+  const out = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const shift = (out.getDay() + 6) % 7;
+  out.setDate(out.getDate() - shift);
+  return out;
+}
+
+/**
+ * The date span a view actually shows: day = that calendar day, week = its
+ * Mon–Sun span, month = the full visible grid (week holding the 1st through
+ * the week holding the last day). Drives both the fetch window and the
+ * client-side filter, so every view loads just its own events.
+ */
+export function viewRange(view: CalendarView, date: Date): { start: Date; end: Date } {
+  if (view === CalendarView.Day) {
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    return { start, end };
+  }
+  if (view === CalendarView.Week) {
+    const start = startOfWeek(date);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return { start, end };
+  }
+  const start = startOfWeek(new Date(date.getFullYear(), date.getMonth(), 1));
+  const end = startOfWeek(new Date(date.getFullYear(), date.getMonth() + 1, 0));
+  end.setDate(end.getDate() + 7);
+  return { start, end };
+}
 
 /** Local-midnight Date -> ISO yyyy-mm-dd (no UTC shift). */
 export function dateToISODate(d: Date): string {

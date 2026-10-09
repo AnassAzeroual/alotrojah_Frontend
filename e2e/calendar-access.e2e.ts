@@ -278,4 +278,57 @@ test.describe.serial('Calendar for every level', () => {
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
   });
+
+  test('remembers the selected tab across reloads', async ({ page }) => {
+    await adminLogin(page);
+    await page.getByTestId('nav-calendar').click();
+    await expect(page).toHaveURL(/\/planning\/calendar$/);
+    await page.getByTestId('cal-view-week').click();
+    await expect(page.locator('.cal-week-view')).toBeVisible();
+    await page.reload();
+    await expect(page).toHaveURL(/\/planning\/calendar$/);
+    await expect(page.locator('.cal-week-view')).toBeVisible({ timeout: 20000 });
+  });
+
+  test('loads only the visible window per view', async ({ page }) => {
+    await adminLogin(page);
+    const urls: string[] = [];
+    page.on('request', (r) => {
+      if (r.url().includes('/api/v1/')) urls.push(r.url());
+    });
+    await page.getByTestId('nav-calendar').click();
+    await expect(page).toHaveURL(/\/planning\/calendar$/);
+    await expect
+      .poll(async () => page.getByTestId('cal-view-month').count(), { timeout: 20000 })
+      .toBeGreaterThan(0);
+    await page.getByTestId('cal-view-week').click();
+    await expect(page.locator('.cal-week-view')).toBeVisible({ timeout: 20000 });
+
+    // The week arrives as one Mon–Sun sessions-cal window (inclusive bounds)…
+    await expect
+      .poll(
+        async () =>
+          urls
+            .filter((u) => u.includes('/sessions-cal'))
+            .some((u) => {
+              const q = new URL(u).searchParams;
+              const from = q.get('from');
+              const to = q.get('to');
+              if (!from || !to) return false;
+              return (new Date(to).getTime() - new Date(from).getTime()) / 86_400_000 === 6;
+            }),
+        { timeout: 20000 },
+      )
+      .toBe(true);
+    // …every sessions fetch is windowed, and whole-season term details
+    // are never fanned out.
+    const calls = urls.filter((u) => u.includes('/sessions-cal'));
+    expect(calls.length).toBeGreaterThan(0);
+    for (const u of calls) {
+      const q = new URL(u).searchParams;
+      expect(q.get('from')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(q.get('to')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+    expect(urls.filter((u) => /\/terms\/\d+/.test(u))).toEqual([]);
+  });
 });

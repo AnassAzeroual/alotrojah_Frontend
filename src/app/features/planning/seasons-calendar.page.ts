@@ -36,6 +36,7 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { SeasonsService } from '../../core/api/seasons.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { PlanningService } from '../../core/api/planning.service';
+import { CalendarService, type SessionCal, type WeekCal } from '../../core/api/calendar.service';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
@@ -47,8 +48,10 @@ import {
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
 import {
+  dateToISODate,
   resolveWeekDrop,
   toCalendarEvent,
+  viewRange,
   type CalSession,
   type CalSessionEvent,
   type SessionPatch,
@@ -62,6 +65,14 @@ import { SeasonsCalendarFormatter } from './seasons-calendar.formatter';
 // once per app run.
 registerLocaleData(localeAr);
 registerLocaleData(localeFr);
+
+/** Persisted view tab (`month`/`week`/`day`) — unknown stored values fall back to month. */
+const VIEW_KEY = 'alotrojah_cal_view';
+
+function readStoredView(): CalendarView {
+  const v = localStorage.getItem(VIEW_KEY);
+  return v === CalendarView.Week || v === CalendarView.Day ? v : CalendarView.Month;
+}
 
 /**
  * Experimental season calendar (the legacy season/term pages stay
@@ -102,6 +113,7 @@ export class SeasonsCalendarPage {
   private readonly seasonsSvc = inject(SeasonsService);
   private readonly groupsSvc = inject(GroupsService);
   private readonly planning = inject(PlanningService);
+  private readonly calendar = inject(CalendarService);
   private readonly language = inject(LanguageService);
   private readonly i18n = inject(TranslateService);
   private readonly auth = inject(AuthService);
@@ -112,7 +124,7 @@ export class SeasonsCalendarPage {
   readonly pickedSeason = signal<number | null>(null);
   readonly selectedId = signal<number | null>(null);
   readonly viewDate = signal<Date>(new Date());
-  readonly view = signal<CalendarView>(CalendarView.Month);
+  readonly view = signal<CalendarView>(readStoredView());
   private readonly tick = signal(0);
   private navigatedFor: number | null = null;
   private readonly focusedTerm = signal<number | null>(null);
@@ -159,49 +171,105 @@ export class SeasonsCalendarPage {
     loader: () => firstValueFrom(this.seasonsSvc.list()),
   });
 
-  private readonly detailsRes = resource({
-    params: () => ({ s: this.pickedSeason(), t: this.tick() }),
-    loader: async ({ params }) => {
-      if (params.s === null) return null;
-      const terms = await firstValueFrom(this.planning.terms(params.s));
-      const details = await Promise.all(
-        terms.map((t) => firstValueFrom(this.planning.termDetail(t.id))),
-      );
-      return { terms, details };
-    },
+  /** Term structure only (no sessions) — names for the detail card. */
+  private readonly termsRes = resource({
+    params: () => ({ s: this.pickedSeason() }),
+    loader: async ({ params }) =>
+      params.s === null ? [] : firstValueFrom(this.planning.terms(params.s)),
   });
+
+  /** Week structure only (no sessions) — numbers/types for the detail card. */
+  private readonly weeksRes = resource({
+    params: () => ({ s: this.pickedSeason() }),
+    loader: ({ params }) => this.loadAllWeeks(params.s),
+  });
+
+  /**
+   * Sessions for the visible window only (a day, a Mon–Sun span, or the
+   * month grid) — the week view no longer pays for the whole season.
+   * The API bounds are inclusive on both ends while the view range is
+   * end-exclusive, so `to` ships one day earlier — otherwise every window
+   * fetches a row it never renders (and a non-empty fetch defeats the
+   * land-on-empty effect below).
+   */
+  private readonly rangeRes = resource({
+    params: () => {
+      const r = viewRange(this.view(), this.viewDate());
+      const inclusiveEnd = new Date(r.end);
+      inclusiveEnd.setDate(inclusiveEnd.getDate() - 1);
+      return {
+        s: this.pickedSeason(),
+        from: dateToISODate(r.start),
+        to: dateToISODate(inclusiveEnd),
+        t: this.tick(),
+      };
+    },
+    loader: ({ params }) => this.loadRangeSessions(params.s, params.from, params.to),
+  });
+
+  private async loadAllWeeks(season: number | null): Promise<WeekCal[]> {
+    if (season === null) return [];
+    const out: WeekCal[] = [];
+    let page = 1;
+    for (;;) {
+      const res = await firstValueFrom(this.calendar.weeks({ season_id: season, page }));
+      out.push(...res.data);
+      if (res.meta.current_page * res.meta.per_page >= res.meta.total) break;
+      page++;
+    }
+    return out;
+  }
+
+  private async loadRangeSessions(
+    season: number | null,
+    from: string,
+    to: string,
+  ): Promise<SessionCal[]> {
+    if (season === null) return [];
+    const out: SessionCal[] = [];
+    let page = 1;
+    for (;;) {
+      const res = await firstValueFrom(
+        this.calendar.sessions({ season_id: season, from, to, page }),
+      );
+      out.push(...res.data);
+      if (res.meta.current_page * res.meta.per_page >= res.meta.total) break;
+      page++;
+    }
+    return out;
+  }
 
   private readonly groupsRes = resource({
     loader: () => this.groupsSvc.listAll(),
   });
 
-  /** Flat session feed with term/week context, derived during render. */
+  /** Flat session feed (visible window only) with term/week context, derived during render. */
   private readonly flatRows = computed<CalSession[]>(() => {
-    const loaded = this.detailsRes.value();
-    if (!loaded) return [];
+    const terms = this.termsRes.value() ?? [];
+    const weeks = this.weeksRes.value() ?? [];
+    const sessions = this.rangeRes.value() ?? [];
+    const termById = new Map(terms.map((t) => [t.id, t]));
+    const weekById = new Map(weeks.map((w) => [w.id, w]));
     const overlay = this.patchOverlay();
     const rows: CalSession[] = [];
-    for (const d of loaded.details) {
-      const term = loaded.terms.find((t) => t.id === d.id);
-      for (const w of d.weeks) {
-        for (const s of w.sessions ?? []) {
-          rows.push({
-            id: s.id,
-            planned_date: overlay[s.id]?.planned_date ?? s.planned_date,
-            start_time: overlay[s.id]?.start_time ?? s.start_time ?? null,
-            end_time: overlay[s.id]?.end_time ?? s.end_time ?? null,
-            group_id: s.group_id ?? null,
-            session_type: s.session_type,
-            status: s.status,
-            session_number_global: s.session_number_global,
-            term_id: d.id,
-            termName: term?.name_ar ?? '',
-            week_id: w.id,
-            weekNumber: w.week_number_global,
-            weekType: w.week_type,
-          });
-        }
-      }
+    for (const s of sessions) {
+      const term = termById.get(s.term_id);
+      const week = weekById.get(s.week_id);
+      rows.push({
+        id: s.id,
+        planned_date: overlay[s.id]?.planned_date ?? s.planned_date,
+        start_time: overlay[s.id]?.start_time ?? s.start_time ?? null,
+        end_time: overlay[s.id]?.end_time ?? s.end_time ?? null,
+        group_id: s.group_id,
+        session_type: s.session_type,
+        status: s.status,
+        session_number_global: s.session_number_global,
+        term_id: s.term_id,
+        termName: term?.name_ar ?? '',
+        week_id: s.week_id,
+        weekNumber: week?.week_number_global ?? 0,
+        weekType: week?.week_type ?? 'study',
+      });
     }
     return rows;
   });
@@ -239,51 +307,34 @@ export class SeasonsCalendarPage {
   );
 
   /**
-   * Debug panel (admin-only): events inside the period the calendar is
-   * currently showing — day view = that day, week view = its Mon..Sun span,
-   * month view = the whole visible grid (leading/trailing days included).
+   * Current-view events JSON: the fetch window already matches the view, so
+   * this is a client-side guard for overlay-shifted rows at the edges.
    */
   protected readonly visibleEvents = computed<CalendarEvent[]>(() => {
-    const vd = this.viewDate();
+    const { start, end } = viewRange(this.view(), this.viewDate());
     const all = this.calEvents();
-    let start: Date;
-    let end: Date;
-    if (this.view() === CalendarView.Day) {
-      start = new Date(vd.getFullYear(), vd.getMonth(), vd.getDate());
-      end = new Date(start);
-      end.setDate(end.getDate() + 1);
-    } else if (this.view() === CalendarView.Week) {
-      start = this.startOfWeek(vd);
-      end = new Date(start);
-      end.setDate(end.getDate() + 7);
-    } else {
-      // Month grid: from the week holding the 1st to the week holding the last day.
-      start = this.startOfWeek(new Date(vd.getFullYear(), vd.getMonth(), 1));
-      end = this.startOfWeek(new Date(vd.getFullYear(), vd.getMonth() + 1, 0));
-      end.setDate(end.getDate() + 7);
-    }
     return all.filter((e) => e.start >= start && e.start < end);
   });
-
-  /** Local midnight of the Monday on/before `d` (weekStartsOn = 1). */
-  private startOfWeek(d: Date): Date {
-    const out = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const shift = (out.getDay() + 6) % 7;
-    out.setDate(out.getDate() - shift);
-    return out;
-  }
 
   protected readonly selected = computed(
     () => this.flatRows().find((s) => s.id === this.selectedId()) ?? null,
   );
 
   protected readonly loading = () =>
-    this.seasonsRes.isLoading() || this.detailsRes.isLoading() || this.groupsRes.isLoading();
+    this.seasonsRes.isLoading() ||
+    this.termsRes.isLoading() ||
+    this.weeksRes.isLoading() ||
+    this.rangeRes.isLoading() ||
+    this.groupsRes.isLoading();
 
   protected readonly txt = dropdownText;
   protected readonly num = dropdownNumber;
 
   constructor() {
+    // The selected tab survives reloads (view only — the date stays live).
+    effect(() => {
+      localStorage.setItem(VIEW_KEY, this.view());
+    });
     // Default to the current season, then the first one.
     effect(() => {
       if (this.pickedSeason() !== null) return;
@@ -298,12 +349,13 @@ export class SeasonsCalendarPage {
       this.selectedId.set(null);
       this.activeDayIsOpen.set(false);
     });
-    // Land on the season's first dated session. One-shot per season —
-    // local PATCHes must never yank the view back.
+    // Land onto an empty window, one-shot per season: first paint shows
+    // today when it holds sessions; otherwise jump to the season's own start
+    // instead of a blank grid (no extra probe — the dates ride the seasons
+    // list). Local PATCHes never yank back.
     effect(() => {
       const season = this.pickedSeason();
-      const rows = this.flatRows();
-      if (season === null || rows.length === 0) return;
+      if (season === null || this.navigatedFor === season) return;
       const focus = this.focusDate();
       if (focus) {
         // One-shot deep link (?term=): land, then hand control back.
@@ -312,14 +364,13 @@ export class SeasonsCalendarPage {
         this.navigatedFor = season;
         return;
       }
-      if (this.navigatedFor === season) return;
-      const first = rows
-        .map((r) => r.planned_date)
-        .filter((d): d is string => !!d)
-        .sort()[0];
-      if (!first) return;
+      if (this.loading() || this.flatRows().length > 0) return;
+      const start = (this.seasonsRes.value()?.data ?? [])
+        .find((s) => s.id === season)
+        ?.start_date?.slice(0, 10);
+      if (!start) return;
       this.navigatedFor = season;
-      this.viewDate.set(new Date(`${first.slice(0, 10)}T00:00:00`));
+      this.viewDate.set(new Date(`${start}T00:00:00`));
     });
     // Deep link: resolve the term's own season + first date, then drive the
     // normal pipeline (season pick -> load -> land effect above).
