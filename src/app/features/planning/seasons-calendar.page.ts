@@ -37,7 +37,7 @@ import { SeasonsService } from '../../core/api/seasons.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { apiErrorKey } from '../../core/api/api-errors';
-import { AuthService } from '../../core/auth/auth.service';
+import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import {
@@ -103,7 +103,7 @@ export class SeasonsCalendarPage {
   private readonly planning = inject(PlanningService);
   private readonly language = inject(LanguageService);
   private readonly i18n = inject(TranslateService);
-  private readonly auth = inject(AuthService);
+  protected readonly prefs = inject(AdminPrefsService);
 
   readonly saving = signal(false);
   readonly errorKey = signal<string | null>(null);
@@ -131,8 +131,8 @@ export class SeasonsCalendarPage {
   /** Month view: the clicked day whose sessions show in the open-day box. */
   protected readonly activeDay = signal<Date | null>(null);
   protected readonly activeDayIsOpen = signal(false);
-  /** The current-view events JSON debug panel is admin-only. */
-  protected readonly isAdmin = computed(() => this.auth.role() === 'admin');
+  /** The current-view events JSON panel: anyone with calendar access sees it
+      once enabled in Settings (no admin gate, works in prod too). */
 
   protected readonly seasonOptions = computed(() => {
     const data = this.seasonsRes.value()?.data ?? [];

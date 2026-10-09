@@ -481,7 +481,9 @@
     "hide_scopes_hint": "Quand activé, la modification s'applique toujours aux valeurs partagées",
     "display_section": "Affichage",
     "show_center_id": "Afficher l'ID du centre",
-    "show_center_id_hint": "Versions dev uniquement — jamais affiché en production"
+    "show_center_id_hint": "Affiche l'ID numérique du centre à côté du nom, en dev comme en production",
+    "show_cal_debug": "Afficher la vue JSON du calendrier",
+    "show_cal_debug_hint": "Affiche les événements de la vue calendrier en JSON"
   },
   "entry": {
     "title": "Saisie du jour",

@@ -16,7 +16,6 @@ import { RegistrationRequestsService } from '../api/registration-requests.servic
 import { LanguageService } from '../i18n/language.service';
 import { LanguageSwitcherComponent } from './language-switcher.component';
 import { AdminPrefsService } from '../settings/admin-prefs.service';
-import { environment } from '../../../environments/environment';
 import { ThemeService } from '../theme/theme.service';
 import { Role } from '../api/api-models';
 import { APP_VERSION_SHORT } from '../version';
@@ -276,13 +275,13 @@ export class ShellComponent {
 
   /**
    * T4: every non-admin sees their center NAME in the header chip; the numeric
-   * id is appended only in dev builds (never prod), and only when the display
-   * pref allows it. Admins are global — nothing extra.
+   * id is appended whenever the display pref allows it — dev or prod, the
+   * Settings checkbox is the only control. Admins are global — nothing extra.
    */
   readonly centerLabel = computed(() => {
     const u = this.user();
     if (!u || u.role === 'admin' || !u.center_name) return null;
-    if (!environment.production && this.prefs.showCenterId() && u.center_id !== null) {
+    if (this.prefs.showCenterId() && u.center_id !== null) {
       return `${u.center_name} · #${u.center_id}`;
     }
     return u.center_name;

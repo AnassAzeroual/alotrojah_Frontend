@@ -4,13 +4,15 @@ import { AuthService } from '../auth/auth.service';
 interface PrefsShape {
   hideScopePickers?: boolean;
   showCenterId?: boolean;
+  showCalDebug?: boolean;
 }
 
 const keyFor = (userId: number | null): string => `alotrojah_prefs.${userId ?? 'anon'}`;
 
 /**
- * T3 admin display prefs. Per-user localStorage (no backend): the key carries
+ * Per-user display prefs. localStorage (no backend): the key carries
  * the user id so accounts sharing a browser never leak prefs into each other.
+ * Open to every role — each account only ever changes its own view.
  */
 @Injectable({ providedIn: 'root' })
 export class AdminPrefsService {
@@ -20,6 +22,8 @@ export class AdminPrefsService {
   readonly hideScopePickers = signal(false);
   /** Display pref: show the numeric center id (dev builds only, never prod). */
   readonly showCenterId = signal(true);
+  /** Display pref: show the calendar current-view events JSON panel (admin-only). */
+  readonly showCalDebug = signal(true);
 
   private readonly userId = computed(() => this.auth.currentUser()?.id ?? null);
 
@@ -41,6 +45,11 @@ export class AdminPrefsService {
     this.save();
   }
 
+  setShowCalDebug(v: boolean): void {
+    this.showCalDebug.set(v);
+    this.save();
+  }
+
   private load(userId: number | null): void {
     let raw: PrefsShape = {};
     try {
@@ -50,6 +59,7 @@ export class AdminPrefsService {
     }
     this.hideScopePickers.set(raw.hideScopePickers ?? false);
     this.showCenterId.set(raw.showCenterId ?? true);
+    this.showCalDebug.set(raw.showCalDebug ?? true);
   }
 
   private save(): void {
@@ -59,6 +69,7 @@ export class AdminPrefsService {
       JSON.stringify({
         hideScopePickers: this.hideScopePickers(),
         showCenterId: this.showCenterId(),
+        showCalDebug: this.showCalDebug(),
       }),
     );
   }

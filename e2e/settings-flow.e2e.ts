@@ -97,6 +97,9 @@ test.describe.serial('Admin settings and center chip', () => {
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await expect(page.getByTestId('user-center')).toContainText('مركز النور القرآني');
     await expect(page.getByTestId('nav-settings')).toHaveCount(0);
+    // Direct URL hit bounces a non-admin back home (route roles gate).
+    await page.goto('/settings');
+    await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await page.getByTestId('nav-logout').click();
 
     // cleanup: the teacher owns nothing, so direct delete works
@@ -110,6 +113,63 @@ test.describe.serial('Admin settings and center chip', () => {
     await teacherRow.locator('button[data-testid^="delete-user-"]').click();
     await teacherRow.locator('button[data-testid^="confirm-delete-user-"]').click();
     await expect(teacherRow).toHaveCount(0);
+    await page.getByTestId('nav-logout').click();
+    await expect(page).toHaveURL(/\/login$/);
+  });
+
+  test('admin toggles the calendar JSON view from settings', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByTestId('auth-email').fill('admin@example.org');
+    await page.getByTestId('auth-password').fill('password123');
+    await page.getByTestId('auth-submit').click();
+    await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
+
+    await page.getByTestId('nav-settings').click();
+    await expect(page).toHaveURL(/\/settings$/);
+
+    // default on → the debug panel shows on the calendar.
+    // Settle first: the default-true display pref renders checked only once
+    // bindings are live — clicking earlier risks an unbound control.
+    await expect(page.getByTestId('settings-show-cal-debug')).toBeChecked();
+    await page.getByTestId('nav-calendar').click();
+    await expect(page).toHaveURL(/\/planning\/calendar$/);
+    // Non-vacuous: the toolbar proves the loaded branch (panel's home) rendered.
+    // Cold backends can take >5s (default expect timeout) to leave the skeleton.
+    await expect
+      .poll(async () => page.getByTestId('cal-view-month').count(), { timeout: 20000 })
+      .toBeGreaterThan(0);
+    await expect(page.getByTestId('cal-debug-json')).toBeVisible();
+
+    // off → the panel is gone (non-vacuous: the season picker proves load).
+    await page.getByTestId('nav-settings').click();
+    await expect(page).toHaveURL(/\/settings$/);
+    // Settle: a just-created view renders native-unchecked until bindings go
+    // live — acting earlier risks an unbound control (no-op, nothing saved).
+    await expect(page.getByTestId('settings-show-cal-debug')).toBeChecked();
+    await page.getByTestId('settings-show-cal-debug').uncheck();
+    await expect
+      .poll(
+        async () => (await page.evaluate(() => localStorage.getItem('alotrojah_prefs.1'))) ?? '',
+      )
+      .toContain('"showCalDebug":false');
+    await page.getByTestId('nav-calendar').click();
+    await expect(page).toHaveURL(/\/planning\/calendar$/);
+    await expect
+      .poll(async () => page.getByTestId('cal-view-month').count(), { timeout: 20000 })
+      .toBeGreaterThan(0);
+    await expect(page.getByTestId('cal-season')).toBeVisible();
+    await expect(page.getByTestId('cal-debug-json')).toHaveCount(0);
+
+    // restore the default on for later runs.
+    await page.getByTestId('nav-settings').click();
+    await expect(page).toHaveURL(/\/settings$/);
+    await page.getByTestId('settings-show-cal-debug').check();
+    await expect
+      .poll(
+        async () => (await page.evaluate(() => localStorage.getItem('alotrojah_prefs.1'))) ?? '',
+      )
+      .toContain('"showCalDebug":true');
+
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
   });

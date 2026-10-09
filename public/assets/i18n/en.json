@@ -481,7 +481,9 @@
     "hide_scopes_hint": "When on, editing always applies to the shared defaults",
     "display_section": "Display",
     "show_center_id": "Show center ID",
-    "show_center_id_hint": "Dev builds only — never shown in production"
+    "show_center_id_hint": "Shows the numeric center ID next to the center name, in dev and production",
+    "show_cal_debug": "Show calendar JSON view",
+    "show_cal_debug_hint": "Dumps the current calendar view events as JSON"
   },
   "entry": {
     "title": "Daily entry",

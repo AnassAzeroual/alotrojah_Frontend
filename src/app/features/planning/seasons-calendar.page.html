@@ -198,9 +198,10 @@
       </div>
     }
 
-    <!-- Admin-only debug panel: dumps the events in the period the calendar
-         is currently showing (day/week/month) as JSON. -->
-    @if (isAdmin()) {
+    <!-- Events JSON panel (Settings checkbox): dumps the events in the period the calendar
+         is currently showing (day/week/month) as JSON. Visible to anyone with
+         calendar access once enabled — no admin gate. -->
+    @if (prefs.showCalDebug()) {
       <div class="card" data-testid="cal-debug-json" style="margin-top: var(--space-4)">
         <strong class="muted">current view events JSON ({{ visibleEvents().length }})</strong>
         <pre

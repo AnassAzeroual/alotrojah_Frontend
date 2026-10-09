@@ -46,24 +46,28 @@ describe('AdminPrefsService', () => {
   it('starts with pickers visible and center id shown', () => {
     expect(prefs.hideScopePickers()).toBe(false);
     expect(prefs.showCenterId()).toBe(true);
+    expect(prefs.showCalDebug()).toBe(true);
   });
 
   it('persists per user and never leaks across accounts', () => {
     auth.currentUser.set(ADMIN);
     prefs.setHideScopePickers(true);
     prefs.setShowCenterId(false);
+    prefs.setShowCalDebug(false);
     expect(localStorage.getItem('alotrojah_prefs.1')).toContain('"hideScopePickers":true');
 
     auth.currentUser.set(TEACHER);
     TestBed.flushEffects();
     expect(prefs.hideScopePickers()).toBe(false);
     expect(prefs.showCenterId()).toBe(true);
+    expect(prefs.showCalDebug()).toBe(true);
 
     prefs.setShowCenterId(false);
     auth.currentUser.set(ADMIN);
     TestBed.flushEffects();
     expect(prefs.hideScopePickers()).toBe(true);
     expect(prefs.showCenterId()).toBe(false);
+    expect(prefs.showCalDebug()).toBe(false);
   });
 
   it('survives corrupt storage', () => {
@@ -72,5 +76,6 @@ describe('AdminPrefsService', () => {
     TestBed.flushEffects();
     expect(prefs.hideScopePickers()).toBe(false);
     expect(prefs.showCenterId()).toBe(true);
+    expect(prefs.showCalDebug()).toBe(true);
   });
 });
