@@ -3,6 +3,15 @@
     "title": "AlOtrojah",
     "subtitle": "Quran memorization tracking"
   },
+  "cal": {
+    "month": "Month",
+    "week": "Week",
+    "day": "Day",
+    "today": "Today",
+    "prev": "Previous",
+    "next": "Next",
+    "datetime_range": "Session date and time"
+  },
   "nav": {
     "dashboard": "Home",
     "entry": "Daily entry",
@@ -46,8 +55,6 @@
     "hello_again": "Hello Again!",
     "get_started": "Lets get started",
     "recovery": "Recovery Password",
-    "art_caption": "Finally, all your work in one place.",
-    "art_hint": "Track Quran memorization easily",
     "phone": "Phone number",
     "birth_date": "Date of birth",
     "confirm_password": "Confirm password",
@@ -102,6 +109,8 @@
     "SPAN_INVALID": "Review must cover 1 to 3 weeks",
     "RANGE_INVALID": "Invalid range",
     "GROUP_ROLE": "Section assignment is for teachers and students only",
+    "PLACEMENT_REQUIRED": "Student approval requires a section and a level",
+    "SESSION_TIME_ORDER": "End time must be after the start time",
     "SCORING_TOTAL": "Weekly total must stay 20",
     "INVALID_CREDENTIALS": "Invalid credentials",
     "ADMIN_DELETE": "Admin accounts cannot be deleted",
@@ -135,8 +144,8 @@
     "cancel": "Reject request",
     "cancel_confirm": "Confirm rejection",
     "pick_center": "Choose a center",
-    "pick_group": "Choose a section (optional)",
-    "accept_hint": "Pick the center this account will belong to"
+    "pick_group": "Choose a section",
+    "accept_hint": "Choose this account's placement"
   },
   "attendance": {
     "present": "Present",
@@ -191,8 +200,7 @@
     "final": "Final score"
   },
   "studentDetail": {
-    "assign_group": "Assign section",
-    "no_group": "No section"
+    "assign_group": "Assign section"
   },
   "list": {
     "search": "Search by name",
@@ -243,7 +251,6 @@
     "open": "Open section",
     "create": "Add section",
     "edit": "Edit section",
-    "no_teacher": "No teacher",
     "schedule": "Schedule",
     "year": "Academic year",
     "phone": "Phone",
@@ -475,7 +482,9 @@
     "hide_scopes_hint": "When on, editing always applies to the shared defaults",
     "display_section": "Display",
     "show_center_id": "Show center ID",
-    "show_center_id_hint": "Dev builds only — never shown in production"
+    "show_center_id_hint": "Shows the numeric center ID next to the center name, in dev and production",
+    "show_cal_debug": "Show calendar JSON view",
+    "show_cal_debug_hint": "Dumps the current calendar view events as JSON"
   },
   "entry": {
     "title": "Daily entry",

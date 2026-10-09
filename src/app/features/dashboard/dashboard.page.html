@@ -131,7 +131,6 @@
         <table>
           <thead>
             <tr>
-              <th>ID</th>
               <th>{{ 'dash.studentName' | translate }}</th>
               <th>{{ 'list.group' | translate }}</th>
               <th>{{ 'list.mode' | translate }}</th>
@@ -148,7 +147,6 @@
                 (click)="pickedStudent.set(s.id)"
                 (keydown.enter)="pickedStudent.set(s.id)"
               >
-                <td class="ltr-num id">{{ s.id }}</td>
                 <td>
                   <span class="stud"
                     ><span class="ava" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span

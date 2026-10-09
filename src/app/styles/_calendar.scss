@@ -1,84 +1,270 @@
-// FullCalendar v6 theme mapped onto the app tokens (light + dark adapt
-// automatically — every --fc-* below references a token, never a hex).
-// No separate CSS import: v6 ships its styles inside the JS bundles.
-.fc {
-  --fc-border-color: var(--color-border);
-  --fc-page-bg-color: var(--color-surface);
-  --fc-neutral-bg-color: var(--color-surface-2);
-  --fc-today-bg-color: rgb(0 184 169 / 0.1);
-  --fc-highlight-color: rgb(0 184 169 / 0.14);
-  --fc-non-business-color: transparent;
-  --fc-event-bg-color: var(--green-600);
-  --fc-event-border-color: var(--green-600);
-  --fc-event-text-color: #fff;
-  --fc-button-text-color: var(--green-800);
-  --fc-button-bg-color: var(--color-surface);
-  --fc-button-border-color: var(--color-border-strong);
-  --fc-button-hover-bg-color: var(--green-100);
-  --fc-button-hover-border-color: var(--green-500);
-  --fc-button-active-bg-color: var(--green-600);
-  --fc-button-active-border-color: var(--green-600);
+// angular-calendar bridge: the library stylesheet ships as a fixed light
+// palette and loads via angular.json BEFORE styles.scss, so equal-or-deeper
+// selectors below win the cascade. Everything is tied to app tokens so
+// light/dark follow the theme switch, and session-event cards get a per-type
+// treatment — soft tint backgrounds (memorization/revision) or solid (exam),
+// each with a 1px border and label in the type's own hue. In week/day views
+// the library colors the event natively from `event.color` (background =
+// secondary, border = primary, text = secondaryText), so only the custom
+// month-cell pills need per-type CSS here.
+
+// Detail-card datetime range editor: one wide LTR field showing both ends.
+// The control is locked `dir=ltr`, so physical (not logical) inner props are
+// deliberate here — the icon always sits at the text end (right).
+app-session-range-picker {
+  display: block;
+  position: relative;
+  flex: 1 1 24rem;
+  min-width: min(100%, 20rem);
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 16px; // no iOS zoom on focus
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    min-height: 48px;
+    padding: var(--space-2) calc(var(--space-3) + 26px) var(--space-2) var(--space-3);
+    text-overflow: ellipsis;
+    transition:
+      border-color 160ms,
+      box-shadow 160ms;
+
+    &::placeholder {
+      color: var(--color-muted);
+      opacity: 0.8;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--green-500);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-500) 22%, transparent);
+    }
+  }
+
+  .range-ico {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    translate: 0 -50%;
+    width: 20px;
+    height: 20px;
+    color: var(--color-muted);
+    pointer-events: none;
+  }
+
+  &:focus-within .range-ico {
+    color: var(--green-500);
+  }
+}
+
+.cal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.cal-title {
+  flex: 1;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.cal-nav {
+  display: flex;
+  gap: var(--space-1);
+}
+
+// The ‹ › glyphs are written LTR; mirror them so "previous" points forward
+// in RTL reading order.
+[dir='rtl'] .cal-prev,
+[dir='rtl'] .cal-next {
+  transform: scaleX(-1);
+}
+
+.cal-month-view,
+.cal-week-view,
+.cal-day-view {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-family: var(--font-stack);
   font-size: var(--text-sm);
 }
 
-.fc .fc-button {
-  font-weight: 700;
+// Grid lines: the library paints #e1e1e1 one selector deeper (or one
+// [dir=rtl] attribute deeper), so mirror the shapes here.
+.cal-month-view .cal-days,
+.cal-month-view .cal-day-cell:not(:last-child),
+.cal-month-view .cal-days .cal-cell-row,
+.cal-week-view .cal-day-headers,
+.cal-week-view .cal-day-headers .cal-header:not(:last-child),
+.cal-week-view .cal-day-headers .cal-header:first-child,
+.cal-week-view .cal-day-column,
+.cal-week-view .cal-all-day-events,
+.cal-week-view .cal-time-events,
+.cal-week-view .cal-hour:not(:last-child) .cal-hour-segment,
+.cal-week-view .cal-hour:last-child :not(:last-child) .cal-hour-segment,
+[dir='rtl'] .cal-month-view .cal-day-cell:not(:last-child),
+[dir='rtl'] .cal-week-view .cal-day-headers .cal-header:not(:last-child),
+[dir='rtl'] .cal-week-view .cal-day-headers .cal-header:first-child,
+[dir='rtl'] .cal-week-view .cal-day-column {
+  border-color: var(--color-border);
+}
+
+// That one library rule declares a full border with !important in RTL.
+[dir='rtl'] .cal-week-view .cal-day-headers .cal-header:not(:last-child) {
+  border-color: var(--color-border) !important;
+}
+
+// Hover / open / zebra / today / weekend — fixed light hexes -> tokens.
+.cal-month-view .cal-cell-row:hover,
+.cal-month-view .cal-cell-row .cal-cell:hover,
+.cal-month-view .cal-cell.cal-has-events.cal-open,
+.cal-week-view .cal-day-headers .cal-header:hover,
+.cal-week-view .cal-day-headers .cal-drag-over,
+.cal-week-view .cal-time-events .cal-day-columns:not(.cal-resize-active) .cal-hour-segment:hover,
+.cal-week-view .cal-drag-over .cal-hour-segment {
+  background-color: var(--color-surface-2);
+}
+
+.cal-week-view .cal-hour-odd {
+  background-color: var(--color-bg-soft);
+}
+
+.cal-month-view .cal-day-cell.cal-today,
+.cal-week-view .cal-header.cal-today {
+  background-color: var(--green-100);
+}
+
+.cal-month-view .cal-day-cell.cal-weekend .cal-day-number,
+.cal-week-view .cal-header.cal-weekend span {
+  color: var(--color-gold-dark);
+}
+
+.cal-week-view .cal-current-time-marker,
+.cal-day-view .cal-current-time-marker {
+  background-color: var(--color-danger);
+}
+
+// Session events: per-view selectors because the library colors each view
+// one level deeper than a bare `.cal-event`. The custom month-cell pill takes
+// its tint background inline from `event.color.secondary`; text, shape and
+// the per-type border live here (week/day views style natively from color).
+.cal-month-view .cal-event,
+.cal-week-view .cal-event,
+.cal-day-view .cal-event,
+.cal-month-view .cal-open-day-events .cal-event {
   border-radius: var(--radius-sm);
-  min-height: 40px;
+  cursor: pointer;
 }
 
-.fc .fc-button-active {
-  color: #063325;
+// Per-type card treatment — memorization, revision and exam each carry their
+// own label color and `1px solid` border from the same tokens the week/day
+// views read via `event.color`.
+.cal-month-view .cal-event.st-memorization {
+  color: var(--color-memorization-text);
+  border: 1px solid var(--color-memorization-border);
 }
 
-.fc .fc-toolbar-title {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--green-800);
+.cal-month-view .cal-event.st-revision {
+  color: var(--color-revision-text);
+  border: 1px solid var(--color-revision-border);
 }
 
-// Session-type coloring (classNames from the event mapper). Text colors are
-// fixed pairs verified both themes (tokens behind them shift in dark mode,
-// so white-on-green would fail there): dark text on green/gold, white on red.
-.fc-event {
-  --fc-event-bg-color: var(--green-600);
-  --fc-event-border-color: var(--green-600);
-  --fc-event-text-color: #063325;
+.cal-month-view .cal-event.st-exam {
+  color: var(--color-exam-text);
+  border: 1px solid var(--color-exam-border);
 }
 
-.fc-event.st-revision {
-  --fc-event-bg-color: var(--color-gold);
-  --fc-event-border-color: var(--color-gold);
-  --fc-event-text-color: #063325;
-}
-
-.fc-event.st-exam {
-  --fc-event-bg-color: var(--color-danger);
-  --fc-event-border-color: var(--color-danger);
-  --fc-event-text-color: #fff;
-}
-
-.fc-event.ss-done {
+.cal-event.ss-done,
+.cal-event.ss-cancelled {
   opacity: 0.55;
 }
 
-.fc-event.ss-cancelled {
-  opacity: 0.55;
+.cal-event.ss-cancelled {
   text-decoration: line-through;
 }
 
-// Term bands: hollow labeled spans across each term's dated range. Clicking
-// one opens the term page (handled by extendedProps.kind).
-.fc-event.term-band {
-  background: transparent;
-  border: 1px dashed var(--green-600);
-  color: var(--green-800);
-  font-weight: 700;
+// Month pills now carry a visible title (custom cell template): room for
+// the text, truncated instead of clipped.
+.cal-month-view .cal-event {
+  padding: var(--space-1) var(--space-2);
+  line-height: 1.2;
 }
 
-.fc-event {
-  cursor: grab;
-  border-radius: var(--radius-sm);
-  padding-inline: 4px;
+.cal-month-view .cal-event-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Month open-day box: clicking a day reveals that day's sessions. The library
+// ships a dark gray panel with a heavy inset shadow — retheme it to tokens and
+// make each row an obvious click target (its title opens the detail card).
+.cal-month-view .cal-open-day-events {
+  color: var(--color-text);
+  background-color: var(--color-surface-2);
+  box-shadow: inset 0 0 15px 0 rgba(0, 0, 0, 0.06);
+}
+
+.cal-month-view .cal-open-day-events > div {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  cursor: pointer;
+}
+
+.cal-month-view .cal-open-day-events > div:hover .cal-event-title {
+  text-decoration: underline;
+}
+
+.cal-month-view .cal-open-day-events .cal-event {
+  flex: 0 0 auto;
+}
+
+// Angular's `animate.leave` removes the open-day box only once the leave
+// animation fires `animationend`. The library disables that animation under
+// `prefers-reduced-motion`, which would strand `.cal-open-day-events-closing`
+// in the DOM. Re-enable a 1ms animation so the node is always removed.
+@media (prefers-reduced-motion: reduce) {
+  .cal-month-view .cal-open-day-events {
+    animation: cal-slide-down 1ms linear;
+  }
+
+  .cal-month-view .cal-open-day-events.cal-open-day-events-closing {
+    animation: cal-slide-up 1ms linear;
+  }
+}
+
+// Tooltip: inverted text/background on the theme's text color.
+.cal-tooltip-inner {
+  color: var(--color-surface);
+  background-color: var(--color-text);
+}
+
+.cal-tooltip.cal-tooltip-top .cal-tooltip-arrow {
+  border-top-color: var(--color-text);
+}
+
+.cal-tooltip.cal-tooltip-right .cal-tooltip-arrow {
+  border-right-color: var(--color-text);
+}
+
+.cal-tooltip.cal-tooltip-bottom .cal-tooltip-arrow {
+  border-bottom-color: var(--color-text);
+}
+
+.cal-tooltip.cal-tooltip-left .cal-tooltip-arrow {
+  border-left-color: var(--color-text);
 }

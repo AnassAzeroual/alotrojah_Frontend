@@ -33,5 +33,17 @@
         <small>{{ 'settings.show_center_id_hint' | translate }}</small>
       </span>
     </label>
+    <label class="check">
+      <input
+        type="checkbox"
+        data-testid="settings-show-cal-debug"
+        [checked]="prefs.showCalDebug()"
+        (click)="prefs.setShowCalDebug(!prefs.showCalDebug())"
+      />
+      <span>
+        {{ 'settings.show_cal_debug' | translate }}
+        <small>{{ 'settings.show_cal_debug_hint' | translate }}</small>
+      </span>
+    </label>
   </div>
 </section>

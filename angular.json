@@ -33,7 +33,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss", "node_modules/flatpickr/dist/flatpickr.css"]
+            "styles": [
+              "node_modules/angular-calendar/css/angular-calendar.css",
+              "src/styles.scss",
+              "node_modules/flatpickr/dist/flatpickr.css"
+            ]
           },
           "configurations": {
             "production": {

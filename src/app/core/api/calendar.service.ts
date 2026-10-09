@@ -17,10 +17,13 @@ export interface SessionCal {
   season_id: number;
   term_id: number;
   week_id: number;
+  group_id: number | null;
   session_number_global: number;
   session_number_in_week: number;
   session_type: 'memorization' | 'revision' | 'exam';
   planned_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
   status: string;
 }
 

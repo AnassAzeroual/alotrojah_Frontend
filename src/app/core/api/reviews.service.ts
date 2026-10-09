@@ -37,6 +37,7 @@ export class ReviewsService {
   createCycle(payload: {
     student_id: number;
     term_id: number;
+    session_id: number;
     week_from: number;
     week_to: number;
     hizb_from?: number;

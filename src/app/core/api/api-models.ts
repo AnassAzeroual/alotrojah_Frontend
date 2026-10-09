@@ -113,7 +113,7 @@ export interface UpdateGroupPayload {
   teacher_id?: number | null;
   academic_year?: string | null;
   capacity?: number | null;
-  schedule_days?: string;
+  schedule_days?: string[];
   is_active?: boolean;
 }
 
@@ -125,7 +125,7 @@ export interface CreateGroupPayload {
   level_id: number;
   teacher_id?: number | null;
   capacity?: number | null;
-  schedule_days?: string;
+  schedule_days?: string[];
 }
 
 /** POST /students */

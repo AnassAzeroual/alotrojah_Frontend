@@ -1,6 +1,14 @@
-<main class="auth-stage">
+<main class="auth-stage" dir="ltr">
   <app-auth-topbar />
   <section class="auth-card">
+    <div class="auth-art">
+      <div class="hero-content">
+        <p class="arabic-verse">وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا</p>
+      </div>
+
+      <p class="hero-season">Season 2026–2027</p>
+    </div>
+
     <div class="auth-form-side">
       <h1 class="auth-title" data-testid="auth-title">{{ 'auth.hello_again' | translate }}</h1>
       <p class="auth-sub">{{ 'auth.get_started' | translate }}</p>
@@ -50,10 +58,6 @@
         {{ 'auth.no_account' | translate }}
         <a routerLink="/register">{{ 'auth.register' | translate }}</a>
       </p>
-    </div>
-
-    <div class="auth-art">
-      <app-auth-art />
     </div>
   </section>
 </main>

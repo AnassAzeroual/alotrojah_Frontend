@@ -320,7 +320,7 @@ describe('GroupDetailPage', () => {
       level_id: 1,
       teacher_id: 3,
       capacity: 25,
-      schedule_days: 'Sat',
+      schedule_days: ['Sat'],
       is_active: true,
     });
     req.flush({ success: true, message: null, data: null });

@@ -39,7 +39,7 @@
         <a
           [routerLink]="item.path"
           routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+          [routerLinkActiveOptions]="{ exact: !!item.exact }"
           (click)="closeMobile()"
           [attr.data-icon]="item.icon"
           [attr.data-testid]="item.testId"

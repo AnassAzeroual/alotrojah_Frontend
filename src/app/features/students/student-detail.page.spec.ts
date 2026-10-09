@@ -146,11 +146,8 @@ describe('StudentDetailPage', () => {
     expect(saveButton().disabled).toBe(true);
 
     openDropdown();
-    pickOption('studentDetail.no_group'); // ungrouping…
-    expect(saveButton().disabled).toBe(false);
-
-    openDropdown();
-    pickOption('حلقة النور'); // back to the current group
+    expect(el.querySelectorAll('.assign-card .dd-list button')).toHaveLength(2);
+    pickOption('حلقة النور');
     expect(saveButton().disabled).toBe(true);
 
     openDropdown();

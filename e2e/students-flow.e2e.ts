@@ -33,6 +33,12 @@ test.describe.serial('Students management', () => {
     await page.getByTestId('student-center').click();
     await page.getByRole('option').first().click();
 
+    await page.getByTestId('student-group').click();
+    await page.locator('.dd.open [role="option"]').first().click();
+
+    await page.getByTestId('student-level').click();
+    await page.locator('.dd.open [role="option"]').first().click();
+
     // mode: surah
     await page.getByTestId('student-mode').click();
     await page.getByRole('option', { name: /بالسورة/ }).click();
@@ -61,9 +67,6 @@ test.describe.serial('Students management', () => {
     const studentCard = page.locator('.grid-auto .card', { hasText: studentName }).first();
     await expect(studentCard).toBeVisible();
 
-    // created with no group → survives the unassigned filter
-    await page.getByTestId('students-unassigned').check();
-    await expect(page.locator('.grid-auto .card', { hasText: studentName }).first()).toBeVisible();
-    await page.getByTestId('students-unassigned').uncheck();
+    await expect(studentCard).toBeVisible();
   });
 });

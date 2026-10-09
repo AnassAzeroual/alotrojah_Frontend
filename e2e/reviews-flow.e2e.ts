@@ -27,22 +27,17 @@ test.describe
     const cyclesCard = page.locator('.card', {
       has: page.getByRole('heading', { name: 'الدورات' }),
     });
-    await expect(cyclesCard.locator('.line', { hasText: 'W1–W2' })).toHaveCount(1);
 
-    // F2: the cycle delete button is NOT gated by canManage — a plain teacher
-    // sees it on the seed row (scoped to W1–W2 so residue rows don't inflate)
-    await expect(
-      cyclesCard.locator('.line', { hasText: 'W1–W2' }).getByRole('button', { name: 'حذف' }),
-    ).toHaveCount(1);
-
-    // interrupted earlier runs can leave a W1–W3 row behind — assert deltas
+    // Interrupted earlier runs can leave a W1–W3 row behind — assert deltas.
     const lines = cyclesCard.locator('.line');
     const w13 = cyclesCard.locator('.line', { hasText: 'W1–W3' });
     const linesBefore = await lines.count();
     const w13Before = await w13.count();
 
     // S20: create a valid 3-week cycle
-    await page.getByRole('button', { name: 'الفصل', exact: true }).click();
+    await page.getByTestId('review-term').click();
+    await page.locator('.dd.open [role="option"]').nth(1).click();
+    await page.getByTestId('review-session').click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
     await page.getByLabel('من الأسبوع').fill('1');
     await page.getByLabel('إلى الأسبوع').fill('3');
@@ -55,10 +50,15 @@ test.describe
     await expect(w13).toHaveCount(w13Before + 1);
     await expect(lines).toHaveCount(linesBefore + 1);
 
+    // F2: the cycle delete control is not canManage-gated for a plain teacher.
+    await expect(w13.last().getByRole('button', { name: 'حذف' })).toBeVisible();
+
     // F3: a 4-week span is silently dropped — button stays live, no message, no row.
     // The successful save reset the whole form (reviews.page.ts submit next handler),
-    // so the required term must be re-picked before the second attempt.
-    await page.getByRole('button', { name: 'الفصل', exact: true }).click();
+    // so the required term and session must be re-picked before the second attempt.
+    await page.getByTestId('review-term').click();
+    await page.locator('.dd.open [role="option"]').nth(1).click();
+    await page.getByTestId('review-session').click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
     await page.getByLabel('من الأسبوع').fill('1');
     await page.getByLabel('إلى الأسبوع').fill('4');
@@ -91,6 +91,6 @@ test.describe
       remaining -= 1;
       await expect(rows).toHaveCount(remaining);
     }
-    await expect(cyclesCard.locator('.line', { hasText: 'W1–W2' })).toHaveCount(1);
+    await expect(rows).toHaveCount(0);
   });
 });

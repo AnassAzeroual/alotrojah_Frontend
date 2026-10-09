@@ -3,6 +3,15 @@
     "title": "AlOtrojah",
     "subtitle": "Suivi de la mémorisation du Coran"
   },
+  "cal": {
+    "month": "Mois",
+    "week": "Semaine",
+    "day": "Jour",
+    "today": "Aujourd'hui",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "datetime_range": "Dates et heures de la séance"
+  },
   "nav": {
     "dashboard": "Accueil",
     "entry": "Saisie du jour",
@@ -46,8 +55,6 @@
     "hello_again": "Bon retour !",
     "get_started": "Commençons",
     "recovery": "Mot de passe oublié",
-    "art_caption": "Enfin, tout votre travail au même endroit.",
-    "art_hint": "Suivi de mémorisation facile",
     "phone": "Téléphone",
     "birth_date": "Date de naissance",
     "confirm_password": "Confirmer le mot de passe",
@@ -102,6 +109,8 @@
     "SPAN_INVALID": "La révision doit couvrir 1 à 3 semaines",
     "RANGE_INVALID": "Plage invalide",
     "GROUP_ROLE": "L'affectation à la section est réservée aux enseignants et élèves",
+    "PLACEMENT_REQUIRED": "L'approbation de l'élève exige une section et un niveau",
+    "SESSION_TIME_ORDER": "L'heure de fin doit être postérieure à l'heure de début",
     "SCORING_TOTAL": "Le total hebdomadaire doit rester à 20",
     "INVALID_CREDENTIALS": "Identifiants invalides",
     "ADMIN_DELETE": "Les comptes administrateurs ne peuvent pas être supprimés",
@@ -135,8 +144,8 @@
     "cancel": "Refuser la demande",
     "cancel_confirm": "Confirmer le refus",
     "pick_center": "Choisir un centre",
-    "pick_group": "Choisir une section (facultative)",
-    "accept_hint": "Choisissez le centre de rattachement de ce compte"
+    "pick_group": "Choisir une section",
+    "accept_hint": "Choisissez le placement de ce compte"
   },
   "attendance": {
     "present": "Présent",
@@ -191,8 +200,7 @@
     "final": "Note finale"
   },
   "studentDetail": {
-    "assign_group": "Affecter à une section",
-    "no_group": "Aucune section"
+    "assign_group": "Affecter à une section"
   },
   "list": {
     "search": "Rechercher par nom",
@@ -243,7 +251,6 @@
     "open": "Ouvrir la section",
     "create": "Ajouter une section",
     "edit": "Modifier la section",
-    "no_teacher": "Aucun enseignant",
     "schedule": "Horaires",
     "year": "Année scolaire",
     "phone": "Téléphone",
@@ -475,7 +482,9 @@
     "hide_scopes_hint": "Quand activé, la modification s'applique toujours aux valeurs partagées",
     "display_section": "Affichage",
     "show_center_id": "Afficher l'ID du centre",
-    "show_center_id_hint": "Versions dev uniquement — jamais affiché en production"
+    "show_center_id_hint": "Affiche l'ID numérique du centre à côté du nom, en dev comme en production",
+    "show_cal_debug": "Afficher la vue JSON du calendrier",
+    "show_cal_debug_hint": "Affiche les événements de la vue calendrier en JSON"
   },
   "entry": {
     "title": "Saisie du jour",

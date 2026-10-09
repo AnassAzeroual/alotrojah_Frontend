@@ -5,7 +5,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { PasswordFieldComponent } from '../../shared/ui/password-field/password-field.component';
-import { AuthArtComponent } from './auth-art.component';
 import { AuthTopbarComponent } from './auth-topbar.component';
 import { APP_VERSION_SHORT } from '../../core/version';
 
@@ -22,7 +21,6 @@ interface LoginForm {
     RouterLink,
     TranslatePipe,
     SpinnerComponent,
-    AuthArtComponent,
     AuthTopbarComponent,
     PasswordFieldComponent,
   ],

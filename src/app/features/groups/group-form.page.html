@@ -78,7 +78,7 @@
         </label>
 
         <label class="field">
-          <span>{{ 'grp.col_teacher' | translate }}</span>
+          <span>{{ 'grp.col_teacher' | translate }} <span class="danger">*</span></span>
           <app-dropdown
             [value]="teacherId() ?? ''"
             [options]="teacherOptions()"

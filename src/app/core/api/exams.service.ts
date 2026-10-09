@@ -6,6 +6,7 @@ import { Paginated } from './api-models';
 export interface Exam {
   id: number;
   student_id: number;
+  student_name: string | null;
   season_id: number;
   term_id: number | null;
   exam_type: 'hizb_completion' | 'term_batch' | 'final_season';

@@ -1,47 +1,15 @@
-// Auth split layout (login + register): dark-teal theme matching the dashboard.
-// Mobile-first: stacked (art banner on top). Desktop: two columns, auto-mirror in RTL.
-// All surfaces token-driven so light/dark modes both render correctly.
+// Auth layout: Simple two-column design
+// Left: Dark green background with content
+// Right: White background with form
 @use 'tokens' as *;
 
 .auth-stage {
   min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  padding: var(--space-4);
+  display: block;
+  padding: 0;
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(700px 520px at 100% -14%, rgb(0 184 169 / 0.38), transparent 64%),
-    radial-gradient(820px 620px at -10% 114%, rgb(139 92 246 / 0.34), transparent 66%),
-    linear-gradient(
-      150deg,
-      color-mix(in srgb, var(--color-primary) 14%, var(--color-bg)),
-      var(--color-bg) 55%,
-      color-mix(in srgb, var(--color-accent) 12%, var(--color-bg))
-    );
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: var(--bg-pattern-opacity);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2300b8a9' stroke-opacity='0.22'%3E%3Cpath d='M60 10 70 50l40 10-40 10-10 40-10-40-40-10 40-10z'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
-    background-size: 140px 140px;
-    mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: calc(var(--bg-pattern-opacity) * 0.7);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%238b5cf6' stroke-opacity='0.2'%3E%3Cpath d='M60 10 70 50l40 10-40 10-10 40-10-40-40-10 40-10z'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
-    background-size: 140px 140px;
-    mask-image: radial-gradient(ellipse 60% 50% at 5% 100%, black 20%, transparent 72%);
-  }
+  background: var(--color-bg);
 }
 
 .auth-topbar {
@@ -106,15 +74,12 @@
 
 .auth-theme-btn {
   aspect-ratio: 1;
-  /* Forces 1:1 square ratio */
   align-self: center;
-  /* Prevents flexbox/grid height stretching */
   box-sizing: border-box;
   display: grid;
   color: var(--color-bg);
   cursor: pointer;
   flex: 0 0 34px;
-  /* Set exact flex-basis instead of auto */
   place-items: center;
   border-radius: 50%;
   border: 1px solid var(--card-border);
@@ -138,95 +103,110 @@
 }
 
 .auth-card {
-  position: relative;
-  width: min(1120px, 100%);
-  background:
-    linear-gradient(
-        color-mix(in srgb, var(--color-surface) 92%, transparent),
-        color-mix(in srgb, var(--color-surface) 92%, transparent)
-      )
-      padding-box,
-    linear-gradient(
-        140deg,
-        rgb(0 184 169 / 0.65),
-        rgb(139 92 246 / 0.3) 40%,
-        rgb(0 184 169 / 0.2) 65%,
-        rgb(139 92 246 / 0.45)
-      )
-      border-box;
-  backdrop-filter: blur(18px);
-  color: var(--color-text);
-  border: 1.5px solid transparent;
-  border-radius: 32px;
-  box-shadow:
-    var(--shadow-3),
-    0 0 48px rgb(0 184 169 / 0.12);
+  min-height: 100dvh;
   display: grid;
   grid-template-columns: 1fr;
-  overflow: hidden;
-  animation: auth-rise 420ms cubic-bezier(0.22, 0.9, 0.28, 1) both;
 
-  @include up($bp-md) {
-    grid-template-columns: 1.05fr 1fr;
-    min-height: 620px;
+  @include up($bp-lg) {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-@keyframes auth-rise {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.99);
+// Left side - Dark green with content
+.auth-art {
+  background: linear-gradient(
+    135deg,
+    oklch(0.42 0.08 165) 0%,
+    oklch(0.38 0.072 166) 20%,
+    oklch(0.34 0.065 167) 40%,
+    oklch(0.3 0.058 168) 60%,
+    oklch(0.27 0.053 169) 80%,
+    oklch(0.24 0.05 170) 100%
+  );
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(24px, 4vw, 48px);
+  position: relative;
+  order: 1;
+
+  @include up($bp-lg) {
+    order: 0;
+  }
+
+  .hero-brand {
+    font-size: clamp(1.25rem, 1rem + 1.25vw, 1.75rem);
+    font-weight: 600;
+    margin: 0;
+    color: white;
+  }
+
+  .hero-content {
+    text-align: center;
+    margin: auto 0;
+
+    .arabic-verse {
+      font-family: var(--font-quran);
+      font-size: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+      line-height: 1.3;
+      color: #ffd700;
+      margin: 0 0 1rem 0;
+      font-weight: normal;
+    }
+
+    .description {
+      font-size: clamp(0.9rem, 0.8rem + 0.5vw, 1.1rem);
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.5;
+      max-width: 24rem;
+      margin: 0 auto;
+    }
+  }
+
+  .hero-season {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    text-align: left;
   }
 }
 
+// Right side - Form
 .auth-form-side {
-  padding: clamp(24px, 4vw, 56px);
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: var(--space-4);
+  padding: clamp(24px, 4vw, 48px);
   order: 2;
+  align-items: center;
 
-  @include up($bp-md) {
-    order: 0;
+  @include up($bp-lg) {
+    order: 1;
   }
 }
 
 .auth-title {
-  margin: 0;
-  font-size: clamp(1.7rem, 1.3rem + 2vw, 2.4rem);
+  margin: 0 0 0.5rem 0;
+  font-size: clamp(1.75rem, 1.5rem + 1.25vw, 2.25rem);
   font-weight: 800;
-  letter-spacing: -0.01em;
-  position: relative;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset-inline-start: 0;
-    bottom: -12px;
-    width: 76px;
-    height: 4px;
-    border-radius: 99px;
-    background: linear-gradient(90deg, var(--color-gold), #e8c84a);
-
-    [data-theme='dark'] & {
-      background: linear-gradient(90deg, var(--color-gold-dark), #f4e9c8);
-    }
-  }
+  color: var(--color-text);
+  line-height: 1.2;
 }
 
 .auth-sub {
-  margin: 0;
-  font-size: var(--text-sm);
-  font-weight: 500;
+  margin: 0 0 2rem 0;
+  font-size: 0.875rem;
   color: var(--color-muted);
+  line-height: 1.4;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  max-width: 420px;
+  gap: 1.25rem;
+  max-width: 400px;
   width: 100%;
 }
 
@@ -237,7 +217,7 @@
     width: 100%;
     box-sizing: border-box;
     border: 1px solid var(--color-border);
-    border-radius: 14px;
+    border-radius: var(--radius-md);
     background: var(--color-surface-2);
     padding: 0 18px;
     height: 56px;
@@ -307,26 +287,12 @@
   justify-content: flex-end;
 }
 
-// Selects inside auth forms mirror the .auth-input geometry.
-.auth-form app-dropdown .dd-btn {
-  min-height: 56px;
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-2);
-
-  &:focus-visible {
-    outline: 0;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgb(0 184 169 / 0.22);
-  }
-}
-
 .link-quiet {
   background: none;
   border: 0;
   padding: 0;
   font: inherit;
-  font-size: var(--text-sm);
+  font-size: 0.875rem;
   color: var(--color-muted);
   cursor: pointer;
 
@@ -340,7 +306,7 @@
   border: 0;
   cursor: pointer;
   height: 56px;
-  border-radius: 16px;
+  border-radius: var(--radius);
   font: inherit;
   font-weight: 700;
   font-size: 15px;
@@ -371,9 +337,20 @@
   }
 }
 
-.auth-switch {
+.auth-error {
   margin: 0;
-  font-size: var(--text-sm);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.auth-switch {
+  margin: 1.5rem 0 0 0;
+  font-size: 0.875rem;
   color: var(--color-muted);
 
   a {
@@ -391,133 +368,56 @@
   }
 }
 
-.auth-error {
-  margin: 0;
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--color-danger);
-  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent);
-  border-radius: 10px;
-  padding: 10px 14px;
+// Field pairs for register form
+.field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @include up($bp-sm) {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-// Art side
-.auth-art {
-  position: relative;
-  min-height: 220px;
-  order: 1;
-  margin: 12px;
-  border-radius: 24px;
-  overflow: hidden;
-  background: #0f1e1a;
-  border: 1px solid var(--card-border);
+// Register success state
+.reg-success {
+  text-align: center;
 
-  @include up($bp-md) {
-    order: 0;
-    margin: 12px;
-    margin-inline-start: 0;
-    min-height: 0;
-  }
+  .ok-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--color-ok);
+    color: white;
+    margin-bottom: 1.5rem;
 
-  app-auth-art {
-    position: absolute;
-    inset: 0;
-    display: block;
-  }
-
-  .art-slides {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    touch-action: pan-y;
-  }
-
-  .slide {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transform: scale(1.04);
-    transition:
-      opacity 900ms cubic-bezier(0.22, 0.9, 0.28, 1),
-      transform 6s linear;
-    user-select: none;
-    -webkit-user-drag: none;
-
-    &.on {
-      opacity: 1;
-      transform: scale(1);
+    svg {
+      width: 32px;
+      height: 32px;
     }
   }
+}
 
-  .art-cap {
-    position: absolute;
-    inset-inline: 0;
-    bottom: 0;
-    padding: 22px;
-    color: #fff;
-    background: linear-gradient(transparent, rgb(8 18 16 / 0.72));
+.field-error {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-danger);
+}
 
-    p {
-      margin: 0 0 14px;
-      font-size: clamp(1rem, 0.9rem + 1vw, 1.25rem);
-      font-weight: 600;
-      text-shadow: 0 2px 12px rgb(0 0 0 / 0.5);
-    }
-  }
+// Dropdown styling to match auth inputs
+.auth-form app-dropdown .dd-btn {
+  min-height: 56px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
 
-  .art-nav {
-    position: absolute;
-    top: 50%;
-    left: 18px;
-    translate: 0 -50%;
-    display: flex;
-    gap: 10px;
-    z-index: 2;
-
-    button {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: none;
-      background: #fff;
-      color: #12201d;
-      font-size: 20px;
-      line-height: 1;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      box-shadow: 0 2px 12px rgb(0 0 0 / 0.35);
-      transition:
-        background 160ms,
-        transform 160ms;
-
-      &:hover {
-        background: #d9f5f1;
-        transform: scale(1.06);
-      }
-    }
-  }
-
-  .art-dots {
-    position: absolute;
-    top: 16px;
-    inset-inline-end: 16px;
-    display: flex;
-    gap: 6px;
-
-    i {
-      width: 22px;
-      height: 5px;
-      border-radius: 99px;
-      background: rgb(255 255 255 / 0.35);
-
-      &.on {
-        background: #5eead4;
-      }
-    }
+  &:focus-visible {
+    outline: 0;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgb(0 184 169 / 0.22);
   }
 }

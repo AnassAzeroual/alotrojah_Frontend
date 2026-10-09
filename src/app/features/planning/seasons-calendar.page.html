@@ -16,35 +16,209 @@
     <div class="banner danger">{{ errorKey()! | translate }}</div>
   }
 
-  @if (loading()) {
-    <div class="stack" aria-hidden="true">
+  <!-- @if (loading()) { -->
+  <!-- <div class="stack" aria-hidden="true">
       <div class="skeleton sk-card"></div>
-    </div>
-  } @else {
-    <div class="card cal-card anim-rise" style="--i: 1">
-      <full-calendar [options]="options" />
+    </div> -->
+  <!-- } @else { -->
+  <div class="card cal-card anim-rise" style="--i: 1">
+    <div class="cal-toolbar">
+      <div class="cal-title">
+        {{ viewDate() | calendarDate: titleKey() : language.current() : weekStartsOn }}
+      </div>
+      <div class="cal-nav">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm cal-prev"
+          mwlCalendarPreviousView
+          [viewDate]="viewDate()"
+          [view]="view()"
+          (viewDateChange)="viewDate.set($event)"
+          data-testid="cal-prev"
+          [attr.aria-label]="'cal.prev' | translate"
+          [attr.title]="'cal.prev' | translate"
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          mwlCalendarToday
+          [viewDate]="viewDate()"
+          (viewDateChange)="viewDate.set($event)"
+          data-testid="cal-today"
+        >
+          {{ 'cal.today' | translate }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm cal-next"
+          mwlCalendarNextView
+          [viewDate]="viewDate()"
+          [view]="view()"
+          (viewDateChange)="viewDate.set($event)"
+          data-testid="cal-next"
+          [attr.aria-label]="'cal.next' | translate"
+          [attr.title]="'cal.next' | translate"
+        >
+          ›
+        </button>
+      </div>
+      <div class="segmented" role="group">
+        <button
+          type="button"
+          [class.on]="view() === CalendarView.Month"
+          (click)="view.set(CalendarView.Month)"
+          data-testid="cal-view-month"
+        >
+          {{ 'cal.month' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.on]="view() === CalendarView.Week"
+          (click)="view.set(CalendarView.Week)"
+          data-testid="cal-view-week"
+        >
+          {{ 'cal.week' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.on]="view() === CalendarView.Day"
+          (click)="view.set(CalendarView.Day)"
+          data-testid="cal-view-day"
+        >
+          {{ 'cal.day' | translate }}
+        </button>
+      </div>
     </div>
 
-    @if (selected(); as sel) {
-      <div class="card anim-rise" style="--i: 2">
-        <span class="row-top">
-          <strong class="ltr-num">#{{ sel.session_number_global }}</strong>
-          <span class="muted"
-            >{{ sel.termName }} · {{ 'common.week' | translate }} {{ sel.weekNumber }}</span
-          >
+    <!-- Custom month cell: the library's default renders month events as
+           textless color pills (title only in the hover tooltip). Sessions
+           must be readable at a glance, so re-render the default cell with
+           the title inlined. -->
+    <ng-template #monthCell let-day="day" let-locale="locale" let-eventClicked="eventClicked">
+      <div class="cal-cell-top">
+        <span aria-hidden="true">
+          @if (day.badgeTotal > 0) {
+            <span class="cal-day-badge">{{ day.badgeTotal }}</span>
+          }
+          <span class="cal-day-number">
+            {{ day.date | calendarDate: 'monthViewDayNumber' : locale }}
+          </span>
         </span>
-        <div class="cluster">
-          <span class="muted">{{ 'sessionType.' + sel.session_type | translate }}</span>
-          <app-date-picker
-            [value]="sel.planned_date"
-            (valueChange)="setDate(sel.id, $any($event))"
+      </div>
+      @if (day.events.length > 0) {
+        <div class="cal-events">
+          @for (event of day.events; track event.id ?? event) {
+            <!-- The pill carries the readable session label, so keep it in
+                   the a11y tree; its click opens the detail card. -->
+            <div
+              class="cal-event"
+              [style.background-color]="event.color?.secondary"
+              [class]="'cal-event ' + (event.cssClass ?? '')"
+              (click)="
+                $event.stopPropagation(); eventClicked.emit({ event: event, sourceEvent: $event })
+              "
+            >
+              <mwl-calendar-event-title [event]="event" view="month" />
+            </div>
+          }
+        </div>
+      }
+    </ng-template>
+
+    <!-- Keyed on the locale: recreates the views on a live language switch
+           so the library re-reads the RTL direction at init. -->
+    @for (loc of [language.current()]; track loc) {
+      @if (view() === CalendarView.Month) {
+        <mwl-calendar-month-view
+          [viewDate]="viewDate()"
+          [events]="calEvents()"
+          [locale]="loc"
+          [weekStartsOn]="weekStartsOn"
+          [refresh]="refresh"
+          [cellTemplate]="monthCell"
+          [activeDay]="activeDay() ?? viewDate()"
+          [activeDayIsOpen]="activeDayIsOpen()"
+          (dayClicked)="onDayClick($event)"
+          (eventClicked)="onEventClick($event)"
+        />
+      } @else if (view() === CalendarView.Week) {
+        <mwl-calendar-week-view
+          [viewDate]="viewDate()"
+          [events]="weekEvents()"
+          [locale]="loc"
+          [weekStartsOn]="weekStartsOn"
+          [refresh]="refresh"
+          [dayStartHour]="6"
+          [dayEndHour]="22"
+          [validateEventTimesChanged]="allowDrag"
+          (eventTimesChanged)="onWeekTimesChanged($event)"
+          (eventClicked)="onEventClick($event)"
+        />
+      } @else {
+        <mwl-calendar-day-view
+          [viewDate]="viewDate()"
+          [events]="calEvents()"
+          [locale]="loc"
+          [refresh]="refresh"
+          [dayStartHour]="6"
+          [dayEndHour]="22"
+          (eventClicked)="onEventClick($event)"
+        />
+      }
+    }
+  </div>
+
+  @if (selected(); as sel) {
+    <div class="card anim-rise" style="--i: 2">
+      <span class="row-top">
+        <strong class="ltr-num">#{{ sel.session_number_global }}</strong>
+        <span class="muted"
+          >{{ sel.termName }} · {{ 'common.week' | translate }} {{ sel.weekNumber }}</span
+        >
+      </span>
+      <div class="cluster">
+        <span class="muted">{{ 'sessionType.' + sel.session_type | translate }}</span>
+        @if (groupLabel(sel.group_id); as group) {
+          <span class="muted">{{ group }}</span>
+        }
+        <span class="muted ltr-num" [attr.data-testid]="'cal-time-' + sel.id"
+          >{{ sel.start_time }} – {{ sel.end_time }}</span
+        >
+        @if (canManage()) {
+          <app-session-range-picker
+            [value]="rangeOf(sel)"
+            (valueChange)="setRange(sel.id, $event)"
             [testId]="'cal-date-' + sel.id"
           />
           <a class="btn btn-ghost btn-sm" [routerLink]="['/planning/terms', sel.term_id]">
             {{ 'planning.terms' | translate }}
           </a>
-        </div>
+        }
       </div>
-    }
+    </div>
   }
+
+  <!-- Events JSON panel (Settings checkbox): dumps the events in the period the calendar
+         is currently showing (day/week/month) as JSON. Visible to anyone with
+         calendar access once enabled — no admin gate. -->
+  @if (prefs.showCalDebug()) {
+    <div class="card" data-testid="cal-debug-json" style="margin-top: var(--space-4)">
+      <strong class="muted">current view events JSON ({{ visibleEvents().length }})</strong>
+      <pre
+        style="
+          margin: var(--space-2) 0 0;
+          max-height: 320px;
+          overflow: auto;
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-size: 12px;
+          direction: ltr;
+          text-align: left;
+        "
+        >{{ visibleEvents() | json }}</pre>
+    </div>
+  }
+  <!-- } -->
 </section>

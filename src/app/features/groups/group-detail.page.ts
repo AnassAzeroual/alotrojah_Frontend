@@ -127,13 +127,12 @@ export class GroupDetailPage {
     },
   });
 
-  protected readonly teacherOptions = computed<DropdownOption[]>(() => {
-    const opts: DropdownOption[] = (this.teachersRes.value()?.data ?? []).map((u) => ({
+  protected readonly teacherOptions = computed<DropdownOption[]>(() =>
+    (this.teachersRes.value()?.data ?? []).map((u) => ({
       value: u.id,
       label: u.full_name,
-    }));
-    return [{ value: '', labelKey: 'grp.no_teacher' }, ...opts];
-  });
+    })),
+  );
 
   protected startEdit(): void {
     const g = this.group();
@@ -169,16 +168,17 @@ export class GroupDetailPage {
     const g = this.group();
     const name = this.editName().trim();
     const levelId = this.editLevelId();
-    if (!g || !name || levelId === null || this.saving()) return;
+    const teacherId = this.editTeacherId();
+    if (!g || !name || levelId === null || teacherId === null || this.saving()) return;
     this.saving.set(true);
     this.saveFailed.set(null);
     this.groupsSvc
       .update(g.id, {
         name,
         level_id: levelId,
-        ...(this.canPickTeacher() ? { teacher_id: this.editTeacherId() } : {}),
+        ...(this.canPickTeacher() ? { teacher_id: teacherId } : {}),
         capacity: this.editCapacity(),
-        schedule_days: this.editDays().join(','),
+        schedule_days: this.editDays(),
         is_active: this.editActive(),
       })
       .subscribe({

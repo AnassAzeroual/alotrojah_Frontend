@@ -163,8 +163,8 @@ export class StudentDetailPage {
   readonly form = new FormGroup<StudentForm>({
     full_name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     center_id: new FormControl<number | null>(null),
-    group_id: new FormControl<number | null>(null),
-    level_id: new FormControl<number | null>(null),
+    group_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
+    level_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
     gender: new FormControl<'male' | 'female' | null>(null),
     student_type: new FormControl<string | null>(null),
     memorization_mode: new FormControl<'surah' | 'thumn'>('thumn', {
@@ -206,13 +206,12 @@ export class StudentDetailPage {
     },
   });
 
-  protected readonly groupOptions = computed<DropdownOption[]>(() => {
-    const opts: DropdownOption[] = (this.groupsRes.value()?.data ?? []).map((g) => ({
+  protected readonly groupOptions = computed<DropdownOption[]>(() =>
+    (this.groupsRes.value()?.data ?? []).map((g) => ({
       value: g.id,
       label: g.name,
-    }));
-    return [{ value: '', labelKey: 'studentDetail.no_group' }, ...opts];
-  });
+    })),
+  );
 
   // Assign block (view mode)
   protected readonly assignPicked = signal<number | null>(null);
@@ -339,7 +338,14 @@ export class StudentDetailPage {
 
   protected saveAssign(): void {
     const s = this.studentVal();
-    if (!s || !this.assignChosen() || !this.assignDirty() || this.assignSaving()) return;
+    if (
+      !s ||
+      this.assignPicked() === null ||
+      !this.assignChosen() ||
+      !this.assignDirty() ||
+      this.assignSaving()
+    )
+      return;
     this.assignSaving.set(true);
     this.assignFailed.set(null);
     this.studentsSvc.update(s.id, { group_id: this.assignPicked() }).subscribe({

@@ -21,7 +21,11 @@ test.describe.serial('Seasons management', () => {
     await page.getByTestId('season-start').fill('01/09/2026');
     await page.getByTestId('season-center').click();
     await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
+    const created = page.waitForResponse(
+      (r) => r.url().includes('/seasons') && r.request().method() === 'POST',
+    );
     await page.getByTestId('season-save').click();
+    await created;
     await expect(page).toHaveURL(/\/planning$/);
 
     // fact-free season deletes cleanly (self-cleaning: no dev residue)

@@ -118,6 +118,7 @@ export class GroupFormPage {
     () =>
       this.name().trim() !== '' &&
       this.levelId() !== null &&
+      this.teacherId() !== null &&
       (!this.isAdmin() || this.centerId() !== null) &&
       !this.saving(),
   );
@@ -190,13 +191,12 @@ export class GroupFormPage {
     };
   }
 
-  protected readonly teacherOptions = computed<DropdownOption[]>(() => {
-    const opts: DropdownOption[] = (this.teachersRes.value() ?? []).map((u) => ({
+  protected readonly teacherOptions = computed<DropdownOption[]>(() =>
+    (this.teachersRes.value() ?? []).map((u) => ({
       value: u.id,
       label: u.full_name,
-    }));
-    return [{ value: '', labelKey: 'grp.no_teacher' }, ...opts];
-  });
+    })),
+  );
 
   protected onCenterChange(v: number | null): void {
     // Teachers are center-scoped, so switching centers invalidates the pick.
@@ -230,9 +230,9 @@ export class GroupFormPage {
       .update(id, {
         name: this.name().trim(),
         level_id: this.levelId()!,
-        teacher_id: this.teacherId(),
+        teacher_id: this.teacherId()!,
         capacity: this.capacity(),
-        schedule_days: this.days().join(','),
+        schedule_days: this.days(),
         is_active: this.active(),
       })
       .subscribe({
@@ -258,9 +258,9 @@ export class GroupFormPage {
         name: this.name().trim(),
         center_id: this.effectiveCenterId(),
         level_id: this.levelId()!,
-        teacher_id: this.teacherId(),
+        teacher_id: this.teacherId()!,
         capacity: this.capacity(),
-        schedule_days: this.days().join(','),
+        schedule_days: this.days(),
       })
       .subscribe({
         next: () => {

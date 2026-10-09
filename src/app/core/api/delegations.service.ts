@@ -30,10 +30,15 @@ export class DelegationsService {
     return this.api.post<GeneratedDelegation>(`/groups/${groupId}/delegations`, { minutes });
   }
 
-  redeem(token: string): Observable<{ group_id: number; expires_at: string }> {
-    return this.api.post<{ group_id: number; expires_at: string }>('/delegations/redeem', {
-      token,
-    });
+  redeem(
+    token: string,
+  ): Observable<{ group_id: number; group_name: string | null; expires_at: string }> {
+    return this.api.post<{ group_id: number; group_name: string | null; expires_at: string }>(
+      '/delegations/redeem',
+      {
+        token,
+      },
+    );
   }
 
   revoke(id: number): Observable<null> {

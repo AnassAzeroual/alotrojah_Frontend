@@ -1,6 +1,14 @@
-<main class="auth-stage">
+<main class="auth-stage" dir="ltr">
   <app-auth-topbar />
   <section class="auth-card">
+    <div class="auth-art">
+      <div class="hero-content">
+        <p class="arabic-verse">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+      </div>
+
+      <p class="hero-season">Season 2026–2027</p>
+    </div>
+
     <div class="auth-form-side">
       @if (submitted()) {
         <div class="reg-success">
@@ -129,10 +137,6 @@
           <a routerLink="/login">{{ 'auth.login' | translate }}</a>
         </p>
       }
-    </div>
-
-    <div class="auth-art">
-      <app-auth-art />
     </div>
   </section>
 </main>

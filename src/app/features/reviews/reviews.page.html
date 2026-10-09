@@ -106,6 +106,17 @@
             formControlName="term_id"
             [options]="termOptions()"
             ariaLabelKey="planning.pick_term"
+            testId="review-term"
+          />
+        </label>
+        <label class="field"
+          ><span>{{ 'entry.pick_session' | translate }}</span>
+          <app-dropdown
+            formControlName="session_id"
+            [options]="sessionOptions()"
+            [disabled]="form.controls.term_id.value === null"
+            ariaLabelKey="entry.pick_session"
+            testId="review-session"
           />
         </label>
         <label class="field"

@@ -22,6 +22,13 @@
   --color-gold-soft: #f4e9c8;
   --color-gold-dark: #7a5f16;
 
+  // Session-event card palette (seasons-calendar): soft tints carry the card
+  // background, the strong hues drive the 1px accent border, exam stays solid.
+  --color-mint: #e6f4ea;
+  --color-gold-tint: #fef9c3;
+  --color-amber-dark: #713f12;
+  --color-burgundy: #9f1239;
+
   --color-bg: #f8fafc;
   --color-bg-soft: #eef4f2;
   --color-surface: #ffffff;
@@ -91,9 +98,33 @@
 
   --bg-pattern-opacity: 0.5;
   --card-border: rgb(16 28 25 / 0.06);
+
+  --color-memorization-bg: #180e59;
+  --color-memorization-text: #fff;
+  --color-memorization-border: #0e9f6e;
+
+  --color-revision-bg: #fef9c3;
+  --color-revision-text: #713f12;
+  --color-revision-border: #c9a227;
+
+  --color-exam-bg: #e11d48;
+  --color-exam-text: #ffffff;
+  --color-exam-border: #9f1239;
 }
 
 [data-theme='dark'] {
+  --color-memorization-bg: #180e59;
+  --color-memorization-text: #fff;
+  --color-memorization-border: #4c265f;
+
+  --color-revision-bg: #451a03;
+  --color-revision-text: #fef08a;
+  --color-revision-border: #f59e0b;
+
+  --color-exam-bg: #881337;
+  --color-exam-text: #ffe4e6;
+  --color-exam-border: #fb7185;
+
   --color-bg: #0b1512;
   --color-bg-soft: #0f1e1a;
   --color-surface: #12211d;
