@@ -19,12 +19,12 @@ export const PLANNING_ROUTES: Routes = [
     data: { roles: MANAGER },
   },
   {
-    // Experimental season calendar: all seasons/terms/weeks/sessions on
-    // month/week/day views. The legacy pages stay untouched.
+    // Season calendar: open to every logged-in role (students included).
+    // Each level sees only its authorized scope (backend-narrowed) and only
+    // managers can move sessions — the legacy pages stay untouched.
     path: 'calendar',
     loadComponent: () => import('./seasons-calendar.page').then((m) => m.SeasonsCalendarPage),
     canActivate: [roleGuard],
-    data: { roles: MANAGER },
   },
   {
     // Full edit form (name/dates/hijri only — terms/sessions are generated

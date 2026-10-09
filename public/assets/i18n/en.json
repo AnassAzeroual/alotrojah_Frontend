@@ -9,7 +9,8 @@
     "day": "Day",
     "today": "Today",
     "prev": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "datetime_range": "Session date and time"
   },
   "nav": {
     "dashboard": "Home",

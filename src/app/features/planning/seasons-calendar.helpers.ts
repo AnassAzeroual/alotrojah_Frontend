@@ -69,6 +69,14 @@ export function dateToClockTime(d: Date): string {
   return `${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+/** Day ceiling everywhere (views render 6→22): no session clock runs past it. */
+export const MAX_CLOCK = '22:00';
+
+/** Clamp a zero-padded `HH:MM` clock to the day ceiling (lexicographic-safe). */
+export function clampClock(time: string): string {
+  return time > MAX_CLOCK ? MAX_CLOCK : time;
+}
+
 /**
  * Resolve a week-view drag into the fields it actually changed. angular-calendar
  * reports the drop's `newStart` plus a `newEnd` shifted by the same amount, so
@@ -95,6 +103,8 @@ export function resolveWeekDrop(
   const storedEnd = current.end_time.slice(0, 5);
   const start = dateToClockTime(newStart);
   const end = newEnd === undefined ? storedEnd : dateToClockTime(newEnd);
+  // Day ceiling: drops ending past 22:00 snap back (the grid ends there too).
+  if (end > MAX_CLOCK) return null;
   if (start !== storedStart || end !== storedEnd) {
     drop.start_time = start;
     drop.end_time = end;

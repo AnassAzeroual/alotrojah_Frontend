@@ -102,8 +102,11 @@ test.describe.serial('Calendar week-view drag', () => {
   }) => {
     const { weekView, events } = await openWeekView(page);
     const { event, id, dateInput } = await openFirstEvent(page, events);
-    const originalDmy = await dateInput.inputValue();
-    expect(originalDmy, 'detail picker shows dd/mm/yyyy').toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
+    const originalRange = await dateInput.inputValue();
+    expect(originalRange, 'detail picker shows a datetime range').toMatch(
+      /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2} → \d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/,
+    );
+    const originalDmy = originalRange.slice(0, 10);
 
     // Drop into the adjacent day column (DOM order == date order, so the next
     // column is always +1 day regardless of the calendar's text direction).
@@ -149,7 +152,7 @@ test.describe.serial('Calendar week-view drag', () => {
     expect(sent.start_time, 'a sideways drop leaves the time alone').toBeUndefined();
 
     // The detail picker reflects the persisted day (optimistic overlay).
-    await expect(dateInput).toHaveValue(isoToDmy(sent.planned_date!));
+    expect((await dateInput.inputValue()).slice(0, 10)).toBe(isoToDmy(sent.planned_date!));
 
     await restore(request, id, { planned_date: dmyToDateToIso(originalDmy) });
   });
@@ -161,7 +164,7 @@ test.describe.serial('Calendar week-view drag', () => {
     const { weekView, events } = await openWeekView(page);
     const { event, id, dateInput, timeLine } = await openFirstEvent(page, events);
 
-    const originalIso = dmyToDateToIso(await dateInput.inputValue());
+    const originalIso = dmyToDateToIso((await dateInput.inputValue()).slice(0, 10));
     const [origStart, origEnd] = ((await timeLine.textContent()) ?? '')
       .split('–')
       .map((s) => s.trim());

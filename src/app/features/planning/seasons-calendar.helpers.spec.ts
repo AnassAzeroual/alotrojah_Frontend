@@ -1,4 +1,5 @@
 import {
+  clampClock,
   dateToClockTime,
   dateToISODate,
   resolveWeekDrop,
@@ -77,6 +78,15 @@ describe('seasons-calendar helpers', () => {
     expect(dateToClockTime(new Date(2026, 10, 18, 23, 0))).toBe('23:00');
   });
 
+  describe('clampClock', () => {
+    it('caps late clocks at the 22:00 ceiling', () => {
+      expect(clampClock('23:30')).toBe('22:00');
+      expect(clampClock('22:00')).toBe('22:00');
+      expect(clampClock('21:59')).toBe('21:59');
+      expect(clampClock('08:00')).toBe('08:00');
+    });
+  });
+
   describe('resolveWeekDrop', () => {
     const rows = [SESSION];
 
@@ -96,6 +106,18 @@ describe('seasons-calendar helpers', () => {
       expect(
         resolveWeekDrop(19, new Date(2026, 10, 20, 6), new Date(2026, 10, 20, 7), rows),
       ).toEqual({ id: 19, planned_date: '2026-11-20', start_time: '06:00', end_time: '07:00' });
+    });
+
+    it('nulls a drop ending past the 22:00 ceiling', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 21, 30), new Date(2026, 10, 18, 22, 30), rows),
+      ).toBeNull();
+    });
+
+    it('allows a drop ending exactly at the 22:00 ceiling', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 21), new Date(2026, 10, 18, 22), rows),
+      ).toEqual({ id: 19, start_time: '21:00', end_time: '22:00' });
     });
 
     it('nulls a drop that lands exactly where the session already is', () => {

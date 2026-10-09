@@ -93,7 +93,7 @@ const ITEMS: readonly NavItem[] = [
     path: '/planning/calendar',
     key: 'nav.calendar',
     icon: 'calendar',
-    roles: ['admin', 'supervisor'],
+    roles: ['admin', 'supervisor', 'teacher', 'student', 'board'],
     testId: 'nav-calendar',
   },
   {

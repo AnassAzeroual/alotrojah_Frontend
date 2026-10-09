@@ -1,7 +1,11 @@
 // flatpickr popup themed to the app tokens (light + dark). The picker input
 // itself inherits the native .field input look — only the floating calendar
 // (appended to <body>, so component styles can't reach it) lives here.
-.flatpickr-calendar {
+//
+// Specificity note: flatpickr.css loads AFTER styles.scss (angular.json), so
+// every rule below is `body`-prefixed (and doubled where flatpickr already
+// spends two classes) — otherwise the library stylesheet wins the tie.
+body .flatpickr-calendar.flatpickr-calendar {
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
@@ -15,7 +19,7 @@
   }
 }
 
-.flatpickr-months {
+body .flatpickr-months {
   .flatpickr-month {
     color: var(--green-800);
     fill: var(--green-800);
@@ -37,7 +41,7 @@
   }
 }
 
-.flatpickr-current-month {
+body .flatpickr-current-month {
   .cur-month,
   .numInputWrapper {
     color: var(--green-800);
@@ -48,11 +52,11 @@
   }
 }
 
-span.flatpickr-weekday {
+body span.flatpickr-weekday {
   color: var(--color-muted);
 }
 
-.flatpickr-day {
+body .flatpickr-day {
   color: var(--color-text);
   border-radius: var(--radius-sm);
 
@@ -65,10 +69,19 @@ span.flatpickr-weekday {
     border-color: var(--green-500);
   }
 
-  &.selected {
+  &.selected,
+  &.startRange,
+  &.endRange {
     background: linear-gradient(135deg, var(--green-500), var(--green-700));
     border-color: var(--green-600);
     color: #fff;
+  }
+
+  &.inRange {
+    background: color-mix(in srgb, var(--green-500) 16%, transparent);
+    border-color: transparent;
+    box-shadow: none;
+    color: var(--color-text);
   }
 
   &.prevMonthDay,
@@ -83,7 +96,50 @@ span.flatpickr-weekday {
     opacity: 0.35;
   }
 
-  [data-theme='dark'] &.selected {
+  [data-theme='dark'] &.selected,
+  [data-theme='dark'] &.startRange,
+  [data-theme='dark'] &.endRange {
     color: #063325;
+  }
+}
+
+// Time column (range mode): tokens instead of the pale defaults, and a
+// taller row with larger digits so hour/minute survive fat fingers.
+body .flatpickr-calendar.hasTime .flatpickr-time {
+  height: 52px;
+}
+
+body .flatpickr-time {
+  border-top: 1px solid var(--color-border-strong);
+
+  .numInputWrapper span {
+    border-color: var(--color-border-strong);
+
+    &:hover {
+      background: var(--green-100);
+    }
+
+    svg {
+      fill: var(--color-muted);
+    }
+  }
+
+  input.flatpickr-hour,
+  input.flatpickr-minute,
+  input.flatpickr-second {
+    color: var(--color-text);
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+
+    &:focus {
+      background: color-mix(in srgb, var(--green-500) 14%, transparent);
+      border-color: transparent;
+      outline: none;
+    }
+  }
+
+  .flatpickr-time-separator,
+  .flatpickr-am-pm {
+    color: var(--color-muted);
   }
 }

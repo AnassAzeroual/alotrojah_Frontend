@@ -37,9 +37,10 @@ import { SeasonsService } from '../../core/api/seasons.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { apiErrorKey } from '../../core/api/api-errors';
+import { AuthService } from '../../core/auth/auth.service';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { LanguageService } from '../../core/i18n/language.service';
-import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
+import { SessionRangePickerComponent, type DateTimeRange } from './session-range-picker.component';
 import {
   DropdownComponent,
   dropdownNumber,
@@ -65,8 +66,8 @@ registerLocaleData(localeFr);
 /**
  * Experimental season calendar (the legacy season/term pages stay
  * untouched): every session of the picked season on one calendar with
- * month/week/day views, click a session for details, date edits via the
- * detail card. Mutations reuse the existing PATCH endpoints — this page
+ * month/week/day views, click a session for details, start→end edits via the
+ * detail range-picker. Mutations reuse the existing PATCH endpoints — this page
  * adds no backend surface. Week-view drag rewrites a session's day, its time,
  * or both through the same PATCH (`planned_date`, `start_time`, `end_time`);
  * resizes — duration edits — still snap back. Per-group lanes remain a queued
@@ -80,7 +81,7 @@ registerLocaleData(localeFr);
     RouterLink,
     JsonPipe,
     DropdownComponent,
-    DatePickerComponent,
+    SessionRangePickerComponent,
     CalendarPreviousViewDirective,
     CalendarTodayDirective,
     CalendarNextViewDirective,
@@ -103,6 +104,7 @@ export class SeasonsCalendarPage {
   private readonly planning = inject(PlanningService);
   private readonly language = inject(LanguageService);
   private readonly i18n = inject(TranslateService);
+  private readonly auth = inject(AuthService);
   protected readonly prefs = inject(AdminPrefsService);
 
   readonly saving = signal(false);
@@ -125,9 +127,14 @@ export class SeasonsCalendarPage {
   protected readonly weekStartsOn = 1;
   /** Manual re-render trigger: an unhandled drag snaps back to the data. */
   protected readonly refresh = new Subject<void>();
+  /** Session moves (week drag, date edits) stay manager-only; everyone else is read-only. */
+  protected readonly canManage = computed(() => {
+    const r = this.auth.role();
+    return r === 'admin' || r === 'supervisor';
+  });
   /** Week view: a drag may rewrite day and/or time; resizes stay refused. */
   protected readonly allowDrag = (e: CalendarEventTimesChangedEvent): boolean =>
-    e.type !== CalendarEventTimesChangedEventType.Resize;
+    this.canManage() && e.type !== CalendarEventTimesChangedEventType.Resize;
   /** Month view: the clicked day whose sessions show in the open-day box. */
   protected readonly activeDay = signal<Date | null>(null);
   protected readonly activeDayIsOpen = signal(false);
@@ -223,11 +230,12 @@ export class SeasonsCalendarPage {
 
   /**
    * Week view only: angular-calendar enables a drag exclusively on events
-   * flagged `draggable`, so the week view gets a flagged copy. Month (custom
-   * cell template) and day views never set it, so they stay non-draggable.
+   * flagged `draggable`, so the week view gets a flagged copy for managers.
+   * Month (custom cell template) and day views never set it, so they stay
+   * non-draggable — as does the week view for read-only roles.
    */
   protected readonly weekEvents = computed<CalSessionEvent[]>(() =>
-    this.calEvents().map((e) => ({ ...e, draggable: true })),
+    this.calEvents().map((e) => ({ ...e, draggable: this.canManage() })),
   );
 
   /**
@@ -381,23 +389,43 @@ export class SeasonsCalendarPage {
     this.pickedSeason.set(v);
   }
 
-  protected setDate(id: number, iso: string | null): void {
-    if (iso === null) return;
-    this.patchDate(id, iso);
+  protected setRange(id: number, range: DateTimeRange | null): void {
+    if (range === null) return;
+    const drop: WeekDrop = {
+      id,
+      planned_date: range.start.slice(0, 10),
+      start_time: range.start.slice(11, 16),
+      end_time: range.end.slice(11, 16),
+    };
+    // Same native change-event semantics as the drag path: skip identical picks.
+    const current = this.flatRows().find((r) => r.id === id);
+    if (
+      current?.planned_date?.slice(0, 10) === drop.planned_date &&
+      current?.start_time?.slice(0, 5) === drop.start_time &&
+      current?.end_time?.slice(0, 5) === drop.end_time
+    ) {
+      return;
+    }
+    this.patchSession(drop);
+  }
+
+  /** Detail-card range value from a session row (null until dated + timed). */
+  protected rangeOf(sel: CalSession): DateTimeRange | null {
+    if (!sel.planned_date || !sel.start_time || !sel.end_time) return null;
+    const d = sel.planned_date.slice(0, 10);
+    return {
+      start: `${d}T${sel.start_time.slice(0, 5)}`,
+      end: `${d}T${sel.end_time.slice(0, 5)}`,
+    };
   }
 
   protected pickSession(id: number): void {
     this.selectedId.set(id);
   }
 
-  /** Optimistically move a session to a new day, then persist via PATCH. */
-  private patchDate(id: number, iso: string): void {
-    this.patchSession({ id, planned_date: iso });
-  }
-
   /**
    * Optimistically apply a day/time change, then persist via PATCH. The
-   * week-view drag and the detail date-picker share this path; on failure the
+   * week-view drag and the detail range-picker share this path; on failure the
    * overlay is rolled back and the truth is reloaded.
    */
   private patchSession(drop: WeekDrop): void {
