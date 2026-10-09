@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { APIRequestContext } from '@playwright/test';
-import { adminLogin, apiToken, loginAs } from './api';
+import { adminLogin, apiToken, firstSessionDate, loginAs } from './api';
 
 /**
  * Calendar for every level (user request): students see their own group only,
@@ -18,14 +18,16 @@ async function adminHeaders(request: APIRequestContext): Promise<Record<string, 
 }
 
 /** A center-1 group that owns sessions in the current season (non-vacuous reads). */
-async function sessionGroup(request: APIRequestContext): Promise<{ id: number; name: string }> {
+async function sessionGroup(
+  request: APIRequestContext,
+): Promise<{ id: number; name: string; date: string }> {
   const headers = await adminHeaders(request);
   const seasons = (await (await request.get(`${API}/seasons`, { headers })).json()).data
     .data as Array<{ id: number; center_id: number | null; is_current: boolean }>;
   const current = seasons.find((s) => s.is_current) ?? seasons[0];
   const sessions = (
     await (await request.get(`${API}/sessions-cal?season_id=${current.id}`, { headers })).json()
-  ).data.data as Array<{ group_id: number | null }>;
+  ).data.data as Array<{ group_id: number | null; planned_date: string | null }>;
   const ids = [
     ...new Set(sessions.map((s) => s.group_id).filter((g): g is number => g !== null)),
   ].sort((a, b) => a - b);
@@ -36,7 +38,16 @@ async function sessionGroup(request: APIRequestContext): Promise<{ id: number; n
       name: string;
       center_id: number;
     };
-    if (g.center_id === 1) return { id: g.id, name: g.name };
+    if (g.center_id === 1) {
+      const date = sessions
+        .filter((s) => s.group_id === id)
+        .map((s) => s.planned_date)
+        .filter((d): d is string => !!d)
+        .sort()[0]
+        ?.slice(0, 10);
+      if (!date) throw new Error('chosen group has no dated sessions');
+      return { id: g.id, name: g.name, date };
+    }
   }
   throw new Error('no center-1 group owns sessions in the current season');
 }
@@ -106,8 +117,9 @@ test.describe.serial('Calendar for every level', () => {
 
     await loginAs(page, studentEmail, password);
     await expect(page.getByTestId('nav-calendar')).toBeVisible();
-    await page.getByTestId('nav-calendar').click();
-    await expect(page).toHaveURL(/\/planning\/calendar$/);
+    // No auto-landing: go straight to the pupil's own dated month.
+    await page.goto(`/planning/calendar?date=${group.date}`);
+    await expect(page).toHaveURL(/\/planning\/calendar\?date=/);
     await expect
       .poll(async () => page.getByTestId('cal-view-month').count(), { timeout: 20000 })
       .toBeGreaterThan(0);
@@ -137,7 +149,7 @@ test.describe.serial('Calendar for every level', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
-  test('teacher reads center calendar read-only, then is removed', async ({ page }) => {
+  test('teacher reads center calendar read-only, then is removed', async ({ page, request }) => {
     await adminLogin(page);
     await page.getByTestId('nav-users').click();
     await page.getByTestId('users-new').click();
@@ -157,8 +169,9 @@ test.describe.serial('Calendar for every level', () => {
 
     await loginAs(page, teacherEmail, password);
     await expect(page.getByTestId('nav-calendar')).toBeVisible();
-    await page.getByTestId('nav-calendar').click();
-    await expect(page).toHaveURL(/\/planning\/calendar$/);
+    // No auto-landing: go straight to a dated week.
+    await page.goto(`/planning/calendar?date=${await firstSessionDate(request)}`);
+    await expect(page).toHaveURL(/\/planning\/calendar\?date=/);
     await expect
       .poll(async () => page.getByTestId('cal-view-month').count(), { timeout: 20000 })
       .toBeGreaterThan(0);
@@ -187,10 +200,13 @@ test.describe.serial('Calendar for every level', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
-  test('manager edits session times via the range picker, then restores', async ({ page }) => {
+  test('manager edits session times via the range picker, then restores', async ({
+    page,
+    request,
+  }) => {
     await adminLogin(page);
-    await page.getByTestId('nav-calendar').click();
-    await expect(page).toHaveURL(/\/planning\/calendar$/);
+    await page.goto(`/planning/calendar?date=${await firstSessionDate(request)}`);
+    await expect(page).toHaveURL(/\/planning\/calendar\?date=/);
     await expect
       .poll(async () => page.getByTestId('cal-view-month').count(), { timeout: 20000 })
       .toBeGreaterThan(0);
@@ -235,10 +251,10 @@ test.describe.serial('Calendar for every level', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
-  test('range picker caps times at the 22:00 ceiling, then restores', async ({ page }) => {
+  test('range picker caps times at the 22:00 ceiling, then restores', async ({ page, request }) => {
     await adminLogin(page);
-    await page.getByTestId('nav-calendar').click();
-    await expect(page).toHaveURL(/\/planning\/calendar$/);
+    await page.goto(`/planning/calendar?date=${await firstSessionDate(request)}`);
+    await expect(page).toHaveURL(/\/planning\/calendar\?date=/);
     await expect
       .poll(async () => page.getByTestId('cal-view-month').count(), { timeout: 20000 })
       .toBeGreaterThan(0);
@@ -304,12 +320,12 @@ test.describe.serial('Calendar for every level', () => {
     await page.getByTestId('cal-view-week').click();
     await expect(page.locator('.cal-week-view')).toBeVisible({ timeout: 20000 });
 
-    // The week arrives as one Mon–Sun sessions-cal window (inclusive bounds)…
+    // The week arrives as one Mon–Sun feed window (inclusive bounds)…
     await expect
       .poll(
         async () =>
           urls
-            .filter((u) => u.includes('/sessions-cal'))
+            .filter((u) => u.includes('/api/v1/calendar'))
             .some((u) => {
               const q = new URL(u).searchParams;
               const from = q.get('from');
@@ -320,15 +336,19 @@ test.describe.serial('Calendar for every level', () => {
         { timeout: 20000 },
       )
       .toBe(true);
-    // …every sessions fetch is windowed, and whole-season term details
-    // are never fanned out.
-    const calls = urls.filter((u) => u.includes('/sessions-cal'));
-    expect(calls.length).toBeGreaterThan(0);
-    for (const u of calls) {
+    // …and the four-lookup fan-out is gone: no groups, no terms list, no
+    // weeks, no per-term details on calendar navigation.
+    const feeds = urls.filter((u) => u.includes('/api/v1/calendar'));
+    expect(feeds.length).toBeGreaterThan(0);
+    for (const u of feeds) {
       const q = new URL(u).searchParams;
+      expect(q.get('season_id')).toMatch(/^\d+$/);
       expect(q.get('from')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(q.get('to')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
+    expect(urls.filter((u) => u.includes('/api/v1/groups'))).toEqual([]);
+    expect(urls.filter((u) => /\/seasons\/\d+\/terms/.test(u))).toEqual([]);
+    expect(urls.filter((u) => u.includes('/api/v1/weeks'))).toEqual([]);
     expect(urls.filter((u) => /\/terms\/\d+/.test(u))).toEqual([]);
   });
 });

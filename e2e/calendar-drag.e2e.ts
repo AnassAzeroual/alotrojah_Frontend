@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { APIRequestContext, Locator, Page, Response } from '@playwright/test';
-import { adminLogin, apiToken } from './api';
+import { adminLogin, apiToken, firstSessionDate } from './api';
 
 /**
  * Seasons calendar, week view: a drag rewrites whatever it actually changed —
@@ -43,10 +43,14 @@ function minutesToClock(minutes: number): string {
 }
 
 /** Admin login → the season calendar switched to the week view. */
-async function openWeekView(page: Page): Promise<{ weekView: Locator; events: Locator }> {
+async function openWeekView(
+  page: Page,
+  request: APIRequestContext,
+): Promise<{ weekView: Locator; events: Locator }> {
   await adminLogin(page);
-  await page.getByTestId('nav-calendar').click();
-  await expect(page).toHaveURL(/\/planning\/calendar$/);
+  // No auto-landing: go straight to a dated week.
+  await page.goto(`/planning/calendar?date=${await firstSessionDate(request)}`);
+  await expect(page).toHaveURL(/\/planning\/calendar\?date=/);
   await page.getByTestId('cal-view-week').click();
   const weekView = page.locator('.cal-week-view');
   await expect(weekView).toBeVisible();
@@ -100,7 +104,7 @@ test.describe.serial('Calendar week-view drag', () => {
     page,
     request,
   }) => {
-    const { weekView, events } = await openWeekView(page);
+    const { weekView, events } = await openWeekView(page, request);
     const { event, id, dateInput } = await openFirstEvent(page, events);
     const originalRange = await dateInput.inputValue();
     expect(originalRange, 'detail picker shows a datetime range').toMatch(
@@ -161,7 +165,7 @@ test.describe.serial('Calendar week-view drag', () => {
     page,
     request,
   }) => {
-    const { weekView, events } = await openWeekView(page);
+    const { weekView, events } = await openWeekView(page, request);
     const { event, id, dateInput, timeLine } = await openFirstEvent(page, events);
 
     const originalIso = dmyToDateToIso((await dateInput.inputValue()).slice(0, 10));

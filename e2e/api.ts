@@ -52,6 +52,27 @@ export async function adminLogin(page: import('@playwright/test').Page): Promise
   await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
 }
 
+/** First dated session in the current season (calendar ?date= target). */
+export async function firstSessionDate(request: APIRequestContext): Promise<string> {
+  const token = await apiToken(request);
+  const headers = { Authorization: `Bearer ${token}` };
+  const seasons = (await (await request.get(`${API}/seasons`, { headers })).json()).data
+    .data as Array<{
+    id: number;
+    is_current: boolean;
+  }>;
+  const current = seasons.find((s) => s.is_current) ?? seasons[0];
+  const rows = (
+    await (await request.get(`${API}/sessions-cal?season_id=${current.id}`, { headers })).json()
+  ).data.data as Array<{ planned_date: string | null }>;
+  const first = rows
+    .map((r) => r.planned_date)
+    .filter((d): d is string => !!d)
+    .sort()[0];
+  if (!first) throw new Error('seed has no dated sessions');
+  return first.slice(0, 10);
+}
+
 /** Fill + verify, retrying across external form-state wipes (dev-server HMR
  *  swaps the form mid-test under full-suite load — observed 4× at one login
  *  step, green in isolation). Bounded: persistent breakage still fails. */
