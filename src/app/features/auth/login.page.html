@@ -15,25 +15,41 @@
 
       <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">
         <div class="auth-input">
-          <input type="email" formControlName="email" autocomplete="username" dir="ltr" data-testid="auth-email"
-            [placeholder]="'auth.email' | translate" [attr.aria-label]="'auth.email' | translate" />
+          <input
+            type="email"
+            formControlName="email"
+            autocomplete="username"
+            dir="ltr"
+            data-testid="auth-email"
+            [placeholder]="'auth.email' | translate"
+            [attr.aria-label]="'auth.email' | translate"
+          />
         </div>
 
-        <app-password-field [control]="form.controls.password" testId="auth-password" autocomplete="current-password" />
+        <app-password-field
+          [control]="form.controls.password"
+          testId="auth-password"
+          autocomplete="current-password"
+        />
 
         <div class="auth-meta-row">
           <button type="button" class="link-quiet">{{ 'auth.recovery' | translate }}</button>
         </div>
 
         @if (failed()) {
-        <p class="auth-error">{{ 'auth.invalid' | translate }}</p>
+          <p class="auth-error">{{ 'auth.invalid' | translate }}</p>
         }
 
-        <button type="submit" class="auth-btn" data-testid="auth-submit" [disabled]="form.invalid || loading()">
+        <button
+          type="submit"
+          class="auth-btn"
+          data-testid="auth-submit"
+          [disabled]="form.invalid || loading()"
+        >
           @if (loading()) {
-          <app-spinner />
+            <app-spinner />
           } @else {
-          {{ 'auth.login' | translate }}
+            {{ 'auth.login' | translate }}
           }
         </button>
       </form>

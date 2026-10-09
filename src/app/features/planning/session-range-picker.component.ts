@@ -58,9 +58,7 @@ const RANGE_SEP = ' → ';
  * input there so unit tests and desktop e2e keep exercising the text path.
  */
 function allowTypedEntry(): boolean {
-  return (
-    typeof window.matchMedia !== 'function' || window.matchMedia('(hover: hover)').matches
-  );
+  return typeof window.matchMedia !== 'function' || window.matchMedia('(hover: hover)').matches;
 }
 
 function displayRange(start: Date, end: Date, sep: string): string {
