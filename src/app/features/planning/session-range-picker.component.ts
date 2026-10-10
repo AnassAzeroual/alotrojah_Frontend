@@ -151,7 +151,7 @@ export class SessionRangePickerComponent implements OnDestroy {
       mode: 'range',
       enableTime: true,
       time_24hr: true,
-      // Day ceiling 22:00 everywhere, like the week/day views render.
+      // Full 24h day, like the week/day views render (no clock past 23:59).
       maxTime: MAX_CLOCK,
       dateFormat: 'd/m/Y H:i',
       defaultDate: toDates(this.value()),

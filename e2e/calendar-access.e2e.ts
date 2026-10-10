@@ -251,7 +251,10 @@ test.describe.serial('Calendar for every level', () => {
     await expect(page).toHaveURL(/\/login$/);
   });
 
-  test('range picker caps times at the 22:00 ceiling, then restores', async ({ page, request }) => {
+  test('range picker accepts evening times up to the 23:59 cap, then restores', async ({
+    page,
+    request,
+  }) => {
     await adminLogin(page);
     await page.goto(`/planning/calendar?date=${await firstSessionDate(request)}`);
     await expect(page).toHaveURL(/\/planning\/calendar\?date=/);
@@ -280,8 +283,8 @@ test.describe.serial('Calendar for every level', () => {
     expect(res.ok()).toBe(true);
     const sent = res.request().postDataJSON() as Record<string, string>;
     expect(sent['start_time']).toBe('21:00');
-    expect(sent['end_time']).toBe('22:00');
-    await expect(timeTag).toContainText('22:00');
+    expect(sent['end_time']).toBe('23:30');
+    await expect(timeTag).toContainText('23:30');
 
     // Self-cleaning: put the original clocks back.
     const restored = page.waitForResponse(

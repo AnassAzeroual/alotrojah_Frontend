@@ -91,11 +91,11 @@ describe('SessionRangePickerComponent', () => {
     expect(cmp.value()).toEqual({ start: '2026-10-07T10:00', end: '2026-10-07T11:30' });
   });
 
-  it('clamps a picked end past 22:00 to the ceiling', () => {
+  it('keeps an evening pick up to the 23:59 cap', () => {
     const { fixture, cmp } = mount(null);
     pick(cmp, new Date(2026, 9, 7, 21, 0), new Date(2026, 9, 7, 23, 30));
     fixture.detectChanges();
-    expect(cmp.value()).toEqual({ start: '2026-10-07T21:00', end: '2026-10-07T22:00' });
+    expect(cmp.value()).toEqual({ start: '2026-10-07T21:00', end: '2026-10-07T23:30' });
   });
 
   it('does not recommit the identical pair', () => {

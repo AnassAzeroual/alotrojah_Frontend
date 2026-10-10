@@ -112,11 +112,16 @@ describe('seasons-calendar helpers', () => {
   });
 
   describe('clampClock', () => {
-    it('caps late clocks at the 22:00 ceiling', () => {
-      expect(clampClock('23:30')).toBe('22:00');
-      expect(clampClock('22:00')).toBe('22:00');
+    it('caps clocks at the 23:59 ceiling', () => {
+      expect(clampClock('23:30')).toBe('23:30');
+      expect(clampClock('23:59')).toBe('23:59');
       expect(clampClock('21:59')).toBe('21:59');
       expect(clampClock('08:00')).toBe('08:00');
+    });
+
+    it('clamps a typed clock past the cap', () => {
+      expect(clampClock('24:30')).toBe('23:59');
+      expect(clampClock('25:00')).toBe('23:59');
     });
   });
 
@@ -141,16 +146,22 @@ describe('seasons-calendar helpers', () => {
       ).toEqual({ id: 19, planned_date: '2026-11-20', start_time: '06:00', end_time: '07:00' });
     });
 
-    it('nulls a drop ending past the 22:00 ceiling', () => {
+    it('allows an evening drop (past the old 22:00 cap)', () => {
       expect(
         resolveWeekDrop(19, new Date(2026, 10, 18, 21, 30), new Date(2026, 10, 18, 22, 30), rows),
-      ).toBeNull();
+      ).toEqual({ id: 19, start_time: '21:30', end_time: '22:30' });
     });
 
-    it('allows a drop ending exactly at the 22:00 ceiling', () => {
+    it('allows a drop ending at the 23:59 ceiling', () => {
       expect(
-        resolveWeekDrop(19, new Date(2026, 10, 18, 21), new Date(2026, 10, 18, 22), rows),
-      ).toEqual({ id: 19, start_time: '21:00', end_time: '22:00' });
+        resolveWeekDrop(19, new Date(2026, 10, 18, 23), new Date(2026, 10, 18, 23, 59), rows),
+      ).toEqual({ id: 19, start_time: '23:00', end_time: '23:59' });
+    });
+
+    it('nulls a drop that would cross midnight (no rollover)', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 23, 30), new Date(2026, 10, 19, 0, 30), rows),
+      ).toBeNull();
     });
 
     it('nulls a drop that lands exactly where the session already is', () => {

@@ -150,8 +150,6 @@
           [locale]="loc"
           [weekStartsOn]="weekStartsOn"
           [refresh]="refresh"
-          [dayStartHour]="6"
-          [dayEndHour]="22"
           [validateEventTimesChanged]="allowDrag"
           (eventTimesChanged)="onWeekTimesChanged($event)"
           (eventClicked)="onEventClick($event)"
@@ -162,8 +160,6 @@
           [events]="calEvents()"
           [locale]="loc"
           [refresh]="refresh"
-          [dayStartHour]="6"
-          [dayEndHour]="22"
           (eventClicked)="onEventClick($event)"
         />
       }

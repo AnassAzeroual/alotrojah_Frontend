@@ -103,8 +103,8 @@ export function dateToClockTime(d: Date): string {
   return `${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-/** Day ceiling everywhere (views render 6→22): no session clock runs past it. */
-export const MAX_CLOCK = '22:00';
+/** Full 24h day (views render 0→23): no session clock runs past 23:59. */
+export const MAX_CLOCK = '23:59';
 
 /** Clamp a zero-padded `HH:MM` clock to the day ceiling (lexicographic-safe). */
 export function clampClock(time: string): string {
@@ -137,8 +137,9 @@ export function resolveWeekDrop(
   const storedEnd = current.end_time.slice(0, 5);
   const start = dateToClockTime(newStart);
   const end = newEnd === undefined ? storedEnd : dateToClockTime(newEnd);
-  // Day ceiling: drops ending past 22:00 snap back (the grid ends there too).
-  if (end > MAX_CLOCK) return null;
+  // Full 24h day, no rollover: a gesture that would end at/before its start
+  // (crossing midnight) snaps back, and no clock runs past 23:59.
+  if (end <= start || end > MAX_CLOCK) return null;
   if (start !== storedStart || end !== storedEnd) {
     drop.start_time = start;
     drop.end_time = end;
