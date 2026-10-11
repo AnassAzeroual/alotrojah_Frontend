@@ -3,6 +3,7 @@ import {
   clampClock,
   dateToClockTime,
   dateToISODate,
+  nowSegmentIndex,
   resolveWeekDrop,
   startOfWeek,
   toCalendarEvent,
@@ -125,6 +126,23 @@ describe('seasons-calendar helpers', () => {
     });
   });
 
+  describe('nowSegmentIndex', () => {
+    it('maps a clock to its 30-minute slot in the shipped 48-slot day', () => {
+      expect(nowSegmentIndex(0, 0, 48)).toBe(0);
+      expect(nowSegmentIndex(14, 45, 48)).toBe(29); // the 14:30 slot
+      expect(nowSegmentIndex(23, 59, 48)).toBe(47); // last slot, never past the end
+    });
+
+    it('derives the slot length for other hour segmentations', () => {
+      expect(nowSegmentIndex(14, 45, 24)).toBe(14); // hourly
+      expect(nowSegmentIndex(14, 45, 96)).toBe(59); // 15-minute
+    });
+
+    it('returns -1 when the column renders no slots', () => {
+      expect(nowSegmentIndex(9, 0, 0)).toBe(-1);
+    });
+  });
+
   describe('resolveWeekDrop', () => {
     const rows = [SESSION];
 
@@ -138,6 +156,24 @@ describe('seasons-calendar helpers', () => {
       expect(
         resolveWeekDrop(19, new Date(2026, 10, 18, 10, 30), new Date(2026, 10, 18, 11, 30), rows),
       ).toEqual({ id: 19, start_time: '10:30', end_time: '11:30' });
+    });
+
+    it('extends the end when the after-edge is resized (start held)', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 8), new Date(2026, 10, 18, 10), rows),
+      ).toEqual({ id: 19, start_time: '08:00', end_time: '10:00' });
+    });
+
+    it('pulls the start earlier when the before-edge is resized (end held)', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 7), new Date(2026, 10, 18, 9), rows),
+      ).toEqual({ id: 19, start_time: '07:00', end_time: '09:00' });
+    });
+
+    it('nulls a resize that collapses to a zero-length duration', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 9), new Date(2026, 10, 18, 9), rows),
+      ).toBeNull();
     });
 
     it('returns both when a diagonal drop moves the day and the time', () => {

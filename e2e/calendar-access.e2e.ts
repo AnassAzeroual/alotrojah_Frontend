@@ -13,6 +13,14 @@ import { adminLogin, apiToken, firstSessionDate, loginAs } from './api';
 
 const API = 'http://127.0.0.1:8000/api/v1';
 
+/** Add minutes to an `HH:mm` clock, capped at the 23:59 day ceiling. */
+function bumpClock(hhmm: string, minutes: number): string {
+  const [h, m] = hhmm.split(':').map(Number);
+  const p = (n: number): string => String(n).padStart(2, '0');
+  const total = h * 60 + m + minutes;
+  return `${p(Math.min(Math.floor(total / 60), 23))}:${p(Math.min(total % 60, 59))}`;
+}
+
 async function adminHeaders(request: APIRequestContext): Promise<Record<string, string>> {
   return { Authorization: `Bearer ${await apiToken(request)}` };
 }
@@ -214,38 +222,64 @@ test.describe.serial('Calendar for every level', () => {
     const pills = page.locator('.cal-events .cal-event');
     await expect.poll(async () => pills.count(), { timeout: 20000 }).toBeGreaterThan(0);
     await pills.first().click();
-    const box = page.locator('[data-testid^="cal-date-"]').first();
-    await expect(box).toBeVisible();
+    // Two single-date pickers: the start leg keeps `cal-date-<id>`, the end
+    // leg suffixes `-end`. Each leg commits on its own pick — no shared
+    // two-click range field.
+    const startBox = page.locator('[data-testid^="cal-date-"]').first();
+    await expect(startBox).toBeVisible();
+    const endBox = page.locator('[data-testid^="cal-date-"][data-testid$="-end"]');
+    await expect(endBox).toBeVisible();
     const timeTag = page.locator('[data-testid^="cal-time-"]').first();
     await expect(timeTag).toBeVisible();
 
-    // Keep the pill's own day, rewrite the clocks (arrow range separator).
-    const before = await box.inputValue();
-    const day = before.slice(0, 10);
-    const origStart = before.slice(11, 16);
-    const origEnd = before.slice(-5);
-    const patched = page.waitForResponse(
-      (r) => r.url().includes('sessions-cal/') && r.request().method() === 'PATCH',
-    );
-    await box.fill(`${day} 08:00 → ${day} 09:30`);
-    await box.press('Tab');
-    const res = await patched;
-    expect(res.ok()).toBe(true);
-    const sent = res.request().postDataJSON() as Record<string, string>;
-    const [dd, mm, yyyy] = day.split('/');
-    expect(sent['planned_date']).toBe(`${yyyy}-${mm}-${dd}`);
-    expect(sent['start_time']).toBe('08:00');
-    expect(sent['end_time']).toBe('09:30');
-    await expect(timeTag).toContainText('08:00');
-    await expect(timeTag).toContainText('09:30');
+    // Keep the pill's own day, rewrite the clocks leg by leg. End first, then
+    // start, so every intermediate range stays start < end (and vice versa
+    // when restoring below).
+    const day = (await startBox.inputValue()).slice(0, 10);
+    const origStart = (await startBox.inputValue()).slice(11, 16);
+    const origEnd = (await endBox.inputValue()).slice(11, 16);
+    const newEnd = bumpClock(origEnd, 30);
+    const newStart = bumpClock(origStart, 30);
 
-    // Self-cleaning: put the original clocks back.
-    const restored = page.waitForResponse(
+    const patchedEnd = page.waitForResponse(
       (r) => r.url().includes('sessions-cal/') && r.request().method() === 'PATCH',
     );
-    await box.fill(`${day} ${origStart} → ${day} ${origEnd}`);
-    await box.press('Tab');
-    expect((await restored).ok()).toBe(true);
+    await endBox.fill(`${day} ${newEnd}`);
+    await endBox.press('Tab');
+    const resEnd = await patchedEnd;
+    expect(resEnd.ok()).toBe(true);
+    const sentEnd = resEnd.request().postDataJSON() as Record<string, string>;
+    expect(sentEnd['start_time']).toBe(origStart);
+    expect(sentEnd['end_time']).toBe(newEnd);
+
+    const patchedStart = page.waitForResponse(
+      (r) => r.url().includes('sessions-cal/') && r.request().method() === 'PATCH',
+    );
+    await startBox.fill(`${day} ${newStart}`);
+    await startBox.press('Tab');
+    const resStart = await patchedStart;
+    expect(resStart.ok()).toBe(true);
+    const sentStart = resStart.request().postDataJSON() as Record<string, string>;
+    const [dd, mm, yyyy] = day.split('/');
+    expect(sentStart['planned_date']).toBe(`${yyyy}-${mm}-${dd}`);
+    expect(sentStart['start_time']).toBe(newStart);
+    expect(sentStart['end_time']).toBe(newEnd);
+    await expect(timeTag).toContainText(newStart);
+    await expect(timeTag).toContainText(newEnd);
+
+    // Self-cleaning: put the original clocks back — start first, then end.
+    const restoredStart = page.waitForResponse(
+      (r) => r.url().includes('sessions-cal/') && r.request().method() === 'PATCH',
+    );
+    await startBox.fill(`${day} ${origStart}`);
+    await startBox.press('Tab');
+    expect((await restoredStart).ok()).toBe(true);
+    const restoredEnd = page.waitForResponse(
+      (r) => r.url().includes('sessions-cal/') && r.request().method() === 'PATCH',
+    );
+    await endBox.fill(`${day} ${origEnd}`);
+    await endBox.press('Tab');
+    expect((await restoredEnd).ok()).toBe(true);
     await expect(timeTag).toContainText(origStart);
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
@@ -265,34 +299,51 @@ test.describe.serial('Calendar for every level', () => {
     const pills = page.locator('.cal-events .cal-event');
     await expect.poll(async () => pills.count(), { timeout: 20000 }).toBeGreaterThan(0);
     await pills.first().click();
-    const box = page.locator('[data-testid^="cal-date-"]').first();
-    await expect(box).toBeVisible();
+    const startBox = page.locator('[data-testid^="cal-date-"]').first();
+    await expect(startBox).toBeVisible();
+    const endBox = page.locator('[data-testid^="cal-date-"][data-testid$="-end"]');
+    await expect(endBox).toBeVisible();
     const timeTag = page.locator('[data-testid^="cal-time-"]').first();
     await expect(timeTag).toBeVisible();
 
-    const before = await box.inputValue();
-    const day = before.slice(0, 10);
-    const origStart = before.slice(11, 16);
-    const origEnd = before.slice(-5);
-    const patched = page.waitForResponse(
+    const day = (await startBox.inputValue()).slice(0, 10);
+    const origStart = (await startBox.inputValue()).slice(11, 16);
+    const origEnd = (await endBox.inputValue()).slice(11, 16);
+    // The end leg moves first, so the seed's own start must precede 23:30.
+    expect(origStart < '23:30', 'seeded start stays before the evening target').toBe(true);
+
+    const patchedEnd = page.waitForResponse(
       (r) => r.url().includes('sessions-cal/') && r.request().method() === 'PATCH',
     );
-    await box.fill(`${day} 21:00 → ${day} 23:30`);
-    await box.press('Tab');
-    const res = await patched;
+    await endBox.fill(`${day} 23:30`);
+    await endBox.press('Tab');
+    expect((await patchedEnd).ok()).toBe(true);
+
+    const patchedStart = page.waitForResponse(
+      (r) => r.url().includes('sessions-cal/') && r.request().method() === 'PATCH',
+    );
+    await startBox.fill(`${day} 21:00`);
+    await startBox.press('Tab');
+    const res = await patchedStart;
     expect(res.ok()).toBe(true);
     const sent = res.request().postDataJSON() as Record<string, string>;
     expect(sent['start_time']).toBe('21:00');
     expect(sent['end_time']).toBe('23:30');
     await expect(timeTag).toContainText('23:30');
 
-    // Self-cleaning: put the original clocks back.
-    const restored = page.waitForResponse(
+    // Self-cleaning: put the original clocks back — start first, then end.
+    const restoredStart = page.waitForResponse(
       (r) => r.url().includes('sessions-cal/') && r.request().method() === 'PATCH',
     );
-    await box.fill(`${day} ${origStart} → ${day} ${origEnd}`);
-    await box.press('Tab');
-    expect((await restored).ok()).toBe(true);
+    await startBox.fill(`${day} ${origStart}`);
+    await startBox.press('Tab');
+    expect((await restoredStart).ok()).toBe(true);
+    const restoredEnd = page.waitForResponse(
+      (r) => r.url().includes('sessions-cal/') && r.request().method() === 'PATCH',
+    );
+    await endBox.fill(`${day} ${origEnd}`);
+    await endBox.press('Tab');
+    expect((await restoredEnd).ok()).toBe(true);
     await expect(timeTag).toContainText(origStart);
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);

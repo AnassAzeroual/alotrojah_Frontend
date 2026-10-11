@@ -1,0 +1,95 @@
+@if (loading()) {
+  <div class="lt-states" aria-hidden="true">
+    <div class="skeleton sk-card"></div>
+    <div class="skeleton sk-card"></div>
+    <div class="skeleton sk-card"></div>
+  </div>
+} @else if (sortedRows().length === 0) {
+  <app-empty-state [messageKey]="emptyTitleKey() || 'common.empty'" />
+} @else {
+  <div class="lt-wrap">
+    @if (searchVisible()) {
+      <label class="lt-search">
+        <span class="sr-only">{{ searchPlaceholderKey() | translate }}</span>
+        <input
+          type="search"
+          [attr.data-testid]="searchTestId() || null"
+          [placeholder]="searchPlaceholderKey() | translate"
+          [value]="searchValue()"
+          (input)="onSearch($any($event.target).value)"
+        />
+      </label>
+    }
+    <table class="lt-table" [class]="tableClass()">
+      <thead>
+        <tr>
+          @for (col of columns(); track col.key) {
+            @if (isSortable(col)) {
+              <th
+                scope="col"
+                [class.lt-hide-sm]="col.priority === 'low'"
+                [class.lt-end]="col.align === 'end' || col.numeric"
+                [attr.aria-sort]="ariaSort(col)"
+              >
+                <button type="button" class="lt-sort" (click)="toggleSort(col)">
+                  <span>{{ col.headerKey | translate }}</span>
+                  <svg
+                    class="lt-caret"
+                    [class.on]="sortActive(col)"
+                    [class.desc]="sortDir(col) === 'desc'"
+                    viewBox="0 0 12 8"
+                    width="10"
+                    height="7"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path d="M6 0 12 8H0z" fill="currentColor" />
+                  </svg>
+                </button>
+              </th>
+            } @else {
+              <th
+                scope="col"
+                [class.lt-hide-sm]="col.priority === 'low'"
+                [class.lt-end]="col.align === 'end' || col.numeric"
+              >
+                {{ col.headerKey | translate }}
+              </th>
+            }
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of sortedRows(); track trk(row)) {
+          <tr class="lt-row anim-rise" [style.--i]="$index">
+            @for (col of columns(); track col.key) {
+              <td
+                [attr.data-label]="col.headerKey ? (col.headerKey | translate) : null"
+                [class.lt-hide-sm]="col.priority === 'low'"
+                [class.lt-end]="col.align === 'end' || col.numeric"
+                [dir]="col.numeric ? 'ltr' : null"
+              >
+                @if (templateFor(col.key); as tpl) {
+                  <ng-container
+                    [ngTemplateOutlet]="tpl"
+                    [ngTemplateOutletContext]="{ $implicit: row, row }"
+                  />
+                } @else {
+                  {{ cellText(row, col) }}
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (showPagination()) {
+      <app-paginator
+        [page]="page()"
+        [perPage]="perPage()"
+        [total]="total()"
+        (pageChange)="pageChange.emit($event)"
+      />
+    }
+  </div>
+}

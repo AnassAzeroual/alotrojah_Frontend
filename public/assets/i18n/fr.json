@@ -10,7 +10,9 @@
     "today": "Aujourd'hui",
     "prev": "Précédent",
     "next": "Suivant",
-    "datetime_range": "Dates et heures de la séance"
+    "datetime_range": "Dates et heures de la séance",
+    "start": "Début",
+    "end": "Fin"
   },
   "nav": {
     "dashboard": "Accueil",

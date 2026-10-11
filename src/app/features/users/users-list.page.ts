@@ -20,16 +20,31 @@ import {
   dropdownNumber,
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
-import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
-import { PaginatorComponent } from '../../shared/ui/paginator/paginator.component';
-import { Role } from '../../core/api/api-models';
+import {
+  ListColumn,
+  ListSort,
+  ListTableColDef,
+  ListTableComponent,
+} from '../../shared/ui/list-table/list-table.component';
+import { Role, User } from '../../core/api/api-models';
 
 const ROLES: Role[] = ['admin', 'supervisor', 'teacher', 'student', 'board'];
+
+/** Column config drives the shared list-table (headers, server sort, alignment). */
+const COLUMNS: readonly ListColumn[] = [
+  { key: 'full_name', headerKey: 'users.name', sortKey: 'full_name' },
+  { key: 'role', headerKey: 'users.role', sortKey: 'role' },
+  { key: 'teacher_type', headerKey: 'users.teacher_type', sortKey: false },
+  { key: 'center_id', headerKey: 'users.center', sortKey: 'center_id' },
+  { key: 'is_active', headerKey: 'users.is_active', sortKey: 'is_active' },
+  // Hidden on mobile, matching the pre-migration layout (row link is the entry point).
+  { key: 'actions', headerKey: '', sortKey: false, align: 'end', priority: 'low' },
+];
 
 @Component({
   selector: 'app-users-list-page',
   standalone: true,
-  imports: [RouterLink, TranslatePipe, DropdownComponent, EmptyStateComponent, PaginatorComponent],
+  imports: [RouterLink, TranslatePipe, DropdownComponent, ListTableComponent, ListTableColDef],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './users-list.page.html',
   styleUrl: './users-list.page.scss',
@@ -70,8 +85,11 @@ export class UsersListPage {
   readonly q = signal('');
   readonly role = signal<string | null>(null);
   readonly page = signal(1);
+  readonly sort = signal<ListSort | null>(null);
   readonly unassignedOnly = signal(false);
   private readonly tick = signal(0);
+
+  readonly cols = COLUMNS;
 
   private readonly query = resource({
     params: () => ({
@@ -79,6 +97,7 @@ export class UsersListPage {
       r: this.role(),
       p: this.page(),
       u: this.unassignedOnly(),
+      s: this.sort(),
       t: this.tick(),
     }),
     loader: ({ params }) => {
@@ -86,6 +105,10 @@ export class UsersListPage {
       if (params.q) query['q'] = params.q;
       if (params.r !== null) query['role'] = params.r;
       if (params.u) query['unassigned'] = 1;
+      if (params.s?.dir) {
+        query['sort'] = params.s.key;
+        query['direction'] = params.s.dir;
+      }
       return firstValueFrom(this.usersSvc.list(query));
     },
   });
@@ -108,6 +131,23 @@ export class UsersListPage {
     this.page.set(1);
     this.armingDeleteId.set(null);
     this.pendingReplace.set(null);
+  }
+
+  /** Debounced search from the list-table; the page owns the query value. */
+  protected onSearch(value: string): void {
+    this.q.set(value);
+    this.resetPage();
+  }
+
+  /** Server sort from the list-table headers. */
+  protected onSort(s: ListSort): void {
+    this.sort.set(s);
+    this.resetPage();
+  }
+
+  /** Cell templates receive the row as unknown (directive keeps cells data-agnostic). */
+  protected userCell(u: unknown): User {
+    return u as User;
   }
 
   canDelete(u: { id: number; role: Role }): boolean {

@@ -112,6 +112,20 @@ export function clampClock(time: string): string {
 }
 
 /**
+ * Index of the time-grid slot holding the given clock, for a column that
+ * renders `segmentCount` equal slots across the full 00:00→24:00 day (both the
+ * week and day views do). The slot length is derived from the count rather than
+ * the library's shipped 30-minute default, so a changed `hourSegments` can't
+ * drift the auto-scroll target. Returns -1 when the column renders no slots.
+ */
+export function nowSegmentIndex(hours: number, minutes: number, segmentCount: number): number {
+  if (segmentCount <= 0) return -1;
+  const slotMinutes = (24 * 60) / segmentCount;
+  const index = Math.floor((hours * 60 + minutes) / slotMinutes);
+  return Math.min(segmentCount - 1, Math.max(0, index));
+}
+
+/**
  * Resolve a week-view drag into the fields it actually changed. angular-calendar
  * reports the drop's `newStart` plus a `newEnd` shifted by the same amount, so
  * one gesture can move the day, the time, or both while the duration survives.

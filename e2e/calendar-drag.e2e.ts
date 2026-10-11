@@ -5,8 +5,8 @@ import { adminLogin, apiToken, firstSessionDate } from './api';
 /**
  * Seasons calendar, week view: a drag rewrites whatever it actually changed —
  * the day (`planned_date`), the time (`start_time`/`end_time`), or both —
- * through the existing `sessions-cal/{id}` PATCH. Resizes stay refused, so only
- * the move gesture is covered here.
+ * through the existing `sessions-cal/{id}` PATCH. Edge-resizes (duration edits)
+ * are covered by `calendar-resize.e2e.ts`.
  *
  * The verify DB's current season (id 1) seeds five same-time sessions on each
  * of Mon/Tue/Wed, so the first draggable event always has an adjacent day
@@ -106,11 +106,16 @@ test.describe.serial('Calendar week-view drag', () => {
   }) => {
     const { weekView, events } = await openWeekView(page, request);
     const { event, id, dateInput } = await openFirstEvent(page, events);
-    const originalRange = await dateInput.inputValue();
-    expect(originalRange, 'detail picker shows a datetime range').toMatch(
-      /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2} → \d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/,
+    // Two single-date pickers now: read each leg separately.
+    const startValue = await dateInput.inputValue();
+    expect(startValue, 'start picker shows a datetime').toMatch(
+      /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/,
     );
-    const originalDmy = originalRange.slice(0, 10);
+    const endInput = page.locator('[data-testid^="cal-date-"][data-testid$="-end"]');
+    await expect(endInput).toBeVisible();
+    const endValue = await endInput.inputValue();
+    expect(endValue, 'end picker shows a datetime').toMatch(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/);
+    const originalDmy = startValue.slice(0, 10);
 
     // Drop into the adjacent day column (DOM order == date order, so the next
     // column is always +1 day regardless of the calendar's text direction).

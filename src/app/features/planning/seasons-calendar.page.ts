@@ -1,8 +1,10 @@
 import {
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
   effect,
+  ElementRef,
   inject,
   input,
   resource,
@@ -18,7 +20,6 @@ import {
   CalendarDateFormatter,
   CalendarDatePipe,
   CalendarDayViewComponent,
-  CalendarEventTimesChangedEventType,
   CalendarEventTitleComponent,
   CalendarMonthViewComponent,
   CalendarNextViewDirective,
@@ -48,6 +49,7 @@ import {
 } from '../../shared/ui/dropdown/dropdown.component';
 import {
   dateToISODate,
+  nowSegmentIndex,
   resolveWeekDrop,
   toCalendarEvent,
   viewRange,
@@ -80,8 +82,8 @@ function readStoredView(): CalendarView {
  * detail range-picker. Mutations reuse the existing PATCH endpoints — this page
  * adds no backend surface. Week-view drag rewrites a session's day, its time,
  * or both through the same PATCH (`planned_date`, `start_time`, `end_time`);
- * resizes — duration edits — still snap back. Per-group lanes remain a queued
- * follow-up.
+ * dragging either edge resizes the duration through the same start/end fields.
+ * Per-group lanes remain a queued follow-up.
  */
 @Component({
   selector: 'app-seasons-calendar-page',
@@ -116,6 +118,8 @@ export class SeasonsCalendarPage {
   private readonly i18n = inject(TranslateService);
   private readonly auth = inject(AuthService);
   protected readonly prefs = inject(AdminPrefsService);
+  /** The page host: queried for the rendered time-grid so we can scroll to now. */
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly saving = signal(false);
   readonly errorKey = signal<string | null>(null);
@@ -125,6 +129,8 @@ export class SeasonsCalendarPage {
   readonly view = signal<CalendarView>(readStoredView());
   private readonly tick = signal(0);
   private navigatedFor: number | null = null;
+  /** Auto-scroll de-dupe key: re-arms only on a view/date/locale change. */
+  private lastAutoScrollKey: string | null = null;
   private readonly focusedTerm = signal<number | null>(null);
   /** Deep link (?term=): season + first date resolved from the term itself. */
   readonly term = input<number | null, string | null | undefined>(null, {
@@ -147,9 +153,8 @@ export class SeasonsCalendarPage {
     const r = this.auth.role();
     return r === 'admin' || r === 'supervisor';
   });
-  /** Week view: a drag may rewrite day and/or time; resizes stay refused. */
-  protected readonly allowDrag = (e: CalendarEventTimesChangedEvent): boolean =>
-    this.canManage() && e.type !== CalendarEventTimesChangedEventType.Resize;
+  /** Week view: managers may move a session and resize either edge. */
+  protected readonly allowDrag = (): boolean => this.canManage();
   /** Month view: the clicked day whose sessions show in the open-day box. */
   protected readonly activeDay = signal<Date | null>(null);
   protected readonly activeDayIsOpen = signal(false);
@@ -265,14 +270,19 @@ export class SeasonsCalendarPage {
   });
 
   /**
-   * Week view only: angular-calendar enables a drag exclusively on events
-   * flagged `draggable`, so the week view gets a flagged copy for managers.
-   * Month (custom cell template) and day views never set it, so they stay
-   * non-draggable — as does the week view for read-only roles.
+   * Week view only: angular-calendar enables drag and both resize edges only on
+   * events flagged `draggable`/`resizable`, so the week view gets a flagged copy
+   * for managers. Month (custom cell template) and day views never set them, so
+   * they stay read-only — as does the week view for read-only roles.
    */
-  protected readonly weekEvents = computed<CalSessionEvent[]>(() =>
-    this.calEvents().map((e) => ({ ...e, draggable: this.canManage() })),
-  );
+  protected readonly weekEvents = computed<CalSessionEvent[]>(() => {
+    const manage = this.canManage();
+    return this.calEvents().map((e) => ({
+      ...e,
+      draggable: manage,
+      resizable: { beforeStart: manage, afterEnd: manage },
+    }));
+  });
 
   /**
    * Current-view events JSON: the fetch window already matches the view, so
@@ -356,6 +366,23 @@ export class SeasonsCalendarPage {
         })
         .catch(() => undefined);
     });
+    // Land the week/day grid on the current wall clock, once per view/date/
+    // locale change (a locale switch recreates the view). Month view re-arms it,
+    // so returning to a time grid scrolls again. The target is clock-derived,
+    // not date-derived — it works even when today is off-screen.
+    afterRenderEffect(() => {
+      const view = this.view();
+      const date = this.viewDate();
+      const locale = this.language.current();
+      if (view !== CalendarView.Week && view !== CalendarView.Day) {
+        this.lastAutoScrollKey = null;
+        return;
+      }
+      const key = `${view}|${dateToISODate(date)}|${locale}`;
+      if (key === this.lastAutoScrollKey) return;
+      this.lastAutoScrollKey = key;
+      this.scrollGridToCurrentTime();
+    });
   }
 
   protected onEventClick(args: { event: CalendarEvent }): void {
@@ -380,16 +407,13 @@ export class SeasonsCalendarPage {
   }
 
   /**
-   * Week view: a drag persists whatever it actually changed — the day, the
-   * time, or both — through the session PATCH. A drop that lands nowhere new,
-   * and any resize (refused up front), snaps back. The library already confines
-   * drops to the visible week, so a move can never cross a week boundary.
+   * Week view: a drag or an edge-resize persists whatever it actually changed —
+   * the day, the start/end time, or both — through the session PATCH. A gesture
+   * that lands nowhere new snaps back, as does a resize that would end at or
+   * before its own start (i.e. cross midnight). The library already confines
+   * gestures to the visible week, so a move can never cross a week boundary.
    */
   protected onWeekTimesChanged(evt: CalendarEventTimesChangedEvent): void {
-    if (evt.type === CalendarEventTimesChangedEventType.Resize) {
-      this.refresh.next();
-      return;
-    }
     const drop = resolveWeekDrop(evt.event.id, evt.newStart, evt.newEnd, this.flatRows());
     if (drop === null) {
       this.refresh.next();
@@ -438,6 +462,24 @@ export class SeasonsCalendarPage {
 
   protected pickSession(id: number): void {
     this.selectedId.set(id);
+  }
+
+  /**
+   * Centre the week/day time grid on the current wall clock. Every column
+   * renders the full 00:00→24:00 day, so the target slot is clock-derived (not
+   * date-derived) and correct even when today is off-screen. Instant, not
+   * animated: this is a landing position. The browser clamps it at the document
+   * edges, so early/late hours still land on-screen.
+   */
+  private scrollGridToCurrentTime(): void {
+    const column = this.host.nativeElement.querySelector<HTMLElement>(
+      '.cal-time-events .cal-day-column',
+    );
+    const segments = column?.querySelectorAll<HTMLElement>('.cal-hour-segment') ?? [];
+    const now = new Date();
+    const index = nowSegmentIndex(now.getHours(), now.getMinutes(), segments.length);
+    if (index < 0) return;
+    segments[index].scrollIntoView({ block: 'center', inline: 'nearest' });
   }
 
   /**

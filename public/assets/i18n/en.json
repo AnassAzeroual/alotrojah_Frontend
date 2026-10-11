@@ -10,7 +10,9 @@
     "today": "Today",
     "prev": "Previous",
     "next": "Next",
-    "datetime_range": "Session date and time"
+    "datetime_range": "Session date and time",
+    "start": "Start",
+    "end": "End"
   },
   "nav": {
     "dashboard": "Home",
