@@ -130,13 +130,6 @@ app-session-range-picker {
   gap: var(--space-1);
 }
 
-// The ‹ › glyphs are written LTR; mirror them so "previous" points forward
-// in RTL reading order.
-[dir='rtl'] .cal-prev,
-[dir='rtl'] .cal-next {
-  transform: scaleX(-1);
-}
-
 .cal-month-view,
 .cal-week-view,
 .cal-day-view {
