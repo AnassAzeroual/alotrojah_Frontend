@@ -7,6 +7,7 @@
     "month": "Mois",
     "week": "Semaine",
     "day": "Jour",
+    "year": "Année",
     "today": "Aujourd'hui",
     "prev": "Précédent",
     "next": "Suivant",
@@ -319,7 +320,8 @@
     "honor": "Tableau d'honneur",
     "memorized_label": "Mémorisé",
     "overall": "Moyenne",
-    "board": "Conseil"
+    "board": "Conseil",
+    "student_none": "Aucun résultat enregistré pour vous ce trimestre."
   },
   "report": {
     "term_title": "Rapport du trimestre",
@@ -499,6 +501,7 @@
     "scores": "Notes",
     "save_scores": "Enregistrer les notes",
     "separate_note": "Sarraj : total séparé /20, hors total hebdomadaire",
+    "memorized_label": "Mémorisé cette séance (thumn)",
     "review_only_notice": "Enseignant révision : notes hebdomadaires désactivées ici",
     "goal": "Objectif de la semaine",
     "target_hint": "Ex : mémoriser deux thumns",

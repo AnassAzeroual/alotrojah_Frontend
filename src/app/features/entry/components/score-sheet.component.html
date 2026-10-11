@@ -35,6 +35,21 @@
             </div>
           }
         </div>
+        @if (showMemorization()) {
+          <label class="mem-cell">
+            <span class="muted small">{{ 'entry.memorized_label' | translate }}</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              class="input"
+              [value]="memorizedFor(row.student.id) ?? ''"
+              [disabled]="disabledAll()"
+              [attr.data-testid]="'memorized-' + row.student.id"
+              (change)="onMemorizeChange(row.student.id, $event)"
+            />
+          </label>
+        }
       </div>
     }
 

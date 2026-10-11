@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { TranslateNoOpLoader } from '@ngx-translate/core';
 import { LanguageService } from './language.service';
+import { SecureStorageService } from '../storage/secure-storage.service';
 
 describe('LanguageService', () => {
   let lang: LanguageService;
@@ -29,7 +30,7 @@ describe('LanguageService', () => {
     expect(lang.current()).toBe('fr');
     expect(document.documentElement.lang).toBe('fr');
     expect(document.documentElement.dir).toBe('ltr');
-    expect(localStorage.getItem('alotrojah_lang')).toBe('fr');
+    expect(TestBed.inject(SecureStorageService).read('alotrojah_lang')).toBe('fr');
   });
 
   it('falls back to Arabic for an invalid stored value', () => {

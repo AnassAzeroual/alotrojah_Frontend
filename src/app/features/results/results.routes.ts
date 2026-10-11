@@ -3,6 +3,8 @@ import { roleGuard } from '../../core/auth/role.guard';
 import { dirtyGuard } from '../../core/guards/dirty.guard';
 
 const STAFF = ['admin', 'supervisor', 'teacher'] as const;
+/** Staff manage; pupils may view their own term result (§C3). */
+const VIEW = ['admin', 'supervisor', 'teacher', 'student'] as const;
 
 export const RESULTS_ROUTES: Routes = [
   {
@@ -10,7 +12,7 @@ export const RESULTS_ROUTES: Routes = [
     loadComponent: () => import('./term-results.page').then((m) => m.TermResultsPage),
     canActivate: [roleGuard],
     canDeactivate: [dirtyGuard],
-    data: { roles: [...STAFF] },
+    data: { roles: [...VIEW] },
   },
   {
     path: 'season',

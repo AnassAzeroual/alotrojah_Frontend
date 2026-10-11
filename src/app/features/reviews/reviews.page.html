@@ -30,6 +30,7 @@
         [value]="search()"
         (change)="search.set($any($event.target).value)"
         [placeholder]="'list.search' | translate"
+        data-testid="reviews-student-search"
       />
     </label>
     <div class="cluster">

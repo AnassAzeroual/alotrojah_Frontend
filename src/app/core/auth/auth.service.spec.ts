@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { AuthService } from './auth.service';
 import { CurrentUser } from '../api/api-models';
+import { SecureStorageService } from '../storage/secure-storage.service';
 
 @Component({ template: '', standalone: true })
 class DummyComponent {}
@@ -47,7 +48,10 @@ describe('AuthService', () => {
     expect(auth.token()).toBe('T');
     expect(auth.currentUser()).toEqual(USER);
     expect(auth.isLoggedIn()).toBe(true);
-    expect(localStorage.getItem('alotrojah_token')).toBe('T');
+    // The token is encrypted at rest (never the raw payload)…
+    expect(localStorage.getItem('alotrojah_token')).not.toBe('T');
+    // …and round-trips through the vault.
+    expect(TestBed.inject(SecureStorageService).read('alotrojah_token')).toBe('T');
   });
 
   it('logout clears everything', () => {

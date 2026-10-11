@@ -23,6 +23,11 @@ export class SeasonsCalendarFormatter extends CalendarNativeDateFormatter {
     return this.intl(locale, { year: 'numeric', month: 'long' }, date);
   }
 
+  /** Year overview header: the bare year (e.g. «2026»). */
+  yearViewTitle({ date, locale }: DateFormatterParams): string {
+    return this.intl(locale, { year: 'numeric' }, date);
+  }
+
   override weekViewColumnSubHeader({ date, locale }: DateFormatterParams): string {
     return this.intl(locale, { day: 'numeric', month: 'short' }, date);
   }

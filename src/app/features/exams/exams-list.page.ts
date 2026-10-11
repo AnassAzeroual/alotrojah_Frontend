@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { ExamsService } from '../../core/api/exams.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import { DropdownComponent, dropdownText } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
@@ -24,24 +25,26 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
       <div class="page-head anim-rise">
         <h1 class="with-add">
           {{ 'exam.title' | translate }}
-          <a
-            class="btn btn-primary btn-icon"
-            routerLink="/exams/new"
-            data-testid="exams-new"
-            [attr.aria-label]="'exam.new' | translate"
-            [attr.title]="'exam.new' | translate"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              aria-hidden="true"
+          @if (canCreate()) {
+            <a
+              class="btn btn-primary btn-icon"
+              routerLink="/exams/new"
+              data-testid="exams-new"
+              [attr.aria-label]="'exam.new' | translate"
+              [attr.title]="'exam.new' | translate"
             >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </a>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </a>
+          }
         </h1>
       </div>
       <div class="card anim-rise" style="--i: 1">
@@ -82,9 +85,13 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
 })
 export class ExamsListPage {
   private readonly examsSvc = inject(ExamsService);
+  private readonly auth = inject(AuthService);
 
   readonly type = signal<string | null>(null);
   protected readonly txt = dropdownText;
+
+  /** §C: exam creation is staff-only; pupils browse their own exams. */
+  readonly canCreate = computed(() => this.auth.role() !== 'student');
 
   private readonly i18n = inject(TranslateService);
   private readonly language = inject(LanguageService);

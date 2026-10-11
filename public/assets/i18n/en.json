@@ -7,6 +7,7 @@
     "month": "Month",
     "week": "Week",
     "day": "Day",
+    "year": "Year",
     "today": "Today",
     "prev": "Previous",
     "next": "Next",
@@ -319,7 +320,8 @@
     "honor": "Honor board",
     "memorized_label": "Memorized",
     "overall": "Average",
-    "board": "Board"
+    "board": "Board",
+    "student_none": "No result recorded for you this term yet."
   },
   "report": {
     "term_title": "Term report",
@@ -499,6 +501,7 @@
     "scores": "Scores",
     "save_scores": "Save scores",
     "separate_note": "Sarraj is a separate /20 total, outside the weekly total",
+    "memorized_label": "Memorized this session (thumn)",
     "review_only_notice": "Review teacher: weekly scores disabled here",
     "goal": "Weekly goal",
     "target_hint": "E.g. memorize two thumns",

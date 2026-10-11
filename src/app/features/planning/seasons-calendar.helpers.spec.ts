@@ -1,5 +1,6 @@
 import { CalendarView } from 'angular-calendar';
 import {
+  buildYearGrid,
   clampClock,
   dateToClockTime,
   dateToISODate,
@@ -106,9 +107,62 @@ describe('seasons-calendar helpers', () => {
       expect(iso(end)).toBe('2026-11-02');
     });
 
+    it('covers the whole calendar year in year view', () => {
+      const { start, end } = viewRange('year', new Date(2026, 5, 15));
+      expect(iso(start)).toBe('2026-01-01');
+      expect(iso(end)).toBe('2027-01-01');
+    });
+
     it('starts weeks on Monday', () => {
       expect(iso(startOfWeek(new Date(2026, 9, 11)))).toBe('2026-10-05'); // a Sunday
       expect(iso(startOfWeek(new Date(2026, 9, 12)))).toBe('2026-10-12'); // a Monday
+    });
+  });
+
+  describe('buildYearGrid', () => {
+    const iso = (d: Date): string =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const february = buildYearGrid(2026, new Map(), '2026-02-10')[1]; // 2026 is a leap year
+
+    it('yields twelve mini-months, one per month', () => {
+      expect(buildYearGrid(2026, new Map(), '').length).toBe(12);
+    });
+
+    it('starts each month on the Monday on/before the 1st, fixed 42-cell grid', () => {
+      // 01 Feb 2026 is a Sunday → grid starts Mon 26 Jan and covers 42 cells.
+      expect(february.days.length).toBe(42);
+      expect(iso(february.days[0].date)).toBe('2026-01-26');
+      expect(february.days[0].inMonth).toBe(false);
+      // The tail runs into March: i=34 is Mar 1, i=41 is Mar 8.
+      expect(iso(february.days[34].date)).toBe('2026-03-01');
+      expect(february.days[34].inMonth).toBe(false);
+      expect(february.days[33].inMonth).toBe(true); // Sat 28 Feb, last February cell
+      // February's own window: Mon 02 Feb … Sat 28 Feb.
+      expect(iso(february.days.find((d) => d.iso === '2026-02-02')!.date)).toBe('2026-02-02');
+      expect(february.days.find((d) => d.iso === '2026-02-28')!.inMonth).toBe(true);
+    });
+
+    it('carries per-day counts only for mapped dates and flags today', () => {
+      const counts = new Map([
+        ['2026-02-10', { memorization: 2, revision: 1, exam: 0 }],
+        ['2026-02-11', { exam: 1 }],
+      ]);
+      const grid = buildYearGrid(2026, counts, '2026-02-10')[1];
+      const busy = grid.days.find((d) => d.iso === '2026-02-10')!;
+      expect(busy.isToday).toBe(true);
+      expect(busy.total).toBe(3);
+      expect(busy.counts).toEqual({ memorization: 2, revision: 1, exam: 0 });
+      const examOnly = grid.days.find((d) => d.iso === '2026-02-11')!;
+      expect(examOnly.total).toBe(1);
+      expect(examOnly.counts).toEqual({ memorization: 0, revision: 0, exam: 1 });
+      const quiet = grid.days.find((d) => d.iso === '2026-02-12')!;
+      expect(quiet.total).toBe(0);
+      expect(quiet.isToday).toBe(false);
+    });
+
+    it('sums each month total from its in-grid days', () => {
+      const counts = new Map([['2026-02-10', { memorization: 1 }]]);
+      expect(buildYearGrid(2026, counts, '')[1].total).toBe(1);
     });
   });
 

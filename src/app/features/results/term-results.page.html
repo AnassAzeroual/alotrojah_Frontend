@@ -23,27 +23,30 @@
   }
 
   <div class="card anim-rise" style="--i: 1">
-    <label class="field search"
-      ><span>{{ 'planning.pick_student' | translate }}</span>
-      <input
-        type="search"
-        [value]="search()"
-        (change)="search.set($any($event.target).value)"
-        [placeholder]="'list.search' | translate"
-      />
-    </label>
-    <div class="cluster">
-      @for (s of found.value() ?? []; track s.id) {
-        <button
-          type="button"
-          class="pick"
-          [class.on]="pickedStudent() === s.id"
-          (click)="pickedStudent.set(s.id)"
-        >
-          {{ s.full_name }}
-        </button>
-      }
-    </div>
+    @if (!isStudent()) {
+      <label class="field search"
+        ><span>{{ 'planning.pick_student' | translate }}</span>
+        <input
+          type="search"
+          data-testid="results-student-search"
+          [value]="search()"
+          (change)="search.set($any($event.target).value)"
+          [placeholder]="'list.search' | translate"
+        />
+      </label>
+      <div class="cluster">
+        @for (s of found.value() ?? []; track s.id) {
+          <button
+            type="button"
+            class="pick"
+            [class.on]="pickedStudent() === s.id"
+            (click)="pickedStudent.set(s.id)"
+          >
+            {{ s.full_name }}
+          </button>
+        }
+      </div>
+    }
     <label class="field"
       ><span>{{ 'planning.pick_term' | translate }}</span>
       <app-dropdown
@@ -55,9 +58,11 @@
     </label>
     @if (existing.value()) {
       <div class="cluster">
-        <button type="button" class="btn btn-ghost" (click)="fill()">
-          {{ 'planning.load_existing' | translate }}
-        </button>
+        @if (!isStudent()) {
+          <button type="button" class="btn btn-ghost" (click)="fill()">
+            {{ 'planning.load_existing' | translate }}
+          </button>
+        }
         <app-status-badge kind="honor" [value]="existing.value()!.honor_flag" />
         <strong class="ltr-num">{{ existing.value()!.general_avg ?? '—' }}</strong>
       </div>
@@ -65,47 +70,83 @@
   </div>
 
   @if (pickedStudent() !== null && pickedTerm() !== null) {
-    <form
-      class="card anim-rise"
-      style="--i: 2"
-      [formGroup]="form"
-      (ngSubmit)="submit()"
-      autocomplete="off"
-    >
-      @for (f of scoreFields; track f) {
-        <label class="field"
-          ><span>{{ 'result.' + f | translate }}</span>
-          <input type="number" class="ltr-num" [formControlName]="f" min="0" max="20" step="0.5" />
-        </label>
-      }
-      <label class="field"
-        ><span>{{ 'result.teacher_notes' | translate }}</span
-        ><input formControlName="teacher_notes"
-      /></label>
-      <label class="field"
-        ><span>{{ 'result.supervisor_note' | translate }}</span
-        ><input formControlName="supervisor_note"
-      /></label>
-      <label class="field"
-        ><span>{{ 'result.honor' | translate }}</span>
-        <app-dropdown
-          formControlName="honor_flag"
-          [options]="honorOptions"
-          ariaLabelKey="result.honor"
-        />
-      </label>
-      <button
-        type="submit"
-        class="btn btn-primary btn-block"
-        [class.is-loading]="saving()"
-        [disabled]="saving()"
-      >
-        @if (saving()) {
-          <app-spinner />
+    @if (isStudent()) {
+      <div class="card anim-rise" style="--i: 2">
+        @if (existing.value()) {
+          <div class="grid-auto">
+            @for (f of scoreFields; track f) {
+              <div class="field">
+                <span>{{ 'result.' + f | translate }}</span>
+                <strong class="ltr-num">{{ existing.value()![f] ?? '—' }}</strong>
+              </div>
+            }
+            <div class="field">
+              <span>{{ 'result.teacher_notes' | translate }}</span>
+              <span>{{ existing.value()!.teacher_notes ?? '—' }}</span>
+            </div>
+            <div class="field">
+              <span>{{ 'result.supervisor_note' | translate }}</span>
+              <span>{{ existing.value()!.supervisor_note ?? '—' }}</span>
+            </div>
+            <div class="field">
+              <span>{{ 'result.honor' | translate }}</span>
+              <app-status-badge kind="honor" [value]="existing.value()!.honor_flag" />
+            </div>
+          </div>
         } @else {
-          {{ 'common.save' | translate }}
+          <p class="muted">{{ 'result.student_none' | translate }}</p>
         }
-      </button>
-    </form>
+      </div>
+    } @else {
+      <form
+        class="card anim-rise"
+        style="--i: 2"
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        autocomplete="off"
+      >
+        @for (f of scoreFields; track f) {
+          <label class="field"
+            ><span>{{ 'result.' + f | translate }}</span>
+            <input
+              type="number"
+              class="ltr-num"
+              [formControlName]="f"
+              min="0"
+              max="20"
+              step="0.5"
+            />
+          </label>
+        }
+        <label class="field"
+          ><span>{{ 'result.teacher_notes' | translate }}</span
+          ><input formControlName="teacher_notes"
+        /></label>
+        <label class="field"
+          ><span>{{ 'result.supervisor_note' | translate }}</span
+          ><input formControlName="supervisor_note"
+        /></label>
+        <label class="field"
+          ><span>{{ 'result.honor' | translate }}</span>
+          <app-dropdown
+            formControlName="honor_flag"
+            [options]="honorOptions"
+            ariaLabelKey="result.honor"
+          />
+        </label>
+        <button
+          type="submit"
+          class="btn btn-primary btn-block"
+          [class.is-loading]="saving()"
+          [disabled]="saving()"
+        >
+          @if (saving()) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+      </form>
+    }
   }
 </section>

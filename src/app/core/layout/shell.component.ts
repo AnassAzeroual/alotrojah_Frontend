@@ -107,7 +107,7 @@ const ITEMS: readonly NavItem[] = [
     path: '/exams',
     key: 'nav.exams',
     icon: 'file',
-    roles: ['admin', 'supervisor', 'teacher'],
+    roles: ['admin', 'supervisor', 'teacher', 'student'],
     testId: 'nav-exams',
   },
   {
@@ -121,7 +121,7 @@ const ITEMS: readonly NavItem[] = [
     path: '/results/term',
     key: 'nav.results',
     icon: 'award',
-    roles: ['admin', 'supervisor', 'teacher'],
+    roles: ['admin', 'supervisor', 'teacher', 'student'],
     testId: 'nav-results',
   },
   {

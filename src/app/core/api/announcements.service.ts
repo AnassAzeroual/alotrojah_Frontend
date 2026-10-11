@@ -23,7 +23,7 @@ export class AnnouncementsService {
 
   create(payload: {
     audience: string;
-    group_id?: number;
+    group_id?: number | null;
     title: string;
     body: string;
   }): Observable<Announcement> {

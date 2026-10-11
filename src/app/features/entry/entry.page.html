@@ -55,6 +55,8 @@
         [scoreRows]="scoreRows()"
         [sessionId]="selectedSession()"
         [disabledAll]="isMurajaa()"
+        [showMemorization]="showMemorization()"
+        [defaultMemorization]="defaultMemorization"
         (saved)="onSaved()"
       />
       <app-goal-list [students]="students.value() ?? []" [weekId]="selectedWeek()" />

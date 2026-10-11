@@ -131,7 +131,7 @@ export class NewsPage {
 
   readonly form = new FormGroup({
     audience: new FormControl('all', { nonNullable: true, validators: [Validators.required] }),
-    group_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
+    group_id: new FormControl<number | null>(null),
     title: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(200)],
@@ -139,16 +139,38 @@ export class NewsPage {
     body: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
   });
 
+  /** §D: the section picker only belongs to my_students posts. */
+  readonly showGroup = signal(false);
+
+  constructor() {
+    this.form.controls.audience.valueChanges.subscribe(() => this.applyAudienceRule());
+    this.applyAudienceRule();
+  }
+
+  private applyAudienceRule(): void {
+    const g = this.form.controls.group_id;
+    if (this.form.controls.audience.value === 'my_students') {
+      g.setValidators([Validators.required]);
+      this.showGroup.set(true);
+    } else {
+      g.clearValidators();
+      g.setValue(null, { emitEvent: false });
+      this.showGroup.set(false);
+    }
+    g.updateValueAndValidity();
+  }
+
   submit(): void {
     if (this.form.invalid || this.saving()) return;
     const v = this.form.getRawValue();
-    if (v.group_id === null) return;
+    // §D: only my_students posts must target a section.
+    if (v.audience === 'my_students' && v.group_id === null) return;
     this.saving.set(true);
     this.submitErrorKey.set(null);
     this.news
       .create({
         audience: v.audience,
-        group_id: v.group_id,
+        ...(v.group_id !== null ? { group_id: v.group_id } : {}),
         title: v.title,
         body: v.body,
       })

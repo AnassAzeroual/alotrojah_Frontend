@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Observable, finalize, map, shareReplay, tap } from 'rxjs';
 import { ApiClient } from '../api/api-client';
 import { CurrentUser, LoginData, RegisterPayload } from '../api/api-models';
+import { SecureStorageService } from '../storage/secure-storage.service';
 
 const TOKEN_KEY = 'alotrojah_token';
 
@@ -10,8 +11,9 @@ const TOKEN_KEY = 'alotrojah_token';
 export class AuthService {
   private readonly api = inject(ApiClient);
   private readonly router = inject(Router);
+  private readonly storage = inject(SecureStorageService);
 
-  readonly token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
+  readonly token = signal<string | null>(this.storage.read(TOKEN_KEY));
   readonly currentUser = signal<CurrentUser | null>(null);
   readonly isLoggedIn = computed(() => this.token() !== null && this.currentUser() !== null);
   readonly role = computed(() => this.currentUser()?.role ?? null);
@@ -61,7 +63,7 @@ export class AuthService {
   login(email: string, password: string): Observable<LoginData> {
     return this.api.post<LoginData>('/auth/login', { email, password }).pipe(
       tap((d) => {
-        localStorage.setItem(TOKEN_KEY, d.access_token);
+        this.storage.write(TOKEN_KEY, d.access_token);
         this.token.set(d.access_token);
         this.currentUser.set(d.user);
       }),
@@ -81,7 +83,7 @@ export class AuthService {
     if (!this.inflightRefresh) {
       this.inflightRefresh = this.api.post<LoginData>('/auth/refresh', {}).pipe(
         map((d) => {
-          localStorage.setItem(TOKEN_KEY, d.access_token);
+          this.storage.write(TOKEN_KEY, d.access_token);
           this.token.set(d.access_token);
           this.currentUser.set(d.user);
           return d.access_token;
@@ -103,7 +105,7 @@ export class AuthService {
 
   clearLocal(): void {
     this.api.clearCache();
-    localStorage.removeItem(TOKEN_KEY);
+    this.storage.remove(TOKEN_KEY);
     this.token.set(null);
     this.currentUser.set(null);
   }

@@ -316,3 +316,155 @@ app-session-range-picker {
 .cal-tooltip.cal-tooltip-left .cal-tooltip-arrow {
   border-left-color: var(--color-text);
 }
+
+// Year overview: 12 mini-month cards (4 × 3) on the same token palette as the
+// month view, so light/dark follow the theme. Read-only — a day (or the month
+// header) jumps to the month view at that date.
+.cal-year {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-stack);
+  font-size: var(--text-sm);
+}
+
+.cal-year-month {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.cal-year-head {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  padding: var(--space-1) var(--space-2);
+  text-align: start;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface-2);
+    color: var(--green-600);
+  }
+}
+
+.cal-year-month-count {
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 600;
+  color: var(--green-700);
+  background: color-mix(in srgb, var(--green-500) 14%, transparent);
+  border-radius: 999px;
+  padding: 2px 6px;
+}
+
+.cal-year-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+
+  span {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-muted);
+    text-align: center;
+  }
+}
+
+.cal-year-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-year-day {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0;
+  cursor: pointer;
+
+  &:hover:not([disabled]) {
+    background: var(--color-surface-2);
+  }
+
+  &[disabled] {
+    color: var(--color-muted);
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &.today {
+    background: var(--green-100);
+    border-color: var(--green-500);
+  }
+
+  &.has .cal-year-day-n {
+    font-weight: 700;
+  }
+}
+
+.cal-year-day-n {
+  font-size: inherit;
+  line-height: 1;
+}
+
+.cal-year-dots {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+
+  .cal-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+
+    &.dot-memorization {
+      background: var(--color-memorization-border);
+    }
+
+    &.dot-revision {
+      background: var(--color-revision-border);
+    }
+
+    &.dot-exam {
+      background: var(--color-exam-border);
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .cal-year {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .cal-year {
+    grid-template-columns: 1fr;
+  }
+}

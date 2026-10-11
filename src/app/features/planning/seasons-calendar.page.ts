@@ -22,8 +22,6 @@ import {
   CalendarDayViewComponent,
   CalendarEventTitleComponent,
   CalendarMonthViewComponent,
-  CalendarNextViewDirective,
-  CalendarPreviousViewDirective,
   CalendarTodayDirective,
   CalendarView,
   CalendarWeekViewComponent,
@@ -41,6 +39,7 @@ import { apiErrorKey } from '../../core/api/api-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { LanguageService } from '../../core/i18n/language.service';
+import { SecureStorageService } from '../../core/storage/secure-storage.service';
 import { SessionRangePickerComponent, type DateTimeRange } from './session-range-picker.component';
 import {
   DropdownComponent,
@@ -48,15 +47,18 @@ import {
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
 import {
+  buildYearGrid,
   dateToISODate,
   nowSegmentIndex,
   resolveWeekDrop,
   toCalendarEvent,
   viewRange,
+  type CalendarPageView,
   type CalSession,
   type CalSessionEvent,
   type SessionPatch,
   type WeekDrop,
+  type YearDayCounts,
 } from './seasons-calendar.helpers';
 import { SeasonsCalendarFormatter } from './seasons-calendar.formatter';
 
@@ -67,22 +69,25 @@ import { SeasonsCalendarFormatter } from './seasons-calendar.formatter';
 registerLocaleData(localeAr);
 registerLocaleData(localeFr);
 
-/** Persisted view tab (`month`/`week`/`day`) — unknown stored values fall back to month. */
+/** Persisted view tab (`month`/`week`/`day`/`year`) — unknown stored values fall back to month. */
 const VIEW_KEY = 'alotrojah_cal_view';
 
-function readStoredView(): CalendarView {
-  const v = localStorage.getItem(VIEW_KEY);
-  return v === CalendarView.Week || v === CalendarView.Day ? v : CalendarView.Month;
+function readStoredView(read: (key: string) => string | null): CalendarPageView {
+  const v = read(VIEW_KEY);
+  if (v === 'year' || v === CalendarView.Week || v === CalendarView.Day) return v;
+  return CalendarView.Month;
 }
 
 /**
  * Experimental season calendar (the legacy season/term pages stay
  * untouched): every session of the picked season on one calendar with
- * month/week/day views, click a session for details, start→end edits via the
- * detail range-picker. Mutations reuse the existing PATCH endpoints — this page
- * adds no backend surface. Week-view drag rewrites a session's day, its time,
- * or both through the same PATCH (`planned_date`, `start_time`, `end_time`);
- * dragging either edge resizes the duration through the same start/end fields.
+ * month/week/day/year views, click a session for details, start→end edits via
+ * the detail range-picker. Mutations reuse the existing PATCH endpoints — this
+ * page adds no backend surface. Week-view drag rewrites a session's day, its
+ * time, or both through the same PATCH (`planned_date`, `start_time`,
+ * `end_time`); dragging either edge resizes the duration through the same
+ * start/end fields. The year tab is a read-only overview: 12 mini-months with
+ * per-day session badges; clicking a day jumps to the month view at that date.
  * Per-group lanes remain a queued follow-up.
  */
 @Component({
@@ -94,9 +99,7 @@ function readStoredView(): CalendarView {
     JsonPipe,
     DropdownComponent,
     SessionRangePickerComponent,
-    CalendarPreviousViewDirective,
     CalendarTodayDirective,
-    CalendarNextViewDirective,
     CalendarDatePipe,
     CalendarMonthViewComponent,
     CalendarWeekViewComponent,
@@ -118,6 +121,7 @@ export class SeasonsCalendarPage {
   private readonly i18n = inject(TranslateService);
   private readonly auth = inject(AuthService);
   protected readonly prefs = inject(AdminPrefsService);
+  private readonly storage = inject(SecureStorageService);
   /** The page host: queried for the rendered time-grid so we can scroll to now. */
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
@@ -126,7 +130,7 @@ export class SeasonsCalendarPage {
   readonly pickedSeason = signal<number | null>(null);
   readonly selectedId = signal<number | null>(null);
   readonly viewDate = signal<Date>(new Date());
-  readonly view = signal<CalendarView>(readStoredView());
+  readonly view = signal<CalendarPageView>(readStoredView((k) => this.storage.read(k)));
   private readonly tick = signal(0);
   private navigatedFor: number | null = null;
   /** Auto-scroll de-dupe key: re-arms only on a view/date/locale change. */
@@ -153,6 +157,8 @@ export class SeasonsCalendarPage {
     const r = this.auth.role();
     return r === 'admin' || r === 'supervisor';
   });
+  /** §D: the events-JSON debug panel is admin-only (mirrors internal state). */
+  protected readonly isAdmin = computed(() => this.auth.role() === 'admin');
   /** Week view: managers may move a session and resize either edge. */
   protected readonly allowDrag = (): boolean => this.canManage();
   /** Month view: the clicked day whose sessions show in the open-day box. */
@@ -171,7 +177,9 @@ export class SeasonsCalendarPage {
       ? 'monthViewTitle'
       : this.view() === CalendarView.Week
         ? 'weekViewTitle'
-        : 'dayViewTitle',
+        : this.view() === CalendarView.Day
+          ? 'dayViewTitle'
+          : 'yearViewTitle',
   );
 
   private readonly seasonsRes = resource({
@@ -294,6 +302,56 @@ export class SeasonsCalendarPage {
     return all.filter((e) => e.start >= start && e.start < end);
   });
 
+  /**
+   * Year overview: 12 mini-months of the shown year, each day carrying its
+   * session counts (per type + total). Built from the flat feed, so overlay
+   * days from a recent drag still surface. Out-of-month lead-in/tail cells sit
+   * outside the fetch window and render empty.
+   */
+  protected readonly yearGrid = computed(() => {
+    const counts = new Map<string, YearDayCounts>();
+    for (const s of this.flatRows()) {
+      if (!s.planned_date) continue;
+      const iso = s.planned_date.slice(0, 10);
+      const c = counts.get(iso) ?? { memorization: 0, revision: 0, exam: 0 };
+      c[s.session_type] += 1;
+      counts.set(iso, c);
+    }
+    return buildYearGrid(this.viewDate().getFullYear(), counts, dateToISODate(new Date()));
+  });
+
+  /** Seven short weekday labels starting Monday, locale-aware and digit-stable. */
+  protected readonly yearWeekdayLabels = computed(() => {
+    const loc = this.language.current();
+    const digits = loc.includes('-u-') ? loc : `${loc}-u-nu-latn`;
+    const fmt = new Intl.DateTimeFormat(digits, { weekday: 'short' });
+    const monday = new Date(2026, 0, 5); // a Monday
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      return fmt.format(d);
+    });
+  });
+
+  /** One calendar step back/forward: day → ±1 day, week → ±1 week, month → ±1 month, year → ±1 year. */
+  protected stepDate(delta: number): void {
+    const v = this.view();
+    this.viewDate.update((d) => {
+      const out = new Date(d);
+      if (v === 'year') out.setFullYear(out.getFullYear() + delta);
+      else if (v === CalendarView.Day) out.setDate(out.getDate() + delta);
+      else if (v === CalendarView.Week) out.setDate(out.getDate() + delta * 7);
+      else out.setMonth(out.getMonth() + delta);
+      return out;
+    });
+  }
+
+  /** Year overview: opening a day (or a month header) drops into the month view at that date. */
+  protected jumpToDay(date: Date): void {
+    this.viewDate.set(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
+    this.view.set(CalendarView.Month);
+  }
+
   protected readonly selected = computed(
     () => this.flatRows().find((s) => s.id === this.selectedId()) ?? null,
   );
@@ -306,7 +364,7 @@ export class SeasonsCalendarPage {
   constructor() {
     // The selected tab survives reloads (view only — the date stays live).
     effect(() => {
-      localStorage.setItem(VIEW_KEY, this.view());
+      this.storage.write(VIEW_KEY, this.view());
     });
     // Default to the current season, then the first one.
     effect(() => {
