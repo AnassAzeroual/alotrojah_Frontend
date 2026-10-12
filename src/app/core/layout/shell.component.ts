@@ -7,7 +7,6 @@ import {
   resource,
   signal,
 } from '@angular/core';
-import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { filter, firstValueFrom } from 'rxjs';
@@ -164,16 +163,7 @@ const ITEMS: readonly NavItem[] = [
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [
-    RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
-    TranslatePipe,
-    LanguageSwitcherComponent,
-    NgSwitch,
-    NgSwitchCase,
-    NgSwitchDefault,
-  ],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, LanguageSwitcherComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',

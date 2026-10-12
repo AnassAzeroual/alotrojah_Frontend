@@ -15,7 +15,7 @@
 - **R4 Gates per change:** prettier → typecheck → `npm run build` (AOT catches template errors `tsc` misses) → `ng test` (ONLY via `npm test`, never `npx vitest run`) → e2e. Read FULL outputs, never 2-line tails.
 - **R5 Arabic/non-ASCII ONLY via Edit/Write tools.** Never in shell literals. Validate hand-edited i18n JSON with node before build.
 - **R6 Lockstep:** update `docs/Agent.md` in BOTH repos after every code change. i18n keys always land in ar+fr+en together (parity spec enforces).
-- **R7 MySQL/XAMPP failure → STOP everything, tell the user, do NOT retry or work around.**
+- **R7 MySQL failure → STOP everything, tell the user, do NOT retry or work around.** (Any stack: Laragon service since 2026-10-12, XAMPP before.)
 - **R8 No guardian concept anywhere.** `authz.php` (repo root) is not git — leave it alone.
 - **R9 Quran text is read-only** (no UI writes, ever). Tanzil CC-BY 3.0 attribution stays.
 - **R10 Errors:** new backend codes need `API_ERROR_CODES` + ar/en/fr entries or suites go red (pinned both sides).
@@ -188,6 +188,8 @@ Angular 22 zoneless standalone, signals, `inject()`, `input()/output()/model()`,
 - News-flow e2e fixed (2026-10-12, uncommitted): the D1 `my_students` gating left `news-group` unrendered for the default `all` audience, so the spec died on its first click — added a `news-audience` test hook (template-only) and an audience-first step (`nth(3)`, code-order, locale-proof) with a visibility assert. Solo gate **1/1 green**; `tsc` + scoped prettier clean. Backend untouched.
 
 - Fix-everything batch frontend (2026-10-12, uncommitted): all 11 pre-existing eslint errors fixed (unused `QueryParams` ×2, `STATES`→union type, `!=`→`?? null`+`!==` in group-detail, unused spec `page`, 3 student-detail `any`s via real `notes` on `Student` + dropped cast, list-table `inject()`, shell `ngSwitch`→`@switch`) — full-tree `npx eslint src` **0 errors**, `tsc` clean, Vitest **218/218** (incl. new NEED_REPLACER dialog spec proving the users-flow dialog handler; the e2e dialog failure is interaction-side, backend proven live 422). Backend half in the backend §LOG.
+
+- Lint-zero + dialog-spec follow-up (2026-10-12, uncommitted): removed the `NgSwitch*` imports orphaned by the `@switch` conversion (NG8113 build warning gone); full-tree eslint **0**, Vitest **218/218**. Users-dialog e2e root-caused to interaction-side via trace forensics (no DELETE ever fires though the click lands; backend+handler proven, new unit spec green) — left open for a live browser-debug session.
 
 ## §OPEN
 - **2 a11y findings deliberately left open** (surfaced by the 2026-10-12 label pass; neither is the `label` rule the owner reported): `label-content-name-mismatch` ×3 on `app-dropdown`'s trigger button (accessible name = constant field key, visible text = selected option — fixing means reworking the widget's naming, not approved) and `color-contrast` on the news delete button (#e11d48 on #12211d, 3.54:1). Do not "fix" unasked.
