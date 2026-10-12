@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { loginAs } from './api';
+import { readStoredValue } from './storage';
 
 test.describe.serial('Admin settings and center chip', () => {
   const stamp = Date.now();
@@ -26,9 +27,7 @@ test.describe.serial('Admin settings and center chip', () => {
     await page.getByTestId('settings-hide-scopes').check();
     await expect(page.getByTestId('settings-hide-scopes')).toBeChecked();
     await expect
-      .poll(
-        async () => (await page.evaluate(() => localStorage.getItem('alotrojah_prefs.1'))) ?? '',
-      )
+      .poll(async () => (await readStoredValue(page, 'alotrojah_prefs.1')) ?? '')
       .toContain('"hideScopePickers":true');
 
     // Non-vacuous: rows rendered first, so count 0 means hidden, not loading.
@@ -56,9 +55,7 @@ test.describe.serial('Admin settings and center chip', () => {
     await expect(page.getByTestId('settings-hide-scopes')).toBeChecked();
     await page.getByTestId('settings-hide-scopes').uncheck();
     await expect
-      .poll(
-        async () => (await page.evaluate(() => localStorage.getItem('alotrojah_prefs.1'))) ?? '',
-      )
+      .poll(async () => (await readStoredValue(page, 'alotrojah_prefs.1')) ?? '')
       .toContain('"hideScopePickers":false');
     await page.getByTestId('nav-scoring').click();
     await expect(page).toHaveURL(/\/scoring$/);
@@ -148,9 +145,7 @@ test.describe.serial('Admin settings and center chip', () => {
     await expect(page.getByTestId('settings-show-cal-debug')).toBeChecked();
     await page.getByTestId('settings-show-cal-debug').uncheck();
     await expect
-      .poll(
-        async () => (await page.evaluate(() => localStorage.getItem('alotrojah_prefs.1'))) ?? '',
-      )
+      .poll(async () => (await readStoredValue(page, 'alotrojah_prefs.1')) ?? '')
       .toContain('"showCalDebug":false');
     await page.getByTestId('nav-calendar').click();
     await expect(page).toHaveURL(/\/planning\/calendar$/);
@@ -165,9 +160,7 @@ test.describe.serial('Admin settings and center chip', () => {
     await expect(page).toHaveURL(/\/settings$/);
     await page.getByTestId('settings-show-cal-debug').check();
     await expect
-      .poll(
-        async () => (await page.evaluate(() => localStorage.getItem('alotrojah_prefs.1'))) ?? '',
-      )
+      .poll(async () => (await readStoredValue(page, 'alotrojah_prefs.1')) ?? '')
       .toContain('"showCalDebug":true');
 
     await page.getByTestId('nav-logout').click();

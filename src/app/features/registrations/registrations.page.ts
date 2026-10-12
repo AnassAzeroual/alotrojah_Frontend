@@ -73,11 +73,14 @@ export class RegistrationsPage {
     ['teacher', 'student'].includes(this.acceptingRow()?.role ?? ''),
   );
   protected readonly requiresLevel = computed(() => this.acceptingRow()?.role === 'student');
+  /**
+   * §A first-use: the section picker is *optional* for teachers (one-step attach
+   * when sections exist) — only students must be placed into group + level.
+   */
   protected readonly canAccept = computed(
     () =>
       this.centerId() !== null &&
-      (!this.canPickGroup() || this.groupId() !== null) &&
-      (!this.requiresLevel() || this.levelId() !== null) &&
+      (!this.requiresLevel() || (this.groupId() !== null && this.levelId() !== null)) &&
       this.busyId() === null,
   );
 

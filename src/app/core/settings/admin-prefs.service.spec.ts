@@ -2,10 +2,12 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideNgCryptoStore } from 'ng-cryptostore';
 import { provideRouter } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { CurrentUser } from '../api/api-models';
 import { AdminPrefsService } from './admin-prefs.service';
+import { SecureStorageService } from '../storage/secure-storage.service';
 
 @Component({ template: '', standalone: true })
 class DummyComponent {}
@@ -32,11 +34,14 @@ describe('AdminPrefsService', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([{ path: 'login', component: DummyComponent }]),
+        // Mirror app.config.ts vault backend (sessionStorage).
+        provideNgCryptoStore({ storageType: 'sessionStorage' }),
       ],
     });
     auth = TestBed.inject(AuthService);
@@ -54,7 +59,9 @@ describe('AdminPrefsService', () => {
     prefs.setHideScopePickers(true);
     prefs.setShowCenterId(false);
     prefs.setShowCalDebug(false);
-    expect(localStorage.getItem('alotrojah_prefs.1')).toContain('"hideScopePickers":true');
+    expect(TestBed.inject(SecureStorageService).read('alotrojah_prefs.1')).toContain(
+      '"hideScopePickers":true',
+    );
 
     auth.currentUser.set(TEACHER);
     TestBed.flushEffects();
@@ -71,7 +78,7 @@ describe('AdminPrefsService', () => {
   });
 
   it('survives corrupt storage', () => {
-    localStorage.setItem('alotrojah_prefs.anon', 'not-json{{{');
+    sessionStorage.setItem('alotrojah_prefs.anon', 'not-json{{{');
     auth.currentUser.set(null);
     TestBed.flushEffects();
     expect(prefs.hideScopePickers()).toBe(false);

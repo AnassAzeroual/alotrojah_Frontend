@@ -1,5 +1,6 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
+import { SecureStorageService } from '../storage/secure-storage.service';
 
 interface PrefsShape {
   hideScopePickers?: boolean;
@@ -10,13 +11,15 @@ interface PrefsShape {
 const keyFor = (userId: number | null): string => `alotrojah_prefs.${userId ?? 'anon'}`;
 
 /**
- * Per-user display prefs. localStorage (no backend): the key carries
+ * Per-user display prefs. Browser storage via the encrypted vault (no
+ * backend): the key carries
  * the user id so accounts sharing a browser never leak prefs into each other.
  * Open to every role — each account only ever changes its own view.
  */
 @Injectable({ providedIn: 'root' })
 export class AdminPrefsService {
   private readonly auth = inject(AuthService);
+  private readonly storage = inject(SecureStorageService);
 
   /** Kill-switch: hide all per-center scope pickers (forces shared-defaults editing). */
   readonly hideScopePickers = signal(false);
@@ -53,7 +56,7 @@ export class AdminPrefsService {
   private load(userId: number | null): void {
     let raw: PrefsShape = {};
     try {
-      raw = JSON.parse(localStorage.getItem(keyFor(userId)) ?? '{}') as PrefsShape;
+      raw = JSON.parse(this.storage.read(keyFor(userId)) ?? '{}') as PrefsShape;
     } catch {
       raw = {};
     }
@@ -64,7 +67,7 @@ export class AdminPrefsService {
 
   private save(): void {
     const uid = this.auth.currentUser()?.id ?? null;
-    localStorage.setItem(
+    this.storage.write(
       keyFor(uid),
       JSON.stringify({
         hideScopePickers: this.hideScopePickers(),

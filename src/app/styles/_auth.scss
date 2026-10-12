@@ -15,7 +15,7 @@
 .auth-topbar {
   position: absolute;
   top: 14px;
-  inset-inline-start: 14px;
+  right: 14px;
   z-index: 5;
   display: flex;
   align-items: center;
@@ -103,7 +103,10 @@
 }
 
 .auth-card {
-  min-height: 100dvh;
+  margin: 31px;
+  border-radius: 45px;
+  overflow: hidden;
+  min-height: calc(100dvh - 62px);
   display: grid;
   grid-template-columns: 1fr;
 

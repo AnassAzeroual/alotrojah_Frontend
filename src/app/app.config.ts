@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideNgCryptoStore } from 'ng-cryptostore';
 import { provideMissingTranslationHandler, provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { routes } from './app.routes';
@@ -19,6 +20,10 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
+    // At-rest storage encryption backend (sessionStorage — tab-scoped: closing
+    // the tab ends the session). Values themselves are read/written through
+    // SecureStorageService — see that service's doc for the threat model.
+    provideNgCryptoStore({ storageType: 'sessionStorage' }),
     provideTranslateService({
       lang: 'ar',
       fallbackLang: 'en',

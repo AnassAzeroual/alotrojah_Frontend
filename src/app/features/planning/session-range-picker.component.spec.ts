@@ -21,7 +21,8 @@ describe('SessionRangePickerComponent', () => {
   ): {
     fixture: ReturnType<typeof TestBed.createComponent<SessionRangePickerComponent>>;
     cmp: SessionRangePickerComponent;
-    input: HTMLInputElement;
+    start: HTMLInputElement;
+    end: HTMLInputElement;
   } => {
     const fixture = TestBed.createComponent(SessionRangePickerComponent);
     fixture.componentRef.setInput('value', value);
@@ -31,22 +32,17 @@ describe('SessionRangePickerComponent', () => {
     return {
       fixture,
       cmp: fixture.componentInstance,
-      input: el.querySelector<HTMLInputElement>('[data-testid="demo-range"]')!,
+      start: el.querySelector<HTMLInputElement>('[data-testid="demo-range"]')!,
+      end: el.querySelector<HTMLInputElement>('[data-testid="demo-range-end"]')!,
     };
   };
 
-  /** Drive the private flatpickr the way UI clicks do (triggered onChange). */
-  const pick = (cmp: SessionRangePickerComponent, start: Date, end?: Date): void => {
-    const fp = (
-      cmp as unknown as {
-        fp: { setDate(d: Date | Date[], trigger: boolean): void; close(): void };
-      }
-    ).fp;
-    fp.setDate(end === undefined ? start : [start, end], true);
-  };
-
-  const close = (cmp: SessionRangePickerComponent): void => {
-    (cmp as unknown as { fp: { close(): void } }).fp.close();
+  /** Drive a private flatpickr the way UI clicks do (triggered onChange). */
+  const pick = (cmp: SessionRangePickerComponent, leg: 'start' | 'end', d: Date): void => {
+    const fp = (cmp as unknown as Record<string, { setDate(date: Date, trigger: boolean): void }>)[
+      leg === 'start' ? 'fpStart' : 'fpEnd'
+    ];
+    fp.setDate(d, true);
   };
 
   beforeEach(async () => {
@@ -61,50 +57,43 @@ describe('SessionRangePickerComponent', () => {
     }).compileComponents();
   });
 
-  it('paints the committed pair with a bidi-safe separator', () => {
-    const { input } = mount({ start: '2026-10-06T08:00', end: '2026-10-06T09:30' });
-    expect(input.value).toBe('06/10/2026 08:00 → 06/10/2026 09:30');
+  it('paints both legs from the committed pair', () => {
+    const { start, end } = mount({ start: '2026-10-06T08:00', end: '2026-10-06T09:30' });
+    expect(start.value).toBe('06/10/2026 08:00');
+    expect(end.value).toBe('06/10/2026 09:30');
   });
 
-  it('shows an empty box for null', () => {
-    const { input } = mount(null);
-    expect(input.value).toBe('');
+  it('shows empty boxes for null', () => {
+    const { start, end } = mount(null);
+    expect(start.value).toBe('');
+    expect(end.value).toBe('');
   });
 
-  it('ignores a half-picked range and reverts it on close', () => {
-    const { fixture, cmp, input } = mount({
-      start: '2026-10-06T08:00',
-      end: '2026-10-06T09:30',
-    });
-    pick(cmp, new Date(2026, 9, 7, 10, 0));
+  it('commits a start pick without touching the end', () => {
+    const { fixture, cmp } = mount({ start: '2026-10-06T08:00', end: '2026-10-06T09:30' });
+    pick(cmp, 'start', new Date(2026, 9, 7, 7, 45));
     fixture.detectChanges();
-    expect(cmp.value()).toEqual({ start: '2026-10-06T08:00', end: '2026-10-06T09:30' });
-    close(cmp);
-    fixture.detectChanges();
-    expect(input.value).toBe('06/10/2026 08:00 → 06/10/2026 09:30');
+    expect(cmp.value()).toEqual({ start: '2026-10-07T07:45', end: '2026-10-06T09:30' });
   });
 
-  it('commits a completed range pick as local ISO datetimes', () => {
-    const { fixture, cmp } = mount(null);
-    pick(cmp, new Date(2026, 9, 7, 10, 0), new Date(2026, 9, 7, 11, 30));
+  it('commits an end pick without touching the start', () => {
+    const { fixture, cmp } = mount({ start: '2026-10-06T08:00', end: '2026-10-06T09:30' });
+    pick(cmp, 'end', new Date(2026, 9, 7, 11, 30));
     fixture.detectChanges();
-    expect(cmp.value()).toEqual({ start: '2026-10-07T10:00', end: '2026-10-07T11:30' });
+    expect(cmp.value()).toEqual({ start: '2026-10-06T08:00', end: '2026-10-07T11:30' });
   });
 
-  it('clamps a picked end past 22:00 to the ceiling', () => {
-    const { fixture, cmp } = mount(null);
-    pick(cmp, new Date(2026, 9, 7, 21, 0), new Date(2026, 9, 7, 23, 30));
+  it('keeps an evening pick up to the 23:59 cap', () => {
+    const { fixture, cmp } = mount({ start: '2026-10-06T21:00', end: '2026-10-06T22:30' });
+    pick(cmp, 'end', new Date(2026, 9, 6, 23, 30));
     fixture.detectChanges();
-    expect(cmp.value()).toEqual({ start: '2026-10-07T21:00', end: '2026-10-07T22:00' });
+    expect(cmp.value()).toEqual({ start: '2026-10-06T21:00', end: '2026-10-06T23:30' });
   });
 
-  it('does not recommit the identical pair', () => {
-    const { fixture, cmp } = mount({
-      start: '2026-10-06T08:00',
-      end: '2026-10-06T09:30',
-    });
+  it('does not recommit an unchanged pick', () => {
+    const { fixture, cmp } = mount({ start: '2026-10-06T08:00', end: '2026-10-06T09:30' });
     const before = cmp.value();
-    pick(cmp, new Date(2026, 9, 6, 8, 0), new Date(2026, 9, 6, 9, 30));
+    pick(cmp, 'start', new Date(2026, 9, 6, 8, 0));
     fixture.detectChanges();
     expect(cmp.value()).toBe(before);
   });

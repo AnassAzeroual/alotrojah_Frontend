@@ -3,8 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <script>
+      // Pre-boot theme guard: the vault is sessionStorage ciphertext, unreadable
+      // here, so ThemeService keeps a plaintext 'light'/'dark' mirror in
+      // localStorage. Only a validated mirror value is applied; anything else
+      // (stray ciphertext, legacy junk) falls back to dark until Angular boots
+      // and re-applies the real selection.
       try {
-        var t = localStorage.getItem('alotrojah_theme') || 'dark';
+        var t =
+          localStorage.getItem('alotrojah_theme') ||
+          sessionStorage.getItem('alotrojah_theme') ||
+          'dark';
+        if (t !== 'light' && t !== 'dark') t = 'dark';
         document.documentElement.dataset.theme = t;
         document.documentElement.style.colorScheme = t;
       } catch (e) {}

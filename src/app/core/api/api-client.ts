@@ -42,6 +42,9 @@ export class ApiClient {
   private readonly entries = new Map<string, CacheEntry>();
 
   private get cacheBypassed(): boolean {
+    // Deliberately plaintext, not via SecureStorageService: this is a
+    // test-only HTTP-cache switch set by e2e specs outside the Angular runtime
+    // (no DI), not user data.
     return this.cacheTtlMs <= 0 || globalThis.localStorage?.getItem(E2E_CACHE_BYPASS_KEY) === '1';
   }
 

@@ -3,56 +3,6 @@
   border-radius: var(--radius-xl);
 }
 
-.table-responsive {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.users-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-.users-table th,
-.users-table td {
-  padding: var(--space-3) var(--space-4);
-  text-align: start;
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: middle;
-}
-
-.users-table th {
-  background: var(--color-bg-soft);
-  color: var(--color-muted);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  white-space: nowrap;
-}
-
-.users-table tbody tr {
-  transition: background var(--dur-1) var(--ease-out);
-}
-
-@media (hover: hover) {
-  .users-table tbody tr:hover {
-    background: var(--color-bg-hover);
-  }
-}
-
-.users-table td {
-  color: var(--color-text);
-}
-
-.users-table .actions-col,
-.users-table th.actions-col {
-  width: auto;
-  text-align: end;
-  white-space: nowrap;
-}
-
 .row-actions {
   display: inline-flex;
   align-items: center;
@@ -96,7 +46,7 @@
   height: 28px;
   border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  color: var(--color-text-on-primary);
+  color: #fff;
   font-weight: 700;
   font-size: var(--text-sm);
   display: inline-flex;
@@ -182,28 +132,8 @@
   }
 }
 
-@media (max-width: 767px) {
-  .table-responsive {
-    margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1);
-    padding: var(--space-4);
-    border-radius: var(--radius-lg);
-    overflow-x: auto;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-  }
-
-  .users-table th,
-  .users-table td {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--text-xs);
-  }
-
-  .users-table th.actions-col,
-  .users-table td.actions-col {
-    display: none;
-  }
-
-  .users-table .avatar-sm {
+@media (max-width: 639px) {
+  .avatar-sm {
     width: 24px;
     height: 24px;
     font-size: var(--text-xs);

@@ -7,10 +7,13 @@
     "month": "Month",
     "week": "Week",
     "day": "Day",
+    "year": "Year",
     "today": "Today",
     "prev": "Previous",
     "next": "Next",
-    "datetime_range": "Session date and time"
+    "datetime_range": "Session date and time",
+    "start": "Start",
+    "end": "End"
   },
   "nav": {
     "dashboard": "Home",
@@ -87,7 +90,8 @@
     "graduated": "Graduated",
     "left": "Left",
     "unsaved_warn": "You have unsaved changes. Leave without saving?",
-    "unsaved_leave": "Leave"
+    "unsaved_leave": "Leave",
+    "loading": "Loading…"
   },
   "apiErrors": {
     "CROSS_CENTER": "This action belongs to another center",
@@ -208,7 +212,12 @@
     "level": "Level",
     "status": "Status",
     "mode": "Mode",
-    "all": "All"
+    "all": "All",
+    "pager_prev": "Previous",
+    "pager_next": "Next",
+    "total": "Total: {{count}}",
+    "no_results": "No results for “{{q}}”",
+    "clear_search": "Clear search"
   },
   "grp": {
     "subtitle": "Sections, teachers and students at a glance",
@@ -317,7 +326,8 @@
     "honor": "Honor board",
     "memorized_label": "Memorized",
     "overall": "Average",
-    "board": "Board"
+    "board": "Board",
+    "student_none": "No result recorded for you this term yet."
   },
   "report": {
     "term_title": "Term report",
@@ -497,6 +507,7 @@
     "scores": "Scores",
     "save_scores": "Save scores",
     "separate_note": "Sarraj is a separate /20 total, outside the weekly total",
+    "memorized_label": "Memorized this session (thumn)",
     "review_only_notice": "Review teacher: weekly scores disabled here",
     "goal": "Weekly goal",
     "target_hint": "E.g. memorize two thumns",

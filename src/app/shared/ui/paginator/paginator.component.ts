@@ -1,15 +1,31 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-paginator',
   standalone: true,
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="pager">
-      <button type="button" [disabled]="page() <= 1" (click)="go(page() - 1)">‹</button>
+      <button
+        type="button"
+        [disabled]="page() <= 1"
+        [attr.aria-label]="'list.pager_prev' | translate"
+        (click)="go(page() - 1)"
+      >
+        ‹
+      </button>
       <span class="ltr-num">{{ page() }} / {{ pages() }}</span>
-      <button type="button" [disabled]="page() >= pages()" (click)="go(page() + 1)">›</button>
-      <small class="muted">{{ total() }}</small>
+      <button
+        type="button"
+        [disabled]="page() >= pages()"
+        [attr.aria-label]="'list.pager_next' | translate"
+        (click)="go(page() + 1)"
+      >
+        ›
+      </button>
+      <small class="muted">{{ 'list.total' | translate: { count: total() } }}</small>
     </div>
   `,
   styles: [
@@ -23,7 +39,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
       }
       button {
         min-width: 44px;
-        border: 1px solid #cfd6d2;
+        border: 1px solid var(--color-border);
         background: var(--color-surface);
         border-radius: var(--radius-sm);
       }

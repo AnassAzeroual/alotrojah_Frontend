@@ -27,6 +27,14 @@ export interface SessionCal {
   status: string;
 }
 
+/** Display-ready calendar row: session plus the names its card needs. */
+export interface CalendarEntry extends SessionCal {
+  group_name: string | null;
+  term_name: string | null;
+  week_number_global: number | null;
+  week_type: 'study' | 'review' | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CalendarService {
   private readonly api = inject(ApiClient);
@@ -37,5 +45,10 @@ export class CalendarService {
 
   sessions(params?: QueryParams): Observable<Paginated<SessionCal>> {
     return this.api.get<Paginated<SessionCal>>('/sessions-cal', params);
+  }
+
+  /** One windowed feed for the calendar (sessions + card names). */
+  feed(params?: QueryParams): Observable<Paginated<CalendarEntry>> {
+    return this.api.get<Paginated<CalendarEntry>>('/calendar', params);
   }
 }

@@ -54,13 +54,22 @@ export function startOfWeek(d: Date): Date {
   return out;
 }
 
+/** Page view union: the library enum plus the custom year overview. */
+export type CalendarPageView = CalendarView | 'year';
+
 /**
  * The date span a view actually shows: day = that calendar day, week = its
  * Mon–Sun span, month = the full visible grid (week holding the 1st through
- * the week holding the last day). Drives both the fetch window and the
- * client-side filter, so every view loads just its own events.
+ * the week holding the last day), year = the whole Jan 1…Dec 31 window.
+ * Drives both the fetch window and the client-side filter, so every view
+ * loads just its own events.
  */
-export function viewRange(view: CalendarView, date: Date): { start: Date; end: Date } {
+export function viewRange(view: CalendarPageView, date: Date): { start: Date; end: Date } {
+  if (view === 'year') {
+    const start = new Date(date.getFullYear(), 0, 1);
+    const end = new Date(date.getFullYear() + 1, 0, 1);
+    return { start, end };
+  }
   if (view === CalendarView.Day) {
     const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const end = new Date(start);
@@ -77,6 +86,73 @@ export function viewRange(view: CalendarView, date: Date): { start: Date; end: D
   const end = startOfWeek(new Date(date.getFullYear(), date.getMonth() + 1, 0));
   end.setDate(end.getDate() + 7);
   return { start, end };
+}
+
+/** Per-day session counts by type (year overview). */
+export interface YearDayCounts {
+  memorization: number;
+  revision: number;
+  exam: number;
+}
+
+/** One cell in a mini-month: a fixed 6-row × 7-col grid, ± its neighbours. */
+export interface YearDay {
+  date: Date;
+  iso: string;
+  inMonth: boolean;
+  isToday: boolean;
+  counts: YearDayCounts;
+  total: number;
+}
+
+export interface YearMonth {
+  /** The 1st of the month, used for the header and jump-to-month. */
+  month: Date;
+  days: YearDay[];
+  total: number;
+}
+
+/**
+ * Twelve mini-months (Jan..Dec) for the year overview. Each month is a fixed
+ * 42-cell grid starting on the Monday on/before the 1st; lead-in/tail cells
+ * outside the month set `inMonth` false. Out-of-month cells sit outside the
+ * year fetch window too, so they never carry a stale badge.
+ */
+export function buildYearGrid(
+  year: number,
+  countsByDate: ReadonlyMap<string, Partial<YearDayCounts>>,
+  todayIso: string,
+): YearMonth[] {
+  const out: YearMonth[] = [];
+  for (let m = 0; m < 12; m++) {
+    const first = new Date(year, m, 1);
+    const start = new Date(first);
+    start.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+    let monthTotal = 0;
+    const days: YearDay[] = [];
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      const counts: YearDayCounts = {
+        memorization: 0,
+        revision: 0,
+        exam: 0,
+        ...countsByDate.get(dateToISODate(date)),
+      };
+      const total = counts.memorization + counts.revision + counts.exam;
+      monthTotal += total;
+      days.push({
+        date,
+        iso: dateToISODate(date),
+        inMonth: date.getMonth() === m && date.getFullYear() === year,
+        isToday: dateToISODate(date) === todayIso,
+        counts,
+        total,
+      });
+    }
+    out.push({ month: first, days, total: monthTotal });
+  }
+  return out;
 }
 
 /** Local-midnight Date -> ISO yyyy-mm-dd (no UTC shift). */
@@ -103,12 +179,26 @@ export function dateToClockTime(d: Date): string {
   return `${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-/** Day ceiling everywhere (views render 6→22): no session clock runs past it. */
-export const MAX_CLOCK = '22:00';
+/** Full 24h day (views render 0→23): no session clock runs past 23:59. */
+export const MAX_CLOCK = '23:59';
 
 /** Clamp a zero-padded `HH:MM` clock to the day ceiling (lexicographic-safe). */
 export function clampClock(time: string): string {
   return time > MAX_CLOCK ? MAX_CLOCK : time;
+}
+
+/**
+ * Index of the time-grid slot holding the given clock, for a column that
+ * renders `segmentCount` equal slots across the full 00:00→24:00 day (both the
+ * week and day views do). The slot length is derived from the count rather than
+ * the library's shipped 30-minute default, so a changed `hourSegments` can't
+ * drift the auto-scroll target. Returns -1 when the column renders no slots.
+ */
+export function nowSegmentIndex(hours: number, minutes: number, segmentCount: number): number {
+  if (segmentCount <= 0) return -1;
+  const slotMinutes = (24 * 60) / segmentCount;
+  const index = Math.floor((hours * 60 + minutes) / slotMinutes);
+  return Math.min(segmentCount - 1, Math.max(0, index));
 }
 
 /**
@@ -137,8 +227,9 @@ export function resolveWeekDrop(
   const storedEnd = current.end_time.slice(0, 5);
   const start = dateToClockTime(newStart);
   const end = newEnd === undefined ? storedEnd : dateToClockTime(newEnd);
-  // Day ceiling: drops ending past 22:00 snap back (the grid ends there too).
-  if (end > MAX_CLOCK) return null;
+  // Full 24h day, no rollover: a gesture that would end at/before its start
+  // (crossing midnight) snaps back, and no clock runs past 23:59.
+  if (end <= start || end > MAX_CLOCK) return null;
   if (start !== storedStart || end !== storedEnd) {
     drop.start_time = start;
     drop.end_time = end;

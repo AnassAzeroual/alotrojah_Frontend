@@ -97,6 +97,7 @@ describe('StudentDetailPage', () => {
 
   beforeEach(async () => {
     localStorage.clear();
+    sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [StudentDetailPage],
       providers: [

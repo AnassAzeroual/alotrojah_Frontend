@@ -33,24 +33,16 @@ function parseLocalISO(v: string): Date | null {
   return Number.isNaN(dt.getTime()) ? null : dt;
 }
 
-function toDates(v: DateTimeRange | null): [Date, Date] | undefined {
-  if (!v) return undefined;
-  const s = parseLocalISO(v.start);
-  const e = parseLocalISO(v.end);
-  return s && e ? [s, e] : undefined;
-}
-
 function sameRange(a: DateTimeRange | null, b: DateTimeRange | null | undefined): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
   return a.start === b.start && a.end === b.end;
 }
 
-// Direction-neutral range separator: the whole line stays digits + Latin,
-// so no bidi reordering inside the locked-LTR input (an Arabic separator
-// visibly jumbles the two ends). Shared by the painted text, the flatpickr
-// locale override (its own text must parse back), and typed input.
-const RANGE_SEP = ' → ';
+/** Clamp a leg to the day ceiling (typed text can slip past maxTime). */
+function clampISO(v: string): string {
+  return `${v.slice(0, 11)}${clampClock(v.slice(11, 16))}`;
+}
 
 /**
  * Touch-first devices get a tap-only field (no soft keyboard covering the
@@ -61,19 +53,18 @@ function allowTypedEntry(): boolean {
   return typeof window.matchMedia !== 'function' || window.matchMedia('(hover: hover)').matches;
 }
 
-function displayRange(start: Date, end: Date, sep: string): string {
-  const f = (d: Date): string => {
-    const p = (n: number): string => String(n).padStart(2, '0');
-    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
-  };
-  return `${f(start)}${sep}${f(end)}`;
+function displayLeg(d: Date): string {
+  const p = (n: number): string => String(n).padStart(2, '0');
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
 /**
- * Session start→end picker for the calendar detail card (managers only).
- * One flatpickr in range + 24h-time mode; the model is a {start, end} pair of
- * local ISO datetimes. A half-picked range never commits — the display snaps
- * back to the last committed pair on close.
+ * Session start→end editor for the calendar detail card (managers only).
+ * Two single-date flatpickrs — one leg for start, one for end — each with
+ * 24h time, so a pick commits that leg immediately. The retired range-mode
+ * single field needed two clicks and re-anchored a pre-selected range in
+ * confusing ways (it read as "always rewriting the end"); two pickers remove
+ * that ambiguity: changing the start can never touch the end and vice versa.
  */
 @Component({
   selector: 'app-session-range-picker',
@@ -81,53 +72,91 @@ function displayRange(start: Date, end: Date, sep: string): string {
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <input
-      #rangeInput
-      type="text"
-      inputmode="numeric"
-      dir="ltr"
-      autocomplete="off"
-      [placeholder]="placeholder()"
-      [attr.data-testid]="testId() || null"
-      [attr.aria-label]="ariaLabelKey() | translate"
-    />
-    <svg
-      class="range-ico"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.8"
-      aria-hidden="true"
-    >
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M3 10h18M8 3v4M16 3v4" />
-    </svg>
+    <div class="range-pair" role="group" [attr.aria-label]="ariaLabelKey() | translate">
+      <label class="range-leg">
+        <span class="range-label">{{ startLabelKey() | translate }}</span>
+        <span class="range-ctrl">
+          <input
+            #startInput
+            type="text"
+            inputmode="numeric"
+            dir="ltr"
+            autocomplete="off"
+            [placeholder]="startPlaceholder()"
+            [attr.data-testid]="testId() || null"
+          />
+          <svg
+            class="range-ico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M3 10h18M8 3v4M16 3v4" />
+          </svg>
+        </span>
+      </label>
+      <span class="range-arrow" dir="ltr" aria-hidden="true">→</span>
+      <label class="range-leg">
+        <span class="range-label">{{ endLabelKey() | translate }}</span>
+        <span class="range-ctrl">
+          <input
+            #endInput
+            type="text"
+            inputmode="numeric"
+            dir="ltr"
+            autocomplete="off"
+            [placeholder]="endPlaceholder()"
+            [attr.data-testid]="testId() ? testId() + '-end' : null"
+          />
+          <svg
+            class="range-ico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M3 10h18M8 3v4M16 3v4" />
+          </svg>
+        </span>
+      </label>
+    </div>
   `,
 })
 export class SessionRangePickerComponent implements OnDestroy {
   readonly value = model<DateTimeRange | null>(null);
-  readonly placeholder = input('dd/mm/yyyy HH:mm → dd/mm/yyyy HH:mm');
+  readonly startPlaceholder = input('dd/mm/yyyy HH:mm');
+  readonly endPlaceholder = input('dd/mm/yyyy HH:mm');
+  readonly startLabelKey = input('cal.start');
+  readonly endLabelKey = input('cal.end');
   readonly ariaLabelKey = input('cal.datetime_range');
-  /** Stable hook for e2e (keeps the retired date-picker's testid shape). */
+  /** Stable hook for e2e: the start leg keeps the bare testid (`cal-date-<id>`),
+   *  the end leg suffixes `-end` (`cal-date-<id>-end`). */
   readonly testId = input('');
 
-  private readonly box = viewChild<ElementRef<HTMLInputElement>>('rangeInput');
+  private readonly startBox = viewChild<ElementRef<HTMLInputElement>>('startInput');
+  private readonly endBox = viewChild<ElementRef<HTMLInputElement>>('endInput');
   private readonly language = inject(LanguageService);
 
-  private fp: flatpickr.Instance | null = null;
+  private fpStart: flatpickr.Instance | null = null;
+  private fpEnd: flatpickr.Instance | null = null;
   private lastOut: DateTimeRange | null | undefined = undefined;
 
   constructor() {
-    // Language switch rebuilds the calendar (labels + range separator).
+    // Language switch rebuilds the calendars (labels + month/weekday names).
     effect(() => {
       this.language.current();
-      if (this.fp) this.build();
+      if (this.fpStart) this.build();
     });
     // Parents push a new pair when another session is selected: mirror it
-    // into the calendar only when the model moved without us.
+    // into the calendars only when the model moved without us.
     effect(() => {
       const v = this.value();
-      if (!this.fp || sameRange(v, this.lastOut)) return;
+      if (!this.fpStart || sameRange(v, this.lastOut)) return;
       this.paint(v);
     });
   }
@@ -137,71 +166,84 @@ export class SessionRangePickerComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.fp?.destroy();
-    this.fp = null;
+    this.fpStart?.destroy();
+    this.fpStart = null;
+    this.fpEnd?.destroy();
+    this.fpEnd = null;
   }
 
   private build(): void {
-    const ref = this.box();
-    if (!ref) return;
-    this.fp?.destroy();
-    const el = ref.nativeElement;
+    const s = this.startBox();
+    const e = this.endBox();
+    if (!s || !e) return;
+    this.fpStart?.destroy();
+    this.fpEnd?.destroy();
     const lang = this.language.current();
-    this.fp = flatpickr(el, {
-      mode: 'range',
-      enableTime: true,
-      time_24hr: true,
-      // Day ceiling 22:00 everywhere, like the week/day views render.
-      maxTime: MAX_CLOCK,
-      dateFormat: 'd/m/Y H:i',
-      defaultDate: toDates(this.value()),
-      // flatpickr merges a partial object over its English defaults, so the
-      // month/day names stay localized while the separator stays bidi-safe.
-      locale: {
-        ...(lang === 'ar' ? Arabic : lang === 'fr' ? French : {}),
-        rangeSeparator: RANGE_SEP,
-      },
-      allowInput: allowTypedEntry(),
-      // Range + time has no usable native fallback: force the custom
-      // calendar on touch devices too (single-date pickers may keep theirs).
-      disableMobile: true,
-      onChange: (sel) => {
-        // Range picks land one click at a time — commit the completed pair only,
-        // clamped to the day ceiling (typed text can slip past maxTime).
-        if (sel.length !== 2) return;
-        const start = toLocalISO(sel[0]);
-        const end = toLocalISO(sel[1]);
-        this.commit({
-          start: start.slice(0, 11) + clampClock(start.slice(11, 16)),
-          end: end.slice(0, 11) + clampClock(end.slice(11, 16)),
-        });
-      },
-      onClose: () => {
+    const locale = {
+      ...(lang === 'ar' ? Arabic : lang === 'fr' ? French : {}),
+    };
+    const leg = (input: HTMLInputElement, onPick: (d: Date) => void): flatpickr.Instance =>
+      flatpickr(input, {
+        mode: 'single',
+        enableTime: true,
+        time_24hr: true,
+        // Full 24h day, like the week/day views render (no clock past 23:59).
+        maxTime: MAX_CLOCK,
+        dateFormat: 'd/m/Y H:i',
+        // flatpickr merges a partial object over its English defaults, so the
+        // month/day names stay localized.
+        locale,
+        allowInput: allowTypedEntry(),
+        // Date+time has no usable native fallback: force the custom calendar
+        // on touch devices too (same trade as the retired range picker).
+        disableMobile: true,
+        onChange: (sel) => {
+          if (sel.length !== 1) return;
+          onPick(sel[0]);
+        },
         // Incomplete picks (or typed garbage) never stick: revert the display.
-        if ((this.fp?.selectedDates.length ?? 0) !== 2) this.paint(this.value());
-      },
+        onClose: () => this.paint(this.value()),
+      });
+    this.fpStart = leg(s.nativeElement, (d) => {
+      const cur = this.value();
+      if (!cur) return;
+      this.commit({ ...cur, start: clampISO(toLocalISO(d)) });
+    });
+    this.fpEnd = leg(e.nativeElement, (d) => {
+      const cur = this.value();
+      if (!cur) return;
+      this.commit({ ...cur, end: clampISO(toLocalISO(d)) });
     });
     this.paint(this.value());
   }
 
   private commit(v: DateTimeRange): void {
     // Native change-event semantics: no commit when nothing changed (avoids
-    // redundant PATCHes from re-picking the same range).
+    // redundant PATCHes from re-picking the same value).
     if (sameRange(v, this.value())) return;
     this.lastOut = { ...v };
     this.value.set({ ...v });
   }
 
   private paint(v: DateTimeRange | null): void {
-    const ref = this.box();
-    if (!ref || !this.fp) return;
-    const dates = toDates(v);
-    if (dates) {
-      this.fp.setDate(dates, false);
-      ref.nativeElement.value = displayRange(dates[0], dates[1], RANGE_SEP);
+    const s = this.startBox();
+    const e = this.endBox();
+    if (!s || !e || !this.fpStart || !this.fpEnd) return;
+    const sDate = v ? parseLocalISO(v.start) : undefined;
+    const eDate = v ? parseLocalISO(v.end) : undefined;
+    if (sDate) {
+      this.fpStart.setDate(sDate, false);
+      s.nativeElement.value = displayLeg(sDate);
     } else {
-      this.fp.clear(false);
-      ref.nativeElement.value = '';
+      this.fpStart.clear(false);
+      s.nativeElement.value = '';
+    }
+    if (eDate) {
+      this.fpEnd.setDate(eDate, false);
+      e.nativeElement.value = displayLeg(eDate);
+    } else {
+      this.fpEnd.clear(false);
+      e.nativeElement.value = '';
     }
     this.lastOut = v ? { ...v } : v;
   }

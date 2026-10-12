@@ -1,18 +1,23 @@
 import { TestBed } from '@angular/core/testing';
+import { provideNgCryptoStore } from 'ng-cryptostore';
 import { provideTranslateLoader, provideTranslateService } from '@ngx-translate/core';
 import { TranslateNoOpLoader } from '@ngx-translate/core';
 import { LanguageService } from './language.service';
+import { SecureStorageService } from '../storage/secure-storage.service';
 
 describe('LanguageService', () => {
   let lang: LanguageService;
 
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideTranslateService({
           loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
         }),
+        // Mirror app.config.ts vault backend (sessionStorage).
+        provideNgCryptoStore({ storageType: 'sessionStorage' }),
       ],
     });
     lang = TestBed.inject(LanguageService);
@@ -29,18 +34,18 @@ describe('LanguageService', () => {
     expect(lang.current()).toBe('fr');
     expect(document.documentElement.lang).toBe('fr');
     expect(document.documentElement.dir).toBe('ltr');
-    expect(localStorage.getItem('alotrojah_lang')).toBe('fr');
+    expect(TestBed.inject(SecureStorageService).read('alotrojah_lang')).toBe('fr');
   });
 
   it('falls back to Arabic for an invalid stored value', () => {
-    localStorage.setItem('alotrojah_lang', 'de');
+    sessionStorage.setItem('alotrojah_lang', 'de');
     lang.init();
     expect(lang.current()).toBe('ar');
     expect(document.documentElement.dir).toBe('rtl');
   });
 
   it('init applies the stored language to the document', () => {
-    localStorage.setItem('alotrojah_lang', 'en');
+    sessionStorage.setItem('alotrojah_lang', 'en');
     lang.init();
     expect(lang.current()).toBe('en');
     expect(document.documentElement.lang).toBe('en');
@@ -48,13 +53,14 @@ describe('LanguageService', () => {
   });
 
   it('restores the stored language', () => {
-    localStorage.setItem('alotrojah_lang', 'en');
+    sessionStorage.setItem('alotrojah_lang', 'en');
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         provideTranslateService({
           loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
         }),
+        provideNgCryptoStore({ storageType: 'sessionStorage' }),
       ],
     });
     const fresh = TestBed.inject(LanguageService);

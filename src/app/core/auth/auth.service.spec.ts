@@ -3,8 +3,10 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideNgCryptoStore } from 'ng-cryptostore';
 import { AuthService } from './auth.service';
 import { CurrentUser } from '../api/api-models';
+import { SecureStorageService } from '../storage/secure-storage.service';
 
 @Component({ template: '', standalone: true })
 class DummyComponent {}
@@ -23,11 +25,14 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([{ path: 'login', component: DummyComponent }]),
+        // Mirror app.config.ts vault backend (sessionStorage).
+        provideNgCryptoStore({ storageType: 'sessionStorage' }),
       ],
     });
     auth = TestBed.inject(AuthService);
@@ -47,7 +52,10 @@ describe('AuthService', () => {
     expect(auth.token()).toBe('T');
     expect(auth.currentUser()).toEqual(USER);
     expect(auth.isLoggedIn()).toBe(true);
-    expect(localStorage.getItem('alotrojah_token')).toBe('T');
+    // The token is encrypted at rest (never the raw payload)…
+    expect(sessionStorage.getItem('alotrojah_token')).not.toBe('T');
+    // …and round-trips through the vault.
+    expect(TestBed.inject(SecureStorageService).read('alotrojah_token')).toBe('T');
   });
 
   it('logout clears everything', () => {
@@ -58,7 +66,7 @@ describe('AuthService', () => {
     req.flush({ success: true, message: null, data: null });
     expect(auth.token()).toBeNull();
     expect(auth.isLoggedIn()).toBe(false);
-    expect(localStorage.getItem('alotrojah_token')).toBeNull();
+    expect(sessionStorage.getItem('alotrojah_token')).toBeNull();
   });
 
   it('refresh is single-flight', () => {
@@ -100,7 +108,7 @@ describe('AuthService', () => {
 
   it('init clears a dead token and still settles ready', async () => {
     auth.token.set('T');
-    localStorage.setItem('alotrojah_token', 'T');
+    sessionStorage.setItem('alotrojah_token', 'T');
     auth.init();
     http
       .expectOne((r) => r.url.endsWith('/auth/me'))
@@ -109,7 +117,7 @@ describe('AuthService', () => {
     expect(auth.sessionProbed()).toBe(true);
     expect(auth.token()).toBeNull();
     expect(auth.currentUser()).toBeNull();
-    expect(localStorage.getItem('alotrojah_token')).toBeNull();
+    expect(sessionStorage.getItem('alotrojah_token')).toBeNull();
   });
 
   it('init does not clobber a login that wins the race', async () => {

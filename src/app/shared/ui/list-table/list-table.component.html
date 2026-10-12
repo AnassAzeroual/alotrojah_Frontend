@@ -1,0 +1,116 @@
+<div class="lt-wrap">
+  @if (loading()) {
+    <div class="lt-progress" role="status">
+      <span class="sr-only">{{ 'common.loading' | translate }}</span>
+    </div>
+  }
+
+  @if (searchVisible()) {
+    <label class="lt-search">
+      <span class="sr-only">{{ searchPlaceholderKey() | translate }}</span>
+      <input
+        type="search"
+        [formControl]="searchControl"
+        [attr.data-testid]="searchTestId() || null"
+        [placeholder]="searchPlaceholderKey() | translate"
+        (keydown.enter)="commitSearch()"
+        (keydown.escape)="clearSearch()"
+      />
+    </label>
+  }
+
+  @if (sortedRows().length === 0 && !loading()) {
+    <div class="lt-empty" role="status">
+      <app-empty-state
+        [messageKey]="searchControl.value ? 'list.no_results' : emptyTitleKey() || 'common.empty'"
+        [messageParams]="{ q: searchControl.value }"
+      />
+      @if (searchControl.value) {
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          data-testid="list-clear-search"
+          (click)="clearSearch()"
+        >
+          {{ 'list.clear_search' | translate }}
+        </button>
+      }
+    </div>
+  } @else {
+    <table class="lt-table" [class]="tableClass()" [attr.aria-busy]="loading() ? 'true' : null">
+      <thead>
+        <tr>
+          @for (col of columns(); track col.key) {
+            @if (isSortable(col)) {
+              <th
+                scope="col"
+                [class.lt-hide-sm]="col.priority === 'low'"
+                [class.lt-end]="col.align === 'end' || col.numeric"
+                [class.lt-center]="col.align === 'center'"
+                [attr.aria-sort]="ariaSort(col)"
+              >
+                <button type="button" class="lt-sort" (click)="toggleSort(col)">
+                  <span>{{ col.headerKey | translate }}</span>
+                  <svg
+                    class="lt-caret"
+                    [class.on]="sortActive(col)"
+                    [class.desc]="sortDir(col) === 'desc'"
+                    viewBox="0 0 12 8"
+                    width="10"
+                    height="7"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path d="M6 0 12 8H0z" fill="currentColor" />
+                  </svg>
+                </button>
+              </th>
+            } @else {
+              <th
+                scope="col"
+                [class.lt-hide-sm]="col.priority === 'low'"
+                [class.lt-end]="col.align === 'end' || col.numeric"
+                [class.lt-center]="col.align === 'center'"
+              >
+                {{ col.headerKey | translate }}
+              </th>
+            }
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of sortedRows(); track trk(row)) {
+          <tr class="lt-row anim-rise" [style.--i]="$index">
+            @for (col of columns(); track col.key) {
+              <td
+                [attr.data-label]="col.headerKey ? (col.headerKey | translate) : null"
+                [class.lt-hide-sm]="col.priority === 'low'"
+                [class.lt-end]="col.align === 'end' || col.numeric"
+                [class.lt-center]="col.align === 'center'"
+                [dir]="col.numeric ? 'ltr' : null"
+              >
+                @if (templateFor(col.key); as tpl) {
+                  <ng-container
+                    [ngTemplateOutlet]="tpl"
+                    [ngTemplateOutletContext]="{ $implicit: row, row }"
+                  />
+                } @else {
+                  {{ cellText(row, col) }}
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (pagerVisible()) {
+    <app-paginator
+      [page]="page()"
+      [perPage]="perPage()"
+      [total]="total()"
+      (pageChange)="pageChange.emit($event)"
+    />
+  }
+</div>

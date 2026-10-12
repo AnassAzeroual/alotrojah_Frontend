@@ -12,6 +12,7 @@ import { firstValueFrom, forkJoin, map } from 'rxjs';
 import { CalendarService } from '../../core/api/calendar.service';
 import { EntryService, SessionStudentScores, AttendanceRow } from '../../core/api/entry.service';
 import { GroupsService } from '../../core/api/groups.service';
+import { LevelsService } from '../../core/api/levels.service';
 import { StudentsService } from '../../core/api/students.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -49,12 +50,14 @@ export class EntryPage {
   private readonly auth = inject(AuthService);
   private readonly i18n = inject(TranslateService);
   private readonly language = inject(LanguageService);
+  private readonly levelsSvc = inject(LevelsService);
 
   readonly groups = toSignal(this.groupsSvc.list().pipe(map((p) => p.data)), { initialValue: [] });
   readonly modules = toSignal(this.entry.modules(), { initialValue: [] });
   readonly weeks = toSignal(this.calendarSvc.weeks().pipe(map((p) => p.data)), {
     initialValue: [],
   });
+  readonly levels = toSignal(this.levelsSvc.list(), { initialValue: [] });
 
   protected readonly num = dropdownNumber;
   protected readonly txt = dropdownText;
@@ -124,6 +127,19 @@ export class EntryPage {
     (): AttendanceRow[] => this.existing.value()?.attendance ?? [],
   );
   readonly ready = computed(() => this.selectedGroup() !== null && this.selectedSession() !== null);
+
+  /** §B: the picked session (type drives the memorized-amount field). */
+  readonly session = computed(
+    () => this.sessions.value()?.find((s) => s.id === this.selectedSession()) ?? null,
+  );
+  readonly showMemorization = computed(() => this.session()?.session_type === 'memorization');
+
+  /** §B: level-expected memorized amount per pupil (memorization sessions only). */
+  defaultMemorization(studentId: number): number | null {
+    const st = this.students.value()?.find((s) => s.id === studentId);
+    if (!st?.level_id) return null;
+    return this.levels().find((l) => l.id === st.level_id)?.thumn_per_session_value ?? null;
+  }
 
   onGroup(id: number | null): void {
     this.selectedGroup.set(id);

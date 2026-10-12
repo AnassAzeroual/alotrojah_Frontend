@@ -4,6 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRouteSnapshot, provideRouter, RouterStateSnapshot } from '@angular/router';
 import { firstValueFrom, Observable } from 'rxjs';
+import { provideNgCryptoStore } from 'ng-cryptostore';
 import { AuthService } from './auth.service';
 import { roleGuard } from './role.guard';
 import { CurrentUser } from '../api/api-models';
@@ -25,11 +26,14 @@ function runGuard(user: CurrentUser | null, data: Record<string, unknown>): bool
 describe('roleGuard', () => {
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([{ path: 'login', component: DummyComponent }]),
+        // Mirror app.config.ts vault backend (sessionStorage).
+        provideNgCryptoStore({ storageType: 'sessionStorage' }),
       ],
     });
   });
@@ -62,7 +66,7 @@ describe('roleGuard', () => {
   });
 
   it('waits for the boot probe, then allows a valid user', async () => {
-    localStorage.setItem('alotrojah_token', 'T'); // must precede service construction
+    sessionStorage.setItem('alotrojah_token', 'T'); // must precede service construction
     const auth = TestBed.inject(AuthService);
     const http = TestBed.inject(HttpTestingController);
     auth.init(); // probe starts, not yet settled

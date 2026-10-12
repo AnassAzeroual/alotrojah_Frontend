@@ -1,5 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { SecureStorageService } from '../storage/secure-storage.service';
 
 export type AppLang = 'ar' | 'fr' | 'en';
 
@@ -7,16 +8,12 @@ const LANG_KEY = 'alotrojah_lang';
 const DEFAULT: AppLang = 'ar';
 const DIRS: Record<AppLang, 'rtl' | 'ltr'> = { ar: 'rtl', fr: 'ltr', en: 'ltr' };
 
-function readStored(): AppLang {
-  const v = localStorage.getItem(LANG_KEY);
-  return v === 'ar' || v === 'fr' || v === 'en' ? v : DEFAULT;
-}
-
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
+  private readonly storage = inject(SecureStorageService);
   private readonly translate = inject(TranslateService);
 
-  readonly current = signal<AppLang>(readStored());
+  readonly current = signal<AppLang>(this.readStored());
   readonly langs: readonly AppLang[] = ['ar', 'fr', 'en'];
 
   constructor() {
@@ -26,7 +23,7 @@ export class LanguageService {
       const lang = e.lang as AppLang;
       if (this.langs.includes(lang) && lang !== this.current()) {
         this.current.set(lang);
-        localStorage.setItem(LANG_KEY, lang);
+        this.storage.write(LANG_KEY, lang);
         this.applyDir(lang);
       }
     });
@@ -34,14 +31,19 @@ export class LanguageService {
 
   /** Boot check: re-read the stored selection and apply it authoritatively. */
   init(): void {
-    this.use(readStored());
+    this.use(this.readStored());
   }
 
   use(lang: AppLang): void {
-    localStorage.setItem(LANG_KEY, lang);
+    this.storage.write(LANG_KEY, lang);
     this.current.set(lang);
     this.translate.use(lang);
     this.applyDir(lang);
+  }
+
+  private readStored(): AppLang {
+    const v = this.storage.read(LANG_KEY);
+    return v === 'ar' || v === 'fr' || v === 'en' ? v : DEFAULT;
   }
 
   private applyDir(lang: AppLang): void {

@@ -134,6 +134,7 @@ describe('RegisterPage', () => {
     page.submit();
     flushOk(http);
     expect(localStorage.getItem('alotrojah_token')).toBeNull();
+    expect(sessionStorage.getItem('alotrojah_token')).toBeNull();
   });
 
   it('maps the email_taken backend code', () => {

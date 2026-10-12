@@ -2,6 +2,7 @@
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   resource,
   signal,
@@ -14,6 +15,7 @@ import { ReferenceService } from '../../core/api/reference.service';
 import { ResultsService } from '../../core/api/results.service';
 import { leaveController } from '../../core/guards/leave-controller';
 import { StudentsService } from '../../core/api/students.service';
+import { AuthService } from '../../core/auth/auth.service';
 import {
   DropdownComponent,
   dropdownNumber,
@@ -43,9 +45,13 @@ export class TermResultsPage {
   private readonly studentsSvc = inject(StudentsService);
   private readonly planning = inject(PlanningService);
   private readonly ref = inject(ReferenceService);
+  private readonly auth = inject(AuthService);
 
   protected readonly num = dropdownNumber;
   protected readonly txt = dropdownText;
+
+  /** §C: students read their own result only — no search, no upsert. */
+  readonly isStudent = computed(() => this.auth.role() === 'student');
 
   readonly search = signal('');
   readonly pickedStudent = signal<number | null>(null);
@@ -98,6 +104,26 @@ export class TermResultsPage {
       );
     },
   });
+
+  /** §C: own student row (the students list self-scopes for pupils). */
+  readonly me = resource({
+    params: () => ({ s: this.isStudent() }),
+    loader: ({ params }) => {
+      if (!params.s) return Promise.resolve(null);
+      return firstValueFrom(this.studentsSvc.list().pipe(map((p) => p.data[0] ?? null)));
+    },
+  });
+
+  constructor() {
+    // §C: a pupil lands directly on their own row + the current season's first term.
+    effect(() => {
+      if (!this.isStudent()) return;
+      const mine = this.me.value();
+      if (mine && this.pickedStudent() === null) this.pickedStudent.set(mine.id);
+      const first = this.terms.value()?.[0];
+      if (first && this.pickedTerm() === null) this.pickedTerm.set(first.id);
+    });
+  }
 
   /** Dirty guard: typed-but-unsaved result entries block route leave. */
   readonly leave = leaveController();

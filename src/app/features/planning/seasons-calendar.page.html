@@ -30,10 +30,7 @@
         <button
           type="button"
           class="btn btn-ghost btn-sm cal-prev"
-          mwlCalendarPreviousView
-          [viewDate]="viewDate()"
-          [view]="view()"
-          (viewDateChange)="viewDate.set($event)"
+          (click)="stepDate(-1)"
           data-testid="cal-prev"
           [attr.aria-label]="'cal.prev' | translate"
           [attr.title]="'cal.prev' | translate"
@@ -53,10 +50,7 @@
         <button
           type="button"
           class="btn btn-ghost btn-sm cal-next"
-          mwlCalendarNextView
-          [viewDate]="viewDate()"
-          [view]="view()"
-          (viewDateChange)="viewDate.set($event)"
+          (click)="stepDate(1)"
           data-testid="cal-next"
           [attr.aria-label]="'cal.next' | translate"
           [attr.title]="'cal.next' | translate"
@@ -88,6 +82,14 @@
           data-testid="cal-view-day"
         >
           {{ 'cal.day' | translate }}
+        </button>
+        <button
+          type="button"
+          [class.on]="view() === 'year'"
+          (click)="view.set('year')"
+          data-testid="cal-view-year"
+        >
+          {{ 'cal.year' | translate }}
         </button>
       </div>
     </div>
@@ -150,20 +152,78 @@
           [locale]="loc"
           [weekStartsOn]="weekStartsOn"
           [refresh]="refresh"
-          [dayStartHour]="6"
-          [dayEndHour]="22"
           [validateEventTimesChanged]="allowDrag"
           (eventTimesChanged)="onWeekTimesChanged($event)"
           (eventClicked)="onEventClick($event)"
         />
+      } @else if (view() === 'year') {
+        <!-- Year overview: 12 mini-month cards with per-day session badges.
+             Read-only — a day (or the month header) opens the month view. -->
+        <div class="cal-year" data-testid="cal-year-grid">
+          @for (ym of yearGrid(); track ym.month.getTime()) {
+            <section class="cal-year-month">
+              <button
+                type="button"
+                class="cal-year-head"
+                (click)="jumpToDay(ym.month)"
+                data-testid="cal-year-head"
+              >
+                {{ ym.month | calendarDate: 'monthViewTitle' : loc }}
+                @if (ym.total > 0) {
+                  <span class="cal-year-month-count">{{ ym.total }}</span>
+                }
+              </button>
+              <div class="cal-year-weekdays" aria-hidden="true">
+                @for (w of yearWeekdayLabels(); track w) {
+                  <span>{{ w }}</span>
+                }
+              </div>
+              <div class="cal-year-days">
+                @for (d of ym.days; track d.iso) {
+                  <button
+                    type="button"
+                    class="cal-year-day"
+                    [class.off]="!d.inMonth"
+                    [class.today]="d.isToday"
+                    [class.has]="d.total > 0"
+                    [disabled]="!d.inMonth"
+                    [attr.title]="d.date | calendarDate: 'monthViewDayNumber' : loc"
+                    [attr.aria-label]="
+                      d.total > 0
+                        ? (d.date | calendarDate: 'monthViewDayNumber' : loc) + ' (' + d.total + ')'
+                        : (d.date | calendarDate: 'monthViewDayNumber' : loc)
+                    "
+                    (click)="jumpToDay(d.date)"
+                    [attr.data-testid]="'cal-year-day-' + d.iso"
+                  >
+                    <span class="cal-year-day-n">{{
+                      d.date | calendarDate: 'monthViewDayNumber' : loc
+                    }}</span>
+                    @if (d.total > 0) {
+                      <span class="cal-year-dots" aria-hidden="true">
+                        @if (d.counts.memorization > 0) {
+                          <i class="cal-dot dot-memorization"></i>
+                        }
+                        @if (d.counts.revision > 0) {
+                          <i class="cal-dot dot-revision"></i>
+                        }
+                        @if (d.counts.exam > 0) {
+                          <i class="cal-dot dot-exam"></i>
+                        }
+                      </span>
+                    }
+                  </button>
+                }
+              </div>
+            </section>
+          }
+        </div>
       } @else {
         <mwl-calendar-day-view
           [viewDate]="viewDate()"
           [events]="calEvents()"
           [locale]="loc"
           [refresh]="refresh"
-          [dayStartHour]="6"
-          [dayEndHour]="22"
           (eventClicked)="onEventClick($event)"
         />
       }
@@ -200,10 +260,9 @@
     </div>
   }
 
-  <!-- Events JSON panel (Settings checkbox): dumps the events in the period the calendar
-         is currently showing (day/week/month) as JSON. Visible to anyone with
-         calendar access once enabled — no admin gate. -->
-  @if (prefs.showCalDebug()) {
+  <!-- Events JSON panel (Settings checkbox, admin-only): dumps the events in the
+         period the calendar is currently showing (day/week/month) as JSON. -->
+  @if (prefs.showCalDebug() && isAdmin()) {
     <div class="card" data-testid="cal-debug-json" style="margin-top: var(--space-4)">
       <strong class="muted">current view events JSON ({{ visibleEvents().length }})</strong>
       <pre

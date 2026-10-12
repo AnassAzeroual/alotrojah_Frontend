@@ -99,6 +99,7 @@ describe('RegistrationsPage', () => {
 
   beforeEach(async () => {
     localStorage.clear();
+    sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [RegistrationsPage],
       providers: [
@@ -222,6 +223,35 @@ describe('RegistrationsPage', () => {
 
     expect(page.acceptingId()).toBeNull();
     expect(el.textContent).not.toContain('Fatima Zahra');
+  });
+
+  it('accepts a teacher with the chosen center only (first-use bootstrap)', async () => {
+    page.startAccept(TEACHER_REQ.id);
+    page.centerId.set(1);
+    fixture.detectChanges(); // placement resources reload for the picked center
+    flushGroups();
+    flushLevels();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Section is optional for teachers: centre alone unlocks قبول.
+    const accept = el.querySelector<HTMLButtonElement>('.req-accept .btn-primary')!;
+    expect(accept.disabled).toBe(false);
+
+    page.confirmAccept(TEACHER_REQ.id);
+    const req = http.expectOne((r) =>
+      r.url.endsWith(`/registration-requests/${TEACHER_REQ.id}/accept`),
+    );
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ center_id: 1 });
+    req.flush({ success: true, message: null, data: ACCEPTED_USER });
+    fixture.detectChanges(); // resource effect issues the reload GET
+
+    flushRequests([STUDENT_REQ]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(page.acceptingId()).toBeNull();
   });
 
   it('keeps the panel and flags failure when accept errors', () => {

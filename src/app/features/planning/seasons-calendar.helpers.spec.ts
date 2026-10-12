@@ -1,8 +1,10 @@
 import { CalendarView } from 'angular-calendar';
 import {
+  buildYearGrid,
   clampClock,
   dateToClockTime,
   dateToISODate,
+  nowSegmentIndex,
   resolveWeekDrop,
   startOfWeek,
   toCalendarEvent,
@@ -105,18 +107,93 @@ describe('seasons-calendar helpers', () => {
       expect(iso(end)).toBe('2026-11-02');
     });
 
+    it('covers the whole calendar year in year view', () => {
+      const { start, end } = viewRange('year', new Date(2026, 5, 15));
+      expect(iso(start)).toBe('2026-01-01');
+      expect(iso(end)).toBe('2027-01-01');
+    });
+
     it('starts weeks on Monday', () => {
       expect(iso(startOfWeek(new Date(2026, 9, 11)))).toBe('2026-10-05'); // a Sunday
       expect(iso(startOfWeek(new Date(2026, 9, 12)))).toBe('2026-10-12'); // a Monday
     });
   });
 
+  describe('buildYearGrid', () => {
+    const iso = (d: Date): string =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const february = buildYearGrid(2026, new Map(), '2026-02-10')[1]; // 2026 is a leap year
+
+    it('yields twelve mini-months, one per month', () => {
+      expect(buildYearGrid(2026, new Map(), '').length).toBe(12);
+    });
+
+    it('starts each month on the Monday on/before the 1st, fixed 42-cell grid', () => {
+      // 01 Feb 2026 is a Sunday → grid starts Mon 26 Jan and covers 42 cells.
+      expect(february.days.length).toBe(42);
+      expect(iso(february.days[0].date)).toBe('2026-01-26');
+      expect(february.days[0].inMonth).toBe(false);
+      // The tail runs into March: i=34 is Mar 1, i=41 is Mar 8.
+      expect(iso(february.days[34].date)).toBe('2026-03-01');
+      expect(february.days[34].inMonth).toBe(false);
+      expect(february.days[33].inMonth).toBe(true); // Sat 28 Feb, last February cell
+      // February's own window: Mon 02 Feb … Sat 28 Feb.
+      expect(iso(february.days.find((d) => d.iso === '2026-02-02')!.date)).toBe('2026-02-02');
+      expect(february.days.find((d) => d.iso === '2026-02-28')!.inMonth).toBe(true);
+    });
+
+    it('carries per-day counts only for mapped dates and flags today', () => {
+      const counts = new Map([
+        ['2026-02-10', { memorization: 2, revision: 1, exam: 0 }],
+        ['2026-02-11', { exam: 1 }],
+      ]);
+      const grid = buildYearGrid(2026, counts, '2026-02-10')[1];
+      const busy = grid.days.find((d) => d.iso === '2026-02-10')!;
+      expect(busy.isToday).toBe(true);
+      expect(busy.total).toBe(3);
+      expect(busy.counts).toEqual({ memorization: 2, revision: 1, exam: 0 });
+      const examOnly = grid.days.find((d) => d.iso === '2026-02-11')!;
+      expect(examOnly.total).toBe(1);
+      expect(examOnly.counts).toEqual({ memorization: 0, revision: 0, exam: 1 });
+      const quiet = grid.days.find((d) => d.iso === '2026-02-12')!;
+      expect(quiet.total).toBe(0);
+      expect(quiet.isToday).toBe(false);
+    });
+
+    it('sums each month total from its in-grid days', () => {
+      const counts = new Map([['2026-02-10', { memorization: 1 }]]);
+      expect(buildYearGrid(2026, counts, '')[1].total).toBe(1);
+    });
+  });
+
   describe('clampClock', () => {
-    it('caps late clocks at the 22:00 ceiling', () => {
-      expect(clampClock('23:30')).toBe('22:00');
-      expect(clampClock('22:00')).toBe('22:00');
+    it('caps clocks at the 23:59 ceiling', () => {
+      expect(clampClock('23:30')).toBe('23:30');
+      expect(clampClock('23:59')).toBe('23:59');
       expect(clampClock('21:59')).toBe('21:59');
       expect(clampClock('08:00')).toBe('08:00');
+    });
+
+    it('clamps a typed clock past the cap', () => {
+      expect(clampClock('24:30')).toBe('23:59');
+      expect(clampClock('25:00')).toBe('23:59');
+    });
+  });
+
+  describe('nowSegmentIndex', () => {
+    it('maps a clock to its 30-minute slot in the shipped 48-slot day', () => {
+      expect(nowSegmentIndex(0, 0, 48)).toBe(0);
+      expect(nowSegmentIndex(14, 45, 48)).toBe(29); // the 14:30 slot
+      expect(nowSegmentIndex(23, 59, 48)).toBe(47); // last slot, never past the end
+    });
+
+    it('derives the slot length for other hour segmentations', () => {
+      expect(nowSegmentIndex(14, 45, 24)).toBe(14); // hourly
+      expect(nowSegmentIndex(14, 45, 96)).toBe(59); // 15-minute
+    });
+
+    it('returns -1 when the column renders no slots', () => {
+      expect(nowSegmentIndex(9, 0, 0)).toBe(-1);
     });
   });
 
@@ -135,22 +212,46 @@ describe('seasons-calendar helpers', () => {
       ).toEqual({ id: 19, start_time: '10:30', end_time: '11:30' });
     });
 
+    it('extends the end when the after-edge is resized (start held)', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 8), new Date(2026, 10, 18, 10), rows),
+      ).toEqual({ id: 19, start_time: '08:00', end_time: '10:00' });
+    });
+
+    it('pulls the start earlier when the before-edge is resized (end held)', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 7), new Date(2026, 10, 18, 9), rows),
+      ).toEqual({ id: 19, start_time: '07:00', end_time: '09:00' });
+    });
+
+    it('nulls a resize that collapses to a zero-length duration', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 9), new Date(2026, 10, 18, 9), rows),
+      ).toBeNull();
+    });
+
     it('returns both when a diagonal drop moves the day and the time', () => {
       expect(
         resolveWeekDrop(19, new Date(2026, 10, 20, 6), new Date(2026, 10, 20, 7), rows),
       ).toEqual({ id: 19, planned_date: '2026-11-20', start_time: '06:00', end_time: '07:00' });
     });
 
-    it('nulls a drop ending past the 22:00 ceiling', () => {
+    it('allows an evening drop (past the old 22:00 cap)', () => {
       expect(
         resolveWeekDrop(19, new Date(2026, 10, 18, 21, 30), new Date(2026, 10, 18, 22, 30), rows),
-      ).toBeNull();
+      ).toEqual({ id: 19, start_time: '21:30', end_time: '22:30' });
     });
 
-    it('allows a drop ending exactly at the 22:00 ceiling', () => {
+    it('allows a drop ending at the 23:59 ceiling', () => {
       expect(
-        resolveWeekDrop(19, new Date(2026, 10, 18, 21), new Date(2026, 10, 18, 22), rows),
-      ).toEqual({ id: 19, start_time: '21:00', end_time: '22:00' });
+        resolveWeekDrop(19, new Date(2026, 10, 18, 23), new Date(2026, 10, 18, 23, 59), rows),
+      ).toEqual({ id: 19, start_time: '23:00', end_time: '23:59' });
+    });
+
+    it('nulls a drop that would cross midnight (no rollover)', () => {
+      expect(
+        resolveWeekDrop(19, new Date(2026, 10, 18, 23, 30), new Date(2026, 10, 19, 0, 30), rows),
+      ).toBeNull();
     });
 
     it('nulls a drop that lands exactly where the session already is', () => {

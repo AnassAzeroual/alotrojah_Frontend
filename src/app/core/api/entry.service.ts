@@ -67,11 +67,16 @@ export class EntryService {
   scoresBulk(
     sessionId: number,
     records: ScoreRecord[],
-  ): Observable<{ weekly_totals: Record<string, number> }> {
-    return this.api.post<{ weekly_totals: Record<string, number> }>('/scores/bulk', {
-      session_id: sessionId,
-      records,
-    });
+    memorizations?: { student_id: number; thumn_amount: number | null }[],
+  ): Observable<{ weekly_totals: Record<string, number>; memorizations_saved: number }> {
+    return this.api.post<{ weekly_totals: Record<string, number>; memorizations_saved: number }>(
+      '/scores/bulk',
+      {
+        session_id: sessionId,
+        records,
+        ...(memorizations && memorizations.length > 0 ? { memorizations } : {}),
+      },
+    );
   }
 
   sessionScores(sessionId: number): Observable<SessionStudentScores[]> {

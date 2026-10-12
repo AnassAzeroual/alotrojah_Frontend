@@ -6,7 +6,7 @@ import { TranslatePipe } from '@ngx-translate/core';
   standalone: true,
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<p class="muted empty">{{ messageKey() | translate }}</p>`,
+  template: `<p class="muted empty">{{ messageKey() | translate: messageParams() }}</p>`,
   styles: [
     `
       .empty {
@@ -18,4 +18,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 })
 export class EmptyStateComponent {
   readonly messageKey = input('common.empty');
+  /** Interpolation params (e.g. `{ q }` for a "no results" echo). */
+  readonly messageParams = input<Record<string, unknown>>({});
 }
