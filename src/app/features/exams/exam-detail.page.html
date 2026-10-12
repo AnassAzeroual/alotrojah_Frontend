@@ -89,6 +89,7 @@
             <app-date-picker
               class="ltr-num"
               testId="exam-date"
+              ariaLabelKey="exam.date"
               [value]="editDate()"
               (valueChange)="editDate.set($any($event))"
             />

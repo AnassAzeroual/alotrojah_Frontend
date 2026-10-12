@@ -150,6 +150,7 @@
               <app-date-picker
                 [value]="s.planned_date ?? null"
                 (valueChange)="setSession(s.id, { planned_date: $any($event) })"
+                ariaLabelKey="planning.planned_date"
               />
             </div>
           }

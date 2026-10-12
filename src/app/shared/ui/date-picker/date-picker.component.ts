@@ -65,7 +65,7 @@ const toDate = (iso: string | null): Date | null =>
       [placeholder]="placeholder()"
       [disabled]="isDisabled()"
       [attr.data-testid]="testId() || null"
-      [attr.aria-label]="ariaLabel() || (ariaLabelKey() | translate)"
+      [attr.aria-label]="ariaLabel() || (ariaLabelKey() ? (ariaLabelKey() | translate) : null)"
       (input)="onTextInput($any($event.target).value)"
       (change)="onTextBlur($any($event.target).value)"
     />

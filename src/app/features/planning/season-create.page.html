@@ -48,13 +48,20 @@
       /></label>
       <label class="field"
         ><span>{{ 'planning.start_date' | translate }}</span
-        ><app-date-picker formControlName="start_date" testId="season-start"
+        ><app-date-picker
+          formControlName="start_date"
+          testId="season-start"
+          ariaLabelKey="planning.start_date"
       /></label>
       @if (!isNew()) {
         <label class="field"
           ><span>{{ 'planning.end_date' | translate }}</span
-          ><app-date-picker formControlName="end_date" testId="season-end"
-        /></label>
+          ><app-date-picker
+            formControlName="end_date"
+            testId="season-end"
+            ariaLabelKey="planning.end_date"
+          />
+        </label>
       }
       @if (isAdmin() && isNew()) {
         <label class="field"

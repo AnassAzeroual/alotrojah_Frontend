@@ -54,7 +54,7 @@ export interface DropdownOption {
         [disabled]="isDisabled()"
         (click)="open.set(!open())"
         [attr.data-testid]="testId() || null"
-        [attr.aria-label]="ariaLabel() || (ariaLabelKey() | translate)"
+        [attr.aria-label]="ariaLabel() || (ariaLabelKey() ? (ariaLabelKey() | translate) : null)"
         aria-haspopup="listbox"
         [attr.aria-expanded]="open()"
       >
