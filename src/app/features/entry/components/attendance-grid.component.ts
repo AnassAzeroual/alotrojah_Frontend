@@ -12,8 +12,7 @@ import { EntryService, AttendanceRow } from '../../../core/api/entry.service';
 import { Student } from '../../../core/api/api-models';
 import { SpinnerComponent } from '../../../shared/ui/spinner/spinner.component';
 
-const STATES = ['present', 'late', 'absent', 'excused'] as const;
-type Status = (typeof STATES)[number];
+type Status = 'present' | 'late' | 'absent' | 'excused';
 
 interface Row {
   student: Student;

@@ -168,10 +168,10 @@
           <small>
             {{ 'grp.col_students' | translate }}
             <b class="ltr-num">{{ group()?.students_count ?? 0 }}</b>
-            @if (group()?.capacity != null) {
+            @if ((group()?.capacity ?? null) !== null) {
               / <b class="ltr-num">{{ group()?.capacity }}</b>
             }
-            @if (group()?.fill_pct != null) {
+            @if ((group()?.fill_pct ?? null) !== null) {
               (<b class="ltr-num">{{ group()?.fill_pct }}%</b>)
             }
           </small>

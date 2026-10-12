@@ -146,7 +146,6 @@ const authStub = {
 
 describe('GroupDetailPage', () => {
   let fixture!: ReturnType<typeof TestBed.createComponent<GroupDetailPage>>;
-  let page!: GroupDetailPage;
   let http!: HttpTestingController;
   let el!: HTMLElement;
   let navigate!: ReturnType<typeof vi.spyOn>;
@@ -213,7 +212,6 @@ describe('GroupDetailPage', () => {
     navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
     fixture = TestBed.createComponent(GroupDetailPage);
     fixture.componentRef.setInput('id', '5');
-    page = fixture.componentInstance;
     el = fixture.nativeElement;
     fixture.detectChanges();
     flushDetail();

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiClient, QueryParams } from './api-client';
+import { ApiClient } from './api-client';
 import { Center, Paginated } from './api-models';
 
 @Injectable({ providedIn: 'root' })

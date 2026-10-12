@@ -259,13 +259,13 @@ export class StudentDetailPage {
             center_id: params.s.center_id,
             group_id: params.s.group?.id ?? null,
             level_id: params.s.level_id,
-            gender: params.s.gender as any,
+            gender: params.s.gender as 'male' | 'female' | null,
             status: params.s.status,
             student_type: params.s.student_type,
             memorization_mode: params.s.memorization_mode,
             start_hizb: params.s.start_hizb,
             // API models might need notes in Student, let's keep it null if not present
-            notes: (params.s as any).notes ?? null,
+            notes: params.s.notes ?? null,
           });
           this.form.markAsPristine();
         }
@@ -310,7 +310,7 @@ export class StudentDetailPage {
     }
 
     const req$ = this.isNew()
-      ? this.studentsSvc.create(v as any)
+      ? this.studentsSvc.create(v)
       : this.studentsSvc.update(this.studentVal()!.id, v);
 
     req$.subscribe({

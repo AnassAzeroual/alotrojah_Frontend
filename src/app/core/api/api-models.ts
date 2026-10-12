@@ -104,6 +104,7 @@ export interface Student {
   student_type: string | null;
   memorization_mode: 'surah' | 'thumn';
   start_hizb: number | null;
+  notes?: string | null;
 }
 
 /** PUT /groups/{id} — every field optional (backend rules are `sometimes`). */

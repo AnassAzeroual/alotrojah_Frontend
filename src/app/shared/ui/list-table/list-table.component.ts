@@ -55,7 +55,7 @@ export interface ListColumn {
 @Directive({ selector: '[listTableCol]', standalone: true })
 export class ListTableColDef<T> {
   readonly columnKey = input.required<string>({ alias: 'listTableCol' });
-  constructor(readonly template: TemplateRef<{ $implicit: T; row: T }>) {}
+  readonly template = inject(TemplateRef<{ $implicit: T; row: T }>);
 }
 
 /**
