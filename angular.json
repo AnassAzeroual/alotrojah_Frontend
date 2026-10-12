@@ -119,7 +119,8 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "runnerConfig": "vitest.config.mts"
+            "runnerConfig": "vitest.config.mts",
+            "isolate": true
           }
         }
       }
