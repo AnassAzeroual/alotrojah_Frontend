@@ -20,10 +20,10 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
-    // At-rest storage encryption backend (localStorage). Values themselves are
-    // read/written through SecureStorageService — see that service's doc for
-    // the threat model and migration behavior.
-    provideNgCryptoStore({ storageType: 'localStorage' }),
+    // At-rest storage encryption backend (sessionStorage — tab-scoped: closing
+    // the tab ends the session). Values themselves are read/written through
+    // SecureStorageService — see that service's doc for the threat model.
+    provideNgCryptoStore({ storageType: 'sessionStorage' }),
     provideTranslateService({
       lang: 'ar',
       fallbackLang: 'en',

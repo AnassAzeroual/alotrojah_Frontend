@@ -2,6 +2,7 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideNgCryptoStore } from 'ng-cryptostore';
 import { AuthService } from './auth.service';
 import { authInterceptor } from './auth.interceptor';
 import { CurrentUser } from '../api/api-models';
@@ -21,11 +22,14 @@ describe('authInterceptor', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
         provideRouter([]),
+        // Mirror app.config.ts vault backend (sessionStorage).
+        provideNgCryptoStore({ storageType: 'sessionStorage' }),
       ],
     });
     http = TestBed.inject(HttpClient);

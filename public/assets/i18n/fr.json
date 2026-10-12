@@ -90,7 +90,8 @@
     "graduated": "Diplômé",
     "left": "Parti",
     "unsaved_warn": "Vous avez des modifications non enregistrées. Partir sans enregistrer ?",
-    "unsaved_leave": "Partir"
+    "unsaved_leave": "Partir",
+    "loading": "Chargement…"
   },
   "apiErrors": {
     "CROSS_CENTER": "Cette action concerne un autre centre",
@@ -211,7 +212,12 @@
     "level": "Niveau",
     "status": "Statut",
     "mode": "Mode",
-    "all": "Tous"
+    "all": "Tous",
+    "pager_prev": "Précédent",
+    "pager_next": "Suivant",
+    "total": "Total : {{count}}",
+    "no_results": "Aucun résultat pour « {{q}} »",
+    "clear_search": "Effacer la recherche"
   },
   "grp": {
     "subtitle": "Sections, enseignants et élèves en un coup d'œil",

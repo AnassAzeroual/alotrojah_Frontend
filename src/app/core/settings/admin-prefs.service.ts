@@ -11,7 +11,8 @@ interface PrefsShape {
 const keyFor = (userId: number | null): string => `alotrojah_prefs.${userId ?? 'anon'}`;
 
 /**
- * Per-user display prefs. localStorage (no backend): the key carries
+ * Per-user display prefs. Browser storage via the encrypted vault (no
+ * backend): the key carries
  * the user id so accounts sharing a browser never leak prefs into each other.
  * Open to every role — each account only ever changes its own view.
  */

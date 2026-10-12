@@ -11,6 +11,7 @@
   display: flex;
   align-items: center;
   margin-bottom: var(--space-3);
+  position: relative;
 
   input {
     width: 100%;
@@ -71,6 +72,46 @@
 
 .lt-end {
   text-align: end;
+}
+
+.lt-center {
+  text-align: center;
+}
+
+/* Empty state: message + optional clear-search action, announced politely. */
+.lt-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+}
+
+/* Indeterminate fetch indicator; the table itself stays mounted (SWR rows). */
+.lt-progress {
+  height: 2px;
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-soft);
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 40%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary);
+    animation: lt-slide 1.1s var(--ease-out) infinite;
+  }
+}
+
+@keyframes lt-slide {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(280%);
+  }
 }
 
 .lt-sort {

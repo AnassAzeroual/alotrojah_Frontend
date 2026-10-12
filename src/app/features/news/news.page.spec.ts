@@ -41,6 +41,7 @@ describe('NewsPage', () => {
 
   beforeEach(async () => {
     localStorage.clear();
+    sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [NewsPage],
       providers: [

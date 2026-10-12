@@ -143,6 +143,7 @@ describe('GroupFormPage', () => {
 
   beforeEach(async () => {
     localStorage.clear();
+    sessionStorage.clear();
     role = 'admin';
     await TestBed.configureTestingModule({
       imports: [GroupFormPage],

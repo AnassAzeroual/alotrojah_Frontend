@@ -90,7 +90,8 @@
     "graduated": "Graduated",
     "left": "Left",
     "unsaved_warn": "You have unsaved changes. Leave without saving?",
-    "unsaved_leave": "Leave"
+    "unsaved_leave": "Leave",
+    "loading": "Loading…"
   },
   "apiErrors": {
     "CROSS_CENTER": "This action belongs to another center",
@@ -211,7 +212,12 @@
     "level": "Level",
     "status": "Status",
     "mode": "Mode",
-    "all": "All"
+    "all": "All",
+    "pager_prev": "Previous",
+    "pager_next": "Next",
+    "total": "Total: {{count}}",
+    "no_results": "No results for “{{q}}”",
+    "clear_search": "Clear search"
   },
   "grp": {
     "subtitle": "Sections, teachers and students at a glance",

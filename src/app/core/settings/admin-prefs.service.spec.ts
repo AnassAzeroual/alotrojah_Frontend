@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideNgCryptoStore } from 'ng-cryptostore';
 import { provideRouter } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { CurrentUser } from '../api/api-models';
@@ -33,11 +34,14 @@ describe('AdminPrefsService', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([{ path: 'login', component: DummyComponent }]),
+        // Mirror app.config.ts vault backend (sessionStorage).
+        provideNgCryptoStore({ storageType: 'sessionStorage' }),
       ],
     });
     auth = TestBed.inject(AuthService);
@@ -74,7 +78,7 @@ describe('AdminPrefsService', () => {
   });
 
   it('survives corrupt storage', () => {
-    localStorage.setItem('alotrojah_prefs.anon', 'not-json{{{');
+    sessionStorage.setItem('alotrojah_prefs.anon', 'not-json{{{');
     auth.currentUser.set(null);
     TestBed.flushEffects();
     expect(prefs.hideScopePickers()).toBe(false);

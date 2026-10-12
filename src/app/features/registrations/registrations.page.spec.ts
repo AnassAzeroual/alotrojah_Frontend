@@ -99,6 +99,7 @@ describe('RegistrationsPage', () => {
 
   beforeEach(async () => {
     localStorage.clear();
+    sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [RegistrationsPage],
       providers: [

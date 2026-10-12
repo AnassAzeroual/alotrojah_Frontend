@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  linkedSignal,
   resource,
   signal,
 } from '@angular/core';
@@ -113,9 +114,14 @@ export class UsersListPage {
     },
   });
 
-  readonly rows = () => this.query.value()?.data ?? [];
-  readonly total = () => this.query.value()?.meta.total ?? 0;
-  readonly loading = () => this.query.isLoading();
+  readonly rows = linkedSignal<User[] | undefined, User[]>({
+    source: () => this.query.value()?.data,
+    computation: (source, previous) => source ?? previous?.value ?? [],
+  });
+  readonly total = linkedSignal<number | undefined, number>({
+    source: () => this.query.value()?.meta.total,
+    computation: (source, previous) => source ?? previous?.value ?? 0,
+  });
 
   /** Center names for the table (ids are meaningless to readers). Cached GET. */
   private readonly centers = resource({
@@ -143,6 +149,13 @@ export class UsersListPage {
   protected onSort(s: ListSort): void {
     this.sort.set(s);
     this.resetPage();
+  }
+
+  /** Paginator navigation: keeps the requested page and clears transient row/dialog state. */
+  protected onPage(p: number): void {
+    this.page.set(p);
+    this.armingDeleteId.set(null);
+    this.pendingReplace.set(null);
   }
 
   /** Cell templates receive the row as unknown (directive keeps cells data-agnostic). */

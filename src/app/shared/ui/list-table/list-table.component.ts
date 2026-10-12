@@ -6,14 +6,16 @@ import {
   contentChildren,
   Directive,
   DestroyRef,
+  effect,
   inject,
   input,
   output,
   TemplateRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
 import { PaginatorComponent } from '../paginator/paginator.component';
 
@@ -69,7 +71,13 @@ export class ListTableColDef<T> {
 @Component({
   selector: 'app-list-table',
   standalone: true,
-  imports: [TranslatePipe, EmptyStateComponent, PaginatorComponent, NgTemplateOutlet],
+  imports: [
+    ReactiveFormsModule,
+    TranslatePipe,
+    EmptyStateComponent,
+    PaginatorComponent,
+    NgTemplateOutlet,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './list-table.component.html',
   styleUrl: './list-table.component.scss',
@@ -77,7 +85,6 @@ export class ListTableColDef<T> {
 export class ListTableComponent<T> {
   readonly rows = input<readonly T[]>([]);
   readonly columns = input<readonly ListColumn[]>([]);
-  readonly loading = input(false);
   readonly trackKey = input<string>('id');
   /** Extra class appended to the `<table>` (page/e2e hooks like `.users-table`). */
   readonly tableClass = input('');
@@ -97,6 +104,11 @@ export class ListTableComponent<T> {
   readonly total = input(0);
   readonly perPage = input(20);
   readonly showPagination = input(true);
+  /** Hide the pager when everything fits on one page (default on). */
+  readonly hideSinglePagePager = input(true);
+
+  /** True while the page fetches: renders a slim progress bar + `aria-busy`. */
+  readonly loading = input(false);
 
   // Sorting.
   readonly sort = input<ListSort | null>(null);
@@ -109,18 +121,47 @@ export class ListTableComponent<T> {
   readonly pageChange = output<number>();
   readonly sortChange = output<ListSort>();
 
+  readonly searchControl = new FormControl('', { nonNullable: true });
+  private lastEmitted = '';
+
   private readonly colTemplates = contentChildren(ListTableColDef<T>);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly pending = new Subject<string>();
 
   constructor() {
-    this.pending
+    effect(() => {
+      const val = this.searchValue();
+      if (val !== this.searchControl.value) {
+        this.searchControl.setValue(val, { emitEvent: false });
+        this.lastEmitted = val.trim();
+      }
+    });
+
+    this.searchControl.valueChanges
       .pipe(
         debounceTime(this.searchDebounceMs()),
         distinctUntilChanged(),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((v) => this.searchChange.emit(v));
+      .subscribe((v) => this.emitSearch(v));
+  }
+
+  private emitSearch(val: string): void {
+    const trimmed = val.trim();
+    if (trimmed === this.lastEmitted) return;
+    this.lastEmitted = trimmed;
+    this.searchChange.emit(trimmed);
+  }
+
+  protected commitSearch(): void {
+    this.emitSearch(this.searchControl.value);
+  }
+
+  protected clearSearch(): void {
+    if (this.searchControl.value) {
+      this.searchControl.setValue('');
+      this.lastEmitted = '';
+      this.searchChange.emit('');
+    }
   }
 
   /** Client-mode ordering; server mode just passes rows() through. */
@@ -142,6 +183,17 @@ export class ListTableComponent<T> {
       return String(va ?? '').localeCompare(String(vb ?? ''), undefined, { numeric: true }) * dir;
     });
   });
+
+  /** Total page count from `total`/`perPage` (pager visibility gating). */
+  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.total() / this.perPage())));
+
+  /** Pager renders only when there is something to page. */
+  readonly pagerVisible = computed(
+    () =>
+      this.showPagination() &&
+      this.total() > 0 &&
+      !(this.hideSinglePagePager() && this.pageCount() === 1),
+  );
 
   protected sortKeyOf(col: ListColumn): string | null {
     return col.sortKey === false ? null : (col.sortKey ?? col.key);
@@ -194,6 +246,6 @@ export class ListTableComponent<T> {
   }
 
   protected onSearch(value: string): void {
-    this.pending.next(value);
+    this.searchControl.setValue(value);
   }
 }

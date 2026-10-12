@@ -47,16 +47,16 @@
   <app-list-table
     [rows]="rows()"
     [columns]="cols"
-    [loading]="loading()"
     [total]="total()"
     [page]="page()"
     [perPage]="20"
     [searchValue]="q()"
     searchTestId="users-search"
     [sort]="sort()"
+    [loading]="query.isLoading()"
     tableClass="users-table"
     (searchChange)="onSearch($event)"
-    (pageChange)="page.set($event)"
+    (pageChange)="onPage($event)"
     (sortChange)="onSort($event)"
   >
     <ng-template listTableCol="full_name" let-u>

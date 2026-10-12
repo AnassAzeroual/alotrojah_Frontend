@@ -3,16 +3,17 @@ import CryptoJS from 'crypto-js';
 import { STORAGE_SECRET } from '../src/app/core/storage/storage-secret';
 
 /**
- * Read a value written by the app's SecureStorageService. localStorage holds
- * AES-CBC ciphertext (ng-cryptostore with the shared STORAGE_SECRET), so e2e
- * decrypts with the same parameters to assert on stored content. The payload
- * round-trips through JSON exactly like ng-cryptostore's own `get()` (the app
- * writes plain strings, which decrypt to their quoted-JSON form, so we
- * JSON.parse to restore the stored string). Falls back to the raw value when
- * it is not ciphertext — the app's own legacy-plaintext migration path.
+ * Read a value written by the app's SecureStorageService. The vault is
+ * ng-cryptostore on sessionStorage: AES-CBC ciphertext with the shared
+ * STORAGE_SECRET, so e2e decrypts with the same parameters to assert on
+ * stored content. The payload round-trips through JSON exactly like
+ * ng-cryptostore's own `get()` (the app writes plain strings, which decrypt
+ * to their quoted-JSON form, so we JSON.parse to restore the stored string).
+ * Falls back to the raw value when it is not ciphertext — the app's own
+ * raw-plaintext fallback path (legacy values lived in localStorage).
  */
 export async function readStoredValue(page: Page, key: string): Promise<string | null> {
-  const raw = await page.evaluate((k) => localStorage.getItem(k), key);
+  const raw = await page.evaluate((k) => sessionStorage.getItem(k) ?? localStorage.getItem(k), key);
   if (!raw) return null;
   const decrypted = decryptWithSharedSecret(raw);
   return decrypted ?? raw;

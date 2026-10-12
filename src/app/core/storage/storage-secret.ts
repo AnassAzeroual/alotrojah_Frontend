@@ -3,8 +3,8 @@
  *
  * It ships in the bundle by design — this is obfuscation-at-rest, not
  * authentication or XSS protection: anyone who can load the app can read the
- * key. What it buys us is that a raw `localStorage` dump (devtools, an
- * unrelated extension, a backing-store leak) no longer exposes the JWT,
+ * key. What it buys us is that a raw browser-storage dump (devtools, an
+ * unrelated extension) no longer exposes the JWT,
  * per-user prefs or UI choice in cleartext. See the SecureStorageService doc
  * for the threat model and the deliberate exceptions.
  *
