@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -15,8 +16,7 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import flatpickr from 'flatpickr';
-import { Arabic } from 'flatpickr/dist/l10n/ar';
-import { French } from 'flatpickr/dist/l10n/fr';
+import { flatpickrLocale } from './flatpickr-locale';
 import { LanguageService } from '../../../core/i18n/language.service';
 
 /** ISO yyyy-mm-dd <-> display dd/mm/yyyy (API contract stays ISO). */
@@ -78,7 +78,7 @@ const toDate = (iso: string | null): Date | null =>
     },
   ],
 })
-export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
+export class DatePickerComponent implements AfterViewInit, ControlValueAccessor, OnDestroy {
   readonly value = model<string | null>(null);
   readonly min = input<string | null>(null);
   readonly max = input<string | null>(null);
@@ -149,7 +149,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
       defaultDate: toDate(this.current()) ?? undefined,
       minDate: toDate(this.min()) ?? undefined,
       maxDate: toDate(this.max()) ?? undefined,
-      locale: lang === 'ar' ? Arabic : lang === 'fr' ? French : undefined,
+      locale: flatpickrLocale(lang),
       allowInput: true,
       onChange: (_sel, str) => this.commit(dmyToISO(str)),
       onClose: (_sel, str) => {
