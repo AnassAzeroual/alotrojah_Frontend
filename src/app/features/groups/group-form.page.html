@@ -66,18 +66,6 @@
         }
 
         <label class="field">
-          <span>{{ 'grp.col_level' | translate }} <span class="danger">*</span></span>
-          <app-dropdown
-            [value]="levelId() ?? ''"
-            [options]="levelOptions()"
-            (valueChange)="levelId.set(num($event))"
-            placeholderKey="grp.col_level"
-            ariaLabelKey="grp.col_level"
-            testId="group-level"
-          />
-        </label>
-
-        <label class="field">
           <span>{{ 'grp.col_teacher' | translate }} <span class="danger">*</span></span>
           <app-dropdown
             [value]="teacherId() ?? ''"

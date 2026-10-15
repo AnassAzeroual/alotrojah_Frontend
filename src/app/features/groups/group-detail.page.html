@@ -38,16 +38,6 @@
             (input)="editName.set($any($event.target).value)"
           />
         </label>
-        <label class="field">
-          <span>{{ 'grp.col_level' | translate }} <span class="danger">*</span></span>
-          <app-dropdown
-            [value]="editLevelId() ?? ''"
-            [options]="levelOptions()"
-            (valueChange)="editLevelId.set(num($event))"
-            placeholderKey="grp.col_level"
-            ariaLabelKey="grp.col_level"
-          />
-        </label>
         @if (canPickTeacher()) {
           <label class="field">
             <span>{{ 'grp.col_teacher' | translate }} <span class="danger">*</span></span>
@@ -99,9 +89,7 @@
         <button
           type="button"
           class="btn btn-primary"
-          [disabled]="
-            !editName().trim() || editLevelId() === null || editTeacherId() === null || saving()
-          "
+          [disabled]="!editName().trim() || editTeacherId() === null || saving()"
           (click)="saveEdit()"
         >
           @if (saving()) {
@@ -148,10 +136,6 @@
       </div>
 
       <div class="card meta-card anim-rise" style="--i: 2">
-        <div class="m-item">
-          <small>{{ 'grp.col_level' | translate }}</small>
-          <span>{{ group()?.level?.name_ar ?? '—' }}</span>
-        </div>
         <div class="m-item">
           <small>{{ 'grp.year' | translate }}</small>
           <span class="ltr-num">{{ group()?.academic_year ?? '—' }}</span>

@@ -59,4 +59,71 @@ test.describe.serial('Levels management', () => {
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);
   });
+
+  test('admin creates a level with a dynamic code, then deletes it', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByTestId('auth-email').fill('admin@example.org');
+    await page.getByTestId('auth-password').fill('password123');
+    await page.getByTestId('auth-submit').click();
+    await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
+
+    await page.getByTestId('nav-levels').click();
+    await expect(page).toHaveURL(/\/levels$/);
+    // Let webfonts settle: an Arabic-font swap mid-click can move the target
+    // between mousedown and mouseup, silently losing the click.
+    await page.evaluate(() => document.fonts.ready);
+
+    // The server assigns the L{id} code; name + label derive from days + unit.
+    await page.getByTestId('level-new').click();
+    await expect(page.getByTestId('level-create-form')).toBeVisible();
+    await page.getByTestId('level-new-thumn-session').fill('1');
+    await expect(page.getByTestId('level-new-thumn-week')).toHaveValue('3');
+    await expect(page.getByTestId('level-new-name')).toHaveValue('ثمن في الأسبوع');
+    const created = page.waitForResponse(
+      (r) => r.url().endsWith('/api/v1/levels') && r.request().method() === 'POST',
+    );
+    await page.getByTestId('level-create-save').click();
+    const res = await created;
+    expect(res.status()).toBe(201);
+    const body = await res.json();
+    expect(String(body.data.code)).toMatch(/^L\d+$/);
+
+    // The name derives from the amount label; address the row by its unique code.
+    const row = page.locator('.levels-table tbody tr', { hasText: String(body.data.code) });
+    await expect(row).toHaveCount(1);
+    await expect(row).toContainText(body.data.code);
+
+    // Self-cleaning: delete the created row again, addressed by its exact
+    // testids (no regex, no row-scope staleness).
+    const levelId = body.data.id as number;
+    const arm = page.getByTestId(`delete-level-${levelId}`);
+    await expect
+      .poll(
+        async () => {
+          if ((await page.getByTestId(`confirm-delete-level-${levelId}`).count()) > 0) return true;
+          await arm.click();
+          return (await page.getByTestId(`confirm-delete-level-${levelId}`).count()) > 0;
+        },
+        { timeout: 15000 },
+      )
+      .toBe(true);
+    const confirm = page.getByTestId(`confirm-delete-level-${levelId}`);
+    await expect
+      .poll(
+        async () => {
+          if ((await confirm.count()) === 0) return true;
+          await confirm.click();
+          await page.waitForTimeout(1500);
+          return (await confirm.count()) === 0;
+        },
+        { timeout: 20000 },
+      )
+      .toBe(true);
+    await expect(
+      page.locator('.levels-table tbody tr', { hasText: String(body.data.code) }),
+    ).toHaveCount(0);
+
+    await page.getByTestId('nav-logout').click();
+    await expect(page).toHaveURL(/\/login$/);
+  });
 });

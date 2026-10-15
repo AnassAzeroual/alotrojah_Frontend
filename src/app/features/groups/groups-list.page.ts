@@ -38,7 +38,7 @@ const GENDER_COLORS: Record<string, string> = {
 const WEEKDAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 const PER_PAGE = 20;
 
-type SortKey = 'name' | 'teacher' | 'level' | 'students' | 'fill' | 'score' | 'attendance';
+type SortKey = 'name' | 'teacher' | 'students' | 'fill' | 'score' | 'attendance';
 
 function csvCell(v: string | number): string {
   const s = String(v);
@@ -91,7 +91,6 @@ export class GroupsListPage {
   readonly rows = () => this.stats.value()?.groups ?? [];
 
   readonly q = signal('');
-  readonly levelId = signal('');
   readonly status = signal('');
   readonly page = signal(1);
   readonly sortKey = signal<SortKey>('name');
@@ -107,18 +106,6 @@ export class GroupsListPage {
     return this.i18n.instant(key);
   }
 
-  readonly levelOptions = computed<DropdownOption[]>(() => {
-    const seen = new Map<number, string>();
-    for (const g of this.rows()) {
-      if (g.level) seen.set(g.level.id, g.level.name_ar);
-    }
-    this.language.current();
-    return [
-      { value: '', label: `${this.i18n.instant('list.level')}: ${this.i18n.instant('list.all')}` },
-      ...[...seen.entries()].map(([id, name]) => ({ value: String(id), label: name })),
-    ];
-  });
-
   readonly statusOptions = computed<DropdownOption[]>(() => {
     this.language.current();
     return [
@@ -132,7 +119,6 @@ export class GroupsListPage {
 
   private filtered = computed(() => {
     const needle = this.q().trim().toLowerCase();
-    const lvl = this.levelId();
     const st = this.status();
     let rows = this.rows();
     if (needle !== '') {
@@ -142,7 +128,6 @@ export class GroupsListPage {
           (g.teacher?.full_name ?? '').toLowerCase().includes(needle),
       );
     }
-    if (lvl !== '') rows = rows.filter((g) => g.level?.id === Number(lvl));
     if (st !== '') rows = rows.filter((g) => (st === 'active') === g.is_active);
     return rows;
   });
@@ -158,8 +143,6 @@ export class GroupsListPage {
           return g.name;
         case 'teacher':
           return g.teacher?.full_name ?? '';
-        case 'level':
-          return g.level?.name_ar ?? '';
         case 'students':
           return g.students_count;
         case 'fill':
@@ -319,7 +302,6 @@ export class GroupsListPage {
     const header = [
       t('grp.col_name'),
       t('grp.col_teacher'),
-      t('grp.col_level'),
       t('grp.col_students'),
       t('grp.col_capacity'),
       t('grp.col_fill'),
@@ -331,7 +313,6 @@ export class GroupsListPage {
     const lines = this.sorted().map((g) => [
       g.name,
       g.teacher?.full_name ?? '',
-      g.level?.name_ar ?? '',
       g.students_count,
       g.capacity ?? '',
       g.fill_pct ?? '',

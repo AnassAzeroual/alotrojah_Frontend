@@ -109,6 +109,7 @@
     "SEASON_HAS_FACTS": "Suppression impossible — la saison contient des données",
     "MODULE_HAS_SCORES": "Suppression impossible — le module a des notes enregistrées",
     "LEVEL_IN_USE": "Suppression impossible — le niveau est utilisé par des sections ou des élèves",
+    "LEVEL_EXISTS": "Ce niveau existe déjà avec des valeurs identiques",
     "TERM_REQUIRED": "Ce type d'examen exige un trimestre",
     "SPAN_INVALID": "La révision doit couvrir 1 à 3 semaines",
     "RANGE_INVALID": "Plage invalide",
@@ -242,7 +243,6 @@
     "table_title": "Toutes les sections",
     "col_name": "Section",
     "col_teacher": "Enseignant",
-    "col_level": "Niveau",
     "col_students": "Élèves",
     "col_capacity": "Capacité",
     "col_fill": "Remplissage",
@@ -403,13 +403,19 @@
     "phone": "Téléphone",
     "manager": "Responsable"
   },
+  "unit": {
+    "hizb_one": "hizb",
+    "hizb_two": "hizbs",
+    "hizb_few": "hizbs",
+    "hizb_other": "hizbs"
+  },
   "level": {
     "title": "Niveaux",
     "code": "Code",
     "name": "Nom",
     "sessions": "Séances/sem",
     "thumnSession": "Thumn/séance",
-    "thumnSessionLabel": "Libellé du montant",
+    "thumnSessionLabel": "Quantité à mémoriser (Thoumns)",
     "thumnWeek": "Thumn/sem",
     "ahzabTerm": "Ahzab/trimestre",
     "ahzabDawra": "Ahzab/cycle",
@@ -420,7 +426,8 @@
     "inherited_tag": "Défaut",
     "override_tag": "Dérogation",
     "reset": "Réinitialiser",
-    "reset_confirm": "Confirmer"
+    "reset_confirm": "Confirmer",
+    "new": "Nouveau niveau"
   },
   "sessionStatus": {
     "planned": "Planifiée",

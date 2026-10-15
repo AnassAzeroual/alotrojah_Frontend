@@ -45,7 +45,6 @@ const DETAIL: GroupDetail = {
     id: 5,
     name: 'حلقة النور — L1',
     center_id: 1,
-    level: { id: 1, name_ar: 'المستوى الأول' },
     teacher: { id: 3, full_name: 'ياسين العلوي', phone: '06 55 00 00 10', teacher_type: 'hifz' },
     academic_year: '2025/2026',
     schedule_days: 'Sat,Mon',
@@ -155,15 +154,6 @@ describe('GroupDetailPage', () => {
     req.flush({ success: true, message: null, data: DETAIL });
   };
 
-  const flushLevels = (): void => {
-    const req = http.expectOne((r) => r.url.endsWith('/reference/levels') && r.method === 'GET');
-    req.flush({
-      success: true,
-      message: null,
-      data: [{ id: 1, code: 'L1', name_ar: 'المستوى الأول' }],
-    });
-  };
-
   const flushTeachers = (): void => {
     const req = http.expectOne((r) => r.url.endsWith('/users') && r.method === 'GET');
     req.flush({
@@ -215,7 +205,6 @@ describe('GroupDetailPage', () => {
     el = fixture.nativeElement;
     fixture.detectChanges();
     flushDetail();
-    flushLevels();
     // Let the detail resource value land, then change-detect so the teachers
     // resource effect fires; flushing it before whenStable avoids a deadlock
     // (whenStable waits on the pending resource, the test waits on whenStable).
@@ -316,7 +305,6 @@ describe('GroupDetailPage', () => {
     const req = http.expectOne((r) => r.url.endsWith('/groups/5') && r.method === 'PUT');
     expect(req.request.body).toEqual({
       name: 'حلقة النور — L1 (معدّلة)',
-      level_id: 1,
       teacher_id: 3,
       capacity: 25,
       schedule_days: ['Sat'],

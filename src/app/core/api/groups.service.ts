@@ -49,7 +49,7 @@ export class GroupsService {
     return this.api.get<GroupDetail>(`/groups/${id}/detail`);
   }
 
-  /** Partial update (name/level/teacher/capacity/schedule/is_active). */
+  /** Partial update (name/teacher/capacity/schedule/is_active). */
   update(id: number, payload: UpdateGroupPayload): Observable<Group> {
     return this.api.put<Group>(`/groups/${id}`, payload);
   }

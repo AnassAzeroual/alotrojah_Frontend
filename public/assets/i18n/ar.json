@@ -109,6 +109,7 @@
     "SEASON_HAS_FACTS": "لا يمكن الحذف — الموسم يحتوي على معطيات مسجلة",
     "MODULE_HAS_SCORES": "لا يمكن الحذف — المادة لديها نقاط مسجلة",
     "LEVEL_IN_USE": "لا يمكن الحذف — المستوى مستعمل في الأقسام أو لدى التلاميذ",
+    "LEVEL_EXISTS": "هذا المستوى موجود مسبقًا بنفس القيم",
     "TERM_REQUIRED": "هذا النوع من الاختبارات يتطلب فصلاً",
     "SPAN_INVALID": "يجب أن تغطي المراجعة من أسبوع إلى 3 أسابيع",
     "RANGE_INVALID": "نطاق غير صالح",
@@ -242,7 +243,6 @@
     "table_title": "جميع الأقسام",
     "col_name": "القسم",
     "col_teacher": "المعلم",
-    "col_level": "المستوى",
     "col_students": "الطلاب",
     "col_capacity": "الطاقة",
     "col_fill": "الامتلاء",
@@ -403,13 +403,19 @@
     "phone": "الهاتف",
     "manager": "المسؤول"
   },
+  "unit": {
+    "hizb_one": "حزب",
+    "hizb_two": "حزبان",
+    "hizb_few": "أحزاب",
+    "hizb_other": "حزب"
+  },
   "level": {
     "title": "المستويات",
     "code": "الرمز",
     "name": "الاسم",
     "sessions": "حصص الأسبوع",
     "thumnSession": "ثمن الحصة",
-    "thumnSessionLabel": "مسمى مقدار الحصة",
+    "thumnSessionLabel": "المقدار المراد حفظه (بالثُمُن)",
     "thumnWeek": "ثمن الأسبوع",
     "ahzabTerm": "أحزاب الفصل",
     "ahzabDawra": "أحزاب الدورة",
@@ -420,7 +426,8 @@
     "inherited_tag": "افتراضي",
     "override_tag": "تجاوز",
     "reset": "إعادة إلى الافتراضي",
-    "reset_confirm": "تأكيد الإعادة"
+    "reset_confirm": "تأكيد الإعادة",
+    "new": "مستوى جديد"
   },
   "sessionStatus": {
     "planned": "مبرمجة",

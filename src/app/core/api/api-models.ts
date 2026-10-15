@@ -85,7 +85,6 @@ export interface Group {
   id: number;
   name: string;
   center_id: number;
-  level_id: number;
   capacity: number | null;
   schedule_days: string;
   is_active: boolean;
@@ -110,7 +109,6 @@ export interface Student {
 /** PUT /groups/{id} — every field optional (backend rules are `sometimes`). */
 export interface UpdateGroupPayload {
   name?: string;
-  level_id?: number;
   teacher_id?: number | null;
   academic_year?: string | null;
   capacity?: number | null;
@@ -118,12 +116,11 @@ export interface UpdateGroupPayload {
   is_active?: boolean;
 }
 
-/** POST /groups — name/center/level required (backend StoreGroupRequest);
+/** POST /groups — name/center/teacher required (backend StoreGroupRequest);
  * the server re-scopes center_id to the caller's own center for non-admins. */
 export interface CreateGroupPayload {
   name: string;
   center_id: number | null;
-  level_id: number;
   teacher_id?: number | null;
   capacity?: number | null;
   schedule_days?: string[];
@@ -191,7 +188,6 @@ export interface GroupStatsRow {
   id: number;
   name: string;
   center_id: number;
-  level: { id: number; name_ar: string } | null;
   teacher: {
     id: number;
     full_name: string;

@@ -209,9 +209,6 @@ test.describe.serial('Bootstrap from empty DB (first-use chain)', () => {
     // A supervisor never picks the center (the server forces their own).
     await expect(page.getByTestId('group-center')).toHaveCount(0);
 
-    await page.getByTestId('group-level').click();
-    await page.getByRole('option', { name: /المستوى الأول/ }).click();
-
     await page.getByTestId('group-teacher').click();
     await page.getByRole('option', { name: teacherName }).click();
 

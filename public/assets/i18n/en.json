@@ -109,6 +109,7 @@
     "SEASON_HAS_FACTS": "Cannot delete — the season holds recorded facts",
     "MODULE_HAS_SCORES": "Cannot delete — the module has recorded scores",
     "LEVEL_IN_USE": "Cannot delete — the level is used by sections or pupils",
+    "LEVEL_EXISTS": "This level already exists with identical values",
     "TERM_REQUIRED": "This exam type requires a term",
     "SPAN_INVALID": "Review must cover 1 to 3 weeks",
     "RANGE_INVALID": "Invalid range",
@@ -242,7 +243,6 @@
     "table_title": "All sections",
     "col_name": "Section",
     "col_teacher": "Teacher",
-    "col_level": "Level",
     "col_students": "Students",
     "col_capacity": "Capacity",
     "col_fill": "Filled",
@@ -403,13 +403,19 @@
     "phone": "Phone",
     "manager": "Manager"
   },
+  "unit": {
+    "hizb_one": "hizb",
+    "hizb_two": "hizbs",
+    "hizb_few": "hizbs",
+    "hizb_other": "hizbs"
+  },
   "level": {
     "title": "Levels",
     "code": "Code",
     "name": "Name",
     "sessions": "Sessions/week",
     "thumnSession": "Thumn/session",
-    "thumnSessionLabel": "Session amount label",
+    "thumnSessionLabel": "Amount to memorize (Thumns)",
     "thumnWeek": "Thumn/week",
     "ahzabTerm": "Ahzab/term",
     "ahzabDawra": "Ahzab/cycle",
@@ -420,7 +426,8 @@
     "inherited_tag": "Default",
     "override_tag": "Override",
     "reset": "Reset to defaults",
-    "reset_confirm": "Confirm reset"
+    "reset_confirm": "Confirm reset",
+    "new": "New level"
   },
   "sessionStatus": {
     "planned": "Planned",
