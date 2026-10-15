@@ -145,6 +145,53 @@ describe('LevelsPage create', () => {
     );
   });
 
+  it('blanks the preview and disables save when the unit leaves 1..480', async () => {
+    flushLevels();
+    flushCenters();
+    await fixture.whenStable();
+
+    fillNew();
+    const unit = el.querySelector<HTMLInputElement>('[data-testid="level-new-thumn-session"]')!;
+    unit.value = '120000';
+    unit.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(el.querySelector<HTMLInputElement>('[data-testid="level-new-name"]')!.value).toBe('');
+    expect(el.querySelector<HTMLInputElement>('[data-testid="level-new-thumn-label"]')!.value).toBe(
+      '',
+    );
+    // The week preview rides the thumnDisplay pipe, whose null renders as em-dash.
+    expect(el.querySelector<HTMLInputElement>('[data-testid="level-new-thumn-week"]')!.value).toBe(
+      '—',
+    );
+    expect(el.querySelector<HTMLButtonElement>('[data-testid="level-create-save"]')!.disabled).toBe(
+      true,
+    );
+  });
+
+  it('renders a singular duration label at the fastest in-range pace', async () => {
+    flushLevels();
+    flushCenters();
+    await fixture.whenStable();
+
+    fillNew();
+    const sessions = el.querySelector<HTMLInputElement>('[data-testid="level-new-sessions"]')!;
+    sessions.value = '7';
+    sessions.dispatchEvent(new Event('input'));
+    const unit = el.querySelector<HTMLInputElement>('[data-testid="level-new-thumn-session"]')!;
+    unit.value = '8';
+    unit.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    // 7 × 8 = 56 thumn/week → max(1, round(16/56)) = 1 year.
+    expect(el.querySelector<HTMLInputElement>('[data-testid="level-new-duration"]')!.value).toBe(
+      'سنة واحدة',
+    );
+    expect(el.querySelector<HTMLButtonElement>('[data-testid="level-create-save"]')!.disabled).toBe(
+      false,
+    );
+  });
+
   it('blocks an identical twin before saving and shows the top banner', async () => {
     const twin = {
       ...LEVELS[0],
@@ -215,5 +262,38 @@ describe('LevelsPage create', () => {
     expect(el.querySelector<HTMLInputElement>('[data-testid="level-edit-name"]')!.value).toBe(
       'ثمن في الأسبوع',
     );
+  });
+
+  it('refuses an out-of-range edit unit with the range banner and no PUT', async () => {
+    flushLevels();
+    flushCenters();
+    await fixture.whenStable();
+
+    page.startEdit({
+      id: 1,
+      code: 'L1',
+      name_ar: 'L1',
+      center_id: null,
+      sessions_per_week: 3,
+      thumn_per_session_label: 'ثمن',
+      thumn_per_session_value: 1,
+      thumn_per_week_value: 3,
+      ahzab_per_term: 2.25,
+      ahzab_per_dawra: 11.25,
+      duration_label: 'x',
+      total_ahzab: 60,
+    });
+    fixture.detectChanges();
+
+    const unit = el.querySelector<HTMLInputElement>('[data-testid="level-edit-thumn-session"]')!;
+    unit.value = '0';
+    unit.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    el.querySelector<HTMLButtonElement>('[data-testid="level-edit-save"]')!.click();
+    fixture.detectChanges();
+
+    expect(page.editErrorKey()).toBe('level.range');
+    http.expectNone((r) => r.method === 'PUT');
   });
 });

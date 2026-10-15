@@ -417,7 +417,7 @@
     "thumnSession": "Thumn/session",
     "thumnSessionLabel": "Amount to memorize (Thumns)",
     "thumnWeek": "Thumn/week",
-    "ahzabTerm": "Ahzab/term",
+    "ahzabTerm": "My goal this term (Ahzab)",
     "ahzabDawra": "Ahzab/cycle",
     "duration": "Duration",
     "totalAhzab": "Total ahzab",
@@ -427,7 +427,8 @@
     "override_tag": "Override",
     "reset": "Reset to defaults",
     "reset_confirm": "Confirm reset",
-    "new": "New level"
+    "new": "New level",
+    "range": "The amount must be between 1 and 480 (in thumns)"
   },
   "sessionStatus": {
     "planned": "Planned",

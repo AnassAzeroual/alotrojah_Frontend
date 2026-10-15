@@ -62,17 +62,23 @@ interface AutoFields {
   duration: string;
 }
 
+/** Owner-locked bounds (2026-10-15): 1 thumn floor, full-Quran 480 ceiling. */
+const unitInRange = (unit: number | null): unit is number =>
+  unit !== null && unit >= 1 && unit <= 480;
+
 const autoFields = (sessions: number | null, unit: number | null): AutoFields | null => {
-  if (sessions === null || unit === null) return null;
+  // Out-of-range input yields no preview (never garbage) and blocks the save.
+  if (sessions === null || !unitInRange(unit)) return null;
   const week = round2(sessions * unit);
   const term = round2((week / 8) * 6);
   const dawra = round2(term * 5);
+  const years = week > 0 ? Math.max(1, Math.round(16 / week)) : 0;
   return {
     label: sessionAmountLabel(unit),
     week,
     term,
     dawra,
-    duration: week > 0 ? `${Math.max(1, Math.round(16 / week))} سنوات` : '',
+    duration: years === 0 ? '' : years === 1 ? 'سنة واحدة' : `${years} سنوات`,
   };
 };
 
@@ -295,7 +301,9 @@ export class LevelsPage {
   });
   /** Level name derives from the amount label: "<label> في الأسبوع". */
   readonly autoName = computed(() => {
-    const label = sessionAmountLabel(this.createDraft().thumn_session_value);
+    const unit = this.createDraft().thumn_session_value;
+    if (!unitInRange(unit)) return '';
+    const label = sessionAmountLabel(unit);
     return label === '' ? '' : `${label} في الأسبوع`;
   });
   readonly autoAhzabTerm = computed(() => {
@@ -386,6 +394,11 @@ export class LevelsPage {
   saveEdit(id: number): void {
     const d = this.draft();
     if (!d || d.name_ar.trim() === '' || this.editSaving()) return;
+    const u = d.thumn_session_value;
+    if (u !== null && !unitInRange(u)) {
+      this.editErrorKey.set('level.range');
+      return;
+    }
     this.editSaving.set(true);
     this.editErrorKey.set(null);
     this.levelsSvc

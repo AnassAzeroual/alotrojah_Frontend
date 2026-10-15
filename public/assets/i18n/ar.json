@@ -417,7 +417,7 @@
     "thumnSession": "ثمن الحصة",
     "thumnSessionLabel": "المقدار المراد حفظه (بالثُمُن)",
     "thumnWeek": "ثمن الأسبوع",
-    "ahzabTerm": "أحزاب الفصل",
+    "ahzabTerm": "هدفي في الفصل (أحزاب)",
     "ahzabDawra": "أحزاب الدورة",
     "duration": "المدة",
     "totalAhzab": "مجموع الأحزاب",
@@ -427,7 +427,8 @@
     "override_tag": "تجاوز",
     "reset": "إعادة إلى الافتراضي",
     "reset_confirm": "تأكيد الإعادة",
-    "new": "مستوى جديد"
+    "new": "مستوى جديد",
+    "range": "المقدار يجب أن يكون بين 1 و 480 (بالثُمُن)"
   },
   "sessionStatus": {
     "planned": "مبرمجة",

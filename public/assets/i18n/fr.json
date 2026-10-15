@@ -417,7 +417,7 @@
     "thumnSession": "Thumn/séance",
     "thumnSessionLabel": "Quantité à mémoriser (Thoumns)",
     "thumnWeek": "Thumn/sem",
-    "ahzabTerm": "Ahzab/trimestre",
+    "ahzabTerm": "Hedfi dans le trimestre (Ahzab)",
     "ahzabDawra": "Ahzab/cycle",
     "duration": "Durée",
     "totalAhzab": "Total ahzab",
@@ -427,7 +427,8 @@
     "override_tag": "Dérogation",
     "reset": "Réinitialiser",
     "reset_confirm": "Confirmer",
-    "new": "Nouveau niveau"
+    "new": "Nouveau niveau",
+    "range": "La quantité doit être comprise entre 1 et 480 (en thoumns)"
   },
   "sessionStatus": {
     "planned": "Planifiée",
