@@ -123,6 +123,7 @@ describe('i18n dictionaries', () => {
       ['weekType', ['study', 'review']],
       ['common', ['active', 'paused', 'graduated', 'left']], // kind="generic" + status
       ['role', ['admin', 'supervisor', 'teacher', 'student', 'board']],
+      ['gender', ['male', 'female', 'unknown']], // unknown = NULL-gender bucket in group stats
       ['mode', ['surah', 'thumn']],
       ['examType', ['hizb_completion', 'term_batch', 'final_season']],
       ['scopeType', ['weekly', 'murajaa']],

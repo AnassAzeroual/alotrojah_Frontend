@@ -140,7 +140,8 @@
   },
   "gender": {
     "male": "Male",
-    "female": "Female"
+    "female": "Female",
+    "unknown": "Unknown"
   },
   "registrations": {
     "title": "Registration requests",
@@ -205,7 +206,9 @@
     "final": "Final score"
   },
   "studentDetail": {
-    "assign_group": "Assign section"
+    "assign_group": "Assign section",
+    "account": "Account",
+    "pick_account": "Choose an account"
   },
   "list": {
     "search": "Search by name",
@@ -444,7 +447,6 @@
     "start_date": "Start date",
     "end_date": "End date",
     "hijri": "Hijri year",
-    "sessions_per_week": "Sessions per week",
     "review_weeks": "Review weeks",
     "terms": "Terms",
     "create": "Create season",

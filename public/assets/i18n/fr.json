@@ -140,7 +140,8 @@
   },
   "gender": {
     "male": "Garçon",
-    "female": "Fille"
+    "female": "Fille",
+    "unknown": "Inconnu"
   },
   "registrations": {
     "title": "Demandes d'inscription",
@@ -205,7 +206,9 @@
     "final": "Note finale"
   },
   "studentDetail": {
-    "assign_group": "Affecter à une section"
+    "assign_group": "Affecter à une section",
+    "account": "Compte",
+    "pick_account": "Choisir un compte"
   },
   "list": {
     "search": "Rechercher par nom",
@@ -444,7 +447,6 @@
     "start_date": "Date de début",
     "end_date": "Date de fin",
     "hijri": "Année hégirienne",
-    "sessions_per_week": "Séances par semaine",
     "review_weeks": "Semaines de révision",
     "terms": "Trimestres",
     "create": "Créer la saison",

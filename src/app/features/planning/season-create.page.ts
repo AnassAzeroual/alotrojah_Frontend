@@ -35,7 +35,6 @@ interface SeasonForm {
   start_date: FormControl<string>;
   end_date: FormControl<string | null>;
   hijri_year: FormControl<string>;
-  sessions_per_week: FormControl<number>;
   review_weeks_per_term: FormControl<number>;
   terms: FormArray<FormGroup<TermRow>>;
 }
@@ -51,8 +50,6 @@ const DEFAULT_TERMS = [
 
 /** Default weeks per term of a generated season (backend template default). */
 const DEFAULT_WEEKS_PER_TERM = 7;
-/** Sessions cap: at most one per day. A different 7 than the weeks default. */
-const MAX_SESSIONS_PER_WEEK = 7;
 /** A term never spans more than 12 weeks. */
 const MAX_TERM_WEEKS = 12;
 
@@ -144,10 +141,6 @@ export class SeasonCreatePage {
     }),
     end_date: new FormControl<string | null>(null),
     hijri_year: new FormControl('', { nonNullable: true }),
-    sessions_per_week: new FormControl(3, {
-      nonNullable: true,
-      validators: [Validators.min(1), Validators.max(MAX_SESSIONS_PER_WEEK)],
-    }),
     review_weeks_per_term: new FormControl(1, {
       nonNullable: true,
       validators: [Validators.min(0), Validators.max(3)],
@@ -253,7 +246,6 @@ export class SeasonCreatePage {
         center_id: v.center_id,
         start_date: v.start_date,
         hijri_year: v.hijri_year || undefined,
-        sessions_per_week: v.sessions_per_week,
         review_weeks_per_term: v.review_weeks_per_term,
         terms,
       })

@@ -39,6 +39,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 interface StudentForm {
   full_name: FormControl<string>;
+  user_id: FormControl<number | null>;
   center_id: FormControl<number | null>;
   group_id: FormControl<number | null>;
   level_id: FormControl<number | null>;
@@ -162,6 +163,7 @@ export class StudentDetailPage {
   // Form State
   readonly form = new FormGroup<StudentForm>({
     full_name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    user_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
     center_id: new FormControl<number | null>(null),
     group_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
     level_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
@@ -213,6 +215,49 @@ export class StudentDetailPage {
     })),
   );
 
+  /** Linkable login accounts for the pupil form (admin/supervisor/teacher). */
+  private readonly accountsRes = resource({
+    params: () => ({
+      centerId:
+        this.formCenterId() ??
+        this.form.controls.center_id.value ??
+        this.auth.currentUser()?.center_id ??
+        null,
+      open: this.isFormOpen(),
+      // Admins browse all centers until one is picked (picking an account
+      // then auto-sets it); everyone else is nailed to their own center.
+      global: this.showCenterAdmin(),
+    }),
+    loader: ({ params }) =>
+      params.open && (params.centerId !== null || params.global)
+        ? firstValueFrom(this.studentsSvc.unlinkedAccounts(params.centerId))
+        : Promise.resolve([]),
+  });
+
+  protected readonly accountOptions = computed<DropdownOption[]>(() =>
+    (this.accountsRes.value() ?? []).map((u) => ({
+      value: u.id,
+      label: `${u.full_name} · ${u.email}`,
+    })),
+  );
+
+  protected readonly linkedUser = computed(() => this.studentVal()?.user ?? null);
+
+  /** Picking an account pre-fills the pupil name (until edited) + center. */
+  protected onAccountPick(v: DropdownValue): void {
+    const id = this.num(v);
+    this.form.controls.user_id.setValue(id);
+    if (id === null) return;
+    const u = (this.accountsRes.value() ?? []).find((a) => a.id === id);
+    if (!u) return;
+    if (this.form.controls.full_name.value.trim() === '') {
+      this.form.controls.full_name.setValue(u.full_name);
+    }
+    if (this.form.controls.center_id.value === null && u.center_id !== null) {
+      this.form.controls.center_id.setValue(u.center_id);
+    }
+  }
+
   // Assign block (view mode)
   protected readonly assignPicked = signal<number | null>(null);
   protected readonly assignChosen = signal(false);
@@ -256,6 +301,7 @@ export class StudentDetailPage {
         if (params.editing && params.s) {
           this.form.patchValue({
             full_name: params.s.full_name,
+            user_id: params.s.user?.id ?? null,
             center_id: params.s.center_id,
             group_id: params.s.group?.id ?? null,
             level_id: params.s.level_id,
@@ -310,7 +356,7 @@ export class StudentDetailPage {
     }
 
     const req$ = this.isNew()
-      ? this.studentsSvc.create(v)
+      ? this.studentsSvc.create({ ...v, user_id: v.user_id! })
       : this.studentsSvc.update(this.studentVal()!.id, v);
 
     req$.subscribe({
@@ -334,6 +380,10 @@ export class StudentDetailPage {
   protected onGroupPick(v: DropdownValue): void {
     this.assignPicked.set(this.num(v));
     this.assignChosen.set(true);
+  }
+
+  protected onStartHizbInput(v: string): void {
+    this.form.controls.start_hizb.setValue(v.trim() === '' ? null : Number(v));
   }
 
   protected saveAssign(): void {

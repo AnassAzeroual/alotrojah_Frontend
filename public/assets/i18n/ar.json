@@ -140,7 +140,8 @@
   },
   "gender": {
     "male": "ذكر",
-    "female": "أنثى"
+    "female": "أنثى",
+    "unknown": "غير معروف"
   },
   "registrations": {
     "title": "طلبات الانتساب",
@@ -205,7 +206,9 @@
     "final": "المعدل النهائي"
   },
   "studentDetail": {
-    "assign_group": "تعيين القسم"
+    "assign_group": "تعيين القسم",
+    "account": "الحساب",
+    "pick_account": "اختر الحساب"
   },
   "list": {
     "search": "بحث بالاسم",
@@ -444,7 +447,6 @@
     "start_date": "تاريخ البداية",
     "end_date": "تاريخ النهاية",
     "hijri": "السنة الهجرية",
-    "sessions_per_week": "حصص في الأسبوع",
     "review_weeks": "المراجعة في الأسبوع",
     "terms": "الفصول",
     "create": "إنشاء الموسم",

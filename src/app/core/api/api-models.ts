@@ -97,6 +97,7 @@ export interface Student {
   full_name: string;
   center_id: number | null;
   group?: { id: number; name: string };
+  user?: { id: number; full_name: string; email: string } | null;
   level_id: number | null;
   gender: string | null;
   status: string;
@@ -129,6 +130,7 @@ export interface CreateGroupPayload {
 /** POST /students */
 export interface CreateStudentPayload {
   full_name: string;
+  user_id: number;
   center_id?: number | null;
   group_id?: number | null;
   level_id?: number | null;
@@ -144,6 +146,7 @@ export interface CreateStudentPayload {
 /** PUT /students/{id} — every field optional (backend rules are `sometimes`). */
 export interface UpdateStudentPayload {
   full_name?: string;
+  user_id?: number | null;
   group_id?: number | null;
   level_id?: number | null;
   birth_date?: string | null;

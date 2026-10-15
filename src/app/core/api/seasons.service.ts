@@ -35,7 +35,6 @@ export class SeasonsService {
     center_id: number | null;
     start_date: string;
     hijri_year?: string;
-    sessions_per_week?: number;
     review_weeks_per_term?: number;
     terms?: SeasonTerm[];
   }): Observable<Season> {

@@ -19,25 +19,50 @@ test.describe.serial('Students management', () => {
     await page.getByTestId('nav-students').click();
     await expect(page).toHaveURL(/\/students$/);
 
-    // check list count
+    // check list count (cold backend can take a while — 20s poll like calendar specs)
     const rows = page.locator('.grid-auto .card');
-    await expect.poll(async () => rows.count()).toBeGreaterThanOrEqual(1);
+    await expect.poll(async () => rows.count(), { timeout: 20000 }).toBeGreaterThanOrEqual(1);
+
+    // Every pupil rides a login account: create the student user first.
+    const accountName = `E2E Pupil Acct ${Date.now()}`;
+    const accountEmail = `e2e_pupil_${Date.now()}@example.org`;
+    await page.getByTestId('nav-users').click();
+    await expect(page).toHaveURL(/\/users$/);
+    await page.getByTestId('users-new').click();
+    await expect(page).toHaveURL(/\/users\/new$/);
+    await page.getByTestId('user-name').fill(accountName);
+    await page.getByTestId('user-email').fill(accountEmail);
+    await page.getByTestId('user-password').fill('password123');
+    await page.getByTestId('user-role').click();
+    await page.getByRole('option', { name: 'طالب', exact: true }).click();
+    await page.getByTestId('user-center').click();
+    await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
+    await page.getByTestId('user-submit').click();
+    await expect(page).toHaveURL(/\/users$/);
 
     // create new student
+    await page.getByTestId('nav-students').click();
+    await expect(page).toHaveURL(/\/students$/);
     await page.getByTestId('students-new').click();
     await expect(page).toHaveURL(/\/students\/new$/);
-
-    await page.getByTestId('student-name').fill(studentName);
 
     // center (required for admin now — any center works)
     await page.getByTestId('student-center').click();
     await page.getByRole('option').first().click();
+
+    // link the fresh account (prefills the pupil name)
+    await page.getByTestId('student-account').click();
+    await page.getByRole('option', { name: accountEmail }).click();
+    await expect(page.getByTestId('student-name')).toHaveValue(accountName);
+    await page.getByTestId('student-name').fill(studentName);
 
     await page.getByTestId('student-group').click();
     await page.locator('.dd.open [role="option"]').first().click();
 
     await page.getByTestId('student-level').click();
     await page.locator('.dd.open [role="option"]').first().click();
+
+    await page.getByTestId('student-start-hizb').fill('2');
 
     // mode: surah
     await page.getByTestId('student-mode').click();
