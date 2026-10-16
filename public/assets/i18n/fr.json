@@ -307,7 +307,9 @@
     "prompt": "Énoncé",
     "weight": "Poids",
     "weights": "Total des poids : {{total}} / 20",
-    "reweight": "Rééquilibrer les poids"
+    "reweight": "Rééquilibrer les poids",
+    "need_student": "Choisissez un élève ci-dessus pour enregistrer l'examen",
+    "need_term": "Choisissez un trimestre pour enregistrer l'examen"
   },
   "review": {
     "title": "Révision",

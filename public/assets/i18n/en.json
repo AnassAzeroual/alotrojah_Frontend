@@ -307,7 +307,9 @@
     "prompt": "Prompt",
     "weight": "Weight",
     "weights": "Weights total: {{total}} / 20",
-    "reweight": "Rebalance weights"
+    "reweight": "Rebalance weights",
+    "need_student": "Choose a student above to save the exam",
+    "need_term": "Choose a term to save the exam"
   },
   "review": {
     "title": "Review",

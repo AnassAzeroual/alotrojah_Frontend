@@ -15,15 +15,22 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { firstValueFrom, map } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ExamsService } from '../../core/api/exams.service';
 import { leaveController } from '../../core/guards/leave-controller';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
+import { GroupsService } from '../../core/api/groups.service';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
-import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
+import {
+  DropdownComponent,
+  DropdownOption,
+  DropdownValue,
+  dropdownNumber,
+} from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 @Component({
@@ -43,22 +50,53 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 export class ExamNewPage {
   private readonly examsSvc = inject(ExamsService);
   private readonly studentsSvc = inject(StudentsService);
+  private readonly groupsSvc = inject(GroupsService);
   private readonly planning = inject(PlanningService);
   private readonly ref = inject(ReferenceService);
   private readonly router = inject(Router);
 
-  readonly search = signal('');
+  protected readonly num = dropdownNumber;
+
+  readonly groupId = signal<number | null>(null);
   readonly pickedStudent = signal<number | null>(null);
   readonly saving = signal(false);
   readonly errorKey = signal<string | null>(null);
 
-  readonly found = resource({
-    params: () => ({ q: this.search() }),
-    loader: ({ params }) =>
-      params.q.trim() === ''
-        ? Promise.resolve([])
-        : firstValueFrom(this.studentsSvc.list({ q: params.q }).pipe(map((p) => p.data))),
+  /** Group narrowing (backend center-scoped; admin sees every center). */
+  private readonly groupsRes = resource({
+    params: () => ({}),
+    loader: () => this.groupsSvc.listAll({ is_active: true }),
   });
+
+  protected readonly groupOptions = computed<DropdownOption[]>(() => [
+    { value: '', labelKey: 'list.all' },
+    ...(this.groupsRes.value() ?? []).map((g) => ({ value: g.id, label: g.name })),
+  ]);
+
+  /** Pupils of the picked group (or the first 100 center-wide when unpicked). */
+  private readonly pupilsRes = resource({
+    params: () => ({ g: this.groupId() }),
+    loader: ({ params }) =>
+      firstValueFrom(
+        this.studentsSvc.list({
+          ...(params.g !== null ? { group_id: params.g } : {}),
+          per_page: 100,
+        }),
+      ).then((p) => p.data),
+  });
+
+  protected readonly pupilOptions = computed<DropdownOption[]>(() =>
+    (this.pupilsRes.value() ?? []).map((s) => ({ value: s.id, label: s.full_name })),
+  );
+
+  protected onGroupPick(v: DropdownValue): void {
+    this.groupId.set(this.num(v));
+    this.pickedStudent.set(null);
+  }
+
+  protected onPupilPick(v: DropdownValue): void {
+    this.pickedStudent.set(this.num(v));
+  }
 
   readonly seasons = resource({
     params: () => ({}),
@@ -99,6 +137,23 @@ export class ExamNewPage {
     }),
     term_id: new FormControl<number | null>(null),
     exam_date: new FormControl('', { nonNullable: true }),
+  });
+
+  private readonly examTypeNow = toSignal(this.form.controls.exam_type.valueChanges, {
+    initialValue: 'term_batch' as const,
+  });
+  private readonly termIdNow = toSignal(this.form.controls.term_id.valueChanges, {
+    initialValue: null as number | null,
+  });
+
+  /** Disabled-save reasons, shown under the button (mirrors submit's guards). */
+  readonly blockers = computed((): string[] => {
+    const out: string[] = [];
+    if (this.pickedStudent() === null) out.push('exam.need_student');
+    if (this.examTypeNow() !== 'final_season' && this.termIdNow() === null) {
+      out.push('exam.need_term');
+    }
+    return out;
   });
 
   submit(): void {

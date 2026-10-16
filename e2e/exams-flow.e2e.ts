@@ -23,12 +23,9 @@ test.describe.serial('Exams management', () => {
     await expect(page).toHaveURL(/\/exams$/);
     await page.getByTestId('exams-new').click();
     await expect(page).toHaveURL(/\/exams\/new$/);
-    const studentSearch = page.getByTestId('exam-student-search');
-    await studentSearch.fill(studentName);
-    await studentSearch.press('Enter');
-    const pick = page.locator('.pick').first();
-    await expect(pick).toBeVisible();
-    await pick.click();
+    const studentPick = page.getByTestId('exam-student');
+    await studentPick.click();
+    await page.getByRole('option', { name: studentName }).click();
     await page.getByTestId('exam-term').click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
     await page.getByTestId('exam-date').fill('06/10/2026');

@@ -23,28 +23,28 @@
   }
 
   <div class="card anim-rise" style="--i: 1">
-    <label class="field search"
-      ><span>{{ 'planning.pick_student' | translate }}</span>
-      <input
-        type="search"
-        data-testid="exam-student-search"
-        [value]="search()"
-        (change)="search.set($any($event.target).value)"
-        [placeholder]="'list.search' | translate"
+    <label class="field">
+      <span>{{ 'list.group' | translate }}</span>
+      <app-dropdown
+        [options]="groupOptions()"
+        [value]="groupId() ?? ''"
+        (valueChange)="onGroupPick($event)"
+        placeholderKey="list.group"
+        ariaLabelKey="list.group"
+        testId="exam-group"
       />
     </label>
-    <div class="cluster">
-      @for (s of found.value() ?? []; track s.id) {
-        <button
-          type="button"
-          class="pick"
-          [class.on]="pickedStudent() === s.id"
-          (click)="pickedStudent.set(s.id)"
-        >
-          {{ s.full_name }}
-        </button>
-      }
-    </div>
+    <label class="field">
+      <span>{{ 'planning.pick_student' | translate }} <span class="danger">*</span></span>
+      <app-dropdown
+        [options]="pupilOptions()"
+        [value]="pickedStudent() ?? ''"
+        (valueChange)="onPupilPick($event)"
+        placeholderKey="planning.pick_student"
+        ariaLabelKey="planning.pick_student"
+        testId="exam-student"
+      />
+    </label>
   </div>
 
   <form
@@ -92,6 +92,16 @@
         {{ 'common.save' | translate }}
       }
     </button>
+    @if (blockers().length > 0 && !saving()) {
+      <p class="muted" data-testid="exam-blockers">
+        @for (b of blockers(); track b) {
+          <span>{{ b | translate }}</span>
+          @if (!$last) {
+            <br />
+          }
+        }
+      </p>
+    }
     @if (errorKey()) {
       <div class="banner danger">{{ errorKey()! | translate }}</div>
     }
