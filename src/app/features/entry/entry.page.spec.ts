@@ -298,7 +298,7 @@ describe('EntryPage smart defaults', () => {
       );
     await cycle();
 
-    // Called unbound (as the score-sheet template does) — must not throw.
+    // Called unbound (as the entry template does) — must not throw.
     const fn = page.defaultMemorization;
     expect(fn(1)).toBe(1.5);
     expect(fn(2)).toBeNull();

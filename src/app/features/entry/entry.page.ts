@@ -24,21 +24,12 @@ import {
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
-import { AttendanceGridComponent } from './components/attendance-grid.component';
-import { GoalListComponent } from './components/goal-list.component';
-import { ScoreSheetComponent } from './components/score-sheet.component';
+import { EntryTableComponent } from './components/entry-table.component';
 
 @Component({
   selector: 'app-entry-page',
   standalone: true,
-  imports: [
-    TranslatePipe,
-    DropdownComponent,
-    EmptyStateComponent,
-    AttendanceGridComponent,
-    ScoreSheetComponent,
-    GoalListComponent,
-  ],
+  imports: [TranslatePipe, DropdownComponent, EmptyStateComponent, EntryTableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './entry.page.html',
   styleUrl: './entry.page.scss',
