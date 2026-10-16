@@ -21,6 +21,13 @@ export const EXAMS_ROUTES: Routes = [
     data: { roles: [...STAFF] },
   },
   {
+    path: 'weekly',
+    loadComponent: () => import('./weekly-exam.page').then((m) => m.WeeklyExamPage),
+    canActivate: [roleGuard],
+    canDeactivate: [dirtyGuard],
+    data: { roles: [...STAFF] },
+  },
+  {
     path: ':id',
     loadComponent: () => import('./exam-detail.page').then((m) => m.ExamDetailPage),
     canActivate: [roleGuard],

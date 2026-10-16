@@ -104,7 +104,7 @@
               testId="exam-type"
             />
           </label>
-          @if (editType() !== 'final_season') {
+          @if (editType() !== 'final_season' && editType() !== 'weekly') {
             <label class="field"
               ><span>{{ 'planning.pick_term' | translate }}</span>
               <app-dropdown

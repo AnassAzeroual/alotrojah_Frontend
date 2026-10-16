@@ -34,7 +34,7 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { ScoreInputComponent } from '../../shared/ui/score-input/score-input.component';
 
-type ExamType = 'hizb_completion' | 'term_batch' | 'final_season';
+type ExamType = 'hizb_completion' | 'term_batch' | 'weekly' | 'final_season';
 
 const SCORE_DEBOUNCE_MS = 400;
 
@@ -83,6 +83,7 @@ export class ExamDetailPage implements OnDestroy {
   readonly examTypeOptions: DropdownOption[] = [
     { value: 'hizb_completion', labelKey: 'examType.hizb_completion' },
     { value: 'term_batch', labelKey: 'examType.term_batch' },
+    { value: 'weekly', labelKey: 'examType.weekly' },
     { value: 'final_season', labelKey: 'examType.final_season' },
   ];
 
@@ -114,7 +115,9 @@ export class ExamDetailPage implements OnDestroy {
   readonly canSaveEdit = computed(
     () =>
       this.editDate() !== '' &&
-      (this.editType() === 'final_season' || this.editTerm() !== null) &&
+      (this.editType() === 'final_season' ||
+        this.editType() === 'weekly' ||
+        this.editTerm() !== null) &&
       !this.editSaving(),
   );
 
@@ -209,11 +212,12 @@ export class ExamDetailPage implements OnDestroy {
     this.editSaving.set(true);
     this.editErrorKey.set(null);
     const type = this.editType();
+    const seasonScoped = type === 'final_season' || type === 'weekly';
     this.examsSvc
       .update(this.id(), {
         exam_date: this.editDate() || null,
         exam_type: type,
-        term_id: type === 'final_season' ? null : this.editTerm(),
+        term_id: seasonScoped ? null : this.editTerm(),
       })
       .subscribe({
         next: () => {

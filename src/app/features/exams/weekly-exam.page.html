@@ -1,0 +1,189 @@
+<section class="page">
+  <div class="page-head anim-rise">
+    <div>
+      <h1 class="with-add">{{ 'exam.weekly_title' | translate }}</h1>
+    </div>
+  </div>
+
+  @if (leave.leaving()) {
+    <div class="banner danger" data-testid="unsaved-guard">
+      <span>{{ 'common.unsaved_warn' | translate }}</span>
+      <span class="cluster">
+        <button
+          type="button"
+          class="btn btn-danger-solid btn-sm"
+          data-testid="confirm-leave"
+          (click)="leave.allowLeave()"
+        >
+          {{ 'common.unsaved_leave' | translate }}
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="leave.stay()">
+          {{ 'common.cancel' | translate }}
+        </button>
+      </span>
+    </div>
+  }
+
+  <div class="toolbar card anim-rise" style="--i: 1">
+    <label class="field">
+      <span>{{ 'list.group' | translate }} <span class="danger">*</span></span>
+      <app-dropdown
+        [options]="groupOptions()"
+        [value]="groupId() ?? ''"
+        (valueChange)="onGroupPick($event)"
+        placeholderKey="list.group"
+        ariaLabelKey="list.group"
+        testId="weekly-group"
+      />
+    </label>
+    <label class="field">
+      <span>{{ 'exam.date' | translate }}</span>
+      <app-date-picker
+        [value]="date()"
+        (valueChange)="date.set($any($event))"
+        ariaLabelKey="exam.date"
+        testId="weekly-date"
+      />
+    </label>
+  </div>
+
+  @if (blockers().length > 0 && !saving()) {
+    <p class="muted" data-testid="weekly-blockers">
+      @for (b of blockers(); track b) {
+        <span>{{ b | translate }}</span>
+        @if (!$last) {
+          <br />
+        }
+      }
+    </p>
+  }
+
+  @if (groupId() !== null) {
+    @if (rows().length === 0) {
+      <app-empty-state />
+    } @else {
+      <div class="table-wrap card anim-rise" style="--i: 2">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'users.name' | translate }}</th>
+              <th>{{ 'weeklyExam.portion' | translate }}</th>
+              @for (m of modules(); track m.code) {
+                <th>{{ m.name_ar }} ({{ m.max_points }})</th>
+              }
+              <th>{{ 'weeklyExam.total' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of rows(); track r.student_id) {
+              <tr>
+                <td>
+                  <strong>{{ r.full_name }}</strong>
+                  <small class="mut">{{ 'mode.' + r.mode | translate }}</small>
+                </td>
+                <td>
+                  @if (r.mode === 'thumn') {
+                    <span class="portion">
+                      <input
+                        type="number"
+                        class="ltr-num"
+                        min="1"
+                        max="60"
+                        [value]="r.hizb ?? ''"
+                        (input)="setPortion(r.student_id, 'hizb', $any($event.target).value)"
+                        [attr.aria-label]="'weeklyExam.hizb' | translate"
+                        [attr.data-testid]="'weekly-hizb-' + r.student_id"
+                      />
+                      <input
+                        type="number"
+                        class="ltr-num"
+                        min="1"
+                        max="8"
+                        [value]="r.thumn ?? ''"
+                        (input)="setPortion(r.student_id, 'thumn', $any($event.target).value)"
+                        [attr.aria-label]="'weeklyExam.thumn' | translate"
+                        [attr.data-testid]="'weekly-thumn-' + r.student_id"
+                      />
+                    </span>
+                  } @else {
+                    <span class="portion">
+                      <app-dropdown
+                        [options]="surahOptions()"
+                        [value]="r.surah ?? ''"
+                        (valueChange)="setPortion(r.student_id, 'surah', $any($event))"
+                        placeholderKey="weeklyExam.surah"
+                        ariaLabelKey="weeklyExam.surah"
+                        [testId]="'weekly-surah-' + r.student_id"
+                      />
+                      <input
+                        type="number"
+                        class="ltr-num"
+                        min="1"
+                        [max]="surahMax(r.surah) ?? ''"
+                        [value]="r.ayah_from ?? ''"
+                        (input)="setPortion(r.student_id, 'ayah_from', $any($event.target).value)"
+                        [attr.aria-label]="'weeklyExam.ayah_from' | translate"
+                        [attr.data-testid]="'weekly-ayah-from-' + r.student_id"
+                      />
+                      <input
+                        type="number"
+                        class="ltr-num"
+                        min="1"
+                        [max]="surahMax(r.surah) ?? ''"
+                        [value]="r.ayah_to ?? ''"
+                        (input)="setPortion(r.student_id, 'ayah_to', $any($event.target).value)"
+                        [attr.aria-label]="'weeklyExam.ayah_to' | translate"
+                        [attr.data-testid]="'weekly-ayah-to-' + r.student_id"
+                      />
+                    </span>
+                  }
+                </td>
+                @for (m of modules(); track m.code) {
+                  <td>
+                    <input
+                      type="number"
+                      class="ltr-num"
+                      min="0"
+                      [max]="m.max_points"
+                      [value]="r.scores[m.code] ?? ''"
+                      (input)="setScore(r.student_id, m.code, $any($event.target).value)"
+                      [attr.aria-label]="m.name_ar"
+                      [attr.data-testid]="'weekly-score-' + r.student_id + '-' + m.code"
+                    />
+                  </td>
+                }
+                <td class="ltr-num">
+                  <strong>{{ rowTotal(r) }}</strong>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-testid="weekly-save"
+          [disabled]="!canSave()"
+          (click)="save()"
+        >
+          @if (saving()) {
+            <app-spinner />
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </button>
+      </div>
+      @if (savedCount() !== null) {
+        <div class="banner ok" data-testid="weekly-success">
+          {{ 'weeklyExam.saved' | translate: { count: savedCount() } }}
+        </div>
+      }
+      @if (errorKey()) {
+        <div class="banner danger">{{ errorKey()! | translate }}</div>
+      }
+    }
+  }
+</section>

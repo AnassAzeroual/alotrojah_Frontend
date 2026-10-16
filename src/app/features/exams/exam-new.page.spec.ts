@@ -116,6 +116,15 @@ describe('ExamNewPage blockers', () => {
     expect(page.blockers()).toEqual([]);
   });
 
+  it('needs no term for weekly exams', () => {
+    page.pickedStudent.set(11);
+    page.form.controls.exam_type.setValue('weekly');
+    fixture.detectChanges();
+
+    expect(page.blockers()).toEqual([]);
+    expect(page.groupId()).toBeNull();
+  });
+
   it('narrows pupils by group and picks from the dropdown', async () => {
     openList('exam-group');
     pickText('G5');

@@ -125,7 +125,7 @@ describe('i18n dictionaries', () => {
       ['role', ['admin', 'supervisor', 'teacher', 'student', 'board']],
       ['gender', ['male', 'female', 'unknown']], // unknown = NULL-gender bucket in group stats
       ['mode', ['surah', 'thumn']],
-      ['examType', ['hizb_completion', 'term_batch', 'final_season']],
+      ['examType', ['hizb_completion', 'term_batch', 'weekly', 'final_season']],
       ['scopeType', ['weekly', 'murajaa']],
       ['notif', ['queued', 'sent', 'failed']],
     ];

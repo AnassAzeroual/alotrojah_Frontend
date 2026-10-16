@@ -29,7 +29,7 @@
       <app-dropdown
         [options]="sessionOptions()"
         [value]="txt(selectedSession())"
-        (valueChange)="selectedSession.set(num($event))"
+        (valueChange)="onSession(num($event))"
         ariaLabelKey="entry.pick_session"
       />
     </label>

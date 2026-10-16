@@ -117,6 +117,7 @@ export class ExamNewPage {
   readonly examTypeOptions = [
     { value: 'hizb_completion', labelKey: 'examType.hizb_completion' },
     { value: 'term_batch', labelKey: 'examType.term_batch' },
+    { value: 'weekly', labelKey: 'examType.weekly' },
     { value: 'final_season', labelKey: 'examType.final_season' },
   ];
   readonly termOptions = computed(() => [
@@ -131,10 +132,13 @@ export class ExamNewPage {
   }
 
   readonly form = new FormGroup({
-    exam_type: new FormControl<'hizb_completion' | 'term_batch' | 'final_season'>('term_batch', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
+    exam_type: new FormControl<'hizb_completion' | 'term_batch' | 'weekly' | 'final_season'>(
+      'term_batch',
+      {
+        nonNullable: true,
+        validators: [Validators.required],
+      },
+    ),
     term_id: new FormControl<number | null>(null),
     exam_date: new FormControl('', { nonNullable: true }),
   });
@@ -150,7 +154,8 @@ export class ExamNewPage {
   readonly blockers = computed((): string[] => {
     const out: string[] = [];
     if (this.pickedStudent() === null) out.push('exam.need_student');
-    if (this.examTypeNow() !== 'final_season' && this.termIdNow() === null) {
+    const t = this.examTypeNow();
+    if ((t === 'hizb_completion' || t === 'term_batch') && this.termIdNow() === null) {
       out.push('exam.need_term');
     }
     return out;
@@ -160,16 +165,18 @@ export class ExamNewPage {
     const st = this.pickedStudent();
     const v = this.form.getRawValue();
     if (st === null || this.saving()) return;
-    if (v.exam_type !== 'final_season' && v.term_id === null) return;
+    if ((v.exam_type === 'hizb_completion' || v.exam_type === 'term_batch') && v.term_id === null) {
+      return;
+    }
     this.saving.set(true);
     this.errorKey.set(null);
+    const seasonScoped = v.exam_type === 'final_season' || v.exam_type === 'weekly';
     this.examsSvc
       .create({
         student_id: st,
         exam_type: v.exam_type,
-        term_id: v.exam_type === 'final_season' ? undefined : (v.term_id ?? undefined),
-        season_id:
-          v.exam_type === 'final_season' ? (this.currentSeasonId() ?? undefined) : undefined,
+        term_id: seasonScoped ? undefined : (v.term_id ?? undefined),
+        season_id: seasonScoped ? (this.currentSeasonId() ?? undefined) : undefined,
         exam_date: v.exam_date || undefined,
       })
       .subscribe({

@@ -26,7 +26,7 @@
     "planning": "Seasons",
     "calendar": "Calendar",
     "scoring": "Scoring",
-    "exams": "Exams",
+    "exams": "Start exam",
     "reviews": "Review",
     "results": "Results",
     "reports": "Reports",
@@ -186,7 +186,8 @@
   "examType": {
     "hizb_completion": "Hizb completion",
     "term_batch": "Term exam",
-    "final_season": "Final exam"
+    "final_season": "Final exam",
+    "weekly": "Weekly"
   },
   "scopeType": {
     "weekly": "Weekly",
@@ -309,7 +310,21 @@
     "weights": "Weights total: {{total}} / 20",
     "reweight": "Rebalance weights",
     "need_student": "Choose a student above to save the exam",
-    "need_term": "Choose a term to save the exam"
+    "need_term": "Choose a term to save the exam",
+    "weekly_title": "Weekly exam"
+  },
+  "weeklyExam": {
+    "group": "Section",
+    "portion": "Memorized portion",
+    "hizb": "Hizb",
+    "thumn": "Thumn",
+    "surah": "Surah",
+    "ayah_from": "From ayah",
+    "ayah_to": "To ayah",
+    "total": "Total",
+    "need_group": "Choose a section first to see the pupils",
+    "need_portion": "Complete every pupil's memorized portion before saving",
+    "saved": "Saved exams for {{count}} pupils"
   },
   "review": {
     "title": "Review",

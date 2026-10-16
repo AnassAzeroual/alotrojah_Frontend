@@ -44,6 +44,15 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
                 <path d="M12 5v14M5 12h14" />
               </svg>
             </a>
+            <a
+              class="btn btn-ghost"
+              routerLink="/exams/weekly"
+              data-testid="exams-weekly"
+              [attr.aria-label]="'exam.weekly_title' | translate"
+              [attr.title]="'exam.weekly_title' | translate"
+            >
+              {{ 'exam.weekly_title' | translate }}
+            </a>
           }
         </h1>
       </div>
@@ -103,6 +112,7 @@ export class ExamsListPage {
       { value: '', label: t('list.all') },
       { value: 'hizb_completion', labelKey: 'examType.hizb_completion' },
       { value: 'term_batch', labelKey: 'examType.term_batch' },
+      { value: 'weekly', labelKey: 'examType.weekly' },
       { value: 'final_season', labelKey: 'examType.final_season' },
     ];
   });

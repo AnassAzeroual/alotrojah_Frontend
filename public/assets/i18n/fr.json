@@ -26,7 +26,7 @@
     "planning": "Saisons",
     "calendar": "Calendrier",
     "scoring": "Notation",
-    "exams": "Examens",
+    "exams": "Démarrer un examen",
     "reviews": "Révision",
     "results": "Résultats",
     "reports": "Rapports",
@@ -186,7 +186,8 @@
   "examType": {
     "hizb_completion": "Validation de hizb",
     "term_batch": "Examen du trimestre",
-    "final_season": "Examen final"
+    "final_season": "Examen final",
+    "weekly": "Hebdomadaire"
   },
   "scopeType": {
     "weekly": "Hebdomadaire",
@@ -309,7 +310,21 @@
     "weights": "Total des poids : {{total}} / 20",
     "reweight": "Rééquilibrer les poids",
     "need_student": "Choisissez un élève ci-dessus pour enregistrer l'examen",
-    "need_term": "Choisissez un trimestre pour enregistrer l'examen"
+    "need_term": "Choisissez un trimestre pour enregistrer l'examen",
+    "weekly_title": "Examen hebdomadaire"
+  },
+  "weeklyExam": {
+    "group": "Section",
+    "portion": "Passage mémorisé",
+    "hizb": "Hizb",
+    "thumn": "Thoumn",
+    "surah": "Sourate",
+    "ayah_from": "Du verset",
+    "ayah_to": "Au verset",
+    "total": "Total",
+    "need_group": "Choisissez d'abord une section pour voir les élèves",
+    "need_portion": "Complétez le passage mémorisé de chaque élève avant d'enregistrer",
+    "saved": "{{count}} examens d'élèves enregistrés"
   },
   "review": {
     "title": "Révision",
