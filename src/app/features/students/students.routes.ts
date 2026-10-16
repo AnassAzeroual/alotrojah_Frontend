@@ -17,7 +17,10 @@ export const STUDENTS_ROUTES: Routes = [
     loadComponent: () => import('./student-detail.page').then((m) => m.StudentDetailPage),
     canActivate: [roleGuard],
     canDeactivate: [dirtyGuard],
-    data: { roles: [...STAFF_ONLY] },
+    // The static segment binds no params, so the create id rides static data
+    // (withComponentInputBinding maps it onto the page's id input — without
+    // this the required input throws and the form never renders).
+    data: { roles: [...STAFF_ONLY], id: 'new' },
   },
   {
     path: ':id',

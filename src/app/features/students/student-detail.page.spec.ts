@@ -338,3 +338,49 @@ describe('StudentDetailPage account link', () => {
     req.flush({ success: true, message: null, data: { id: 12 } });
   });
 });
+
+describe('StudentDetailPage non-numeric id', () => {
+  let fixture!: ReturnType<typeof TestBed.createComponent<StudentDetailPage>>;
+  let http!: HttpTestingController;
+  let el!: HTMLElement;
+
+  beforeEach(async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    await TestBed.configureTestingModule({
+      imports: [StudentDetailPage],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        provideTranslateService({
+          loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
+        }),
+        { provide: AuthService, useValue: authStub },
+      ],
+    }).compileComponents();
+    http = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(StudentDetailPage);
+    // Live case 2026-10-17: the route carried /students/NaN.
+    fixture.componentRef.setInput('id', 'NaN');
+    el = fixture.nativeElement;
+    fixture.detectChanges();
+  });
+
+  afterEach(() => http.verify());
+
+  it('fires no pupil-scoped HTTP and renders the empty state, not the skeleton', async () => {
+    // Benign lookups still fire (seasons, levels, centers for the admin stub).
+    http
+      .match((r) => !r.url.includes('NaN') && r.method === 'GET')
+      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // No request ever carried the non-numeric id (no students/NaN 404, no
+    // student_id=NaN 422s) — so no resource errored and nothing froze.
+    expect(http.match((r) => r.url.includes('NaN'))).toHaveLength(0);
+    expect(el.querySelector('app-empty-state')).not.toBeNull();
+    expect(el.querySelector('.skeleton')).toBeNull();
+  });
+});

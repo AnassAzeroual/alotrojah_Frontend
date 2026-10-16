@@ -72,6 +72,18 @@ interface StudentForm {
 export class StudentDetailPage {
   readonly id = input.required<string>(); // 'new' or number string
 
+  /**
+   * Route id as a number, or null when the URL carries no numeric id (a stale
+   * /students/NaN bookmark or a misbuilt link — live case 2026-10-17). All
+   * three loaders short-circuit on null, so no HTTP fires and the template's
+   * existing empty-state branch renders instead of the frozen skeleton.
+   */
+  private readonly numericId = computed((): number | null => {
+    if (this.id() === 'new') return null;
+    const n = Number(this.id());
+    return Number.isNaN(n) ? null : n;
+  });
+
   protected readonly num = dropdownNumber;
 
   readonly isNew = computed(() => this.id() === 'new');
@@ -89,11 +101,11 @@ export class StudentDetailPage {
   private readonly tick = signal(0);
 
   private readonly student = resource({
-    params: () => ({ id: this.id(), t: this.tick() }),
+    params: () => ({ id: this.id(), nid: this.numericId(), t: this.tick() }),
     loader: ({ params }) =>
-      params.id === 'new'
+      params.id === 'new' || params.nid === null
         ? Promise.resolve(null)
-        : firstValueFrom(this.studentsSvc.get(Number(params.id))),
+        : firstValueFrom(this.studentsSvc.get(params.nid)),
   });
 
   private readonly season = resource({
@@ -105,19 +117,19 @@ export class StudentDetailPage {
   });
 
   private readonly summary = resource({
-    params: () => ({ id: this.id(), season: this.season.value()?.id ?? null }),
+    params: () => ({ nid: this.numericId(), season: this.season.value()?.id ?? null }),
     loader: ({ params }) =>
-      params.season === null || params.id === 'new'
+      params.nid === null || params.season === null
         ? Promise.resolve(null)
-        : firstValueFrom(this.dash.season(Number(params.id), params.season)),
+        : firstValueFrom(this.dash.season(params.nid, params.season)),
   });
 
   private readonly final = resource({
-    params: () => ({ id: this.id(), season: this.season.value()?.id ?? null }),
+    params: () => ({ nid: this.numericId(), season: this.season.value()?.id ?? null }),
     loader: ({ params }) =>
-      params.season === null || params.id === 'new'
+      params.nid === null || params.season === null
         ? Promise.resolve(null)
-        : firstValueFrom(this.dash.final(Number(params.id), params.season)),
+        : firstValueFrom(this.dash.final(params.nid, params.season)),
   });
 
   // Group assignment (StudentPolicy: admin/supervisor, or a same-center teacher)

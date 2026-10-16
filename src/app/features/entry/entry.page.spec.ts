@@ -148,7 +148,7 @@ describe('EntryPage smart defaults', () => {
 
     // The week option carries its term label (NoOp i18n returns the key).
     expect(page.weekOptions().find((o) => o.value === '7')?.label).toBe(
-      'common.week 9 · الفصل 1 · موسم 1449',
+      'common.week 9 · الفصل 1 · (موسم 1449)',
     );
 
     flushSessions();
