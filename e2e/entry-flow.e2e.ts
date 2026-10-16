@@ -13,7 +13,7 @@ async function pickSession1(page: import('@playwright/test').Page): Promise<void
   await page.locator('.dd.open [role="option"]').nth(1).click();
 }
 
-test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 silent cap)', () => {
+test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-cap errors)', () => {
   test('S17: attendance toggle persists and restores', async ({ page }) => {
     await loginAs(page, TEACHER, 'password123');
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
@@ -99,7 +99,9 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 silent
     ).toHaveValue(original);
   });
 
-  test('S18/F1: over-cap score save fails with zero user feedback', async ({ page }) => {
+  test('S18: over-cap score save surfaces a banner and the refused cell (F1 fixed)', async ({
+    page,
+  }) => {
     await loginAs(page, TEACHER, 'password123');
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await page.goto('/entry');
@@ -121,11 +123,12 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 silent
     await saveBtn.click();
     expect((await resp).status()).toBe(422);
 
-    // F1: nothing tells the teacher it failed — no banner, no field error,
-    // no server message; the button just becomes clickable again.
-    await expect(page.locator('.banner.danger, .field-error, .req-error')).toHaveCount(0);
-    await expect(page.getByText(/يجب أن يبقى 20/)).toHaveCount(0);
+    // FIXED (was F1 silent): the teacher is told — banner plus the refused
+    // cell flagged; the button is usable again and nothing typed is lost.
+    await expect(page.getByTestId('scores-banner')).toBeVisible();
+    await expect(row.locator('.field-error')).toHaveCount(1);
     await expect(saveBtn).toBeEnabled();
+    await expect(module1).toHaveValue('15');
 
     // and the bad value was NOT saved
     await page.reload();

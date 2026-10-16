@@ -534,6 +534,8 @@
     "save_attendance": "Enregistrer la présence",
     "scores": "Notes",
     "save_scores": "Enregistrer les notes",
+    "save_failed": "Enregistrement impossible — vérifiez les champs surlignés",
+    "over_max": "Dépasse la limite ({{max}})",
     "separate_note": "Sarraj : total séparé /20, hors total hebdomadaire",
     "memorized_label": "Mémorisé cette séance (thumn)",
     "review_only_notice": "Enseignant révision : notes hebdomadaires désactivées ici",

@@ -534,6 +534,8 @@
     "save_attendance": "Save attendance",
     "scores": "Scores",
     "save_scores": "Save scores",
+    "save_failed": "Could not save scores — check the highlighted fields",
+    "over_max": "Over the limit ({{max}})",
     "separate_note": "Sarraj is a separate /20 total, outside the weekly total",
     "memorized_label": "Memorized this session (thumn)",
     "review_only_notice": "Review teacher: weekly scores disabled here",

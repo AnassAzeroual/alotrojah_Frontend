@@ -7,6 +7,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ScoringModule, SessionScore, Student } from '../../../core/api/api-models';
@@ -51,6 +52,10 @@ export class ScoreSheetComponent {
   readonly saving = signal(false);
   private readonly edits = signal<ReadonlyMap<string, number | null>>(new Map());
   private readonly memEdits = signal<ReadonlyMap<number, number | null>>(new Map());
+  /** Static i18n key for the save-failure banner (row details ride the cells). */
+  readonly saveError = signal<string | null>(null);
+  /** Cells the server refused, as `studentId:moduleCode` (caps come from the module). */
+  readonly badCells = signal<ReadonlySet<string>>(new Set());
 
   /** Weekly-scope modules only; murajaa module lives in review cycles. Inactive = grayed. */
   readonly sheetModules = computed(() => this.modules().filter((m) => m.scope === 'weekly'));
@@ -124,6 +129,15 @@ export class ScoreSheetComponent {
       else next.set(key, value);
       return next;
     });
+    // A fresh edit supersedes the last refusal for that cell (and the banner).
+    if (this.badCells().has(key) || this.saveError() !== null) {
+      this.badCells.update((s) => {
+        const next = new Set(s);
+        next.delete(key);
+        return next;
+      });
+      if (this.badCells().size === 0) this.saveError.set(null);
+    }
   }
 
   /** §B: explicit memorized amount (null = blank → remove the session log). */
@@ -133,6 +147,27 @@ export class ScoreSheetComponent {
       next.set(studentId, value);
       return next;
     });
+    if (this.saveError() !== null && this.badCells().size === 0) this.saveError.set(null);
+  }
+
+  /** Server row-indexed `records.N.<field>` errors → `studentId:moduleCode` cells. */
+  private badCellsFrom(
+    err: unknown,
+    sent: { student_id: number; module_code: string }[],
+  ): Set<string> {
+    const out = new Set<string>();
+    const bag =
+      err instanceof HttpErrorResponse
+        ? ((err.error as { errors?: unknown } | null)?.errors ?? null)
+        : null;
+    if (!bag || typeof bag !== 'object') return out;
+    for (const key of Object.keys(bag)) {
+      const m = /^records\.(\d+)\.(score|module_code|student_id)$/.exec(key);
+      if (!m) continue;
+      const row = sent[Number(m[1])];
+      if (row) out.add(`${row.student_id}:${row.module_code}`);
+    }
+    return out;
   }
 
   save(): void {
@@ -152,6 +187,8 @@ export class ScoreSheetComponent {
       : [];
     if (records.length === 0 && memorize.length === 0) return;
     this.saving.set(true);
+    this.saveError.set(null);
+    this.badCells.set(new Set());
     this.entry.scoresBulk(sid, records, memorize).subscribe({
       next: () => {
         this.edits.set(new Map());
@@ -159,7 +196,12 @@ export class ScoreSheetComponent {
         this.saving.set(false);
         this.saved.emit();
       },
-      error: () => this.saving.set(false),
+      // Edits are kept so nothing typed is lost; the refusal is shown instead.
+      error: (err: unknown) => {
+        this.saving.set(false);
+        this.saveError.set('entry.save_failed');
+        this.badCells.set(this.badCellsFrom(err, records));
+      },
     });
   }
 }

@@ -1,10 +1,11 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   provideTranslateLoader,
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ScoringModule, Student } from '../../../core/api/api-models';
 import { EntryService } from '../../../core/api/entry.service';
 import { ScoreSheetComponent } from './score-sheet.component';
@@ -82,15 +83,19 @@ describe('ScoreSheetComponent', () => {
   let cmp: ScoreSheetComponent;
   let el: HTMLElement;
   const posted: unknown[] = [];
+  let failNext: unknown = null;
   const entryMock = {
     scoresBulk: (sid: number, records: unknown[], memorizations?: unknown[]) => {
       posted.push({ sid, records, ...(memorizations ? { memorizations } : {}) });
-      return of({ weekly_totals: {}, memorizations_saved: 1 });
+      return failNext !== null
+        ? throwError(() => failNext)
+        : of({ weekly_totals: {}, memorizations_saved: 1 });
     },
   };
 
   beforeEach(async () => {
     posted.length = 0;
+    failNext = null;
     await TestBed.configureTestingModule({
       imports: [ScoreSheetComponent],
       providers: [
@@ -206,5 +211,49 @@ describe('ScoreSheetComponent', () => {
     expect(el.querySelector<HTMLButtonElement>('button.save')?.disabled).toBe(false);
     cmp.save();
     expect(posted.length).toBe(1);
+  });
+
+  it('shows the banner and the refused cells on a 422, keeping the edits', () => {
+    // Live case 2026-10-17: two over-cap rows, indexes into the SENT records.
+    cmp.setScore(1, 'mowathaba', 5);
+    cmp.setScore(2, 'tajwid', 3);
+    failNext = new HttpErrorResponse({
+      status: 422,
+      error: {
+        message: 'Must be between 0 and 4.00. (and 1 more error)',
+        errors: {
+          'records.0.score': ['Must be between 0 and 4.00.'],
+          'records.1.score': ['Must be between 0 and 2.00.'],
+        },
+      },
+    });
+    let emitted = 0;
+    cmp.saved.subscribe(() => emitted++);
+    cmp.save();
+    fixture.detectChanges();
+
+    expect(emitted).toBe(0);
+    expect(cmp.saving()).toBe(false);
+    // Banner (static key — the server message is English-only dynamics).
+    expect(el.querySelector('[data-testid="scores-banner"]')).not.toBeNull();
+    // Both refused cells flagged with the cap from their own module.
+    expect(cmp.badCells().has('1:mowathaba')).toBe(true);
+    expect(cmp.badCells().has('2:tajwid')).toBe(true);
+    const flagged = [...el.querySelectorAll('.field-error')].map((n) => n.textContent);
+    expect(flagged.length).toBe(2);
+    expect(flagged[0]).toContain('entry.over_max');
+    // Nothing typed was lost.
+    expect(cmp.rows().find((r) => r.student.id === 1)?.cells[1].current).toBe(5);
+    expect(el.querySelector<HTMLButtonElement>('button.save')?.disabled).toBe(false);
+
+    // Fixing a cell clears its flag; clearing the last one drops the banner.
+    cmp.setScore(1, 'mowathaba', 4);
+    fixture.detectChanges();
+    expect(cmp.badCells().has('1:mowathaba')).toBe(false);
+    expect(el.querySelector('[data-testid="scores-banner"]')).not.toBeNull();
+    cmp.setScore(2, 'tajwid', 2);
+    fixture.detectChanges();
+    expect(el.querySelector('[data-testid="scores-banner"]')).toBeNull();
+    expect(el.querySelector('.field-error')).toBeNull();
   });
 });

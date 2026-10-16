@@ -5,6 +5,11 @@
     @if (disabledAll()) {
       <p class="notice">{{ 'entry.review_only_notice' | translate }}</p>
     }
+    @if (saveError()) {
+      <p class="banner danger" role="alert" data-testid="scores-banner">
+        {{ saveError()! | translate }}
+      </p>
+    }
 
     @for (row of rows(); track row.student.id) {
       <div class="line anim-rise" [style.--i]="$index + 4">
@@ -32,6 +37,11 @@
                 [value]="cell.current"
                 (valueChange)="setScore(row.student.id, cell.module.code, $event)"
               />
+              @if (badCells().has(row.student.id + ':' + cell.module.code)) {
+                <p class="field-error" [attr.data-testid]="'score-error-' + row.student.id">
+                  {{ 'entry.over_max' | translate: { max: cell.module.max_points } }}
+                </p>
+              }
             </div>
           }
         </div>
