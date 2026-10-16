@@ -92,10 +92,6 @@ describe('EntryTableComponent', () => {
       calls.push({ method: 'upsertGoal', args });
       return fail.goal ? throwError(() => fail.goal) : of({ id: 3 });
     },
-    deleteAttendance: (...args: unknown[]) => {
-      calls.push({ method: 'deleteAttendance', args });
-      return of(null);
-    },
     goals: () => of({ data: [] }),
   };
 
@@ -135,20 +131,25 @@ describe('EntryTableComponent', () => {
     expect(cmp.totalFor(STUDENTS[0])).toBe(16);
   });
 
-  it('saves only the touched row and only its dirty parts', () => {
+  it('saves every dirty row in one click and highlights unsaved rows yellow', () => {
     let emitted = 0;
     cmp.saved.subscribe(() => emitted++);
     cmp.setStatus(1, 'late');
     cmp.setScore(1, 'hifz', 13);
     cmp.editGoal(1, { target: 'goal t' });
-    cmp.saveRow(1);
+    fixture.detectChanges();
+    expect(el.querySelectorAll('.erow.line.dirty').length).toBe(1);
+
+    cmp.saveAll();
     expect(calls.map((c) => c.method)).toEqual(['attendanceBulk', 'scoresBulk', 'upsertGoal']);
     expect(calls[0].args[1]).toEqual([{ student_id: 1, status: 'late' }]);
     expect(emitted).toBe(1);
-    expect(cmp.rowDirty(1)).toBe(false);
+    expect(cmp.rowTouched(1)).toBe(false);
+    fixture.detectChanges();
+    expect(el.querySelector('.erow.line.dirty')).toBeNull();
 
-    // The untouched pupil sends nothing.
-    cmp.saveRow(2);
+    // Nothing dirty: a second save sends nothing.
+    cmp.saveAll();
     expect(calls.length).toBe(3);
   });
 
@@ -157,7 +158,7 @@ describe('EntryTableComponent', () => {
     fail.scores = cap422({ 'records.0.score': ['Must be between 0 and 4.'] });
     let emitted = 0;
     cmp.saved.subscribe(() => emitted++);
-    cmp.saveRow(1);
+    cmp.saveAll();
     fixture.detectChanges();
 
     expect(emitted).toBe(0);
@@ -173,7 +174,7 @@ describe('EntryTableComponent', () => {
   it('flags the row banner when attendance or goal refuse', () => {
     cmp.setStatus(1, 'late');
     fail.att = cap422({ 'records.0.status': ['Invalid status.'] });
-    cmp.saveRow(1);
+    cmp.saveAll();
     fixture.detectChanges();
     expect(el.querySelector('[data-testid="row-banner"]')).not.toBeNull();
     // The refused attendance edit is kept for correction.
@@ -182,7 +183,7 @@ describe('EntryTableComponent', () => {
     cmp.editGoal(1, { target: 'x' });
     fail.goal = cap422({ target_text: ['Too long.'] });
     delete fail.att;
-    cmp.saveRow(1);
+    cmp.saveAll();
     fixture.detectChanges();
     expect(el.querySelector('[data-testid="row-banner"]')).not.toBeNull();
   });
@@ -192,17 +193,31 @@ describe('EntryTableComponent', () => {
     fixture.detectChanges();
     cmp.setStatus(1, 'late');
     cmp.editGoal(1, { target: 'g' });
-    cmp.saveRow(1);
+    cmp.saveAll();
     expect(calls.map((c) => c.method)).toEqual(['attendanceBulk', 'upsertGoal']);
   });
 
-  it('always sends the memorized amount on memorization sessions', () => {
+  it('sends nothing on a memorization session until a row is touched', () => {
     fixture.componentRef.setInput('showMemorization', true);
     fixture.componentRef.setInput('defaultMemorization', () => 1.25);
     fixture.detectChanges();
-    cmp.saveRow(1);
+    // Prefill alone marks nothing yellow and sends nothing.
+    expect(el.querySelector('.erow.line.dirty')).toBeNull();
+    cmp.saveAll();
+    expect(calls.length).toBe(0);
+  });
+
+  it('carries every listed memorized amount once the scores part fires', () => {
+    fixture.componentRef.setInput('showMemorization', true);
+    fixture.componentRef.setInput('defaultMemorization', () => 1.25);
+    fixture.detectChanges();
+    cmp.setMemorized(1, 1.5);
+    cmp.saveAll();
     const scores = calls.find((c) => c.method === 'scoresBulk');
-    expect(scores?.args[2]).toEqual([{ student_id: 1, thumn_amount: 1.25 }]);
+    expect(scores?.args[2]).toEqual([
+      { student_id: 1, thumn_amount: 1.5 },
+      { student_id: 2, thumn_amount: 1.25 },
+    ]);
   });
 
   it('drops goal drafts when the week changes', () => {
@@ -213,15 +228,22 @@ describe('EntryTableComponent', () => {
     expect(cmp.goalTarget(1)).toBe('');
   });
 
-  it('deletes the attendance record when the row has one', () => {
-    fixture.componentRef.setInput('attendanceRows', [
-      { id: 44, student_id: 1, session_id: 9, week_id: 7, status: 'late', notes: null },
-    ]);
+  it('flags over-cap scores instantly via validators without saving', () => {
+    expect(cmp.form.valid).toBe(true);
+    cmp.setScore(1, 'mowathaba', 5);
     fixture.detectChanges();
-    let emitted = 0;
-    cmp.saved.subscribe(() => emitted++);
-    cmp.clearAttendance(1);
-    expect(calls.map((c) => c.method)).toEqual(['deleteAttendance']);
-    expect(emitted).toBe(1);
+    expect(cmp.scoreCtrl(1, 'mowathaba').invalid).toBe(true);
+    expect(cmp.form.invalid).toBe(true);
+    expect(cmp.showScoreError(1, 'mowathaba')).toBe(true);
+    expect(el.querySelectorAll('.field-error').length).toBe(1);
+  });
+
+  it('validates the memorized amount and the goal length', () => {
+    cmp.setMemorized(1, -2);
+    expect(cmp.memCtrl(1).invalid).toBe(true);
+    cmp.setMemorized(1, 1.5);
+    expect(cmp.memCtrl(1).valid).toBe(true);
+    cmp.editGoal(1, { target: 'x'.repeat(301) });
+    expect(cmp.goalTargetCtrl(1).invalid).toBe(true);
   });
 });

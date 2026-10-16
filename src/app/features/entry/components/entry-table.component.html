@@ -18,13 +18,10 @@
         }
         <span class="ecell num" role="columnheader">/ 20</span>
         <span class="ecell goal" role="columnheader">{{ 'entry.goal' | translate }}</span>
-        <span class="ecell saver" role="columnheader">
-          <span class="sr-only">{{ 'common.save' | translate }}</span>
-        </span>
       </div>
 
       @for (st of students(); track st.id) {
-        <div class="erow line" role="row">
+        <div class="erow line" role="row" [class.dirty]="rowTouched(st.id)">
           <span class="ecell pupil" role="cell">
             <span class="avatar-sm" aria-hidden="true">{{ st.full_name.slice(0, 1) }}</span>
             <strong>{{ st.full_name }}</strong>
@@ -33,43 +30,28 @@
           <span class="ecell" role="cell">
             <app-dropdown
               [options]="attOptions"
-              [value]="attStatus(st.id)"
+              [value]="attCtrl(st.id).value"
               (valueChange)="setStatus(st.id, $any($event))"
               ariaLabelKey="entry.attendance"
             />
-            @if (attRecordId(st.id) !== null) {
-              <button
-                type="button"
-                class="btn btn-danger-ghost btn-sm"
-                [attr.data-testid]="'clear-attendance-' + st.id"
-                [attr.aria-label]="'common.delete' | translate"
-                (click)="clearAttendance(st.id)"
-              >
-                {{ 'common.delete' | translate }}
-              </button>
-            }
           </span>
 
-          @for (cell of cellsFor(st); track cell.module.code) {
+          @for (m of sheetModules(); track m.code) {
             <span
               class="ecell"
               role="cell"
-              [class.off]="!cell.module.is_active"
-              [class.separate]="!cell.module.is_in_weekly_total"
+              [class.off]="!m.is_active"
+              [class.separate]="!m.is_in_weekly_total"
             >
               <app-score-input
-                [max]="cell.module.max_points"
-                [disabled]="disabledAll() || !cell.module.is_active"
-                [value]="cell.current"
-                (valueChange)="setScore(st.id, cell.module.code, $event)"
+                [max]="m.max_points"
+                [disabled]="disabledAll() || !m.is_active"
+                [value]="scoreCtrl(st.id, m.code).value"
+                (valueChange)="setScore(st.id, m.code, $event)"
               />
-              @if (
-                badCells()
-                  .get(st.id)
-                  ?.has(st.id + ':' + cell.module.code)
-              ) {
+              @if (showScoreError(st.id, m.code)) {
                 <p class="field-error" [attr.data-testid]="'score-error-' + st.id">
-                  {{ 'entry.over_max' | translate: { max: cell.module.max_points } }}
+                  {{ 'entry.over_max' | translate: { max: m.max_points } }}
                 </p>
               }
             </span>
@@ -82,12 +64,17 @@
                 min="0"
                 step="0.01"
                 class="input mem"
-                [value]="memorizedFor(st.id) ?? ''"
-                [disabled]="disabledAll()"
+                [formControl]="memCtrl(st.id)"
+                [attr.disabled]="disabledAll() ? '' : null"
                 [attr.data-testid]="'memorized-' + st.id"
                 [attr.aria-label]="'entry.memorized_label' | translate"
-                (change)="onMemorizeChange(st.id, $event)"
+                (input)="onFieldEdit(st.id)"
               />
+              @if (memCtrl(st.id).invalid && memCtrl(st.id).dirty) {
+                <p class="field-error">
+                  {{ 'entry.over_max' | translate: { max: 99.99 } }}
+                </p>
+              }
             </span>
           }
 
@@ -101,34 +88,19 @@
             <input
               type="text"
               class="input"
-              [value]="goalTarget(st.id)"
+              [formControl]="goalTargetCtrl(st.id)"
               [placeholder]="'entry.target_hint' | translate"
               [attr.aria-label]="'entry.goal' | translate"
-              (input)="editGoal(st.id, { target: trackInput($event) })"
+              (input)="onFieldEdit(st.id)"
             />
             <label class="chk">
               <input
                 type="checkbox"
-                [checked]="goalDone(st.id)"
-                (change)="editGoal(st.id, { done: trackCheck($event) })"
+                [formControl]="goalDoneCtrl(st.id)"
+                (change)="onFieldEdit(st.id)"
               />
               {{ 'entry.done' | translate }}
             </label>
-          </span>
-
-          <span class="ecell saver" role="cell">
-            <button
-              type="button"
-              class="btn btn-primary btn-sm"
-              [disabled]="!rowDirty(st.id) || rowSaving().has(st.id)"
-              (click)="saveRow(st.id)"
-            >
-              @if (rowSaving().has(st.id)) {
-                <app-spinner />
-              } @else {
-                {{ 'common.save' | translate }}
-              }
-            </button>
           </span>
         </div>
         @if (rowError().get(st.id)) {
@@ -143,5 +115,18 @@
       }
     </div>
   </div>
+  <button
+    type="button"
+    class="btn btn-primary btn-block save-all"
+    [class.is-loading]="savingAll()"
+    [disabled]="!anyDirty() || savingAll()"
+    (click)="saveAll()"
+  >
+    @if (savingAll()) {
+      <app-spinner />
+    } @else {
+      {{ 'common.save' | translate }}
+    }
+  </button>
   <p class="muted small">{{ 'entry.separate_note' | translate }}</p>
 </section>

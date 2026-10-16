@@ -33,7 +33,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     const savedLate = page.waitForResponse(
       (r) => r.url().includes('attendance') && r.request().method() !== 'GET',
     );
-    await row.getByRole('button', { name: 'حفظ', exact: true }).click();
+    await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await savedLate;
 
     // persists after reload
@@ -51,7 +51,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     const savedBack = page.waitForResponse(
       (r) => r.url().includes('attendance') && r.request().method() !== 'GET',
     );
-    await row2.getByRole('button', { name: 'حفظ', exact: true }).click();
+    await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await savedBack;
     await page.reload();
     await pickSession1(page);
@@ -75,7 +75,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     const saved = page.waitForResponse(
       (r) => r.url().includes('goal') && r.request().method() !== 'GET',
     );
-    await row.getByRole('button', { name: 'حفظ', exact: true }).click();
+    await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await saved;
 
     await page.reload();
@@ -90,7 +90,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     const restored = page.waitForResponse(
       (r) => r.url().includes('goal') && r.request().method() !== 'GET',
     );
-    await row2.getByRole('button', { name: 'حفظ', exact: true }).click();
+    await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await restored;
     await page.reload();
     await pickSession1(page);
@@ -116,7 +116,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     await module1.fill('15');
     await expect(total).toHaveText(/20/);
 
-    const saveBtn = row.getByRole('button', { name: 'حفظ', exact: true });
+    const saveBtn = page.getByRole('button', { name: 'حفظ', exact: true });
     const resp = page.waitForResponse(
       (r) => r.url().includes('score') && r.request().method() !== 'GET',
     );
