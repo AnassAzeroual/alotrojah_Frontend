@@ -165,14 +165,14 @@ export class EntryPage {
       params.w === null
         ? Promise.resolve([])
         : firstValueFrom(
-          this.calendarSvc
-            .sessions(
-              params.g === null
-                ? { week_id: params.w }
-                : { week_id: params.w, group_id: params.g },
-            )
-            .pipe(map((p) => p.data)),
-        ),
+            this.calendarSvc
+              .sessions(
+                params.g === null
+                  ? { week_id: params.w }
+                  : { week_id: params.w, group_id: params.g },
+              )
+              .pipe(map((p) => p.data)),
+          ),
   });
 
   readonly existing = resource({
