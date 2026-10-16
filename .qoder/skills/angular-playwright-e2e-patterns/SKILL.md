@@ -100,7 +100,7 @@ await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/); // login POST ra
 
 The suite's job is detecting cuts in the workflow (`roadmap-qa.html`, **35 steps**; the suite covers S1–S35 — S35's dirty-guard flow is covered by `unsaved-flow.e2e.ts`). Seven cuts are confirmed and their specs **assert the actual broken behavior on purpose** — when the app gets fixed, that spec flips red and must be updated. Do not "fix" these specs while the app is unfixed:
 
-- **F1 (S18)** score-sheet over-cap save: the 422 error handler only resets the saving flag — zero user feedback. Assert the row stays and no error banner appears.
+- **F1 (S18)** score-sheet over-cap save — FIXED 2026-10-17 (was: the 422 handler only reset the saving flag, zero feedback). Now: a per-row `row-banner` alert + per-cell `.field-error` (`entry.over_max`, cap from the module) flag the refused cells, edits are kept, and fixing a cell clears its flag (last one clears the banner). The spec asserts banner + cell errors + button enabled + typed values kept + bad value absent after reload.
 - **F2 (S21)** reviews cycle delete is NOT `canManage()`-gated — murajaa/hifz teachers see the delete button (roadmap says admin/supervisor only). Assert the button IS visible to the teacher (scope the assertion to the seed row).
 - **F3 (S20)** reviews 4-week span: `span > 3` returns silently and the submit's `[disabled]` doesn't catch it (no validator) — a complete form dead-clicks. Note: a successful save runs `form.reset()`, so re-pick the term before a second attempt.
 - **F4 (S23)** exam `addQuestion` over-max: client-side silent return — the queue button looks dead. Draft rows are `ul.draft-list > li` (not `.line`).

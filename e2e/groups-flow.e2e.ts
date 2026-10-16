@@ -93,9 +93,6 @@ test('admin creates a group and finds it in the overview', async ({ page, reques
   await expect(page.getByRole('option', { name: center2[0] })).toHaveCount(0);
   await page.getByRole('option', { name: center1[0] }).click();
 
-  await page.getByTestId('group-level').click();
-  await page.getByRole('option', { name: /المستوى الأول/ }).click();
-
   await page.getByTestId('group-capacity').fill('15');
   await page.getByTestId('day-Fri').click();
 

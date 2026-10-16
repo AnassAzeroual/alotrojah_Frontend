@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   effect,
@@ -11,8 +12,7 @@ import {
 } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import flatpickr from 'flatpickr';
-import { Arabic } from 'flatpickr/dist/l10n/ar';
-import { French } from 'flatpickr/dist/l10n/fr';
+import { flatpickrLocale } from '../../shared/ui/date-picker/flatpickr-locale';
 import { LanguageService } from '../../core/i18n/language.service';
 import { dateToClockTime, dateToISODate, clampClock, MAX_CLOCK } from './seasons-calendar.helpers';
 
@@ -127,7 +127,7 @@ function displayLeg(d: Date): string {
     </div>
   `,
 })
-export class SessionRangePickerComponent implements OnDestroy {
+export class SessionRangePickerComponent implements AfterViewInit, OnDestroy {
   readonly value = model<DateTimeRange | null>(null);
   readonly startPlaceholder = input('dd/mm/yyyy HH:mm');
   readonly endPlaceholder = input('dd/mm/yyyy HH:mm');
@@ -180,7 +180,7 @@ export class SessionRangePickerComponent implements OnDestroy {
     this.fpEnd?.destroy();
     const lang = this.language.current();
     const locale = {
-      ...(lang === 'ar' ? Arabic : lang === 'fr' ? French : {}),
+      ...flatpickrLocale(lang),
     };
     const leg = (input: HTMLInputElement, onPick: (d: Date) => void): flatpickr.Instance =>
       flatpickr(input, {

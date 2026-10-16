@@ -171,8 +171,6 @@ test.describe.serial('Users management', () => {
     await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
     await page.getByTestId('group-teacher').click();
     await page.getByRole('option', { name: oldName }).click();
-    await page.getByTestId('group-level').click();
-    await page.getByRole('option', { name: /المستوى الأول/ }).click();
     await page.getByTestId('group-capacity').fill('15');
     await page.getByTestId('day-Fri').click();
     await page.getByTestId('group-save').click();
@@ -184,10 +182,16 @@ test.describe.serial('Users management', () => {
     const searchBox3 = page.getByTestId('users-search');
     await searchBox3.fill(oldName);
     await searchBox3.press('Enter');
+    // deleting the old teacher is blocked → replacer dialog (exact testids:
+    // row-scoped regex clicks can land on stale re-rendered rows)
     const oldRow = page.locator('.users-table tbody tr', { hasText: oldName });
     await expect(oldRow).toHaveCount(1);
-    await oldRow.locator('button[data-testid^="delete-user-"]').click();
-    await oldRow.locator('button[data-testid^="confirm-delete-user-"]').click();
+    const armTestId =
+      (await oldRow.locator('button[data-testid^="delete-user-"]').getAttribute('data-testid')) ??
+      '';
+    const oldId = armTestId.replace('delete-user-', '');
+    await page.getByTestId(`delete-user-${oldId}`).click();
+    await page.getByTestId(`confirm-delete-user-${oldId}`).click();
     const dialog = page.getByTestId('replace-dialog');
     await expect(dialog).toBeVisible();
     await page.getByTestId('choose-replacer').click();

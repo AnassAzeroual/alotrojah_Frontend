@@ -26,7 +26,7 @@
     "planning": "Seasons",
     "calendar": "Calendar",
     "scoring": "Scoring",
-    "exams": "Exams",
+    "exams": "Start exam",
     "reviews": "Review",
     "results": "Results",
     "reports": "Reports",
@@ -109,6 +109,7 @@
     "SEASON_HAS_FACTS": "Cannot delete — the season holds recorded facts",
     "MODULE_HAS_SCORES": "Cannot delete — the module has recorded scores",
     "LEVEL_IN_USE": "Cannot delete — the level is used by sections or pupils",
+    "LEVEL_EXISTS": "This level already exists with identical values",
     "TERM_REQUIRED": "This exam type requires a term",
     "SPAN_INVALID": "Review must cover 1 to 3 weeks",
     "RANGE_INVALID": "Invalid range",
@@ -139,7 +140,8 @@
   },
   "gender": {
     "male": "Male",
-    "female": "Female"
+    "female": "Female",
+    "unknown": "Unknown"
   },
   "registrations": {
     "title": "Registration requests",
@@ -184,7 +186,8 @@
   "examType": {
     "hizb_completion": "Hizb completion",
     "term_batch": "Term exam",
-    "final_season": "Final exam"
+    "final_season": "Final exam",
+    "weekly": "Weekly"
   },
   "scopeType": {
     "weekly": "Weekly",
@@ -204,7 +207,9 @@
     "final": "Final score"
   },
   "studentDetail": {
-    "assign_group": "Assign section"
+    "assign_group": "Assign section",
+    "account": "Account",
+    "pick_account": "Choose an account"
   },
   "list": {
     "search": "Search by name",
@@ -242,7 +247,6 @@
     "table_title": "All sections",
     "col_name": "Section",
     "col_teacher": "Teacher",
-    "col_level": "Level",
     "col_students": "Students",
     "col_capacity": "Capacity",
     "col_fill": "Filled",
@@ -304,7 +308,23 @@
     "prompt": "Prompt",
     "weight": "Weight",
     "weights": "Weights total: {{total}} / 20",
-    "reweight": "Rebalance weights"
+    "reweight": "Rebalance weights",
+    "need_student": "Choose a student above to save the exam",
+    "need_term": "Choose a term to save the exam",
+    "weekly_title": "Weekly exam"
+  },
+  "weeklyExam": {
+    "group": "Section",
+    "portion": "Memorized portion",
+    "hizb": "Hizb",
+    "thumn": "Thumn",
+    "surah": "Surah",
+    "ayah_from": "From ayah",
+    "ayah_to": "To ayah",
+    "total": "Total",
+    "need_group": "Choose a section first to see the pupils",
+    "need_portion": "Complete every pupil's memorized portion before saving",
+    "saved": "Saved exams for {{count}} pupils"
   },
   "review": {
     "title": "Review",
@@ -403,15 +423,21 @@
     "phone": "Phone",
     "manager": "Manager"
   },
+  "unit": {
+    "hizb_one": "hizb",
+    "hizb_two": "hizbs",
+    "hizb_few": "hizbs",
+    "hizb_other": "hizbs"
+  },
   "level": {
     "title": "Levels",
     "code": "Code",
     "name": "Name",
     "sessions": "Sessions/week",
     "thumnSession": "Thumn/session",
-    "thumnSessionLabel": "Session amount label",
+    "thumnSessionLabel": "Amount to memorize (Thumns)",
     "thumnWeek": "Thumn/week",
-    "ahzabTerm": "Ahzab/term",
+    "ahzabTerm": "My goal this term (Ahzab)",
     "ahzabDawra": "Ahzab/cycle",
     "duration": "Duration",
     "totalAhzab": "Total ahzab",
@@ -420,7 +446,9 @@
     "inherited_tag": "Default",
     "override_tag": "Override",
     "reset": "Reset to defaults",
-    "reset_confirm": "Confirm reset"
+    "reset_confirm": "Confirm reset",
+    "new": "New level",
+    "range": "The amount must be between 1 and 480 (in thumns)"
   },
   "sessionStatus": {
     "planned": "Planned",
@@ -436,7 +464,6 @@
     "start_date": "Start date",
     "end_date": "End date",
     "hijri": "Hijri year",
-    "sessions_per_week": "Sessions per week",
     "review_weeks": "Review weeks",
     "terms": "Terms",
     "create": "Create season",
@@ -507,6 +534,8 @@
     "save_attendance": "Save attendance",
     "scores": "Scores",
     "save_scores": "Save scores",
+    "save_failed": "Could not save scores — check the highlighted fields",
+    "over_max": "Over the limit ({{max}})",
     "separate_note": "Sarraj is a separate /20 total, outside the weekly total",
     "memorized_label": "Memorized this session (thumn)",
     "review_only_notice": "Review teacher: weekly scores disabled here",

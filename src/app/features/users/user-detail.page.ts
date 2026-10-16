@@ -8,6 +8,7 @@ import {
   signal,
   effect,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -165,7 +166,7 @@ export class UserDetailPage {
       }
     });
 
-    this.form.controls.role.valueChanges.subscribe((r) => {
+    this.form.controls.role.valueChanges.pipe(takeUntilDestroyed()).subscribe((r) => {
       this.isTeacher.set(r === 'teacher');
       const tt = this.form.controls.teacher_type;
       if (r === 'teacher') {

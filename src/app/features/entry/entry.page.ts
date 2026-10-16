@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   resource,
   signal,
@@ -23,21 +24,12 @@ import {
   dropdownText,
 } from '../../shared/ui/dropdown/dropdown.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
-import { AttendanceGridComponent } from './components/attendance-grid.component';
-import { GoalListComponent } from './components/goal-list.component';
-import { ScoreSheetComponent } from './components/score-sheet.component';
+import { EntryTableComponent } from './components/entry-table.component';
 
 @Component({
   selector: 'app-entry-page',
   standalone: true,
-  imports: [
-    TranslatePipe,
-    DropdownComponent,
-    EmptyStateComponent,
-    AttendanceGridComponent,
-    ScoreSheetComponent,
-    GoalListComponent,
-  ],
+  imports: [TranslatePipe, DropdownComponent, EmptyStateComponent, EntryTableComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './entry.page.html',
   styleUrl: './entry.page.scss',
@@ -54,8 +46,22 @@ export class EntryPage {
 
   readonly groups = toSignal(this.groupsSvc.list().pipe(map((p) => p.data)), { initialValue: [] });
   readonly modules = toSignal(this.entry.modules(), { initialValue: [] });
-  readonly weeks = toSignal(this.calendarSvc.weeks().pipe(map((p) => p.data)), {
-    initialValue: [],
+  /**
+   * Center-scoped weeks: the picked group's center fixes the working season
+   * (that center's current-season lane). Unpicked → unfiltered, so the boot
+   * request and every other caller keep the old shape.
+   */
+  readonly weeks = resource({
+    params: () => ({ g: this.selectedGroup() }),
+    loader: ({ params }) => {
+      const centerId =
+        params.g === null ? undefined : this.groups().find((g) => g.id === params.g)?.center_id;
+      return firstValueFrom(
+        this.calendarSvc
+          .weeks(centerId === undefined ? undefined : { center_id: centerId })
+          .pipe(map((p) => p.data)),
+      );
+    },
   });
   readonly levels = toSignal(this.levelsSvc.list(), { initialValue: [] });
 
@@ -66,6 +72,55 @@ export class EntryPage {
   readonly selectedWeek = signal<number | null>(null);
   readonly selectedSession = signal<number | null>(null);
   readonly savedTick = signal(0);
+
+  /** Manual picks stick: auto-pick only fires for untouched controls. */
+  private readonly touched = { group: false, week: false, session: false };
+
+  private static todayLocal(): string {
+    const d = new Date();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${m}-${day}`;
+  }
+
+  constructor() {
+    // Smart defaults (user-requested 2026-10-17): a teacher with a single
+    // group gets it preselected; the week holding today is preselected;
+    // today's session of that group (if any) is preselected. Everything
+    // remains overridable — manual picks are never clobbered.
+    effect(() => {
+      if (!this.touched.group && this.selectedGroup() === null && this.groups().length === 1) {
+        this.selectedGroup.set(this.groups()[0].id);
+      }
+      if (
+        !this.touched.week &&
+        this.selectedWeek() === null &&
+        (this.weeks.value() ?? []).length > 0
+      ) {
+        const today = EntryPage.todayLocal();
+        const current = (this.weeks.value() ?? []).find(
+          (w) =>
+            w.start_date !== null &&
+            w.end_date !== null &&
+            w.start_date <= today &&
+            today <= w.end_date,
+        );
+        if (current) this.selectedWeek.set(current.id);
+      }
+      if (
+        !this.touched.session &&
+        this.selectedSession() === null &&
+        this.selectedGroup() !== null &&
+        (this.sessions.value() ?? []).length > 0
+      ) {
+        const today = EntryPage.todayLocal();
+        const todays = (this.sessions.value() ?? []).find(
+          (s) => s.group_id === this.selectedGroup() && s.planned_date === today,
+        );
+        if (todays) this.selectedSession.set(todays.id);
+      }
+    });
+  }
 
   readonly isMurajaa = computed(() => this.auth.currentUser()?.teacher_type === 'murajaa');
 
@@ -80,9 +135,12 @@ export class EntryPage {
   ]);
   readonly weekOptions = computed<DropdownOption[]>(() => [
     { value: '', label: this.dash() },
-    ...this.weeks().map((w) => ({
+    ...(this.weeks.value() ?? []).map((w) => ({
       value: String(w.id),
-      label: `${this.i18n.instant('common.week')} ${w.week_number_global}`,
+      label:
+        `${this.i18n.instant('common.week')} ${w.week_number_global}` +
+        (w.term_name ? ` · ${w.term_name}` : '') +
+        (w.season_name ? ` · (${w.season_name})` : ''),
     })),
   ]);
   readonly sessionOptions = computed<DropdownOption[]>(() => [
@@ -102,11 +160,19 @@ export class EntryPage {
   });
 
   readonly sessions = resource({
-    params: () => ({ w: this.selectedWeek() }),
+    params: () => ({ w: this.selectedWeek(), g: this.selectedGroup() }),
     loader: ({ params }) =>
       params.w === null
         ? Promise.resolve([])
-        : firstValueFrom(this.calendarSvc.sessions({ week_id: params.w }).pipe(map((p) => p.data))),
+        : firstValueFrom(
+            this.calendarSvc
+              .sessions(
+                params.g === null
+                  ? { week_id: params.w }
+                  : { week_id: params.w, group_id: params.g },
+              )
+              .pipe(map((p) => p.data)),
+          ),
   });
 
   readonly existing = resource({
@@ -134,21 +200,30 @@ export class EntryPage {
   );
   readonly showMemorization = computed(() => this.session()?.session_type === 'memorization');
 
-  /** §B: level-expected memorized amount per pupil (memorization sessions only). */
-  defaultMemorization(studentId: number): number | null {
+  /** §B: level-expected memorized amount per pupil (memorization sessions only).
+   * Arrow property, not a method: the template hands the reference itself to
+   * the score sheet, which would unbind `this` on a plain method. */
+  readonly defaultMemorization = (studentId: number): number | null => {
     const st = this.students.value()?.find((s) => s.id === studentId);
     if (!st?.level_id) return null;
     return this.levels().find((l) => l.id === st.level_id)?.thumn_per_session_value ?? null;
-  }
+  };
 
   onGroup(id: number | null): void {
+    this.touched.group = true;
     this.selectedGroup.set(id);
     this.selectedSession.set(null);
   }
 
   onWeek(id: number | null): void {
+    this.touched.week = true;
     this.selectedWeek.set(id);
     this.selectedSession.set(null);
+  }
+
+  onSession(id: number | null): void {
+    this.touched.session = true;
+    this.selectedSession.set(id);
   }
 
   onSaved(): void {

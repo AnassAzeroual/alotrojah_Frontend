@@ -141,4 +141,32 @@ describe('UsersListPage', () => {
     expect(el.querySelector('app-paginator')).toBeTruthy();
     expect(el.querySelector('app-empty-state')).toBeTruthy();
   });
+
+  it('opens the replacer dialog when delete answers NEED_REPLACER', async () => {
+    mountWith(envelope(USERS));
+    await settle();
+
+    el.querySelector<HTMLButtonElement>('[data-testid="delete-user-2"]')!.click();
+    fixture.detectChanges();
+    el.querySelector<HTMLButtonElement>('[data-testid="confirm-delete-user-2"]')!.click();
+
+    const req = http.expectOne((r) => r.url.endsWith('/users/2') && r.method === 'DELETE');
+    req.flush(
+      {
+        success: false,
+        message: 'This teacher owns groups or history — choose a replacer.',
+        errors: {
+          code: 'NEED_REPLACER',
+          teacher: { id: 2, full_name: 'Sara Teacher', teacher_type: 'hifz', center_id: 1 },
+          groups: [{ id: 7, name: 'G1' }],
+        },
+      },
+      { status: 422, statusText: 'Unprocessable Content' },
+    );
+    await settle();
+
+    expect(page.busyId()).toBeNull();
+    expect(page.pendingReplace()?.id).toBe(2);
+    expect(el.querySelector('[data-testid="replace-dialog"]')).toBeTruthy();
+  });
 });

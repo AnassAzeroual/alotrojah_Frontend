@@ -29,7 +29,7 @@
       <app-dropdown
         [options]="sessionOptions()"
         [value]="txt(selectedSession())"
-        (valueChange)="selectedSession.set(num($event))"
+        (valueChange)="onSession(num($event))"
         ariaLabelKey="entry.pick_session"
       />
     </label>
@@ -43,23 +43,18 @@
         <div class="skeleton sk-card"></div>
       </div>
     } @else {
-      <app-attendance-grid
-        [students]="students.value() ?? []"
-        [existing]="attendanceRows()"
-        [sessionId]="selectedSession()"
-        (saved)="onSaved()"
-      />
-      <app-score-sheet
+      <app-entry-table
         [students]="students.value() ?? []"
         [modules]="modules()"
         [scoreRows]="scoreRows()"
+        [attendanceRows]="attendanceRows()"
         [sessionId]="selectedSession()"
+        [weekId]="selectedWeek()"
         [disabledAll]="isMurajaa()"
         [showMemorization]="showMemorization()"
         [defaultMemorization]="defaultMemorization"
         (saved)="onSaved()"
       />
-      <app-goal-list [students]="students.value() ?? []" [weekId]="selectedWeek()" />
     }
   } @else {
     <app-empty-state messageKey="entry.pick_hint" />

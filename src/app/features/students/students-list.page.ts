@@ -13,6 +13,7 @@ import { firstValueFrom, map } from 'rxjs';
 import { GroupsService } from '../../core/api/groups.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import {
   DropdownComponent,
@@ -40,6 +41,10 @@ export class StudentsListPage {
   private readonly ref = inject(ReferenceService);
   private readonly i18n = inject(TranslateService);
   private readonly language = inject(LanguageService);
+  private readonly auth = inject(AuthService);
+
+  /** Pupils never create pupils (mirrors the exams-list gate). */
+  readonly canCreate = computed(() => this.auth.role() !== 'student');
 
   private allOption(key: string): DropdownOption {
     this.language.current();

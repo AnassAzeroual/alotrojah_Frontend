@@ -13,7 +13,7 @@ async function pickSession1(page: import('@playwright/test').Page): Promise<void
   await page.locator('.dd.open [role="option"]').nth(1).click();
 }
 
-test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 silent cap)', () => {
+test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-cap errors)', () => {
   test('S17: attendance toggle persists and restores', async ({ page }) => {
     await loginAs(page, TEACHER, 'password123');
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
@@ -21,43 +21,43 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 silent
     await expect(page).toHaveURL(/\/entry$/);
     await pickSession1(page);
 
-    const row = page.locator('app-attendance-grid .line', { hasText: STUDENT });
+    const row = page.locator('app-entry-table .line', { hasText: STUDENT });
     await expect(row).toHaveCount(1);
 
-    // seed has this session recorded as present — flip to late, save
-    const late = row.getByRole('button', { name: 'متأخر' });
-    await late.click();
-    await expect(late).toHaveClass(/\bon\b/);
+    // seed has this session recorded as present — flip to late, save the row
+    const att = row.locator('.dd-btn');
+    await expect(att).toContainText('حاضر');
+    await att.click();
+    await row.locator('.dd.open [role="option"]', { hasText: 'متأخر' }).click();
+    await expect(att).toContainText('متأخر');
     const savedLate = page.waitForResponse(
       (r) => r.url().includes('attendance') && r.request().method() !== 'GET',
     );
-    await page.getByRole('button', { name: 'حفظ الحضور' }).click();
+    await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await savedLate;
 
     // persists after reload
     await page.reload();
     await pickSession1(page);
     await expect(
-      page
-        .locator('app-attendance-grid .line', { hasText: STUDENT })
-        .getByRole('button', { name: 'متأخر' }),
-    ).toHaveClass(/\bon\b/);
+      page.locator('app-entry-table .line', { hasText: STUDENT }).locator('.dd-btn'),
+    ).toContainText('متأخر');
 
     // restore present (drift-safe)
-    const row2 = page.locator('app-attendance-grid .line', { hasText: STUDENT });
-    await row2.getByRole('button', { name: 'حاضر' }).click();
+    const row2 = page.locator('app-entry-table .line', { hasText: STUDENT });
+    const att2 = row2.locator('.dd-btn');
+    await att2.click();
+    await row2.locator('.dd.open [role="option"]', { hasText: 'حاضر' }).click();
     const savedBack = page.waitForResponse(
       (r) => r.url().includes('attendance') && r.request().method() !== 'GET',
     );
-    await page.getByRole('button', { name: 'حفظ الحضور' }).click();
+    await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await savedBack;
     await page.reload();
     await pickSession1(page);
     await expect(
-      page
-        .locator('app-attendance-grid .line', { hasText: STUDENT })
-        .getByRole('button', { name: 'حاضر' }),
-    ).toHaveClass(/\bon\b/);
+      page.locator('app-entry-table .line', { hasText: STUDENT }).locator('.dd-btn'),
+    ).toContainText('حاضر');
   });
 
   test('S19: weekly goal target persists and restores', async ({ page }) => {
@@ -66,7 +66,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 silent
     await page.goto('/entry');
     await pickSession1(page);
 
-    const row = page.locator('app-goal-list .line', { hasText: STUDENT });
+    const row = page.locator('app-entry-table .line', { hasText: STUDENT });
     const input = row.locator('input[type="text"]');
     const original = await input.inputValue();
     const probe = 'حفظ سورة الملك كاملة للاختبار';
@@ -75,37 +75,39 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 silent
     const saved = page.waitForResponse(
       (r) => r.url().includes('goal') && r.request().method() !== 'GET',
     );
-    await row.getByRole('button', { name: 'حفظ', exact: true }).click();
+    await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await saved;
 
     await page.reload();
     await pickSession1(page);
     await expect(
-      page.locator('app-goal-list .line', { hasText: STUDENT }).locator('input[type="text"]'),
+      page.locator('app-entry-table .line', { hasText: STUDENT }).locator('input[type="text"]'),
     ).toHaveValue(probe);
 
     // restore (original may be empty — that's fine, it round-trips)
-    const row2 = page.locator('app-goal-list .line', { hasText: STUDENT });
+    const row2 = page.locator('app-entry-table .line', { hasText: STUDENT });
     await row2.locator('input[type="text"]').fill(original);
     const restored = page.waitForResponse(
       (r) => r.url().includes('goal') && r.request().method() !== 'GET',
     );
-    await row2.getByRole('button', { name: 'حفظ', exact: true }).click();
+    await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await restored;
     await page.reload();
     await pickSession1(page);
     await expect(
-      page.locator('app-goal-list .line', { hasText: STUDENT }).locator('input[type="text"]'),
+      page.locator('app-entry-table .line', { hasText: STUDENT }).locator('input[type="text"]'),
     ).toHaveValue(original);
   });
 
-  test('S18/F1: over-cap score save fails with zero user feedback', async ({ page }) => {
+  test('S18: over-cap score save surfaces a banner and the refused cell (F1 fixed)', async ({
+    page,
+  }) => {
     await loginAs(page, TEACHER, 'password123');
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await page.goto('/entry');
     await pickSession1(page);
 
-    const row = page.locator('app-score-sheet .line', { hasText: STUDENT });
+    const row = page.locator('app-entry-table .line', { hasText: STUDENT });
     const total = row.locator('strong.total');
     await expect(total).toHaveText(/18\.2/); // seed: 13.2 + 3 + 2
 
@@ -114,24 +116,25 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 silent
     await module1.fill('15');
     await expect(total).toHaveText(/20/);
 
-    const saveBtn = page.getByRole('button', { name: 'حفظ النقاط' });
+    const saveBtn = page.getByRole('button', { name: 'حفظ', exact: true });
     const resp = page.waitForResponse(
       (r) => r.url().includes('score') && r.request().method() !== 'GET',
     );
     await saveBtn.click();
     expect((await resp).status()).toBe(422);
 
-    // F1: nothing tells the teacher it failed — no banner, no field error,
-    // no server message; the button just becomes clickable again.
-    await expect(page.locator('.banner.danger, .field-error, .req-error')).toHaveCount(0);
-    await expect(page.getByText(/يجب أن يبقى 20/)).toHaveCount(0);
+    // FIXED (was F1 silent): the teacher is told — banner plus the refused
+    // cell flagged; the button is usable again and nothing typed is lost.
+    await expect(row.getByTestId('row-banner')).toBeVisible();
+    await expect(row.locator('.field-error')).toHaveCount(1);
     await expect(saveBtn).toBeEnabled();
+    await expect(module1).toHaveValue('15');
 
     // and the bad value was NOT saved
     await page.reload();
     await pickSession1(page);
     await expect(
-      page.locator('app-score-sheet .line', { hasText: STUDENT }).locator('input').first(),
+      page.locator('app-entry-table .line', { hasText: STUDENT }).locator('input').first(),
     ).toHaveValue(/13\.2/);
   });
 });

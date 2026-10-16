@@ -9,7 +9,7 @@ export interface Exam {
   student_name: string | null;
   season_id: number;
   term_id: number | null;
-  exam_type: 'hizb_completion' | 'term_batch' | 'final_season';
+  exam_type: 'hizb_completion' | 'term_batch' | 'weekly' | 'final_season';
   exam_date: string | null;
   examiner_id: number | null;
   overall_avg: number | null;
@@ -90,4 +90,48 @@ export class ExamsService {
   deleteQuestion(id: number): Observable<null> {
     return this.api.delete<null>(`/exam-questions/${id}`);
   }
+
+  /** Weekly sheet bootstrap: season + active weekly modules + group pupils. */
+  weeklyTemplate(groupId: number): Observable<WeeklyTemplate> {
+    return this.api.get<WeeklyTemplate>('/exams/weekly-template', { group_id: groupId });
+  }
+
+  /** Weekly batch save: one official weekly exam per pupil row. */
+  weeklyBatch(payload: {
+    group_id: number;
+    exam_date: string;
+    rows: WeeklyRow[];
+  }): Observable<{ created: number; exam_ids: number[] }> {
+    return this.api.post<{ created: number; exam_ids: number[] }>('/exams/weekly-batch', payload);
+  }
+}
+
+export interface WeeklyModule {
+  code: string;
+  name_ar: string;
+  max_points: number;
+}
+
+export interface WeeklyPupil {
+  id: number;
+  full_name: string;
+  memorization_mode: 'surah' | 'thumn';
+}
+
+export interface WeeklyTemplate {
+  season_id: number;
+  modules: WeeklyModule[];
+  pupils: WeeklyPupil[];
+}
+
+export interface WeeklyRow {
+  student_id: number;
+  portion: {
+    hizb?: number | null;
+    thumn?: number | null;
+    surah?: number | null;
+    ayah_from?: number | null;
+    ayah_to?: number | null;
+  };
+  scores: Record<string, number | null>;
 }

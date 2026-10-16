@@ -1,0 +1,17 @@
+.portion {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.portion input {
+  width: 5.5rem;
+}
+
+.banner.ok {
+  background: var(--color-ok-soft, #e6f4ec);
+  color: var(--color-ok, #0e9f6e);
+  border-radius: var(--radius-md, 10px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  font-weight: 600;
+}

@@ -43,7 +43,6 @@ const NOOR: GroupStatsRow = {
   id: 1,
   name: 'حلقة النور — L1',
   center_id: 1,
-  level: { id: 1, name_ar: 'المستوى الأول' },
   teacher: { id: 3, full_name: 'ياسين العلوي', phone: '0611223344', teacher_type: 'hifz' },
   academic_year: '2025/2026',
   schedule_days: 'Sat,Mon',
@@ -62,7 +61,6 @@ const FURQAN: GroupStatsRow = {
   id: 2,
   name: 'حلقة الفرقان — L2',
   center_id: 1,
-  level: { id: 2, name_ar: 'المستوى الثاني' },
   teacher: null,
   academic_year: null,
   schedule_days: '',
@@ -200,15 +198,14 @@ describe('GroupsListPage', () => {
     expect(rowNames()).toEqual(['حلقة الفرقان — L2']);
   });
 
-  it('filters by status and level signals', () => {
+  it('filters by the status signal', () => {
     page.status.set('active');
     fixture.detectChanges();
     expect(rowNames()).toEqual(['حلقة النور — L1']);
 
     page.status.set('');
-    page.levelId.set('2');
     fixture.detectChanges();
-    expect(rowNames()).toEqual(['حلقة الفرقان — L2']);
+    expect(rowNames()).toEqual(['حلقة الفرقان — L2', 'حلقة النور — L1']);
   });
 
   it('sorts by student count when the column header is clicked, flipping on a second click', () => {

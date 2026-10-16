@@ -11,6 +11,11 @@ describe('student result/exam routes (§C3)', () => {
     expect(roleData('new')).not.toContain('student');
   });
 
+  it('keeps the weekly sheet staff-only', () => {
+    expect(roleData('weekly')).not.toContain('student');
+    expect(roleData('weekly')).toEqual(expect.arrayContaining(['admin', 'supervisor', 'teacher']));
+  });
+
   it('admits students to term results, not to the season editor', () => {
     const term = RESULTS_ROUTES.find((r) => r.path === 'term');
     const season = RESULTS_ROUTES.find((r) => r.path === 'season');

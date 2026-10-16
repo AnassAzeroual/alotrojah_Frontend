@@ -23,4 +23,19 @@ export class StudentsService {
   update(id: number, payload: UpdateStudentPayload): Observable<Student> {
     return this.api.put<Student>(`/students/${id}`, payload);
   }
+
+  /** Linkable login accounts: active student-role users with no pupil row. */
+  unlinkedAccounts(centerId?: number | null): Observable<UnlinkedAccount[]> {
+    return this.api.get<UnlinkedAccount[]>(
+      '/students/unlinked-accounts',
+      centerId ? { center_id: centerId } : undefined,
+    );
+  }
+}
+
+export interface UnlinkedAccount {
+  id: number;
+  full_name: string;
+  email: string;
+  center_id: number | null;
 }

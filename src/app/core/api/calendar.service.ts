@@ -7,9 +7,13 @@ export interface WeekCal {
   id: number;
   season_id: number;
   term_id: number;
+  term_name: string | null;
+  season_name: string | null;
   week_number_global: number;
   week_number_in_term: number;
   week_type: 'study' | 'review';
+  start_date: string | null;
+  end_date: string | null;
 }
 
 export interface SessionCal {

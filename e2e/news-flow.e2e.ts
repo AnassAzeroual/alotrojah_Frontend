@@ -16,6 +16,11 @@ test.describe.serial('News management', () => {
     await expect(page).toHaveURL(/\/news$/);
 
     // Create, await the POST and its list reload, then target the unique title.
+    // §D: the section picker only renders for the my_students audience
+    // (options order is code-defined: all/teachers/manager/my_students).
+    await page.getByTestId('news-audience').click();
+    await page.locator('.dd.open [role="option"]').nth(3).click();
+    await expect(page.getByTestId('news-group')).toBeVisible();
     await page.getByTestId('news-group').click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
     await page.getByTestId('news-title').fill(title);

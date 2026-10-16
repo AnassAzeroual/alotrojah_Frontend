@@ -29,6 +29,28 @@
           />
         </label>
 
+        @if (isNew() || !linkedUser()) {
+          <label class="field">
+            <span>{{ 'studentDetail.account' | translate }} <span class="danger">*</span></span>
+            <app-dropdown
+              [options]="accountOptions()"
+              [value]="num(form.controls.user_id.value)"
+              (valueChange)="onAccountPick($event)"
+              placeholderKey="studentDetail.pick_account"
+              ariaLabelKey="studentDetail.account"
+              testId="student-account"
+            />
+          </label>
+        } @else {
+          <div class="field">
+            <span>{{ 'studentDetail.account' | translate }}</span>
+            <strong data-testid="student-account-linked"
+              >{{ linkedUser()!.full_name }} ·
+              <span class="ltr-num">{{ linkedUser()!.email }}</span></strong
+            >
+          </div>
+        }
+
         <div class="grid-auto">
           @if (centerOptions().length > 0) {
             <label class="field">
@@ -113,6 +135,21 @@
               (valueChange)="form.controls.status.setValue($any($event))"
               ariaLabelKey="list.status"
               testId="student-status"
+            />
+          </label>
+
+          <label class="field">
+            <span>{{ 'grp.start_hizb' | translate }}</span>
+            <input
+              type="number"
+              class="ltr-num"
+              min="1"
+              max="60"
+              step="0.5"
+              [value]="form.controls.start_hizb.value ?? ''"
+              (input)="onStartHizbInput($any($event.target).value)"
+              [attr.aria-label]="'grp.start_hizb' | translate"
+              data-testid="student-start-hizb"
             />
           </label>
         </div>

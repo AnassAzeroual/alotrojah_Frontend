@@ -39,6 +39,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 interface StudentForm {
   full_name: FormControl<string>;
+  user_id: FormControl<number | null>;
   center_id: FormControl<number | null>;
   group_id: FormControl<number | null>;
   level_id: FormControl<number | null>;
@@ -71,6 +72,18 @@ interface StudentForm {
 export class StudentDetailPage {
   readonly id = input.required<string>(); // 'new' or number string
 
+  /**
+   * Route id as a number, or null when the URL carries no numeric id (a stale
+   * /students/NaN bookmark or a misbuilt link — live case 2026-10-17). All
+   * three loaders short-circuit on null, so no HTTP fires and the template's
+   * existing empty-state branch renders instead of the frozen skeleton.
+   */
+  private readonly numericId = computed((): number | null => {
+    if (this.id() === 'new') return null;
+    const n = Number(this.id());
+    return Number.isNaN(n) ? null : n;
+  });
+
   protected readonly num = dropdownNumber;
 
   readonly isNew = computed(() => this.id() === 'new');
@@ -88,11 +101,11 @@ export class StudentDetailPage {
   private readonly tick = signal(0);
 
   private readonly student = resource({
-    params: () => ({ id: this.id(), t: this.tick() }),
+    params: () => ({ id: this.id(), nid: this.numericId(), t: this.tick() }),
     loader: ({ params }) =>
-      params.id === 'new'
+      params.id === 'new' || params.nid === null
         ? Promise.resolve(null)
-        : firstValueFrom(this.studentsSvc.get(Number(params.id))),
+        : firstValueFrom(this.studentsSvc.get(params.nid)),
   });
 
   private readonly season = resource({
@@ -104,19 +117,19 @@ export class StudentDetailPage {
   });
 
   private readonly summary = resource({
-    params: () => ({ id: this.id(), season: this.season.value()?.id ?? null }),
+    params: () => ({ nid: this.numericId(), season: this.season.value()?.id ?? null }),
     loader: ({ params }) =>
-      params.season === null || params.id === 'new'
+      params.nid === null || params.season === null
         ? Promise.resolve(null)
-        : firstValueFrom(this.dash.season(Number(params.id), params.season)),
+        : firstValueFrom(this.dash.season(params.nid, params.season)),
   });
 
   private readonly final = resource({
-    params: () => ({ id: this.id(), season: this.season.value()?.id ?? null }),
+    params: () => ({ nid: this.numericId(), season: this.season.value()?.id ?? null }),
     loader: ({ params }) =>
-      params.season === null || params.id === 'new'
+      params.nid === null || params.season === null
         ? Promise.resolve(null)
-        : firstValueFrom(this.dash.final(Number(params.id), params.season)),
+        : firstValueFrom(this.dash.final(params.nid, params.season)),
   });
 
   // Group assignment (StudentPolicy: admin/supervisor, or a same-center teacher)
@@ -162,6 +175,7 @@ export class StudentDetailPage {
   // Form State
   readonly form = new FormGroup<StudentForm>({
     full_name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    user_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
     center_id: new FormControl<number | null>(null),
     group_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
     level_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
@@ -213,6 +227,49 @@ export class StudentDetailPage {
     })),
   );
 
+  /** Linkable login accounts for the pupil form (admin/supervisor/teacher). */
+  private readonly accountsRes = resource({
+    params: () => ({
+      centerId:
+        this.formCenterId() ??
+        this.form.controls.center_id.value ??
+        this.auth.currentUser()?.center_id ??
+        null,
+      open: this.isFormOpen(),
+      // Admins browse all centers until one is picked (picking an account
+      // then auto-sets it); everyone else is nailed to their own center.
+      global: this.showCenterAdmin(),
+    }),
+    loader: ({ params }) =>
+      params.open && (params.centerId !== null || params.global)
+        ? firstValueFrom(this.studentsSvc.unlinkedAccounts(params.centerId))
+        : Promise.resolve([]),
+  });
+
+  protected readonly accountOptions = computed<DropdownOption[]>(() =>
+    (this.accountsRes.value() ?? []).map((u) => ({
+      value: u.id,
+      label: `${u.full_name} · ${u.email}`,
+    })),
+  );
+
+  protected readonly linkedUser = computed(() => this.studentVal()?.user ?? null);
+
+  /** Picking an account pre-fills the pupil name (until edited) + center. */
+  protected onAccountPick(v: DropdownValue): void {
+    const id = this.num(v);
+    this.form.controls.user_id.setValue(id);
+    if (id === null) return;
+    const u = (this.accountsRes.value() ?? []).find((a) => a.id === id);
+    if (!u) return;
+    if (this.form.controls.full_name.value.trim() === '') {
+      this.form.controls.full_name.setValue(u.full_name);
+    }
+    if (this.form.controls.center_id.value === null && u.center_id !== null) {
+      this.form.controls.center_id.setValue(u.center_id);
+    }
+  }
+
   // Assign block (view mode)
   protected readonly assignPicked = signal<number | null>(null);
   protected readonly assignChosen = signal(false);
@@ -256,16 +313,17 @@ export class StudentDetailPage {
         if (params.editing && params.s) {
           this.form.patchValue({
             full_name: params.s.full_name,
+            user_id: params.s.user?.id ?? null,
             center_id: params.s.center_id,
             group_id: params.s.group?.id ?? null,
             level_id: params.s.level_id,
-            gender: params.s.gender as any,
+            gender: params.s.gender as 'male' | 'female' | null,
             status: params.s.status,
             student_type: params.s.student_type,
             memorization_mode: params.s.memorization_mode,
             start_hizb: params.s.start_hizb,
             // API models might need notes in Student, let's keep it null if not present
-            notes: (params.s as any).notes ?? null,
+            notes: params.s.notes ?? null,
           });
           this.form.markAsPristine();
         }
@@ -310,7 +368,7 @@ export class StudentDetailPage {
     }
 
     const req$ = this.isNew()
-      ? this.studentsSvc.create(v as any)
+      ? this.studentsSvc.create({ ...v, user_id: v.user_id! })
       : this.studentsSvc.update(this.studentVal()!.id, v);
 
     req$.subscribe({
@@ -334,6 +392,10 @@ export class StudentDetailPage {
   protected onGroupPick(v: DropdownValue): void {
     this.assignPicked.set(this.num(v));
     this.assignChosen.set(true);
+  }
+
+  protected onStartHizbInput(v: string): void {
+    this.form.controls.start_hizb.setValue(v.trim() === '' ? null : Number(v));
   }
 
   protected saveAssign(): void {

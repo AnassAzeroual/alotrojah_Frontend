@@ -26,7 +26,7 @@
     "planning": "المواسم",
     "calendar": "التقويم",
     "scoring": "التنقيط",
-    "exams": "الاختبارات",
+    "exams": "بدء اختبار",
     "reviews": "المراجعة",
     "results": "النتائج",
     "reports": "التقارير",
@@ -109,6 +109,7 @@
     "SEASON_HAS_FACTS": "لا يمكن الحذف — الموسم يحتوي على معطيات مسجلة",
     "MODULE_HAS_SCORES": "لا يمكن الحذف — المادة لديها نقاط مسجلة",
     "LEVEL_IN_USE": "لا يمكن الحذف — المستوى مستعمل في الأقسام أو لدى التلاميذ",
+    "LEVEL_EXISTS": "هذا المستوى موجود مسبقًا بنفس القيم",
     "TERM_REQUIRED": "هذا النوع من الاختبارات يتطلب فصلاً",
     "SPAN_INVALID": "يجب أن تغطي المراجعة من أسبوع إلى 3 أسابيع",
     "RANGE_INVALID": "نطاق غير صالح",
@@ -139,7 +140,8 @@
   },
   "gender": {
     "male": "ذكر",
-    "female": "أنثى"
+    "female": "أنثى",
+    "unknown": "غير معروف"
   },
   "registrations": {
     "title": "طلبات الانتساب",
@@ -180,7 +182,8 @@
   "examType": {
     "hizb_completion": "إتمام حزب",
     "term_batch": "اختبار الفصل",
-    "final_season": "الاختبار النهائي"
+    "final_season": "الاختبار النهائي",
+    "weekly": "أسبوعي"
   },
   "scopeType": {
     "weekly": "أسبوعي",
@@ -204,7 +207,9 @@
     "final": "المعدل النهائي"
   },
   "studentDetail": {
-    "assign_group": "تعيين القسم"
+    "assign_group": "تعيين القسم",
+    "account": "الحساب",
+    "pick_account": "اختر الحساب"
   },
   "list": {
     "search": "بحث بالاسم",
@@ -242,7 +247,6 @@
     "table_title": "جميع الأقسام",
     "col_name": "القسم",
     "col_teacher": "المعلم",
-    "col_level": "المستوى",
     "col_students": "الطلاب",
     "col_capacity": "الطاقة",
     "col_fill": "الامتلاء",
@@ -304,7 +308,23 @@
     "prompt": "نص السؤال",
     "weight": "الوزن",
     "weights": "مجموع الأوزان: {{total}} / 20",
-    "reweight": "إعادة توزيع الأوزان"
+    "reweight": "إعادة توزيع الأوزان",
+    "need_student": "اختر الطالب أعلاه لحفظ الاختبار",
+    "need_term": "اختر الفصل لحفظ الاختبار",
+    "weekly_title": "الاختبار الأسبوعي"
+  },
+  "weeklyExam": {
+    "group": "القسم",
+    "portion": "القدر المحفوظ",
+    "hizb": "الحزب",
+    "thumn": "الثمن",
+    "surah": "السورة",
+    "ayah_from": "من الآية",
+    "ayah_to": "إلى الآية",
+    "total": "المجموع",
+    "need_group": "اختر القسم أولا لعرض التلاميذ",
+    "need_portion": "أكمل القدر المحفوظ لكل تلميذ قبل الحفظ",
+    "saved": "تم حفظ اختبار {{count}} من التلاميذ"
   },
   "review": {
     "title": "المراجعة",
@@ -403,15 +423,21 @@
     "phone": "الهاتف",
     "manager": "المسؤول"
   },
+  "unit": {
+    "hizb_one": "حزب",
+    "hizb_two": "حزبان",
+    "hizb_few": "أحزاب",
+    "hizb_other": "حزب"
+  },
   "level": {
     "title": "المستويات",
     "code": "الرمز",
     "name": "الاسم",
     "sessions": "حصص الأسبوع",
     "thumnSession": "ثمن الحصة",
-    "thumnSessionLabel": "مسمى مقدار الحصة",
+    "thumnSessionLabel": "المقدار المراد حفظه (بالثُمُن)",
     "thumnWeek": "ثمن الأسبوع",
-    "ahzabTerm": "أحزاب الفصل",
+    "ahzabTerm": "هدفي في الفصل (أحزاب)",
     "ahzabDawra": "أحزاب الدورة",
     "duration": "المدة",
     "totalAhzab": "مجموع الأحزاب",
@@ -420,7 +446,9 @@
     "inherited_tag": "افتراضي",
     "override_tag": "تجاوز",
     "reset": "إعادة إلى الافتراضي",
-    "reset_confirm": "تأكيد الإعادة"
+    "reset_confirm": "تأكيد الإعادة",
+    "new": "مستوى جديد",
+    "range": "المقدار يجب أن يكون بين 1 و 480 (بالثُمُن)"
   },
   "sessionStatus": {
     "planned": "مبرمجة",
@@ -436,7 +464,6 @@
     "start_date": "تاريخ البداية",
     "end_date": "تاريخ النهاية",
     "hijri": "السنة الهجرية",
-    "sessions_per_week": "حصص في الأسبوع",
     "review_weeks": "المراجعة في الأسبوع",
     "terms": "الفصول",
     "create": "إنشاء الموسم",
@@ -507,6 +534,8 @@
     "save_attendance": "حفظ الحضور",
     "scores": "النقاط",
     "save_scores": "حفظ النقاط",
+    "save_failed": "تعذر حفظ النقاط — راجع الحقول المعلّمة",
+    "over_max": "تجاوز الحد ({{max}})",
     "separate_note": "السراج مجموع مستقل /20 ولا يدخل في المجموع الأسبوعي",
     "memorized_label": "المحفوظ في هذه الحصة (ثُمن)",
     "review_only_notice": "معلم المراجعة: النقاط الأسبوعية معطلة هنا",

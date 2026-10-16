@@ -1,0 +1,132 @@
+<section class="card table-card anim-rise" style="--i: 2">
+  <div class="table-scroll">
+    <div
+      class="etable"
+      role="table"
+      [style.--mods]="sheetModules().length"
+      [class.with-mem]="showMemorization()"
+      [attr.aria-label]="'entry.title' | translate"
+    >
+      <div class="erow ehead" role="row">
+        <span class="ecell pupil" role="columnheader">{{ 'nav.students' | translate }}</span>
+        <span class="ecell" role="columnheader">{{ 'entry.attendance' | translate }}</span>
+        @for (m of sheetModules(); track m.code) {
+          <span class="ecell" role="columnheader">{{ m.name_ar }}</span>
+        }
+        @if (showMemorization()) {
+          <span class="ecell" role="columnheader">{{ 'entry.memorized_label' | translate }}</span>
+        }
+        <span class="ecell num" role="columnheader">/ 20</span>
+        <span class="ecell goal" role="columnheader">{{ 'entry.goal' | translate }}</span>
+      </div>
+
+      @for (st of students(); track st.id) {
+        <div class="erow line" role="row" [class.dirty]="rowTouched(st.id)">
+          <span class="ecell pupil" role="cell">
+            <span class="avatar-sm" aria-hidden="true">{{ st.full_name.slice(0, 1) }}</span>
+            <strong>{{ st.full_name }}</strong>
+          </span>
+
+          <span class="ecell" role="cell">
+            <app-dropdown
+              [options]="attOptions"
+              [value]="attCtrl(st.id).value"
+              (valueChange)="setStatus(st.id, $any($event))"
+              ariaLabelKey="entry.attendance"
+            />
+          </span>
+
+          @for (m of sheetModules(); track m.code) {
+            <span
+              class="ecell"
+              role="cell"
+              [class.off]="!m.is_active"
+              [class.separate]="!m.is_in_weekly_total"
+            >
+              <app-score-input
+                [max]="m.max_points"
+                [disabled]="disabledAll() || !m.is_active"
+                [value]="scoreCtrl(st.id, m.code).value"
+                (valueChange)="setScore(st.id, m.code, $event)"
+              />
+              @if (showScoreError(st.id, m.code)) {
+                <p class="field-error" [attr.data-testid]="'score-error-' + st.id">
+                  {{ 'entry.over_max' | translate: { max: m.max_points } }}
+                </p>
+              }
+            </span>
+          }
+
+          @if (showMemorization()) {
+            <span class="ecell" role="cell">
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                class="input mem"
+                [formControl]="memCtrl(st.id)"
+                [attr.disabled]="disabledAll() ? '' : null"
+                [attr.data-testid]="'memorized-' + st.id"
+                [attr.aria-label]="'entry.memorized_label' | translate"
+                (input)="onFieldEdit(st.id)"
+              />
+              @if (memCtrl(st.id).invalid && memCtrl(st.id).dirty) {
+                <p class="field-error">
+                  {{ 'entry.over_max' | translate: { max: 99.99 } }}
+                </p>
+              }
+            </span>
+          }
+
+          <span class="ecell num" role="cell">
+            <strong class="total ltr-num"
+              >{{ totalFor(st) ?? '—' }}{{ 'common.of20' | translate }}</strong
+            >
+          </span>
+
+          <span class="ecell goal" role="cell">
+            <input
+              type="text"
+              class="input"
+              [formControl]="goalTargetCtrl(st.id)"
+              [placeholder]="'entry.target_hint' | translate"
+              [attr.aria-label]="'entry.goal' | translate"
+              (input)="onFieldEdit(st.id)"
+            />
+            <label class="chk">
+              <input
+                type="checkbox"
+                [formControl]="goalDoneCtrl(st.id)"
+                (change)="onFieldEdit(st.id)"
+              />
+              {{ 'entry.done' | translate }}
+            </label>
+          </span>
+        </div>
+        @if (rowError().get(st.id)) {
+          <div class="erow-error" role="row">
+            <p class="banner danger" role="alert" data-testid="row-banner">
+              {{ rowError().get(st.id)! | translate }}
+            </p>
+          </div>
+        }
+      } @empty {
+        <app-empty-state />
+      }
+    </div>
+  </div>
+  <button
+    type="button"
+    class="btn btn-primary btn-block save-all"
+    [class.is-loading]="savingAll()"
+    [disabled]="!anyDirty() || savingAll()"
+    (click)="saveAll()"
+  >
+    @if (savingAll()) {
+      <app-spinner />
+    } @else {
+      {{ 'common.save' | translate }}
+    }
+  </button>
+  <p class="muted small">{{ 'entry.separate_note' | translate }}</p>
+</section>

@@ -26,7 +26,7 @@
     "planning": "Saisons",
     "calendar": "Calendrier",
     "scoring": "Notation",
-    "exams": "Examens",
+    "exams": "Démarrer un examen",
     "reviews": "Révision",
     "results": "Résultats",
     "reports": "Rapports",
@@ -109,6 +109,7 @@
     "SEASON_HAS_FACTS": "Suppression impossible — la saison contient des données",
     "MODULE_HAS_SCORES": "Suppression impossible — le module a des notes enregistrées",
     "LEVEL_IN_USE": "Suppression impossible — le niveau est utilisé par des sections ou des élèves",
+    "LEVEL_EXISTS": "Ce niveau existe déjà avec des valeurs identiques",
     "TERM_REQUIRED": "Ce type d'examen exige un trimestre",
     "SPAN_INVALID": "La révision doit couvrir 1 à 3 semaines",
     "RANGE_INVALID": "Plage invalide",
@@ -139,7 +140,8 @@
   },
   "gender": {
     "male": "Garçon",
-    "female": "Fille"
+    "female": "Fille",
+    "unknown": "Inconnu"
   },
   "registrations": {
     "title": "Demandes d'inscription",
@@ -184,7 +186,8 @@
   "examType": {
     "hizb_completion": "Validation de hizb",
     "term_batch": "Examen du trimestre",
-    "final_season": "Examen final"
+    "final_season": "Examen final",
+    "weekly": "Hebdomadaire"
   },
   "scopeType": {
     "weekly": "Hebdomadaire",
@@ -204,7 +207,9 @@
     "final": "Note finale"
   },
   "studentDetail": {
-    "assign_group": "Affecter à une section"
+    "assign_group": "Affecter à une section",
+    "account": "Compte",
+    "pick_account": "Choisir un compte"
   },
   "list": {
     "search": "Rechercher par nom",
@@ -242,7 +247,6 @@
     "table_title": "Toutes les sections",
     "col_name": "Section",
     "col_teacher": "Enseignant",
-    "col_level": "Niveau",
     "col_students": "Élèves",
     "col_capacity": "Capacité",
     "col_fill": "Remplissage",
@@ -304,7 +308,23 @@
     "prompt": "Énoncé",
     "weight": "Poids",
     "weights": "Total des poids : {{total}} / 20",
-    "reweight": "Rééquilibrer les poids"
+    "reweight": "Rééquilibrer les poids",
+    "need_student": "Choisissez un élève ci-dessus pour enregistrer l'examen",
+    "need_term": "Choisissez un trimestre pour enregistrer l'examen",
+    "weekly_title": "Examen hebdomadaire"
+  },
+  "weeklyExam": {
+    "group": "Section",
+    "portion": "Passage mémorisé",
+    "hizb": "Hizb",
+    "thumn": "Thoumn",
+    "surah": "Sourate",
+    "ayah_from": "Du verset",
+    "ayah_to": "Au verset",
+    "total": "Total",
+    "need_group": "Choisissez d'abord une section pour voir les élèves",
+    "need_portion": "Complétez le passage mémorisé de chaque élève avant d'enregistrer",
+    "saved": "{{count}} examens d'élèves enregistrés"
   },
   "review": {
     "title": "Révision",
@@ -403,15 +423,21 @@
     "phone": "Téléphone",
     "manager": "Responsable"
   },
+  "unit": {
+    "hizb_one": "hizb",
+    "hizb_two": "hizbs",
+    "hizb_few": "hizbs",
+    "hizb_other": "hizbs"
+  },
   "level": {
     "title": "Niveaux",
     "code": "Code",
     "name": "Nom",
     "sessions": "Séances/sem",
     "thumnSession": "Thumn/séance",
-    "thumnSessionLabel": "Libellé du montant",
+    "thumnSessionLabel": "Quantité à mémoriser (Thoumns)",
     "thumnWeek": "Thumn/sem",
-    "ahzabTerm": "Ahzab/trimestre",
+    "ahzabTerm": "Hedfi dans le trimestre (Ahzab)",
     "ahzabDawra": "Ahzab/cycle",
     "duration": "Durée",
     "totalAhzab": "Total ahzab",
@@ -420,7 +446,9 @@
     "inherited_tag": "Défaut",
     "override_tag": "Dérogation",
     "reset": "Réinitialiser",
-    "reset_confirm": "Confirmer"
+    "reset_confirm": "Confirmer",
+    "new": "Nouveau niveau",
+    "range": "La quantité doit être comprise entre 1 et 480 (en thoumns)"
   },
   "sessionStatus": {
     "planned": "Planifiée",
@@ -436,7 +464,6 @@
     "start_date": "Date de début",
     "end_date": "Date de fin",
     "hijri": "Année hégirienne",
-    "sessions_per_week": "Séances par semaine",
     "review_weeks": "Semaines de révision",
     "terms": "Trimestres",
     "create": "Créer la saison",
@@ -507,6 +534,8 @@
     "save_attendance": "Enregistrer la présence",
     "scores": "Notes",
     "save_scores": "Enregistrer les notes",
+    "save_failed": "Enregistrement impossible — vérifiez les champs surlignés",
+    "over_max": "Dépasse la limite ({{max}})",
     "separate_note": "Sarraj : total séparé /20, hors total hebdomadaire",
     "memorized_label": "Mémorisé cette séance (thumn)",
     "review_only_notice": "Enseignant révision : notes hebdomadaires désactivées ici",

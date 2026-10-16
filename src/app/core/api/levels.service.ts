@@ -17,6 +17,19 @@ export interface Level {
   total_ahzab: number;
 }
 
+export interface LevelCreate {
+  name_ar: string;
+  center_id?: number | null;
+  sessions_per_week: number;
+  thumn_per_session_label: string;
+  thumn_per_session_value: number;
+  thumn_per_week_value: number;
+  ahzab_per_term: number;
+  ahzab_per_dawra: number;
+  duration_label: string;
+  total_ahzab: number;
+}
+
 export interface LevelPatch {
   name_ar?: string;
   sessions_per_week?: number;
@@ -36,6 +49,11 @@ export class LevelsService {
 
   list(centerId?: number | null): Observable<Level[]> {
     return this.api.get<Level[]>('/levels', centerId ? { center_id: centerId } : undefined);
+  }
+
+  /** Dynamic codes: the server assigns `L{id}`; the payload carries no code. */
+  create(payload: LevelCreate): Observable<Level> {
+    return this.api.post<Level>('/levels', payload);
   }
 
   update(id: number, patch: LevelPatch): Observable<Level> {

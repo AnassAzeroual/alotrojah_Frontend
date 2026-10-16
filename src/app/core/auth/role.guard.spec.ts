@@ -2,11 +2,17 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ActivatedRouteSnapshot, provideRouter, RouterStateSnapshot } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  PartialMatchRouteSnapshot,
+  provideRouter,
+  Route,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { firstValueFrom, Observable } from 'rxjs';
 import { provideNgCryptoStore } from 'ng-cryptostore';
 import { AuthService } from './auth.service';
-import { roleGuard } from './role.guard';
+import { roleGuard, roleMatchGuard } from './role.guard';
 import { CurrentUser } from '../api/api-models';
 
 @Component({ template: '', standalone: true })
@@ -20,6 +26,19 @@ function runGuard(user: CurrentUser | null, data: Record<string, unknown>): bool
   auth.sessionProbed.set(true);
   return TestBed.runInInjectionContext(() =>
     roleGuard({ data } as unknown as ActivatedRouteSnapshot, {} as unknown as RouterStateSnapshot),
+  );
+}
+
+function runMatchGuard(
+  user: CurrentUser | null,
+  data?: Record<string, unknown>,
+): boolean | unknown {
+  const auth = TestBed.inject(AuthService);
+  auth.token.set(user ? 'T' : null);
+  auth.currentUser.set(user);
+  auth.sessionProbed.set(true);
+  return TestBed.runInInjectionContext(() =>
+    roleMatchGuard({ data } as unknown as Route, [], {} as unknown as PartialMatchRouteSnapshot),
   );
 }
 
@@ -106,5 +125,41 @@ describe('roleGuard', () => {
 
     await expect(firstValueFrom(result as Observable<boolean>)).resolves.toBe(false);
     expect(auth.token()).toBeNull();
+  });
+});
+
+describe('roleMatchGuard', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', component: DummyComponent }]),
+        provideNgCryptoStore({ storageType: 'sessionStorage' }),
+      ],
+    });
+  });
+
+  const teacher: CurrentUser = {
+    id: 3,
+    full_name: 'T',
+    role: 'teacher',
+    center_id: 1,
+    teacher_type: 'hifz',
+  };
+
+  it('blocks guests before the shell chunk loads', () => {
+    expect(runMatchGuard(null)).toBe(false);
+  });
+
+  it('lets logged-in users match (role checks stay on children)', () => {
+    expect(runMatchGuard(teacher)).toBe(true);
+  });
+
+  it('still enforces role data when present', () => {
+    expect(runMatchGuard(teacher, { roles: ['admin'] })).toBe(false);
+    expect(runMatchGuard(teacher, { roles: ['admin', 'teacher'] })).toBe(true);
   });
 });

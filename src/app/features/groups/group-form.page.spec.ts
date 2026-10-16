@@ -31,8 +31,6 @@ const SUPERVISOR: CurrentUser = {
   teacher_type: 'hifz',
 };
 
-const LEVELS = [{ id: 1, code: 'L1', name_ar: 'المستوى الأول' }];
-
 const CENTERS = {
   data: [{ id: 1, name: 'المركز الأول', city: null }],
   meta: { current_page: 1, total: 1, per_page: 20 },
@@ -72,13 +70,6 @@ describe('GroupFormPage', () => {
     page = fixture.componentInstance;
     el = fixture.nativeElement;
     fixture.detectChanges();
-  };
-
-  const flushLevels = (): void => {
-    // The levels feed refires whenever the center scope changes.
-    http
-      .match((r) => r.url.includes('/reference/levels') && r.method === 'GET')
-      .forEach((req) => req.flush({ success: true, message: null, data: LEVELS }));
   };
 
   const flushCenters = (): void => {
@@ -171,17 +162,14 @@ describe('GroupFormPage', () => {
 
   it('saves an admin-created group with the picked center and navigates back', async () => {
     mount();
-    flushLevels();
     flushCenters();
     await settle();
 
     pick('dash.center', 'المركز الأول');
     await settle();
-    flushLevels();
     flushTeachers();
     await settle();
 
-    pick('grp.col_level', 'المستوى الأول');
     pick('grp.col_teacher', 'ياسين العلوي');
     type('input[type="text"]', 'حلقة E2E');
     type('input[type="number"]', '20');
@@ -195,7 +183,6 @@ describe('GroupFormPage', () => {
     expect(req.request.body).toEqual({
       name: 'حلقة E2E',
       center_id: 1,
-      level_id: 1,
       teacher_id: 3,
       capacity: 20,
       schedule_days: ['Sat', 'Mon'],
@@ -207,30 +194,21 @@ describe('GroupFormPage', () => {
         id: 9,
         name: 'حلقة E2E',
         center_id: 1,
-        level_id: 1,
         capacity: 20,
         schedule_days: ['Sat', 'Mon'],
         is_active: true,
       },
     });
-    // save resets the composer (guard-clean), which refires the levels feed
-    // at the next change detection — drain before AND after it.
-    flushLevels();
-    fixture.detectChanges();
-    flushLevels();
-    fixture.detectChanges();
     expect(navigate).toHaveBeenCalledWith(['/groups']);
   });
 
   it('offers the flushed same-center teachers in the picker', async () => {
     mount();
-    flushLevels();
     flushCenters();
     await settle();
 
     pick('dash.center', 'المركز الأول');
     await settle();
-    flushLevels();
     flushTeachers();
     await settle();
 
@@ -240,14 +218,12 @@ describe('GroupFormPage', () => {
   it('scopes supervisors to their own center without a center field', async () => {
     role = 'supervisor';
     mount();
-    flushLevels();
     flushTeachers(); // fires immediately with center_id=1 from currentUser
     await settle();
 
     expect(dropdown('dash.center')).toBeUndefined();
     expect(el.textContent).not.toContain('registrations.pick_center');
 
-    pick('grp.col_level', 'المستوى الأول');
     pick('grp.col_teacher', 'ياسين العلوي');
     type('input[type="text"]', 'حلقة المشرف');
 
@@ -256,7 +232,6 @@ describe('GroupFormPage', () => {
     expect(req.request.body).toEqual({
       name: 'حلقة المشرف',
       center_id: 1,
-      level_id: 1,
       teacher_id: 3,
       capacity: null,
       schedule_days: [],
@@ -268,40 +243,28 @@ describe('GroupFormPage', () => {
         id: 10,
         name: 'حلقة المشرف',
         center_id: 1,
-        level_id: 1,
         capacity: null,
         schedule_days: [],
         is_active: true,
       },
     });
-    // save resets the composer (guard-clean), which refires the levels feed
-    // at the next change detection — drain before AND after it.
-    flushLevels();
-    fixture.detectChanges();
-    flushLevels();
-    fixture.detectChanges();
     expect(navigate).toHaveBeenCalledWith(['/groups']);
   });
 
-  it('keeps save disabled until name, center and level are set', async () => {
+  it('keeps save disabled until name, center and teacher are set', async () => {
     mount();
-    flushLevels();
     flushCenters();
     await settle();
 
     expect(saveBtn().disabled).toBe(true);
 
-    type('input[type="text"]', 'بلا مستوى');
+    type('input[type="text"]', 'بلا معلم');
     expect(saveBtn().disabled).toBe(true);
 
     pick('dash.center', 'المركز الأول');
     await settle();
-    flushLevels();
     flushTeachers();
     await settle();
-    expect(saveBtn().disabled).toBe(true);
-
-    pick('grp.col_level', 'المستوى الأول');
     expect(saveBtn().disabled).toBe(true);
 
     pick('grp.col_teacher', 'ياسين العلوي');
@@ -316,7 +279,6 @@ describe('GroupFormPage', () => {
         id: 9,
         name: 'حلقة قديمة',
         center_id: 1,
-        level: { id: 1, name_ar: 'المستوى الأول' },
         teacher: { id: 3, full_name: 'ياسين العلوي', phone: null, teacher_type: 'hifz' },
         academic_year: null,
         schedule_days: 'Mon',
@@ -345,7 +307,6 @@ describe('GroupFormPage', () => {
         .expectOne((r) => r.url.endsWith('/groups/9/detail') && r.method === 'GET')
         .flush({ success: true, message: null, data: DETAIL });
       await settle();
-      flushLevels();
       flushTeachers();
       await settle();
     };
@@ -367,7 +328,6 @@ describe('GroupFormPage', () => {
       const req = http.expectOne((r) => r.url.endsWith('/groups/9') && r.method === 'PUT');
       expect(req.request.body).toEqual({
         name: 'حلقة محدثة',
-        level_id: 1,
         teacher_id: 3,
         capacity: 20,
         schedule_days: ['Mon'],

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { roleGuard } from './core/auth/role.guard';
+import { roleGuard, roleMatchGuard } from './core/auth/role.guard';
 
 export const routes: Routes = [
   {
@@ -13,6 +13,7 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./core/layout/shell.component').then((m) => m.ShellComponent),
+    canMatch: [roleMatchGuard],
     canActivate: [roleGuard],
     children: [
       {

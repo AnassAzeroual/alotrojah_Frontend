@@ -7,7 +7,6 @@ import {
   resource,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ChartData } from 'chart.js';
@@ -15,7 +14,6 @@ import { firstValueFrom } from 'rxjs';
 import { GroupDetail } from '../../core/api/api-models';
 import { GroupsService } from '../../core/api/groups.service';
 import { apiErrorKey } from '../../core/api/api-errors';
-import { ReferenceService, Level } from '../../core/api/reference.service';
 import { UsersService } from '../../core/api/users.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -70,7 +68,6 @@ export class GroupDetailPage {
   private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
-  private readonly refSvc = inject(ReferenceService);
   private readonly usersSvc = inject(UsersService);
 
   private readonly tick = signal(0);
@@ -108,16 +105,10 @@ export class GroupDetailPage {
   readonly saveFailed = signal<string | null>(null);
 
   protected readonly editName = signal('');
-  protected readonly editLevelId = signal<number | null>(null);
   protected readonly editTeacherId = signal<number | null>(null);
   protected readonly editCapacity = signal<number | null>(null);
   protected readonly editDays = signal<string[]>([]);
   protected readonly editActive = signal(true);
-
-  protected readonly levels = toSignal(this.refSvc.levels(), { initialValue: [] as Level[] });
-  protected readonly levelOptions = computed(() =>
-    this.levels().map((l) => ({ value: l.id, label: l.name_ar })),
-  );
 
   private readonly teachersRes = resource({
     params: () => ({ centerId: this.group()?.center_id ?? null, allow: this.canPickTeacher() }),
@@ -138,7 +129,6 @@ export class GroupDetailPage {
     const g = this.group();
     if (!g) return;
     this.editName.set(g.name);
-    this.editLevelId.set(g.level?.id ?? null);
     this.editTeacherId.set(g.teacher?.id ?? null);
     this.editCapacity.set(g.capacity);
     this.editDays.set(this.scheduleKeys(g.schedule_days));
@@ -167,15 +157,13 @@ export class GroupDetailPage {
   protected saveEdit(): void {
     const g = this.group();
     const name = this.editName().trim();
-    const levelId = this.editLevelId();
     const teacherId = this.editTeacherId();
-    if (!g || !name || levelId === null || teacherId === null || this.saving()) return;
+    if (!g || !name || teacherId === null || this.saving()) return;
     this.saving.set(true);
     this.saveFailed.set(null);
     this.groupsSvc
       .update(g.id, {
         name,
-        level_id: levelId,
         ...(this.canPickTeacher() ? { teacher_id: teacherId } : {}),
         capacity: this.editCapacity(),
         schedule_days: this.editDays(),

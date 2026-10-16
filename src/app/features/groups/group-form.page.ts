@@ -15,7 +15,6 @@ import { firstValueFrom } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { apiErrorKey } from '../../core/api/api-errors';
-import { ReferenceService, Level } from '../../core/api/reference.service';
 import { UsersService } from '../../core/api/users.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { leaveController } from '../../core/guards/leave-controller';
@@ -31,7 +30,6 @@ const WEEKDAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 /** Loaded-state snapshot for the edit-mode dirty comparison. */
 interface GroupEditSeed {
   name: string;
-  levelId: number | null;
   teacherId: number | null;
   capacity: number | null;
   days: string;
@@ -51,7 +49,6 @@ export class GroupFormPage {
   protected readonly weekdayKeys = WEEKDAY_KEYS;
 
   private readonly groupsSvc = inject(GroupsService);
-  private readonly refSvc = inject(ReferenceService);
   private readonly centersSvc = inject(CentersService);
   private readonly usersSvc = inject(UsersService);
   private readonly auth = inject(AuthService);
@@ -62,7 +59,6 @@ export class GroupFormPage {
 
   protected readonly name = signal('');
   protected readonly centerId = signal<number | null>(null);
-  protected readonly levelId = signal<number | null>(null);
   protected readonly teacherId = signal<number | null>(null);
   protected readonly capacity = signal<number | null>(null);
   protected readonly days = signal<string[]>([]);
@@ -97,7 +93,6 @@ export class GroupFormPage {
       const cur = this.snapshot();
       return (
         cur.name !== seed.name ||
-        cur.levelId !== seed.levelId ||
         cur.teacherId !== seed.teacherId ||
         cur.capacity !== seed.capacity ||
         cur.days !== seed.days ||
@@ -107,7 +102,6 @@ export class GroupFormPage {
     return (
       this.name().trim() !== '' ||
       this.centerId() !== null ||
-      this.levelId() !== null ||
       this.teacherId() !== null ||
       this.capacity() !== null ||
       this.days().length > 0
@@ -117,19 +111,9 @@ export class GroupFormPage {
   protected readonly canSave = computed(
     () =>
       this.name().trim() !== '' &&
-      this.levelId() !== null &&
       this.teacherId() !== null &&
       (!this.isAdmin() || this.centerId() !== null) &&
       !this.saving(),
-  );
-
-  private readonly levelsRes = resource({
-    params: () => ({ centerId: this.effectiveCenterId() }),
-    loader: ({ params }) => firstValueFrom(this.refSvc.levels(params.centerId)),
-  });
-
-  protected readonly levelOptions = computed<DropdownOption[]>(() =>
-    (this.levelsRes.value() ?? []).map((l: Level) => ({ value: l.id, label: l.name_ar })),
   );
 
   private readonly centersRes = resource({
@@ -170,7 +154,6 @@ export class GroupFormPage {
       if (id === null || !g || this.seededFor() === id) return;
       this.name.set(g.name);
       this.centerId.set(g.center_id);
-      this.levelId.set(g.level?.id ?? null);
       this.teacherId.set(g.teacher?.id ?? null);
       this.capacity.set(g.capacity);
       this.days.set(g.schedule_days ? g.schedule_days.split(',').filter((d) => d !== '') : []);
@@ -183,7 +166,6 @@ export class GroupFormPage {
   private snapshot(): GroupEditSeed {
     return {
       name: this.name().trim(),
-      levelId: this.levelId(),
       teacherId: this.teacherId(),
       capacity: this.capacity(),
       days: this.days().join(','),
@@ -229,7 +211,6 @@ export class GroupFormPage {
     this.groupsSvc
       .update(id, {
         name: this.name().trim(),
-        level_id: this.levelId()!,
         teacher_id: this.teacherId()!,
         capacity: this.capacity(),
         schedule_days: this.days(),
@@ -257,7 +238,6 @@ export class GroupFormPage {
       .create({
         name: this.name().trim(),
         center_id: this.effectiveCenterId(),
-        level_id: this.levelId()!,
         teacher_id: this.teacherId()!,
         capacity: this.capacity(),
         schedule_days: this.days(),
@@ -267,7 +247,6 @@ export class GroupFormPage {
           this.saving.set(false);
           this.name.set('');
           this.centerId.set(null);
-          this.levelId.set(null);
           this.teacherId.set(null);
           this.capacity.set(null);
           this.days.set([]);

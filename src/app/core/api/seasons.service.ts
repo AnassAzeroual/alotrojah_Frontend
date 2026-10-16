@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiClient, QueryParams } from './api-client';
+import { ApiClient } from './api-client';
 import { Paginated } from './api-models';
 
 export interface Season {
@@ -35,7 +35,6 @@ export class SeasonsService {
     center_id: number | null;
     start_date: string;
     hijri_year?: string;
-    sessions_per_week?: number;
     review_weeks_per_term?: number;
     terms?: SeasonTerm[];
   }): Observable<Season> {
