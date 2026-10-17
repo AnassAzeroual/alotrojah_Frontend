@@ -27,7 +27,7 @@
             <strong>{{ st.full_name }}</strong>
           </span>
 
-          <span class="ecell" role="cell">
+          <span class="ecell" role="cell" [attr.data-label]="'entry.attendance' | translate">
             <app-dropdown
               [options]="attOptions"
               [value]="attCtrl(st.id).value"
@@ -40,6 +40,7 @@
             <span
               class="ecell"
               role="cell"
+              [attr.data-label]="m.name_ar"
               [class.off]="!m.is_active"
               [class.separate]="!m.is_in_weekly_total"
             >
@@ -58,7 +59,7 @@
           }
 
           @if (showMemorization()) {
-            <span class="ecell" role="cell">
+            <span class="ecell" role="cell" [attr.data-label]="'entry.memorized_label' | translate">
               <input
                 type="number"
                 min="0"
@@ -78,13 +79,13 @@
             </span>
           }
 
-          <span class="ecell num" role="cell">
+          <span class="ecell num" role="cell" [attr.data-label]="'entry.total' | translate">
             <strong class="total ltr-num"
               >{{ totalFor(st) ?? '—' }}{{ 'common.of20' | translate }}</strong
             >
           </span>
 
-          <span class="ecell goal" role="cell">
+          <span class="ecell goal" role="cell" [attr.data-label]="'entry.goal' | translate">
             <input
               type="text"
               class="input"

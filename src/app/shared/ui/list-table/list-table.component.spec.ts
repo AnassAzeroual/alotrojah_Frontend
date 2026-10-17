@@ -15,7 +15,7 @@ interface Row {
 
 const TWO_COLS: ListColumn[] = [
   { key: 'name', headerKey: 'users.name', sortKey: 'name' },
-  { key: 'score', headerKey: 'users.score', sortKey: 'score', numeric: true, priority: 'low' },
+  { key: 'score', headerKey: 'users.score', sortKey: 'score', numeric: true },
 ];
 
 const ROWS: Row[] = [
@@ -146,11 +146,10 @@ describe('ListTableComponent', () => {
     expect(readOrder()).toEqual(['Carol', 'Bob', 'Alice']);
   });
 
-  it('marks numeric columns ltr + end-aligned and low-priority ones hidden on mobile', () => {
+  it('marks numeric columns ltr + end-aligned', () => {
     const scoreTh = fixture.nativeElement.querySelectorAll('thead th')[1];
     const scoreTd = fixture.nativeElement.querySelectorAll('tbody tr')[0].querySelectorAll('td')[1];
     expect(scoreTh.classList.contains('lt-end')).toBe(true);
-    expect(scoreTh.classList.contains('lt-hide-sm')).toBe(true);
     expect(scoreTd.getAttribute('dir')).toBe('ltr');
     expect(scoreTd.classList.contains('lt-end')).toBe(true);
   });

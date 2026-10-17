@@ -11,7 +11,14 @@
   </div>
 
   <!-- Sidebar (right in RTL = inline-start) -->
-  <aside class="sidebar" [class.open]="mobileOpen()" aria-label="sidebar">
+  <aside
+    class="sidebar"
+    #sidebarEl
+    id="app-sidebar"
+    tabindex="-1"
+    [class.open]="mobileOpen()"
+    aria-label="sidebar"
+  >
     <div class="side-brand">
       <a routerLink="/" class="brand" (click)="closeMobile()">
         <span class="brand-mark" aria-hidden="true">
@@ -153,7 +160,6 @@
               pendingRegistrations.value()
             }}</span>
           }
-          <span class="glow" aria-hidden="true"></span>
         </a>
       }
     </nav>
@@ -205,9 +211,10 @@
         </svg>
         <span>{{ 'auth.logout' | translate }}</span>
       </button>
+      <app-language-switcher class="drawer-lang" testId="lang-switcher-drawer" />
     </div>
   </aside>
-  <div class="scrim" (click)="closeMobile()" [class.show]="mobileOpen()"></div>
+  <div class="scrim" (click)="closeMobileToMenu()" [class.show]="mobileOpen()"></div>
 
   <div class="main">
     <header class="topbar">
@@ -215,7 +222,10 @@
         <button
           type="button"
           class="icon-btn menu-btn"
-          (click)="mobileOpen.set(true)"
+          #menuBtn
+          (click)="openMobile()"
+          [attr.aria-expanded]="mobileOpen()"
+          aria-controls="app-sidebar"
           [attr.aria-label]="'nav.menu' | translate"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -240,7 +250,8 @@
             [class.copied]="copiedDate() === 'greg'"
             [attr.title]="'delegation.copy' | translate"
           >
-            {{ gregorian() }}
+            <span class="chip-full">{{ gregorian() }}</span>
+            <span class="chip-short">{{ gregorianShort() }}</span>
           </button>
           @if (hijri()) {
             <button
@@ -250,7 +261,8 @@
               [class.copied]="copiedDate() === 'hijri'"
               [attr.title]="'delegation.copy' | translate"
             >
-              {{ hijri() }}
+              <span class="chip-full">{{ hijri() }}</span>
+              <span class="chip-short">{{ hijriShort() }}</span>
             </button>
           }
           <small>{{ 'dash.today' | translate }}</small>
@@ -259,7 +271,7 @@
       <div class="top-end">
         <button
           type="button"
-          class="icon-btn"
+          class="icon-btn theme-btn"
           (click)="theme.toggle()"
           data-testid="nav-theme"
           [attr.aria-label]="'nav.theme' | translate"

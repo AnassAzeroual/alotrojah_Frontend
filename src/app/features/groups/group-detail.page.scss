@@ -63,12 +63,14 @@
       border-color: var(--green-600);
       color: #fff;
 
-      [data-theme='dark'] & {
+      :host-context([data-theme='dark']) & {
         color: #063325;
       }
     }
   }
 }
+
+// ---- Inline edit card ----
 
 .edit-actions {
   display: flex;
@@ -128,7 +130,7 @@ h1 {
     font-size: var(--text-lg);
     color: var(--green-800);
 
-    [data-theme='dark'] & {
+    :host-context([data-theme='dark']) & {
       color: var(--green-300);
     }
   }
@@ -183,7 +185,7 @@ h1 {
   color: var(--green-800);
   white-space: nowrap;
 
-  [data-theme='dark'] & {
+  :host-context([data-theme='dark']) & {
     color: var(--green-300);
   }
 }
@@ -237,7 +239,7 @@ h1 {
     font-size: var(--text-lg);
     color: var(--green-800);
 
-    [data-theme='dark'] & {
+    :host-context([data-theme='dark']) & {
       color: var(--green-300);
     }
   }
@@ -266,7 +268,7 @@ h1 {
     font-size: var(--text-lg);
     color: var(--green-800);
 
-    [data-theme='dark'] & {
+    :host-context([data-theme='dark']) & {
       color: var(--green-300);
     }
   }
@@ -335,7 +337,7 @@ tbody td {
   cursor: pointer;
   transition: transform calc(var(--dur-1) * var(--motion)) var(--ease-out);
 
-  [data-theme='dark'] & {
+  :host-context([data-theme='dark']) & {
     color: var(--green-300);
   }
 
@@ -394,9 +396,9 @@ tbody td {
   }
 }
 
-// ---- Mobile: stacked cards ----
+// ---- Phone: stacked cards ----
 
-@media (max-width: 640px) {
+@include down($bp-md) {
   .meta-card {
     grid-template-columns: 1fr;
   }
@@ -458,6 +460,12 @@ tbody td {
     }
   }
 
+  // Zebra the label/value rows so each value stays paired with its label.
+  tbody tr.row-link td:nth-child(even) {
+    background: var(--color-row-tint);
+    border-radius: var(--radius-sm);
+  }
+
   .detail-row {
     margin-top: calc(var(--space-3) * -1);
     padding: 0 var(--space-2) var(--space-2);
@@ -475,5 +483,28 @@ tbody td {
 
   .detail-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+// Phone + tablet: day chips are the edit card's primary control — 44px touch
+// floor; the nav/CTA links (back, edit, WhatsApp) share it. This block MUST
+// stay last: .wa-btn/.expander base rules below it in source order would win
+// the specificity tie and shrink the controls again (detail audit 2026-10-17
+// caught 38px WhatsApp links and 28px expanders).
+@include down($bp-lg) {
+  .day-pick .day-chip {
+    min-height: 44px;
+  }
+
+  .back-btn,
+  .edit-btn,
+  .wa-btn {
+    min-height: 44px;
+  }
+
+  // Row expander shares the groups-list touch floor.
+  .expander {
+    width: 44px;
+    height: 44px;
   }
 }

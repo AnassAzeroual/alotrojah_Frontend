@@ -28,7 +28,6 @@ export interface ListSort {
 }
 
 export type ListColumnAlign = 'start' | 'end' | 'center';
-export type ListColumnPriority = 'always' | 'low';
 
 /**
  * Column definition. `key` doubles as the client-sort property path and the
@@ -43,8 +42,6 @@ export interface ListColumn {
   /** Dates/times/numbers: `dir=ltr` + end-aligned (the app's `ltr-num` pattern). */
   numeric?: boolean;
   align?: ListColumnAlign;
-  /** `'low'` columns are hidden under the mobile breakpoint. */
-  priority?: ListColumnPriority;
 }
 
 /**
@@ -61,7 +58,7 @@ export class ListTableColDef<T> {
 /**
  * Reusable list table: columns config, i18n headers, server/client sorting,
  * debounced search, pagination (the shared PaginatorComponent), loading /
- * empty states and a responsive stacked-card fallback under 640px.
+ * empty states and a responsive stacked-card fallback at phone widths.
  *
  * The page keeps owning its data (`resource()`): the component only emits
  * `searchChange` / `pageChange` / `sortChange` and repaints the rows it is

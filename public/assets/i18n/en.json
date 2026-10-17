@@ -421,7 +421,8 @@
     "city": "City",
     "address": "Address",
     "phone": "Phone",
-    "manager": "Manager"
+    "manager": "Manager",
+    "stats": "Sections / students"
   },
   "unit": {
     "hizb_one": "hizb",
@@ -533,6 +534,7 @@
     "attendance": "Attendance",
     "save_attendance": "Save attendance",
     "scores": "Scores",
+    "total": "Total",
     "save_scores": "Save scores",
     "save_failed": "Could not save scores — check the highlighted fields",
     "over_max": "Over the limit ({{max}})",

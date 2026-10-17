@@ -7,6 +7,7 @@
 // the library colors the event natively from `event.color` (background =
 // secondary, border = primary, text = secondaryText), so only the custom
 // month-cell pills need per-type CSS here.
+@use 'tokens' as *;
 
 // Detail-card datetime range editor: two single-date pickers (start + end),
 // each committing on one pick — picking the start can never rewrite the end.
@@ -128,6 +129,13 @@ app-session-range-picker {
 .cal-nav {
   display: flex;
   gap: var(--space-1);
+}
+
+// Phone + tablet: icon-only prev/next bump to a 44px-wide touch target.
+@include down($bp-lg) {
+  .cal-nav .btn {
+    min-width: 44px;
+  }
 }
 
 .cal-month-view,

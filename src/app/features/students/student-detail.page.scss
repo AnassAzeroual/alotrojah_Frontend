@@ -9,7 +9,7 @@
     font-size: var(--text-lg);
     color: var(--green-800);
 
-    [data-theme='dark'] & {
+    :host-context([data-theme='dark']) & {
       color: var(--green-300);
     }
   }

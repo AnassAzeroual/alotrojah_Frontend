@@ -1,165 +1,10 @@
-// Design tokens — single source of truth. Teal enterprise dashboard, RTL-first.
-// Light default on :root, dark overrides on [data-theme='dark'].
-:root {
-  --color-primary: #00b8a9;
-  --color-primary-dark: #0e9f6e;
-  --color-primary-deep: #0a7a56;
-  --color-accent: #8b5cf6;
-  --color-accent-2: #06b6d4;
-
-  --green-50: #effdf9;
-  --green-100: #d7f7ec;
-  --green-200: #b0eee0;
-  --green-300: #7de2cb;
-  --green-400: #3ecfb3;
-  --green-500: #00b8a9;
-  --green-600: #0e9f6e;
-  --green-700: #0a7a56;
-  --green-800: #084434;
-  --green-900: #063325;
-
-  --color-gold: #c9a227;
-  --color-gold-soft: #f4e9c8;
-  --color-gold-dark: #7a5f16;
-
-  // Session-event card palette (seasons-calendar): soft tints carry the card
-  // background, the strong hues drive the 1px accent border, exam stays solid.
-  --color-mint: #e6f4ea;
-  --color-gold-tint: #fef9c3;
-  --color-amber-dark: #713f12;
-  --color-burgundy: #9f1239;
-
-  --color-bg: #f8fafc;
-  --color-bg-soft: #eef4f2;
-  --color-surface: #ffffff;
-  --color-surface-2: #f1f5f9;
-  --color-text: #101c19;
-  --color-muted: #64748b;
-  --color-border: #e2e8f0;
-  --color-border-strong: #cbd5e1;
-
-  --color-danger: #e11d48;
-  --color-danger-soft: #ffe4e6;
-  --color-warn: #d97706;
-  --color-warn-soft: #fef3c7;
-  --color-ok: #0e9f6e;
-  --color-ok-soft: #d1fae5;
-  --color-info: #0284c7;
-  --color-info-soft: #e0f2fe;
-
-  --radius: 16px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --radius-full: 999px;
-
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-
-  --shadow-1: 0 1px 2px rgb(16 28 25 / 0.05);
-  --shadow-2: 0 4px 16px rgb(16 28 25 / 0.06), 0 1px 3px rgb(0 184 169 / 0.08);
-  --shadow-3: 0 12px 32px rgb(16 28 25 / 0.1), 0 4px 12px rgb(0 184 169 / 0.1);
-  --shadow-4: 0 20px 48px rgb(16 28 25 / 0.14);
-  --shadow-5: 0 28px 72px rgb(16 28 25 / 0.18);
-  --shadow: var(--shadow-2);
-  --glow-teal: 0 0 0 4px rgb(0 184 169 / 0.14), 0 8px 24px rgb(0 184 169 / 0.28);
-
-  --ease-out: cubic-bezier(0.22, 0.9, 0.28, 1);
-  --ease-spring: cubic-bezier(0.34, 1.4, 0.4, 1);
-  --dur-1: 120ms;
-  --dur-2: 220ms;
-  --dur-3: 380ms;
-  --motion: 1;
-
-  --z-nav: 30;
-  --z-header: 40;
-  --z-toolbar: 15;
-  --z-toast: 50;
-  --z-dropdown: 25;
-
-  --nav-height: 64px;
-  --sidebar-w: 268px;
-  --sidebar-w-collapsed: 84px;
-  --font-stack: 'Readex Pro', 'Tajawal', 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
-  --font-quran: 'Amiri', 'Cairo', 'Segoe UI', serif;
-
-  --text-xs: clamp(0.72rem, 0.68rem + 0.2vw, 0.78rem);
-  --text-sm: clamp(0.82rem, 0.78rem + 0.2vw, 0.88rem);
-  --text-md: 1rem;
-  --text-lg: clamp(1.1rem, 1rem + 0.5vw, 1.25rem);
-  --text-xl: clamp(1.3rem, 1.1rem + 1vw, 1.6rem);
-  --text-2xl: clamp(1.6rem, 1.3rem + 1.6vw, 2.1rem);
-
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --tracking-wide: 0.03em;
-
-  --bg-pattern-opacity: 0.5;
-  --card-border: rgb(16 28 25 / 0.06);
-
-  --color-memorization-bg: #180e59;
-  --color-memorization-text: #fff;
-  --color-memorization-border: #0e9f6e;
-
-  --color-revision-bg: #fef9c3;
-  --color-revision-text: #713f12;
-  --color-revision-border: #c9a227;
-
-  --color-exam-bg: #e11d48;
-  --color-exam-text: #ffffff;
-  --color-exam-border: #9f1239;
-}
-
-[data-theme='dark'] {
-  --color-memorization-bg: #180e59;
-  --color-memorization-text: #fff;
-  --color-memorization-border: #4c265f;
-
-  --color-revision-bg: #451a03;
-  --color-revision-text: #fef08a;
-  --color-revision-border: #f59e0b;
-
-  --color-exam-bg: #881337;
-  --color-exam-text: #ffe4e6;
-  --color-exam-border: #fb7185;
-
-  --color-bg: #0b1512;
-  --color-bg-soft: #0f1e1a;
-  --color-surface: #12211d;
-  --color-surface-2: #162825;
-  --color-text: #eaf4f1;
-  --color-muted: #94b3ad;
-  --color-border: rgb(255 255 255 / 0.08);
-  --color-border-strong: rgb(255 255 255 / 0.14);
-  --card-border: rgb(255 255 255 / 0.08);
-
-  --green-50: #0f2a24;
-  --green-100: #14352d;
-  // Lightened so green-700/800 text reads on dark surfaces
-  // (#3ecfb3 8.55:1, #7de2cb 10.8:1 on --color-surface).
-  --green-700: #3ecfb3;
-  --green-800: #7de2cb;
-
-  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-2: 0 8px 24px rgb(0 0 0 / 0.45), 0 2px 8px rgb(0 184 169 / 0.12);
-  --shadow-3: 0 16px 48px rgb(0 0 0 / 0.5);
-  --shadow: var(--shadow-2);
-
-  --color-gold-dark: #e8c84a;
-  --bg-pattern-opacity: 0.16;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --motion: 0;
-  }
-}
+// SCSS helpers only — breakpoints and layout mixins. The token CSS
+// (:root light values + [data-theme='dark'] overrides) lives in _theme.scss,
+// loaded once globally by styles.scss. Keep CSS-emitting rules OUT of this
+// partial: Angular's emulated encapsulation stamps [_ngcontent] onto every
+// selector of component styles, so a component that @use's a partial carrying
+// `[data-theme='dark']` or `:root` inlines selectors that can never match and
+// silently bloats every component's style budget.
 
 // Breakpoints (use min-width only — mobile first)
 $bp-sm: 480px;
@@ -170,5 +15,78 @@ $bp-xl: 1280px;
 @mixin up($bp) {
   @media (min-width: $bp) {
     @content;
+  }
+}
+
+// Exception to mobile-first: the off-canvas drawer only exists below $bp-md,
+// and hiding it up to 767px needs a max-width query.
+@mixin down($bp) {
+  @media (max-width: ($bp - 1px)) {
+    @content;
+  }
+}
+
+// Phone card reflow: below $bp-md a wide table collapses into stacked cards.
+// Data <td>s carry [attr.data-label] (translated); colspan form cells without
+// it stay block so inline edit forms keep their layout. Pass the table's
+// selector so the rules outrank each page's base td styles.
+@mixin table-cards($table) {
+  @include down($bp-md) {
+    #{$table} {
+      width: 100%;
+      min-width: 0;
+    }
+
+    #{$table} thead {
+      display: none;
+    }
+
+    #{$table} tbody {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    #{$table} tbody tr {
+      display: block;
+      background: var(--color-surface);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    #{$table} tbody td {
+      display: block;
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    #{$table} tbody tr td:last-child {
+      border-bottom: 0;
+    }
+
+    #{$table} tbody td[data-label] {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-1) var(--space-3);
+      text-align: start;
+    }
+
+    #{$table} tbody td[data-label]::before {
+      content: attr(data-label);
+      flex: none;
+      // Label leads; the value (or action buttons) group at the far end.
+      margin-inline-end: auto;
+      color: var(--color-muted);
+      font-size: var(--text-xs);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    // Zebra the labeled rows: on a tall phone card every pair looked alike,
+    // so the eye lost track of which value belonged to which label.
+    #{$table} tbody td:nth-child(even) {
+      background: var(--color-row-tint);
+    }
   }
 }

@@ -1,3 +1,5 @@
+@use '../../../styles/tokens' as *;
+
 .table-card {
   padding: var(--space-4);
 }
@@ -120,4 +122,71 @@
 
 .erow-error {
   padding-inline: var(--space-3);
+}
+
+// Phone: the 72rem sheet reflows to one card per pupil — the internal
+// x-scroll and sticky pupil column retire, every data cell carries its own
+// label (module cells reuse the module name), and controls group at the far end.
+@include down($bp-md) {
+  .etable {
+    min-width: 0;
+  }
+
+  .erow {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: stretch;
+  }
+
+  .erow.ehead {
+    display: none;
+  }
+
+  .ecell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+  }
+
+  // Zebra the labeled rows so each label stays paired with its value.
+  .erow.line:not(.dirty) .ecell:nth-child(even) {
+    background: var(--color-row-tint);
+  }
+
+  .ecell:not(.pupil)::before {
+    content: attr(data-label);
+    flex: none;
+    margin-inline-end: auto;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .ecell.pupil {
+    position: static;
+  }
+
+  .ecell.goal {
+    align-items: stretch;
+  }
+
+  .ecell.goal .input {
+    width: 100%;
+  }
+}
+
+// Phone + tablet: the sheet's raw inputs take the app control chrome and the
+// 44px touch floor — desktop keeps the compact native density.
+@include down($bp-lg) {
+  .ecell .input {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
 }

@@ -155,19 +155,19 @@
           }
           @for (c of centers.value() ?? []; track c.id) {
             <tr>
-              <td>
+              <td [attr.data-label]="'center.name' | translate">
                 <strong>{{ c.name }}</strong>
               </td>
-              <td>{{ c.city ?? '—' }}</td>
-              <td>{{ c.address ?? '—' }}</td>
-              <td>{{ c.manager_name ?? '—' }}</td>
-              <td>
+              <td [attr.data-label]="'center.city' | translate">{{ c.city ?? '—' }}</td>
+              <td [attr.data-label]="'center.address' | translate">{{ c.address ?? '—' }}</td>
+              <td [attr.data-label]="'center.manager' | translate">{{ c.manager_name ?? '—' }}</td>
+              <td [attr.data-label]="'center.phone' | translate">
                 <span class="ltr-num" dir="ltr">{{ c.phone ?? '—' }}</span>
               </td>
-              <td>
+              <td [attr.data-label]="'center.stats' | translate">
                 <span class="ltr-num">{{ c.groups_count ?? 0 }} / {{ c.students_count ?? 0 }}</span>
               </td>
-              <td class="actions-col">
+              <td class="actions-col" [attr.data-label]="'common.actions' | translate">
                 <button
                   type="button"
                   class="btn btn-ghost btn-sm"

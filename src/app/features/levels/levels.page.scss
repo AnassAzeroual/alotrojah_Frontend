@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 .toolbar.card {
   flex-direction: row;
   border-radius: var(--radius-xl);
@@ -99,5 +101,15 @@
     background: var(--color-bg-hover);
     border-color: var(--color-primary);
     color: var(--color-primary-dark);
+  }
+}
+
+// Phone + tablet: in-card/touch buttons meet the 44px floor (the stacked-card
+// reflow itself stays phone-only).
+@include table-cards('.levels-table');
+
+@include down($bp-lg) {
+  .btn-sm {
+    min-height: 44px;
   }
 }

@@ -3,9 +3,11 @@ import {
   Component,
   computed,
   DestroyRef,
+  ElementRef,
   inject,
   resource,
   signal,
+  viewChild,
 } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -167,6 +169,7 @@ const ITEMS: readonly NavItem[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
+  host: { '(document:keydown.escape)': 'onEscape()' },
 })
 export class ShellComponent {
   private readonly auth = inject(AuthService);
@@ -178,6 +181,8 @@ export class ShellComponent {
   readonly prefs = inject(AdminPrefsService);
   readonly collapsed = signal(false);
   readonly mobileOpen = signal(false);
+  private readonly menuBtn = viewChild<ElementRef<HTMLButtonElement>>('menuBtn');
+  private readonly sidebarEl = viewChild<ElementRef<HTMLElement>>('sidebarEl');
   readonly now = signal(new Date());
   readonly isDark = computed(() => this.theme.mode() === 'dark');
 
@@ -192,6 +197,14 @@ export class ShellComponent {
   readonly gregorian = computed(() => {
     const d = this.now();
     const date = d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const time = d.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return `${date} - ${time}`;
+  });
+
+  /** Phone variant of {@link gregorian}: numeric day/month keeps the chip narrow. */
+  readonly gregorianShort = computed(() => {
+    const d = this.now();
+    const date = d.toLocaleString('en-GB', { day: '2-digit', month: '2-digit' });
     const time = d.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
     return `${date} - ${time}`;
   });
@@ -244,6 +257,23 @@ export class ShellComponent {
     }
   });
 
+  /** Phone variant of {@link hijri}: day/month/year digits only, no weekday. */
+  readonly hijriShort = computed(() => {
+    const lang = this.language.current();
+    const locale = `${lang}-u-ca-islamic-umalqura`;
+    try {
+      const d = new Date(this.now());
+      d.setDate(d.getDate() + this.hijriOffsetDays);
+      return new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+      }).format(d);
+    } catch {
+      return '';
+    }
+  });
+
   readonly items = computed(() => {
     const role = this.user()?.role;
     return ITEMS.filter((i) => role !== undefined && i.roles.includes(role));
@@ -278,6 +308,11 @@ export class ShellComponent {
   });
 
   constructor() {
+    // Tablet (768–1023): start with the rail — an expanded 268px sidebar
+    // leaves the topbar ~500px, which the date chips + identity cannot fit.
+    if (window.matchMedia?.('(min-width: 768px) and (max-width: 1023px)')?.matches) {
+      this.collapsed.set(true);
+    }
     const timer = setInterval(() => this.now.set(new Date()), 30_000);
     const destroy = inject(DestroyRef);
     destroy.onDestroy(() => clearInterval(timer));
@@ -290,8 +325,36 @@ export class ShellComponent {
   toggleSidebar(): void {
     this.collapsed.update((v) => !v);
   }
+
+  openMobile(): void {
+    this.mobileOpen.set(true);
+    // Focus once the open class has cleared the closed state's
+    // visibility:hidden — focusing earlier silently fails, and Tab would
+    // stay on the topbar controls behind the scrim.
+    const focusDrawer = (tries: number): void => {
+      const el = this.sidebarEl()?.nativeElement;
+      if (el && getComputedStyle(el).visibility === 'visible') {
+        el.focus({ preventScroll: true });
+      } else if (tries > 0) {
+        requestAnimationFrame(() => focusDrawer(tries - 1));
+      }
+    };
+    requestAnimationFrame(() => focusDrawer(5));
+  }
+
   closeMobile(): void {
     this.mobileOpen.set(false);
+  }
+
+  /** Esc / scrim dismissal: close and hand focus back to the menu button. */
+  closeMobileToMenu(): void {
+    if (!this.mobileOpen()) return;
+    this.mobileOpen.set(false);
+    this.menuBtn()?.nativeElement.focus({ preventScroll: true });
+  }
+
+  onEscape(): void {
+    this.closeMobileToMenu();
   }
 
   logout(): void {

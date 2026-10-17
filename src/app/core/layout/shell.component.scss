@@ -1,6 +1,8 @@
 @use '../../styles/tokens' as *;
 
 .shell {
+  // Sticky stacks below the topbar (.toolbar in _layout.scss) key off this.
+  --topbar-h: 61px;
   min-height: 100dvh;
   position: relative;
   background: var(--color-bg);
@@ -42,7 +44,9 @@
   background: radial-gradient(circle at 60% 40%, rgb(139 92 246 / 0.22), transparent 65%);
 }
 
-[data-theme='dark'] .bg-orb {
+// Scoped via .shell.dark: plain [data-theme] ancestors can't compile in
+// component styles (Angular puts the content attr on every compound).
+.shell.dark .bg-orb {
   opacity: 0.32;
 }
 
@@ -65,15 +69,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-3);
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   backdrop-filter: blur(18px);
   border-inline-end: 1px solid var(--color-border);
   transition:
     width var(--dur-3) var(--ease-spring),
-    transform var(--dur-3) var(--ease-out);
+    transform var(--dur-3) var(--ease-out),
+    visibility var(--dur-3);
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 .side-brand {
@@ -89,6 +95,7 @@
   text-decoration: none;
   color: inherit;
   min-width: 0;
+  min-height: 44px;
   flex: 1;
 }
 
@@ -120,14 +127,16 @@
     color: var(--color-primary-dark);
   }
 
-  [data-theme='dark'] & strong {
-    color: #5eead4;
-  }
-
   small {
     font-size: var(--text-xs);
     color: var(--color-muted);
   }
+}
+
+.shell.dark .brand-txt strong,
+.shell.dark .brand-badge,
+.shell.dark .clock .date-chip {
+  color: #5eead4;
 }
 
 .brand-badge {
@@ -137,10 +146,6 @@
   border-radius: var(--radius-full);
   padding: 2px 8px;
   flex: none;
-
-  [data-theme='dark'] & {
-    color: #5eead4;
-  }
 }
 
 .side-search {
@@ -255,10 +260,6 @@
   gap: 0;
 }
 
-.shell.collapsed .side-nav a .glow {
-  display: none;
-}
-
 .side-foot {
   display: flex;
   flex-direction: column;
@@ -288,6 +289,7 @@
   align-items: center;
   gap: var(--space-2);
   width: 100%;
+  min-height: 44px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   border-radius: var(--radius-md);
@@ -320,7 +322,7 @@
   position: fixed;
   inset: 0;
   background: rgb(0 0 0 / 0.4);
-  z-index: 25;
+  z-index: calc(var(--z-header) + 1);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--dur-2);
@@ -354,6 +356,7 @@
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-4);
+  padding-block-start: max(var(--space-2), env(safe-area-inset-top));
   background: color-mix(in srgb, var(--color-bg) 78%, transparent);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-border);
@@ -367,15 +370,9 @@
 }
 
 .icon-btn {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
   color: var(--color-muted);
-  cursor: pointer;
   position: relative;
   transition: all var(--dur-2) var(--ease-spring);
 
@@ -433,8 +430,9 @@
     height: unset !important;
     margin: 0 5px;
 
-    [data-theme='dark'] & {
-      color: #5eead4;
+    // Phone renders the numeric short form; ≥$bp-md the full localized date.
+    .chip-short {
+      display: none;
     }
 
     &:hover {
@@ -494,20 +492,19 @@
 }
 
 .content {
-  padding: var(--space-4);
-  padding-bottom: calc(var(--space-6) + var(--nav-height));
+  // Without width, flex-item auto inline margins size this box to fit-content.
   width: 100%;
-  box-sizing: border-box;
+  padding: var(--space-4) var(--space-4) var(--space-6);
+  max-width: 1520px;
+  margin-inline: auto;
 
   @include up($bp-md) {
     padding: var(--space-5);
   }
 }
 
-.menu-btn {
-  display: grid;
-}
-
+// .icon-btn already renders as grid + 44×44 (global _buttons.scss); the
+// menu/desk pair only flips visibility across $bp-md.
 .desk-btn {
   display: none;
 }
@@ -522,32 +519,71 @@
   }
 }
 
-@media (max-width: 767px) {
+// Desktop/tablet: the drawer language instance stays out of the static sidebar.
+.drawer-lang {
+  display: none;
+}
+
+// Tablet + phone: the topbar budget cannot carry the full date strings or the
+// identity block below $bp-lg (the rail leaves ~684px; an expanded sidebar
+// ~500px). Chips switch to numeric short forms, the decorative "today" label,
+// identity block and dead bell (no click handler) drop out.
+@include down($bp-lg) {
+  .topbar {
+    padding-inline: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  // The rail leaves the logo-only brand link 42px wide — widen it to the
+  // 44px touch floor.
+  .brand {
+    min-width: 44px;
+  }
+
+  .clock .date-chip {
+    margin: 0 2px;
+    padding: 4px 8px;
+
+    // Same nesting depth as the base rule (.clock .date-chip .chip-short) —
+    // a shallower selector loses on specificity regardless of source order.
+    .chip-full {
+      display: none;
+    }
+
+    .chip-short {
+      display: inline;
+    }
+  }
+
+  .clock small,
+  .user-chip .who,
+  .top-end .icon-btn.dot {
+    display: none;
+  }
+}
+
+@include down($bp-md) {
+
+  // Off-canvas drawer: slides in from the inline-start edge (same side as the
+  // menu button in both directions). visibility removes it from tab order.
   .sidebar {
-    transform: translateX(105%);
     width: min(300px, 86vw);
-
-    html[dir='rtl'] & {
-      transform: translateX(-105%);
-    }
-
-    &.open {
-      transform: translateX(0) !important;
-    }
+    transform: translateX(-105%);
+    visibility: hidden;
+    z-index: calc(var(--z-header) + 2);
+    padding-top: max(var(--space-4), env(safe-area-inset-top));
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
   }
 
-  [dir='rtl'] .sidebar {
-    inset-inline-start: auto;
-    inset-inline-end: 0;
-    transform: translateX(-105%);
-  }
-
-  [dir='ltr'] .sidebar {
-    transform: translateX(-105%);
+  // :host-context (not [dir='rtl'] descendant — that compiles to an
+  // unscoped-ancestor form Angular can never match).
+  :host-context([dir='rtl']) .sidebar {
+    transform: translateX(105%);
   }
 
   .sidebar.open {
     transform: translateX(0) !important;
+    visibility: visible;
   }
 
   .main,
@@ -555,11 +591,15 @@
     padding-inline-start: 0;
   }
 
-  .clock small {
+  // Topbar phone budget: menu + both date chips (short) + avatar. Theme and
+  // language switch move into the drawer foot; the bell is already gone above.
+  .top-end .icon-btn,
+  .top-end app-language-switcher {
     display: none;
   }
 
-  .user-chip .who {
-    display: none;
+  // Language switching reachable via the drawer instance at phone widths.
+  .drawer-lang {
+    display: block;
   }
 }

@@ -147,15 +147,19 @@
                 (click)="pickedStudent.set(s.id)"
                 (keydown.enter)="pickedStudent.set(s.id)"
               >
-                <td>
+                <td [attr.data-label]="'dash.studentName' | translate">
                   <span class="stud"
                     ><span class="ava" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span
                     >{{ s.full_name }}</span
                   >
                 </td>
-                <td class="mut">{{ s.group?.name ?? '—' }}</td>
-                <td class="mut">{{ 'mode.' + s.memorization_mode | translate }}</td>
-                <td>
+                <td class="mut" [attr.data-label]="'list.group' | translate">
+                  {{ s.group?.name ?? '—' }}
+                </td>
+                <td class="mut" [attr.data-label]="'list.mode' | translate">
+                  {{ 'mode.' + s.memorization_mode | translate }}
+                </td>
+                <td [attr.data-label]="'dash.status' | translate">
                   @if (s.status === 'active') {
                     <span class="pill ok">{{ 'studentStatus.active' | translate }}</span>
                   } @else {

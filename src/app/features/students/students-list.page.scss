@@ -1,7 +1,24 @@
+@use '../../styles/tokens' as *;
+
 // Students list now uses global .page/.toolbar/.grid-auto/.card.
 // Keeps only toolbar shaping: search spans full row on phones.
 
 .toolbar.card {
   flex-direction: row;
   border-radius: var(--radius-xl);
+}
+
+// Phone: one card per row and unwrapped names — the 2-up grid ellipsized the
+// pupil's primary identifier (`.row-top strong` is global-nowrap).
+@include down($bp-md) {
+  .grid-auto {
+    grid-template-columns: 1fr;
+  }
+
+  .row-top strong {
+    overflow: visible;
+    white-space: normal;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
 }

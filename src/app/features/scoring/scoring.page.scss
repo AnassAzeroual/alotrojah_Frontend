@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 .toolbar.card {
   flex-direction: row;
   border-radius: var(--radius-xl);
@@ -125,5 +127,24 @@
     background: var(--color-bg-hover);
     border-color: var(--color-primary);
     color: var(--color-primary-dark);
+  }
+}
+
+// Phone + tablet: in-card/touch controls meet the 44px floor (the stacked-card
+// reflow itself stays phone-only).
+@include table-cards('.scoring-table');
+
+@include down($bp-lg) {
+  .btn-sm {
+    min-height: 44px;
+  }
+
+  .scoring-table input[type='number'].mini {
+    min-height: 44px;
+  }
+
+  .scoring-table input[type='checkbox'] {
+    width: 44px;
+    height: 44px;
   }
 }

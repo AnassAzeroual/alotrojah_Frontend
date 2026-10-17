@@ -14,8 +14,8 @@
 
 .auth-topbar {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  right: max(14px, env(safe-area-inset-right, 0px));
   z-index: 5;
   display: flex;
   align-items: center;
@@ -38,6 +38,8 @@
     border: 0;
     background: transparent;
     padding: 6px 12px;
+    min-height: 44px; // touch floor — pills must not rely on the global default
+    min-width: 44px;
     font: inherit;
     font-size: 12px;
     font-weight: 700;
@@ -79,7 +81,7 @@
   display: grid;
   color: var(--color-bg);
   cursor: pointer;
-  flex: 0 0 34px;
+  flex: 0 0 44px;
   place-items: center;
   border-radius: 50%;
   border: 1px solid var(--card-border);
@@ -103,10 +105,15 @@
 }
 
 .auth-card {
-  margin: 31px;
-  border-radius: 45px;
+  // Fluid edge: the floating-card inset collapses to near-full-bleed at phone
+  // widths (was a flat 31px margin + 45px radius).
+  --auth-edge: clamp(12px, 4vw, 31px);
+  margin: var(--auth-edge);
+  margin-block: max(var(--auth-edge), env(safe-area-inset-top, 0px))
+    max(var(--auth-edge), env(safe-area-inset-bottom, 0px));
+  border-radius: clamp(20px, 6vw, 45px);
   overflow: hidden;
-  min-height: calc(100dvh - 62px);
+  min-height: calc(100dvh - 2 * var(--auth-edge));
   display: grid;
   grid-template-columns: 1fr;
 
@@ -151,7 +158,9 @@
 
     .arabic-verse {
       font-family: var(--font-quran);
-      font-size: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+      // Smaller phone minimum: the register bismillah wrapped to 4 lines at
+      // the old 2.5rem floor and outgrew the art panel.
+      font-size: clamp(1.75rem, 1rem + 3.75vw, 4rem);
       line-height: 1.3;
       color: #ffd700;
       margin: 0 0 1rem 0;
@@ -225,7 +234,7 @@
     padding: 0 18px;
     height: 56px;
     font: inherit;
-    font-size: 15px;
+    font-size: 16px; // iOS zoom guard — was 15px
     color: var(--color-text);
     transition:
       border-color 160ms,
@@ -260,11 +269,11 @@
 
   .pw-eye {
     position: absolute;
-    inset-inline-end: 8px;
+    inset-inline-end: 6px;
     top: 50%;
     translate: 0 -50%;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     display: grid;
     place-items: center;
     border: 0;
@@ -374,9 +383,11 @@
 // Field pairs for register form
 .field-pair {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1rem;
 
+  // Side-by-side only once both inputs keep a usable width (was 2-col at
+  // every width — ~136px inputs at 390px phone).
   @include up($bp-sm) {
     grid-template-columns: 1fr 1fr;
   }

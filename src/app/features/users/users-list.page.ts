@@ -38,8 +38,7 @@ const COLUMNS: readonly ListColumn[] = [
   { key: 'teacher_type', headerKey: 'users.teacher_type', sortKey: false },
   { key: 'center_id', headerKey: 'users.center', sortKey: 'center_id' },
   { key: 'is_active', headerKey: 'users.is_active', sortKey: 'is_active' },
-  // Hidden on mobile, matching the pre-migration layout (row link is the entry point).
-  { key: 'actions', headerKey: '', sortKey: false, align: 'end', priority: 'low' },
+  { key: 'actions', headerKey: '', sortKey: false, align: 'end' },
 ];
 
 @Component({

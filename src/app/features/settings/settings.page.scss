@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 .check {
   display: flex;
   align-items: flex-start;
@@ -15,5 +17,16 @@
   small {
     display: block;
     color: var(--color-text-muted);
+  }
+}
+
+// Phone + tablet: the 20px native box is below the 44px touch floor. flex:none
+// stops long label text from squeezing the box in the flex row.
+@include down($bp-lg) {
+  .check input[type='checkbox'] {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    margin-top: 0;
   }
 }

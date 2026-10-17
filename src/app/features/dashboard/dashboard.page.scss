@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 .dash {
   display: flex;
   flex-direction: column;
@@ -404,4 +406,17 @@ tbody tr {
   height: 1px;
   overflow: hidden;
   clip-path: inset(50%);
+}
+
+// Phone: stacked cards for the students table (data-labels in template);
+// the panel shell drops out so each row-card sits on the page background.
+@include table-cards('table');
+
+@include down($bp-md) {
+  .panel {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
 }

@@ -421,7 +421,8 @@
     "city": "Ville",
     "address": "Adresse",
     "phone": "Téléphone",
-    "manager": "Responsable"
+    "manager": "Responsable",
+    "stats": "Sections / élèves"
   },
   "unit": {
     "hizb_one": "hizb",
@@ -533,6 +534,7 @@
     "attendance": "Présence",
     "save_attendance": "Enregistrer la présence",
     "scores": "Notes",
+    "total": "Total",
     "save_scores": "Enregistrer les notes",
     "save_failed": "Enregistrement impossible — vérifiez les champs surlignés",
     "over_max": "Dépasse la limite ({{max}})",

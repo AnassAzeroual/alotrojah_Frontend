@@ -7,6 +7,9 @@
 //   npm run shots -- --reuse        → drive already-running :8002/:4202
 //   npm run shots -- --retries 3    → total attempts per capture (default 2)
 //   npm run shots -- --timeout 45   → readiness-gate seconds (default 30)
+//   npm run shots -- --viewport phone   → 390×844 into screenshots/<day>/phone/
+//   npm run shots -- --viewport tablet  → 768×1024 into screenshots/<day>/tablet/
+//   (default viewport: desktop 1440×900 → screenshots/<day>/ flat, as before)
 // Boots its OWN backend (verify DB via env, never dev) + frontend, refuses to
 // run if :8002/:4202 are busy (a foreign server there means "hands off"),
 // captures the pages in both themes, then tears everything down. Read-only:
@@ -31,6 +34,14 @@ const ADMIN_PASSWORD = 'password123';
 // stops for a single bad page. readyTimeoutMs caps the HARD functional gate
 // only; every settle layer stays fail-open regardless of it.
 const RUN = { attempts: 2, readyTimeoutMs: 30000 };
+// Named capture viewports (--viewport). Desktop stays the default AND keeps
+// the flat output dir; phone/tablet write into their own subdirs so the same
+// page+theme filenames never clobber each other across viewports.
+const VIEWPORTS = {
+  phone: { width: 390, height: 844 },
+  tablet: { width: 768, height: 1024 },
+  desktop: { width: 1440, height: 900 },
+};
 // Injected just before each shot: freeze animations/transitions and hide the
 // caret so every capture is deterministic (no mid-animation/blink frames).
 const FREEZE_CSS =
@@ -61,8 +72,8 @@ const PAGES = [
   { path: '/scoring', name: 'scoring', ready: 'المجموع الأسبوعي' },
   { path: '/exams', name: 'exams', ready: 'النوع' },
   { path: '/exams/new', name: 'exams-new', ready: 'اختبار جديد' },
-  // Picker-gated with no picker-independent content marker: the pathname
-  // assert + settle below carry it (sidebar text would match vacuously).
+  // Picker-gated: the h1 alone carries the wait (nav.reviews label is the
+  // same string; its hidden phone-drawer match is filtered out).
   { path: '/reviews', name: 'reviews', ready: 'المراجعة' },
   { path: '/results/term', name: 'results-term', ready: 'نتائج الفصل' },
   { path: '/results/season', name: 'results-season', ready: 'نتائج الموسم' },
@@ -70,8 +81,8 @@ const PAGES = [
   { path: '/reports/season', name: 'reports-season', ready: 'تقرير الموسم' },
   { path: '/news', name: 'news', ready: 'نشر' },
   // Picker-gated like reviews: the generate button ('توليد الرابط') only
-  // renders after picking a group, so the h1/sidebar text carries the wait
-  // and the pathname assert + settle carry the capture.
+  // renders after picking a group, so the h1 text carries the wait and the
+  // pathname assert + settle carry the capture.
   { path: '/delegate', name: 'delegate', ready: 'التفويض' },
   { path: '/notifications', name: 'notifications', ready: 'إضافة' },
   { path: '/registrations', name: 'registrations', readySelector: '.req-card, .empty' },
@@ -83,7 +94,8 @@ const PAGES = [
 /**
  * CLI flags: --jobs N (1..8, default 3), --reuse, --retries N (total attempts
  * per capture, default 2, clamp 1..5), --timeout N (readiness-gate seconds,
- * default 30, clamp 5..120). The rest are page filters.
+ * default 30, clamp 5..120), --viewport phone|tablet|desktop (default
+ * desktop; unknown values fail fast). The rest are page filters.
  */
 function parseArgs() {
   const raw = process.argv.slice(2);
@@ -91,6 +103,7 @@ function parseArgs() {
   let retries = RUN.attempts;
   let timeout = RUN.readyTimeoutMs / 1000;
   let reuse = false;
+  let viewport = 'desktop';
   const pages = [];
   for (let i = 0; i < raw.length; i++) {
     const a = raw[i];
@@ -101,16 +114,24 @@ function parseArgs() {
     else if (a.startsWith('--retries=')) retries = Number(a.slice('--retries='.length));
     else if (a === '--timeout' && i + 1 < raw.length) timeout = Number(raw[++i]);
     else if (a.startsWith('--timeout=')) timeout = Number(a.slice('--timeout='.length));
+    else if (a === '--viewport' && i + 1 < raw.length) viewport = raw[++i];
+    else if (a.startsWith('--viewport=')) viewport = a.slice('--viewport='.length);
     else if (!a.startsWith('-')) pages.push(a);
   }
   if (!Number.isFinite(jobs) || jobs < 1) jobs = 1;
   if (!Number.isFinite(retries) || retries < 1) retries = 1;
   if (!Number.isFinite(timeout) || timeout < 5) timeout = 5;
+  if (!VIEWPORTS[viewport]) {
+    throw new Error(
+      `--viewport must be one of ${Object.keys(VIEWPORTS).join(' | ')} (got "${viewport}")`,
+    );
+  }
   return {
     jobs: Math.min(8, Math.floor(jobs)),
     retries: Math.min(5, Math.floor(retries)),
     timeout: Math.min(120, Math.floor(timeout)),
     reuse,
+    viewport,
     pages,
   };
 }
@@ -211,9 +232,14 @@ async function login(page, email, password) {
  */
 async function awaitReady(page, p, pending) {
   if (p.ready) {
-    await page.getByText(p.ready, { exact: false }).first().waitFor({
-      timeout: RUN.readyTimeoutMs,
-    });
+    // Visible-only: below $bp-md the sidebar stays in the DOM but hidden, and
+    // nav-label ready texts (reviews/delegate) match its link first — a hidden
+    // first match would hang even though the page h1 carries the same text.
+    await page
+      .getByText(p.ready, { exact: false })
+      .filter({ visible: true })
+      .first()
+      .waitFor({ timeout: RUN.readyTimeoutMs });
   }
   if (p.readySelector) {
     await page.locator(p.readySelector).first().waitFor({ timeout: RUN.readyTimeoutMs });
@@ -328,7 +354,7 @@ async function shootFile(page, file) {
  * unexpected path each consume an attempt; after RUN.attempts the error is
  * rethrown for the caller to record. The run never stops for one bad page.
  */
-async function capturePage(page, p, theme, pending, outDir, day, pageErrors) {
+async function capturePage(page, p, theme, pending, outDir, relOut, pageErrors) {
   let lastErr;
   for (let attempt = 1; attempt <= RUN.attempts; attempt++) {
     pageErrors.length = 0;
@@ -354,7 +380,7 @@ async function capturePage(page, p, theme, pending, outDir, day, pageErrors) {
       await page.addStyleTag({ content: FREEZE_CSS }).catch(() => undefined);
       const n = `${String(p.i).padStart(2, '0')}-${p.name}-${theme}.png`;
       const bytes = await shootFile(page, path.join(outDir, n));
-      console.log(`shot: screenshots/${day}/${n} (${(bytes / 1024).toFixed(0)} KB)`);
+      console.log(`shot: ${relOut}/${n} (${(bytes / 1024).toFixed(0)} KB)`);
       if (pageErrors.length) {
         console.log(
           `    note: "${p.name}" [${theme}] logged ${pageErrors.length} console/page error(s):`,
@@ -381,7 +407,7 @@ async function capturePage(page, p, theme, pending, outDir, day, pageErrors) {
 }
 
 async function main() {
-  const { jobs, reuse, pages, retries, timeout } = parseArgs();
+  const { jobs, reuse, pages, retries, timeout, viewport } = parseArgs();
   RUN.attempts = retries;
   RUN.readyTimeoutMs = timeout * 1000;
   try {
@@ -454,8 +480,15 @@ async function main() {
     await Promise.all([waitFor(`${BACKEND}/up`, 'backend'), waitFor(`${FRONTEND}/`, 'frontend')]);
 
     const day = new Date().toISOString().slice(0, 10);
-    const outDir = path.join(ROOT, '..', 'screenshots', day);
+    // Desktop keeps the legacy flat dir; other viewports get a subdir so the
+    // identical page+theme filenames never overwrite the desktop set.
+    const sub = viewport === 'desktop' ? '' : viewport;
+    const outDir = path.join(ROOT, '..', 'screenshots', day, sub);
     mkdirSync(outDir, { recursive: true });
+    const relOut = sub ? `screenshots/${day}/${sub}` : `screenshots/${day}`;
+    console.log(
+      `viewport: ${viewport} ${VIEWPORTS[viewport].width}×${VIEWPORTS[viewport].height} → ${relOut}/`,
+    );
     const JOBS = selectedPages(pages).map((p, i) => ({ ...p, i }));
     const workers = Math.min(jobs, JOBS.length);
     const failures = [];
@@ -479,7 +512,7 @@ async function main() {
       Array.from({ length: workers }, (_, w) =>
         (async () => {
           const context = await browser.newContext({
-            viewport: { width: 1440, height: 900 },
+            viewport: VIEWPORTS[viewport],
             reducedMotion: 'reduce',
           });
           try {
@@ -510,7 +543,7 @@ async function main() {
               for (const p of JOBS.filter((_, j) => j % workers === w)) {
                 const row = results.get(p.i);
                 try {
-                  await capturePage(page, p, theme, () => pending, outDir, day, pageErrors);
+                  await capturePage(page, p, theme, () => pending, outDir, relOut, pageErrors);
                   okCount++;
                   row[theme] = 'ok';
                 } catch (e) {
