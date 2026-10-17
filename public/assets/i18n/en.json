@@ -91,6 +91,8 @@
     "left": "Left",
     "unsaved_warn": "You have unsaved changes. Leave without saving?",
     "unsaved_leave": "Leave",
+    "unsaved_title": "Unsaved changes",
+    "ok": "OK",
     "loading": "Loading…"
   },
   "apiErrors": {

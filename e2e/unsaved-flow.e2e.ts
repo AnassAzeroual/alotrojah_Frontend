@@ -10,13 +10,14 @@ test.describe.serial('Unsaved changes guard', () => {
     await page.locator('[data-testid^="edit-center-"]').first().click();
     await page.getByTestId('center-edit-name').fill('تعديل غير محفوظ');
 
-    // Attempt to leave with unsaved typing: guard holds the route…
+    // Attempt to leave with unsaved typing: guard holds the route and the
+    // shared CDK dialog asks for confirmation…
     await page.getByTestId('nav-students').click();
-    await expect(page.getByTestId('unsaved-guard')).toBeVisible();
+    await expect(page.getByTestId('dialog-confirm')).toBeVisible();
     await expect(page).toHaveURL(/\/centers$/);
 
     // …until the leave is confirmed (nothing was ever saved).
-    await page.getByTestId('confirm-leave').click();
+    await page.getByTestId('dialog-confirm').click();
     await expect(page).toHaveURL(/\/students$/);
 
     await page.getByTestId('nav-logout').click();
@@ -31,10 +32,10 @@ test.describe.serial('Unsaved changes guard', () => {
     await page.locator('[data-testid^="edit-center-"]').first().click();
     await page.getByTestId('center-edit-name').fill('تعديل غير محفوظ');
     await page.getByTestId('nav-students').click();
-    await expect(page.getByTestId('unsaved-guard')).toBeVisible();
+    await expect(page.getByTestId('dialog-confirm')).toBeVisible();
 
     // Cancel: stay put, draft untouched.
-    await page.locator('[data-testid="unsaved-guard"] button.btn-ghost').click();
+    await page.getByTestId('dialog-cancel').click();
     await expect(page).toHaveURL(/\/centers$/);
     await expect(page.getByTestId('center-edit-name')).toHaveValue('تعديل غير محفوظ');
 

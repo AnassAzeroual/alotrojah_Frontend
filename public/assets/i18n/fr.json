@@ -91,6 +91,8 @@
     "left": "Parti",
     "unsaved_warn": "Vous avez des modifications non enregistrées. Partir sans enregistrer ?",
     "unsaved_leave": "Partir",
+    "unsaved_title": "Modifications non enregistrées",
+    "ok": "OK",
     "loading": "Chargement…"
   },
   "apiErrors": {

@@ -61,8 +61,8 @@ test.describe.serial('Users management', () => {
     // logout (the half-filled duplicate form is dirty, so the unsaved
     // guard holds the route until the leave is confirmed — by design)
     await page.getByTestId('nav-logout').click();
-    await expect(page.getByTestId('unsaved-guard')).toBeVisible();
-    await page.getByTestId('confirm-leave').click();
+    await expect(page.getByTestId('dialog-confirm')).toBeVisible();
+    await page.getByTestId('dialog-confirm').click();
     await expect(page).toHaveURL(/\/login$/);
 
     // ---- teacher logs in, then admin deactivates, login fails ----

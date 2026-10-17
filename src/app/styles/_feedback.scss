@@ -71,3 +71,17 @@
   max-height: 88dvh;
   overflow-y: auto;
 }
+
+// CDK dialog (shared AppDialog) — classes land on the overlay backdrop/pane,
+// so they must live here in the global sheet, not in component styles.
+.app-dialog-backdrop {
+  background: rgb(6 51 37 / 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.app-dialog-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

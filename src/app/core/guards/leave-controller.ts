@@ -1,11 +1,13 @@
-import { signal } from '@angular/core';
+import { inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { AppDialogService } from '../../shared/ui/app-dialog/app-dialog.service';
 
 /**
  * Dirty-form leave confirmation. Pages expose `isDirty` (reactive form or
- * draft signals) plus the shared `leave` controller, whose `leaving` flag the
- * template renders as an inline arm→confirm banner (no window.confirm —
- * untestable and untranslatable).
+ * draft signals) plus the shared `leave` controller. When the dirty guard
+ * fires, `confirmLeave` opens the shared CDK dialog (translated, themed,
+ * RTL-safe); the observable resolves true on "leave" and false on
+ * cancel/ESC/backdrop. No inline banners, no window.confirm.
  */
 export interface DirtyPage {
   isDirty(): boolean;
@@ -13,31 +15,19 @@ export interface DirtyPage {
 }
 
 export interface LeaveController {
-  readonly leaving: ReturnType<typeof signal<boolean>>;
   confirmLeave: () => Observable<boolean>;
-  allowLeave: () => void;
-  stay: () => void;
 }
 
 export function leaveController(): LeaveController {
-  const leaving = signal(false);
-  let resolve: ((v: boolean) => void) | null = null;
-  const done = (v: boolean): void => {
-    leaving.set(false);
-    resolve?.(v);
-    resolve = null;
-  };
+  const appDialog = inject(AppDialogService);
   return {
-    leaving,
     confirmLeave: () =>
-      new Observable<boolean>((sub) => {
-        leaving.set(true);
-        resolve = (v: boolean) => {
-          sub.next(v);
-          sub.complete();
-        };
+      appDialog.confirm({
+        titleKey: 'common.unsaved_title',
+        messageKey: 'common.unsaved_warn',
+        confirmKey: 'common.unsaved_leave',
+        cancelKey: 'common.cancel',
+        danger: true,
       }),
-    allowLeave: () => done(true),
-    stay: () => done(false),
   };
 }
