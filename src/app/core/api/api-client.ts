@@ -72,6 +72,14 @@ export class ApiClient {
     );
   }
 
+  /** Multipart POST; the browser supplies the boundary, so no headers are set. */
+  postForm<T>(path: string, body: FormData): Observable<T> {
+    return this.http.post<ApiResponse<T>>(`${this.base}${path}`, body).pipe(
+      map((r) => r.data),
+      finalize(() => this.entries.clear()),
+    );
+  }
+
   put<T>(path: string, body: unknown): Observable<T> {
     return this.http.put<ApiResponse<T>>(`${this.base}${path}`, body).pipe(
       map((r) => r.data),

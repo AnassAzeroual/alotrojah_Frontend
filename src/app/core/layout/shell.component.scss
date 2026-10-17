@@ -3,6 +3,12 @@
 .shell {
   // Sticky stacks below the topbar (.toolbar in _layout.scss) key off this.
   --topbar-h: 61px;
+  // Scrim colour + strength come from the appearance settings; the dark theme
+  // strengthens the veil below so panel/text contrast survives any background.
+  --user-scrim-color: var(--color-bg);
+  --user-scrim-base: 72%;
+  --user-scrim-strength: var(--user-scrim-base);
+  --user-scrim: color-mix(in srgb, var(--user-scrim-color) var(--user-scrim-strength), transparent);
   min-height: 100dvh;
   position: relative;
   background: var(--color-bg);
@@ -18,13 +24,53 @@
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  // Painted inside the scene so blend modes have a backdrop to mix with.
+  background: var(--color-bg);
+}
+
+// User-selected background (color, image or gradient). Every property comes
+// from the inline style built by AppearanceService (mode + controls).
+.bg-user {
+  position: absolute;
+  inset: 0;
+}
+
+// Theme scrim above the background so panels and text keep their contrast.
+.bg-user-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--user-scrim);
+}
+
+.shell.dark {
+  // 72% in light mode maps to 80% in dark, as before the setting existed.
+  --user-scrim-strength: min(100%, calc(var(--user-scrim-base) * 1.111));
+}
+
+// Glassmorphism: blurs every layer painted beneath it (background + orbs).
+.bg-glass {
+  position: absolute;
+  inset: 0;
+}
+
+// Repeating pattern overlay above the background, glass and orbs, below all
+// content. Size, opacity, tint mask and inversion come from the inline style.
+.bg-pattern {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: repeat;
+}
+
+.bg-pattern.default {
+  background-image: var(--pattern-default);
 }
 
 .bg-orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(90px);
-  opacity: 0.5;
+  opacity: var(--user-orb-opacity, 0.5);
   transition: opacity var(--dur-3) var(--ease-out);
 }
 
@@ -33,7 +79,12 @@
   height: 560px;
   inset-inline-end: -160px;
   top: -160px;
-  background: radial-gradient(circle at 30% 30%, rgb(0 184 169 / 0.35), transparent 65%);
+  // The 35% wash keeps the original alpha while the color follows the setting.
+  background: radial-gradient(
+    circle at 30% 30%,
+    color-mix(in srgb, var(--user-orb-primary, #00b8a9) 35%, transparent),
+    transparent 65%
+  );
 }
 
 .orb-b {
@@ -41,22 +92,54 @@
   height: 620px;
   inset-inline-start: -200px;
   bottom: -240px;
-  background: radial-gradient(circle at 60% 40%, rgb(139 92 246 / 0.22), transparent 65%);
+  background: radial-gradient(
+    circle at 60% 40%,
+    color-mix(in srgb, var(--user-orb-secondary, #8b5cf6) 22%, transparent),
+    transparent 65%
+  );
 }
 
 // Scoped via .shell.dark: plain [data-theme] ancestors can't compile in
 // component styles (Angular puts the content attr on every compound).
 .shell.dark .bg-orb {
-  opacity: 0.32;
+  opacity: calc(var(--user-orb-opacity, 0.5) * 0.64);
 }
 
-.bg-pattern {
+// Shipped star tile, painted whenever the admin has not uploaded a pattern.
+// Size/opacity come from the appearance settings inline style.
+.bg-default-pattern {
   position: absolute;
   inset: 0;
-  opacity: var(--bg-pattern-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2300b8a9' stroke-opacity='0.16'%3E%3Cpath d='M60 10 70 50l40 10-40 10-10 40-10-40-40-10 40-10z'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 140px 140px;
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+  background-image: var(--pattern-default);
+  background-repeat: repeat;
+  background-position: center;
+}
+
+// Admin-uploaded photo; nothing is painted when none is set. The scrim tints
+// it with the active theme so panels and text keep their contrast. Size,
+// position, repeat and opacity come from the appearance settings inline style.
+.bg-custom {
+  position: absolute;
+  inset: 0;
+}
+
+.bg-custom-scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
+}
+
+.shell.dark .bg-custom-scrim {
+  background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+}
+
+// Repeating tile above the background + orbs, below all content. Size and
+// opacity come from the appearance settings inline style.
+.bg-custom-pattern {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: repeat;
 }
 
 // Sidebar — logical inline-start = right in RTL
@@ -563,7 +646,6 @@
 }
 
 @include down($bp-md) {
-
   // Off-canvas drawer: slides in from the inline-start edge (same side as the
   // menu button in both directions). visibility removes it from tab order.
   .sidebar {

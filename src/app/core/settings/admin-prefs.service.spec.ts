@@ -52,6 +52,26 @@ describe('AdminPrefsService', () => {
     expect(prefs.hideScopePickers()).toBe(false);
     expect(prefs.showCenterId()).toBe(true);
     expect(prefs.showCalDebug()).toBe(true);
+    expect(prefs.appearanceCenterId()).toBeNull();
+  });
+
+  it('persists the appearance center per account', () => {
+    auth.currentUser.set(ADMIN);
+    prefs.setAppearanceCenterId(2);
+
+    expect(prefs.appearanceCenterId()).toBe(2);
+    expect(TestBed.inject(SecureStorageService).read('alotrojah_prefs.1')).toContain(
+      '"appearanceCenterId":2',
+    );
+
+    auth.currentUser.set(TEACHER);
+    TestBed.flushEffects();
+    expect(prefs.appearanceCenterId()).toBeNull();
+
+    prefs.setAppearanceCenterId(3);
+    auth.currentUser.set(ADMIN);
+    TestBed.flushEffects();
+    expect(prefs.appearanceCenterId()).toBe(2);
   });
 
   it('persists per user and never leaks across accounts', () => {

@@ -3,11 +3,29 @@
   [class.collapsed]="collapsed()"
   [class.dark]="isDark()"
   [attr.data-collapsed]="collapsed()"
+  [style]="appearance.rootVars()"
 >
   <div class="bg-scene" aria-hidden="true">
-    <div class="bg-orb orb-a"></div>
-    <div class="bg-orb orb-b"></div>
-    <div class="bg-pattern"></div>
+    @if (appearance.hasBackground()) {
+      <div class="bg-user" [style]="appearance.backgroundLayerStyle()"></div>
+      @if (appearance.scrimEnabled()) {
+        <div class="bg-user-scrim"></div>
+      }
+    }
+    @if (appearance.orbEnabled()) {
+      <div class="bg-orb orb-a"></div>
+      <div class="bg-orb orb-b"></div>
+    }
+    @if (appearance.backdropBlur() > 0 || appearance.glassOpacity() > 0) {
+      <div class="bg-glass" [style]="appearance.glassLayerStyle()"></div>
+    }
+    @if (appearance.patternEnabled()) {
+      <div
+        class="bg-pattern"
+        [class.default]="!appearance.patternUrl()"
+        [style]="appearance.patternLayerStyle()"
+      ></div>
+    }
   </div>
 
   <!-- Sidebar (right in RTL = inline-start) -->

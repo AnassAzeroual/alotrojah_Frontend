@@ -17,6 +17,7 @@ import { RegistrationRequestsService } from '../api/registration-requests.servic
 import { LanguageService } from '../i18n/language.service';
 import { LanguageSwitcherComponent } from './language-switcher.component';
 import { AdminPrefsService } from '../settings/admin-prefs.service';
+import { AppearanceService } from '../settings/appearance.service';
 import { ThemeService } from '../theme/theme.service';
 import { Role } from '../api/api-models';
 import { APP_VERSION_SHORT } from '../version';
@@ -179,6 +180,7 @@ export class ShellComponent {
   readonly user = this.auth.currentUser;
   readonly version = APP_VERSION_SHORT;
   readonly prefs = inject(AdminPrefsService);
+  readonly appearance = inject(AppearanceService);
   readonly collapsed = signal(false);
   readonly mobileOpen = signal(false);
   private readonly menuBtn = viewChild<ElementRef<HTMLButtonElement>>('menuBtn');
@@ -308,6 +310,7 @@ export class ShellComponent {
   });
 
   constructor() {
+    this.appearance.load();
     // Tablet (768–1023): start with the rail — an expanded 268px sidebar
     // leaves the topbar ~500px, which the date chips + identity cannot fit.
     if (window.matchMedia?.('(min-width: 768px) and (max-width: 1023px)')?.matches) {
