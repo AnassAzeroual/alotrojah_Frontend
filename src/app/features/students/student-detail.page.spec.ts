@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import {
@@ -39,6 +39,11 @@ const authStub = {
   currentUser: signal<CurrentUser | null>(ADMIN),
   role: signal<CurrentUser['role'] | null>('admin'),
 };
+
+// The save flow navigates to /students and /students/:id after a successful
+// write; without any route those navigations reject with an unhandled NG04002.
+@Component({ standalone: true, template: '' })
+class RouterStubComponent {}
 
 describe('StudentDetailPage', () => {
   let fixture!: ReturnType<typeof TestBed.createComponent<StudentDetailPage>>;
@@ -105,7 +110,7 @@ describe('StudentDetailPage', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideRouter([]),
+        provideRouter([{ path: '**', component: RouterStubComponent }]),
         provideTranslateService({
           loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
         }),
@@ -235,7 +240,7 @@ describe('StudentDetailPage account link', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideRouter([]),
+        provideRouter([{ path: '**', component: RouterStubComponent }]),
         provideTranslateService({
           loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
         }),
@@ -352,7 +357,7 @@ describe('StudentDetailPage non-numeric id', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideRouter([]),
+        provideRouter([{ path: '**', component: RouterStubComponent }]),
         provideTranslateService({
           loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
         }),
