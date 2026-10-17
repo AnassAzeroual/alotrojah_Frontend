@@ -2,6 +2,16 @@
 // card-transform under 640px via data-label attributes.
 @use 'tokens' as *;
 
+// Standalone table wrappers (centres, levels, scoring) need the same themed
+// surface as .table-wrap; below $bp-md the row cards already carry their own.
+@include up($bp-md) {
+  .table-responsive {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+}
+
 .table-wrap {
   overflow-x: auto;
   border-radius: var(--radius-lg);

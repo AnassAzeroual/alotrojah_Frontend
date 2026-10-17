@@ -35,6 +35,7 @@
 
   --color-bg: #f8fafc;
   --color-bg-soft: #eef4f2;
+  --color-bg-hover: var(--color-bg-soft);
   --color-surface: #ffffff;
   --color-surface-2: #f1f5f9;
   --color-text: #101c19;
@@ -140,6 +141,7 @@
 
   --color-bg: #0b1512;
   --color-bg-soft: #0f1e1a;
+  --color-bg-hover: var(--color-surface-2);
   --color-surface: #12211d;
   --color-surface-2: #162825;
   --color-text: #eaf4f1;
