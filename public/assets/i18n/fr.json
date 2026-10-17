@@ -458,6 +458,8 @@
   },
   "planning": {
     "title": "Saisons",
+    "center": "Centre",
+    "shared": "Partagé",
     "new_season": "Nouvelle saison",
     "use_template": "Utiliser le modèle",
     "name": "Nom",

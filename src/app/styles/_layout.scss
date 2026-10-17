@@ -67,6 +67,14 @@
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
+// Seasons: the title, owner center and action cluster need the full width —
+// a 2-up auto-fit grid squeezes all three on phones.
+.grid-auto.seasons-grid {
+  @include down($bp-md) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stack {
   display: flex;
   flex-direction: column;

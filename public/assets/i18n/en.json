@@ -458,6 +458,8 @@
   },
   "planning": {
     "title": "Seasons",
+    "center": "Center",
+    "shared": "Shared",
     "new_season": "New season",
     "use_template": "Use template",
     "name": "Name",

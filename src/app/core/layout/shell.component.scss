@@ -351,20 +351,24 @@
   padding-top: var(--space-3);
 }
 
-// Pending waiting-room count on the registrations nav item.
-.nav-badge {
-  margin-inline-start: auto;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 var(--space-1);
+// Pending waiting-room count pinned to the header bell's corner.
+.bell-badge {
+  position: absolute;
+  top: -5px;
+  inset-inline-end: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
   background: var(--color-danger);
+  border: 2px solid var(--color-surface);
   color: #fff;
-  font-size: var(--text-xs);
+  font-size: 11px;
   font-weight: 700;
+  line-height: 1;
 }
 
 .foot-btn {
@@ -469,18 +473,6 @@
     border-color: var(--color-primary);
     transform: translateY(-1px);
     box-shadow: var(--shadow-2);
-  }
-
-  &.dot::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    inset-inline-end: 9px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #f43f5e;
-    border: 2px solid var(--color-surface);
   }
 }
 
@@ -610,7 +602,7 @@
 // Tablet + phone: the topbar budget cannot carry the full date strings or the
 // identity block below $bp-lg (the rail leaves ~684px; an expanded sidebar
 // ~500px). Chips switch to numeric short forms, the decorative "today" label,
-// identity block and dead bell (no click handler) drop out.
+// identity block and the bell (with its registrations badge) drop out.
 @include down($bp-lg) {
   .topbar {
     padding-inline: var(--space-3);
@@ -640,7 +632,7 @@
 
   .clock small,
   .user-chip .who,
-  .top-end .icon-btn.dot {
+  .top-end .icon-btn.bell {
     display: none;
   }
 }

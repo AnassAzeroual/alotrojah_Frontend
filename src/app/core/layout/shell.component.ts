@@ -285,7 +285,7 @@ export class ShellComponent {
   private readonly router = inject(Router);
   private readonly regTick = signal(0);
 
-  /** Pending waiting-room count for the red registrations badge (admin only). */
+  /** Pending waiting-room count for the header bell badge (admin only). */
   readonly pendingRegistrations = resource({
     params: () => ({ admin: this.user()?.role === 'admin', t: this.regTick() }),
     loader: async ({ params }) => {
@@ -294,6 +294,13 @@ export class ShellComponent {
       return p.meta.total;
     },
   });
+
+  /** Bell click: land on the waiting room when something is actually waiting. */
+  openRegistrations(): void {
+    if ((this.pendingRegistrations.value() ?? 0) > 0) {
+      void this.router.navigate(['/registrations']);
+    }
+  }
 
   /**
    * T4: every non-admin sees their center NAME in the header chip; the numeric

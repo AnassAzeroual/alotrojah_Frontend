@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
+import { CentersService } from '../../core/api/centers.service';
 import { SeasonsService } from '../../core/api/seasons.service';
 import { apiErrorKey } from '../../core/api/api-errors';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
@@ -53,7 +54,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
       } @else if ((seasons.value() ?? []).length === 0) {
         <app-empty-state />
       } @else {
-        <div class="grid-auto">
+        <div class="grid-auto seasons-grid">
           @for (s of seasons.value() ?? []; track s.id) {
             <div class="card anim-rise" [style.--i]="$index">
               <span class="row-top">
@@ -62,6 +63,14 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
                   <small class="cur">{{ 'planning.current' | translate }}</small>
                 }
               </span>
+              <small class="muted season-center">
+                {{ 'planning.center' | translate }}:
+                @if (s.center_id === null) {
+                  {{ 'planning.shared' | translate }}
+                } @else {
+                  {{ centerName(s.center_id) }}
+                }
+              </small>
               <small class="muted ltr-num">{{ s.total_weeks }} / {{ s.total_sessions }}</small>
               <div class="cluster">
                 @if (!s.is_current) {
@@ -178,6 +187,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 })
 export class SeasonsListPage {
   private readonly seasonsSvc = inject(SeasonsService);
+  private readonly centersSvc = inject(CentersService);
   private readonly auth = inject(AuthService);
 
   /** Season delete is admin-only (policy); supervisors see the page read-only. */
@@ -196,6 +206,19 @@ export class SeasonsListPage {
     params: () => ({}),
     loader: () => firstValueFrom(this.seasonsSvc.list().pipe(map((p) => p.data))),
   });
+
+  /** Admins see every center's seasons; the card names its owner. */
+  private readonly centers = resource({
+    params: () => ({}),
+    loader: () => firstValueFrom(this.centersSvc.listAll()),
+  });
+  private readonly centerNames = computed(
+    () => new Map((this.centers.value() ?? []).map((c) => [c.id, c.name])),
+  );
+
+  protected centerName(id: number | null): string {
+    return id === null ? '—' : (this.centerNames().get(id) ?? '—');
+  }
 
   protected activate(id: number): void {
     this.seasonsSvc.activate(id).subscribe(() => this.seasons.reload());

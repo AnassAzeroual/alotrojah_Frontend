@@ -458,6 +458,8 @@
   },
   "planning": {
     "title": "المواسم",
+    "center": "المركز",
+    "shared": "مشترك",
     "new_season": "موسم جديد",
     "use_template": "نموذج الافتراضي",
     "name": "الاسم",

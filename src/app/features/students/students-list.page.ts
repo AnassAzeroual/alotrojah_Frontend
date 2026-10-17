@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { GroupsService } from '../../core/api/groups.service';
@@ -42,6 +42,7 @@ export class StudentsListPage {
   private readonly i18n = inject(TranslateService);
   private readonly language = inject(LanguageService);
   private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   /** Pupils never create pupils (mirrors the exams-list gate). */
   readonly canCreate = computed(() => this.auth.role() !== 'student');
@@ -71,6 +72,10 @@ export class StudentsListPage {
 
   readonly groups = toSignal(this.groupsSvc.list().pipe(map((p) => p.data)), { initialValue: [] });
   readonly levels = toSignal(this.ref.levels(), { initialValue: [] });
+
+  private readonly levelNames = computed(
+    () => new Map(this.levels().map((l) => [l.id, l.name_ar])),
+  );
 
   protected readonly num = dropdownNumber;
   protected readonly txt = dropdownText;
@@ -111,5 +116,13 @@ export class StudentsListPage {
 
   protected resetPage(): void {
     this.page.set(1);
+  }
+
+  protected levelLabel(id: number | null): string {
+    return (id === null ? undefined : this.levelNames().get(id)) ?? '—';
+  }
+
+  protected open(id: number): void {
+    void this.router.navigate(['/students', id]);
   }
 }
