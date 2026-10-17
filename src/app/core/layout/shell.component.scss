@@ -1,6 +1,14 @@
 @use '../../styles/tokens' as *;
 
 .shell {
+  // Sticky stacks below the topbar (.toolbar in _layout.scss) key off this.
+  --topbar-h: 61px;
+  // Scrim colour + strength come from the appearance settings; the dark theme
+  // strengthens the veil below so panel/text contrast survives any background.
+  --user-scrim-color: var(--color-bg);
+  --user-scrim-base: 72%;
+  --user-scrim-strength: var(--user-scrim-base);
+  --user-scrim: color-mix(in srgb, var(--user-scrim-color) var(--user-scrim-strength), transparent);
   min-height: 100dvh;
   position: relative;
   background: var(--color-bg);
@@ -16,13 +24,53 @@
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  // Painted inside the scene so blend modes have a backdrop to mix with.
+  background: var(--color-bg);
+}
+
+// User-selected background (color, image or gradient). Every property comes
+// from the inline style built by AppearanceService (mode + controls).
+.bg-user {
+  position: absolute;
+  inset: 0;
+}
+
+// Theme scrim above the background so panels and text keep their contrast.
+.bg-user-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--user-scrim);
+}
+
+.shell.dark {
+  // 72% in light mode maps to 80% in dark, as before the setting existed.
+  --user-scrim-strength: min(100%, calc(var(--user-scrim-base) * 1.111));
+}
+
+// Glassmorphism: blurs every layer painted beneath it (background + orbs).
+.bg-glass {
+  position: absolute;
+  inset: 0;
+}
+
+// Repeating pattern overlay above the background, glass and orbs, below all
+// content. Size, opacity, tint mask and inversion come from the inline style.
+.bg-pattern {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: repeat;
+}
+
+.bg-pattern.default {
+  background-image: var(--pattern-default);
 }
 
 .bg-orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(90px);
-  opacity: 0.5;
+  opacity: var(--user-orb-opacity, 0.5);
   transition: opacity var(--dur-3) var(--ease-out);
 }
 
@@ -31,7 +79,12 @@
   height: 560px;
   inset-inline-end: -160px;
   top: -160px;
-  background: radial-gradient(circle at 30% 30%, rgb(0 184 169 / 0.35), transparent 65%);
+  // The 35% wash keeps the original alpha while the color follows the setting.
+  background: radial-gradient(
+    circle at 30% 30%,
+    color-mix(in srgb, var(--user-orb-primary, #00b8a9) 35%, transparent),
+    transparent 65%
+  );
 }
 
 .orb-b {
@@ -39,20 +92,54 @@
   height: 620px;
   inset-inline-start: -200px;
   bottom: -240px;
-  background: radial-gradient(circle at 60% 40%, rgb(139 92 246 / 0.22), transparent 65%);
+  background: radial-gradient(
+    circle at 60% 40%,
+    color-mix(in srgb, var(--user-orb-secondary, #8b5cf6) 22%, transparent),
+    transparent 65%
+  );
 }
 
-[data-theme='dark'] .bg-orb {
-  opacity: 0.32;
+// Scoped via .shell.dark: plain [data-theme] ancestors can't compile in
+// component styles (Angular puts the content attr on every compound).
+.shell.dark .bg-orb {
+  opacity: calc(var(--user-orb-opacity, 0.5) * 0.64);
 }
 
-.bg-pattern {
+// Shipped star tile, painted whenever the admin has not uploaded a pattern.
+// Size/opacity come from the appearance settings inline style.
+.bg-default-pattern {
   position: absolute;
   inset: 0;
-  opacity: var(--bg-pattern-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2300b8a9' stroke-opacity='0.16'%3E%3Cpath d='M60 10 70 50l40 10-40 10-10 40-10-40-40-10 40-10z'/%3E%3Ccircle cx='60' cy='60' r='8'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 140px 140px;
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+  background-image: var(--pattern-default);
+  background-repeat: repeat;
+  background-position: center;
+}
+
+// Admin-uploaded photo; nothing is painted when none is set. The scrim tints
+// it with the active theme so panels and text keep their contrast. Size,
+// position, repeat and opacity come from the appearance settings inline style.
+.bg-custom {
+  position: absolute;
+  inset: 0;
+}
+
+.bg-custom-scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
+}
+
+.shell.dark .bg-custom-scrim {
+  background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+}
+
+// Repeating tile above the background + orbs, below all content. Size and
+// opacity come from the appearance settings inline style.
+.bg-custom-pattern {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: repeat;
 }
 
 // Sidebar — logical inline-start = right in RTL
@@ -65,15 +152,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-3);
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   backdrop-filter: blur(18px);
   border-inline-end: 1px solid var(--color-border);
   transition:
     width var(--dur-3) var(--ease-spring),
-    transform var(--dur-3) var(--ease-out);
+    transform var(--dur-3) var(--ease-out),
+    visibility var(--dur-3);
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
 }
 
 .side-brand {
@@ -89,6 +178,7 @@
   text-decoration: none;
   color: inherit;
   min-width: 0;
+  min-height: 44px;
   flex: 1;
 }
 
@@ -120,14 +210,16 @@
     color: var(--color-primary-dark);
   }
 
-  [data-theme='dark'] & strong {
-    color: #5eead4;
-  }
-
   small {
     font-size: var(--text-xs);
     color: var(--color-muted);
   }
+}
+
+.shell.dark .brand-txt strong,
+.shell.dark .brand-badge,
+.shell.dark .clock .date-chip {
+  color: #5eead4;
 }
 
 .brand-badge {
@@ -137,10 +229,6 @@
   border-radius: var(--radius-full);
   padding: 2px 8px;
   flex: none;
-
-  [data-theme='dark'] & {
-    color: #5eead4;
-  }
 }
 
 .side-search {
@@ -255,10 +343,6 @@
   gap: 0;
 }
 
-.shell.collapsed .side-nav a .glow {
-  display: none;
-}
-
 .side-foot {
   display: flex;
   flex-direction: column;
@@ -267,20 +351,24 @@
   padding-top: var(--space-3);
 }
 
-// Pending waiting-room count on the registrations nav item.
-.nav-badge {
-  margin-inline-start: auto;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 var(--space-1);
+// Pending waiting-room count pinned to the header bell's corner.
+.bell-badge {
+  position: absolute;
+  top: -5px;
+  inset-inline-end: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
   background: var(--color-danger);
+  border: 2px solid var(--color-surface);
   color: #fff;
-  font-size: var(--text-xs);
+  font-size: 11px;
   font-weight: 700;
+  line-height: 1;
 }
 
 .foot-btn {
@@ -288,6 +376,7 @@
   align-items: center;
   gap: var(--space-2);
   width: 100%;
+  min-height: 44px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   border-radius: var(--radius-md);
@@ -320,7 +409,7 @@
   position: fixed;
   inset: 0;
   background: rgb(0 0 0 / 0.4);
-  z-index: 25;
+  z-index: calc(var(--z-header) + 1);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--dur-2);
@@ -354,6 +443,7 @@
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-4);
+  padding-block-start: max(var(--space-2), env(safe-area-inset-top));
   background: color-mix(in srgb, var(--color-bg) 78%, transparent);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-border);
@@ -367,15 +457,9 @@
 }
 
 .icon-btn {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
   color: var(--color-muted);
-  cursor: pointer;
   position: relative;
   transition: all var(--dur-2) var(--ease-spring);
 
@@ -389,18 +473,6 @@
     border-color: var(--color-primary);
     transform: translateY(-1px);
     box-shadow: var(--shadow-2);
-  }
-
-  &.dot::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    inset-inline-end: 9px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #f43f5e;
-    border: 2px solid var(--color-surface);
   }
 }
 
@@ -433,8 +505,9 @@
     height: unset !important;
     margin: 0 5px;
 
-    [data-theme='dark'] & {
-      color: #5eead4;
+    // Phone renders the numeric short form; ≥$bp-md the full localized date.
+    .chip-short {
+      display: none;
     }
 
     &:hover {
@@ -494,20 +567,19 @@
 }
 
 .content {
-  padding: var(--space-4);
-  padding-bottom: calc(var(--space-6) + var(--nav-height));
+  // Without width, flex-item auto inline margins size this box to fit-content.
   width: 100%;
-  box-sizing: border-box;
+  padding: var(--space-4) var(--space-4) var(--space-6);
+  max-width: 1520px;
+  margin-inline: auto;
 
   @include up($bp-md) {
     padding: var(--space-5);
   }
 }
 
-.menu-btn {
-  display: grid;
-}
-
+// .icon-btn already renders as grid + 44×44 (global _buttons.scss); the
+// menu/desk pair only flips visibility across $bp-md.
 .desk-btn {
   display: none;
 }
@@ -522,32 +594,70 @@
   }
 }
 
-@media (max-width: 767px) {
+// Desktop/tablet: the drawer language instance stays out of the static sidebar.
+.drawer-lang {
+  display: none;
+}
+
+// Tablet + phone: the topbar budget cannot carry the full date strings or the
+// identity block below $bp-lg (the rail leaves ~684px; an expanded sidebar
+// ~500px). Chips switch to numeric short forms, the decorative "today" label,
+// identity block and the bell (with its registrations badge) drop out.
+@include down($bp-lg) {
+  .topbar {
+    padding-inline: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  // The rail leaves the logo-only brand link 42px wide — widen it to the
+  // 44px touch floor.
+  .brand {
+    min-width: 44px;
+  }
+
+  .clock .date-chip {
+    margin: 0 2px;
+    padding: 4px 8px;
+
+    // Same nesting depth as the base rule (.clock .date-chip .chip-short) —
+    // a shallower selector loses on specificity regardless of source order.
+    .chip-full {
+      display: none;
+    }
+
+    .chip-short {
+      display: inline;
+    }
+  }
+
+  .clock small,
+  .user-chip .who,
+  .top-end .icon-btn.bell {
+    display: none;
+  }
+}
+
+@include down($bp-md) {
+  // Off-canvas drawer: slides in from the inline-start edge (same side as the
+  // menu button in both directions). visibility removes it from tab order.
   .sidebar {
-    transform: translateX(105%);
     width: min(300px, 86vw);
-
-    html[dir='rtl'] & {
-      transform: translateX(-105%);
-    }
-
-    &.open {
-      transform: translateX(0) !important;
-    }
+    transform: translateX(-105%);
+    visibility: hidden;
+    z-index: calc(var(--z-header) + 2);
+    padding-top: max(var(--space-4), env(safe-area-inset-top));
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
   }
 
-  [dir='rtl'] .sidebar {
-    inset-inline-start: auto;
-    inset-inline-end: 0;
-    transform: translateX(-105%);
-  }
-
-  [dir='ltr'] .sidebar {
-    transform: translateX(-105%);
+  // :host-context (not [dir='rtl'] descendant — that compiles to an
+  // unscoped-ancestor form Angular can never match).
+  :host-context([dir='rtl']) .sidebar {
+    transform: translateX(105%);
   }
 
   .sidebar.open {
     transform: translateX(0) !important;
+    visibility: visible;
   }
 
   .main,
@@ -555,11 +665,15 @@
     padding-inline-start: 0;
   }
 
-  .clock small {
+  // Topbar phone budget: menu + both date chips (short) + avatar. Theme and
+  // language switch move into the drawer foot; the bell is already gone above.
+  .top-end .icon-btn,
+  .top-end app-language-switcher {
     display: none;
   }
 
-  .user-chip .who {
-    display: none;
+  // Language switching reachable via the drawer instance at phone widths.
+  .drawer-lang {
+    display: block;
   }
 }

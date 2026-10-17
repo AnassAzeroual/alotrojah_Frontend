@@ -21,9 +21,10 @@ test('admin logs in, sees dashboard and students', async ({ page }) => {
   // students list renders (≥7 seeded; registration-flow tests may add more)
   await page.getByTestId('nav-students').click();
   await expect(page).toHaveURL(/\/students$/);
-  await expect(page.getByText('أحمد بن يوسف')).toBeVisible();
-  const rows = page.locator('.grid-auto .card');
-  await expect.poll(async () => rows.count()).toBeGreaterThanOrEqual(7);
+  // cold backend can take a while — 20s like the students/calendar specs
+  await expect(page.getByText('أحمد بن يوسف')).toBeVisible({ timeout: 20000 });
+  const rows = page.locator('.students-table tbody tr');
+  await expect.poll(async () => rows.count(), { timeout: 20000 }).toBeGreaterThanOrEqual(7);
 
   // groups overview renders (regression: NG0203 loader bug spun forever)
   await page.getByTestId('nav-groups').click();

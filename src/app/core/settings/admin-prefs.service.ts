@@ -6,6 +6,8 @@ interface PrefsShape {
   hideScopePickers?: boolean;
   showCenterId?: boolean;
   showCalDebug?: boolean;
+  /** Center whose appearance the admin is currently editing/previewing. */
+  appearanceCenterId?: number | null;
 }
 
 const keyFor = (userId: number | null): string => `alotrojah_prefs.${userId ?? 'anon'}`;
@@ -27,10 +29,15 @@ export class AdminPrefsService {
   readonly showCenterId = signal(true);
   /** Display pref: show the calendar current-view events JSON panel (admin-only). */
   readonly showCalDebug = signal(true);
+  /** Center whose appearance is edited and previewed (admin-only selection). */
+  readonly appearanceCenterId = signal<number | null>(null);
 
   private readonly userId = computed(() => this.auth.currentUser()?.id ?? null);
 
   constructor() {
+    // Load synchronously as well: the shell reads the appearance center during
+    // its own construction, before the effect below has had a chance to run.
+    this.load(this.userId());
     // Reload whenever the signed-in account changes. The computed id narrows
     // the dependency so unrelated currentUser updates never clobber live edits.
     effect(() => {
@@ -53,6 +60,11 @@ export class AdminPrefsService {
     this.save();
   }
 
+  setAppearanceCenterId(centerId: number | null): void {
+    this.appearanceCenterId.set(centerId);
+    this.save();
+  }
+
   private load(userId: number | null): void {
     let raw: PrefsShape = {};
     try {
@@ -63,6 +75,9 @@ export class AdminPrefsService {
     this.hideScopePickers.set(raw.hideScopePickers ?? false);
     this.showCenterId.set(raw.showCenterId ?? true);
     this.showCalDebug.set(raw.showCalDebug ?? true);
+    this.appearanceCenterId.set(
+      typeof raw.appearanceCenterId === 'number' ? raw.appearanceCenterId : null,
+    );
   }
 
   private save(): void {
@@ -73,6 +88,7 @@ export class AdminPrefsService {
         hideScopePickers: this.hideScopePickers(),
         showCenterId: this.showCenterId(),
         showCalDebug: this.showCalDebug(),
+        appearanceCenterId: this.appearanceCenterId(),
       }),
     );
   }

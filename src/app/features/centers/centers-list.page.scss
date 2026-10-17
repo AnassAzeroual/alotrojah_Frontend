@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 .table-responsive {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -67,5 +69,15 @@
     background: var(--color-bg-hover);
     border-color: var(--color-primary);
     color: var(--color-primary-dark);
+  }
+}
+
+// Phone + tablet: in-card/touch buttons meet the 44px floor (the stacked-card
+// reflow itself stays phone-only).
+@include table-cards('.centers-table');
+
+@include down($bp-lg) {
+  .btn-sm {
+    min-height: 44px;
   }
 }

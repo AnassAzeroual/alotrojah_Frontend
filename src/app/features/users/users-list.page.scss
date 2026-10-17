@@ -1,3 +1,5 @@
+@use '../../styles/tokens' as *;
+
 .toolbar.card {
   flex-direction: row;
   border-radius: var(--radius-xl);
@@ -7,6 +9,16 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+// Phone: the actions column is now visible on cards — the group fills the
+// cell and parks its buttons at the inline end (flex-end is RTL-aware).
+@include down($bp-md) {
+  .row-actions {
+    flex: 1;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
 }
 
 .row-actions .btn-sm svg {
@@ -38,6 +50,13 @@
 
   &:hover {
     opacity: 0.7;
+  }
+}
+
+// Phone + tablet: rows reflow to cards, so the link is the row's tap target.
+@include down($bp-lg) {
+  .user-link {
+    min-height: 44px;
   }
 }
 
@@ -120,6 +139,14 @@
   font-size: var(--text-xs);
 }
 
+// Phone + tablet: row/modal buttons are touch controls — 44px floor.
+@include down($bp-lg) {
+  .btn-sm {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 .btn-ghost {
   background: transparent;
   border-color: var(--color-border);
@@ -132,7 +159,7 @@
   }
 }
 
-@media (max-width: 639px) {
+@include down($bp-md) {
   .avatar-sm {
     width: 24px;
     height: 24px;

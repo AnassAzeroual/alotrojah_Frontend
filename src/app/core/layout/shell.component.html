@@ -3,15 +3,40 @@
   [class.collapsed]="collapsed()"
   [class.dark]="isDark()"
   [attr.data-collapsed]="collapsed()"
+  [style]="appearance.rootVars()"
 >
   <div class="bg-scene" aria-hidden="true">
-    <div class="bg-orb orb-a"></div>
-    <div class="bg-orb orb-b"></div>
-    <div class="bg-pattern"></div>
+    @if (appearance.hasBackground()) {
+      <div class="bg-user" [style]="appearance.backgroundLayerStyle()"></div>
+      @if (appearance.scrimEnabled()) {
+        <div class="bg-user-scrim"></div>
+      }
+    }
+    @if (appearance.orbEnabled()) {
+      <div class="bg-orb orb-a"></div>
+      <div class="bg-orb orb-b"></div>
+    }
+    @if (appearance.backdropBlur() > 0 || appearance.glassOpacity() > 0) {
+      <div class="bg-glass" [style]="appearance.glassLayerStyle()"></div>
+    }
+    @if (appearance.patternEnabled()) {
+      <div
+        class="bg-pattern"
+        [class.default]="!appearance.patternUrl()"
+        [style]="appearance.patternLayerStyle()"
+      ></div>
+    }
   </div>
 
   <!-- Sidebar (right in RTL = inline-start) -->
-  <aside class="sidebar" [class.open]="mobileOpen()" aria-label="sidebar">
+  <aside
+    class="sidebar"
+    #sidebarEl
+    id="app-sidebar"
+    tabindex="-1"
+    [class.open]="mobileOpen()"
+    aria-label="sidebar"
+  >
     <div class="side-brand">
       <a routerLink="/" class="brand" (click)="closeMobile()">
         <span class="brand-mark" aria-hidden="true">
@@ -148,12 +173,6 @@
             }
           </span>
           <span class="lbl">{{ item.key | translate }}</span>
-          @if (item.testId === 'nav-registrations' && (pendingRegistrations.value() ?? 0) > 0) {
-            <span class="nav-badge" data-testid="nav-registrations-count">{{
-              pendingRegistrations.value()
-            }}</span>
-          }
-          <span class="glow" aria-hidden="true"></span>
         </a>
       }
     </nav>
@@ -205,9 +224,10 @@
         </svg>
         <span>{{ 'auth.logout' | translate }}</span>
       </button>
+      <app-language-switcher class="drawer-lang" testId="lang-switcher-drawer" />
     </div>
   </aside>
-  <div class="scrim" (click)="closeMobile()" [class.show]="mobileOpen()"></div>
+  <div class="scrim" (click)="closeMobileToMenu()" [class.show]="mobileOpen()"></div>
 
   <div class="main">
     <header class="topbar">
@@ -215,7 +235,10 @@
         <button
           type="button"
           class="icon-btn menu-btn"
-          (click)="mobileOpen.set(true)"
+          #menuBtn
+          (click)="openMobile()"
+          [attr.aria-expanded]="mobileOpen()"
+          aria-controls="app-sidebar"
           [attr.aria-label]="'nav.menu' | translate"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -240,7 +263,8 @@
             [class.copied]="copiedDate() === 'greg'"
             [attr.title]="'delegation.copy' | translate"
           >
-            {{ gregorian() }}
+            <span class="chip-full">{{ gregorian() }}</span>
+            <span class="chip-short">{{ gregorianShort() }}</span>
           </button>
           @if (hijri()) {
             <button
@@ -250,7 +274,8 @@
               [class.copied]="copiedDate() === 'hijri'"
               [attr.title]="'delegation.copy' | translate"
             >
-              {{ hijri() }}
+              <span class="chip-full">{{ hijri() }}</span>
+              <span class="chip-short">{{ hijriShort() }}</span>
             </button>
           }
           <small>{{ 'dash.today' | translate }}</small>
@@ -259,7 +284,7 @@
       <div class="top-end">
         <button
           type="button"
-          class="icon-btn"
+          class="icon-btn theme-btn"
           (click)="theme.toggle()"
           data-testid="nav-theme"
           [attr.aria-label]="'nav.theme' | translate"
@@ -279,13 +304,20 @@
         </button>
         <button
           type="button"
-          class="icon-btn dot"
+          class="icon-btn bell"
+          (click)="openRegistrations()"
+          data-testid="nav-bell"
           [attr.aria-label]="'nav.notifications' | translate"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.7 21a2 2 0 0 1-3.4 0" />
           </svg>
+          @if ((pendingRegistrations.value() ?? 0) > 0) {
+            <span class="bell-badge" data-testid="bell-registrations-count">{{
+              pendingRegistrations.value()
+            }}</span>
+          }
         </button>
         <app-language-switcher />
         <span class="user-chip">

@@ -1,6 +1,6 @@
 // Groups overview: KPI strip, chart wall, sortable/filterable group table
-// with expandable rows. Mobile (<640px) turns the table into stacked cards
-// via data-label attributes.
+// with expandable rows. Phone (below $bp-md) turns the table into stacked
+// cards via data-label attributes.
 @use '../../styles/tokens' as *;
 
 .season {
@@ -111,7 +111,7 @@
     font-size: var(--text-lg);
     color: var(--green-800);
 
-    [data-theme='dark'] & {
+    :host-context([data-theme='dark']) & {
       color: var(--green-300);
     }
   }
@@ -135,7 +135,8 @@
 
 .table-wrap.card {
   padding: 0;
-  overflow: hidden;
+  // Tablet: the 900px table scrolls inside the card instead of clipping.
+  overflow: auto;
 }
 
 table {
@@ -222,7 +223,7 @@ tbody td {
   cursor: pointer;
   transition: transform calc(var(--dur-1) * var(--motion)) var(--ease-out);
 
-  [data-theme='dark'] & {
+  :host-context([data-theme='dark']) & {
     color: var(--green-300);
   }
 
@@ -244,7 +245,7 @@ tbody td {
   color: var(--green-800);
   text-decoration: none;
 
-  [data-theme='dark'] & {
+  :host-context([data-theme='dark']) & {
     color: var(--green-300);
   }
 
@@ -324,7 +325,7 @@ tbody td {
   color: var(--green-800);
   white-space: nowrap;
 
-  [data-theme='dark'] & {
+  :host-context([data-theme='dark']) & {
     color: var(--green-300);
   }
 
@@ -333,9 +334,9 @@ tbody td {
   }
 }
 
-// ---- Mobile: stacked cards ----
+// ---- Phone: stacked cards ----
 
-@media (max-width: 640px) {
+@include down($bp-md) {
   .table-wrap {
     background: transparent;
     border: 0;
@@ -388,6 +389,12 @@ tbody td {
     }
   }
 
+  // Zebra the label/value rows so each value stays paired with its label.
+  tbody tr.row-link td:nth-child(even) {
+    background: var(--color-row-tint);
+    border-radius: var(--radius-sm);
+  }
+
   .detail-row {
     margin-top: calc(var(--space-3) * -1);
     padding: 0 var(--space-2) var(--space-2);
@@ -407,5 +414,14 @@ tbody td {
 
   .detail-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+// Phone + tablet: row controls (expander, pencil) meet the 44px touch floor.
+@include down($bp-lg) {
+  .expander,
+  .pencil {
+    width: 44px;
+    height: 44px;
   }
 }

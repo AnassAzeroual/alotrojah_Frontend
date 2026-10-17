@@ -145,7 +145,7 @@ export interface DropdownOption {
         transition: border-color 160ms;
       }
       .dd.compact .dd-btn {
-        min-height: 40px;
+        min-height: 44px;
       }
       .dd-label {
         overflow: hidden;
@@ -227,7 +227,7 @@ export interface DropdownOption {
         color: var(--color-primary-dark);
         font-weight: 700;
       }
-      [data-theme='dark'] .dd-list button.on {
+      :host-context([data-theme='dark']) .dd-list button.on {
         color: #5eead4;
       }
       .dd-list button span {

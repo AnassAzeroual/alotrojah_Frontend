@@ -1,3 +1,5 @@
+@use '../../../styles/tokens' as *;
+
 :host {
   display: block;
 }
@@ -5,6 +7,9 @@
 .lt-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 
 .lt-search {
@@ -150,8 +155,15 @@
   }
 }
 
-/* Mobile: stacked cards with column labels; low-priority columns drop out. */
-@media (max-width: 639px) {
+/* Phone + tablet: the search box meets the 44px touch floor. */
+@include down($bp-lg) {
+  .lt-search input {
+    min-height: 44px;
+  }
+}
+
+/* Phone: stacked cards with column labels; every column stays visible. */
+@include down($bp-md) {
   .lt-wrap {
     margin: calc(var(--space-4) * -1);
     padding: var(--space-4);
@@ -201,9 +213,15 @@
     align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 0;
+    padding: var(--space-1) var(--space-2);
     border-bottom: 0;
+    border-radius: var(--radius-sm);
     font-size: var(--text-sm);
+  }
+
+  // Zebra the label/value rows: on a tall card every pair looked alike.
+  .lt-row td:nth-child(even) {
+    background: var(--color-row-tint);
   }
 
   .lt-row td::before {
@@ -213,9 +231,5 @@
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-  }
-
-  .lt-row td.lt-hide-sm {
-    display: none;
   }
 }

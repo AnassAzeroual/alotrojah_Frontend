@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { LanguageService, AppLang } from '../i18n/language.service';
 import { DropdownComponent, DropdownValue } from '../../shared/ui/dropdown/dropdown.component';
 
@@ -16,12 +16,14 @@ const LABELS: Record<AppLang, string> = { ar: 'العربية', fr: 'Français',
       [value]="lang.current()"
       (valueChange)="choose($event)"
       ariaLabelKey="auth.language"
-      testId="lang-switcher"
+      [testId]="testId()"
     />
   `,
 })
 export class LanguageSwitcherComponent {
   readonly lang = inject(LanguageService);
+  /** Distinct value per instance: duplicate testids break Playwright strict mode. */
+  readonly testId = input('lang-switcher');
 
   protected readonly options = computed(() =>
     this.lang.langs.map((l) => ({ value: l, label: LABELS[l] })),

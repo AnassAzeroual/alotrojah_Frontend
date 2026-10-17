@@ -63,9 +63,16 @@
       border-color: var(--green-600);
       color: #fff;
 
-      [data-theme='dark'] & {
+      :host-context([data-theme='dark']) & {
         color: #063325;
       }
     }
+  }
+}
+
+// Phone + tablet: day chips are the form's primary control — 44px touch floor.
+@include down($bp-lg) {
+  .day-pick .day-chip {
+    min-height: 44px;
   }
 }

@@ -20,7 +20,7 @@ test.describe.serial('Students management', () => {
     await expect(page).toHaveURL(/\/students$/);
 
     // check list count (cold backend can take a while — 20s poll like calendar specs)
-    const rows = page.locator('.grid-auto .card');
+    const rows = page.locator('.students-table tbody tr');
     await expect.poll(async () => rows.count(), { timeout: 20000 }).toBeGreaterThanOrEqual(1);
 
     // Every pupil rides a login account: create the student user first.
@@ -89,9 +89,14 @@ test.describe.serial('Students management', () => {
     await searchBox.fill(studentName);
     await searchBox.press('Enter');
 
-    const studentCard = page.locator('.grid-auto .card', { hasText: studentName }).first();
-    await expect(studentCard).toBeVisible();
+    const studentRow = page.locator('.students-table tbody tr', { hasText: studentName }).first();
+    await expect(studentRow).toBeVisible();
 
-    await expect(studentCard).toBeVisible();
+    // whole-row navigation replaces the old card link
+    await studentRow.click();
+    await expect(page).toHaveURL(/\/students\/\d+$/);
+    await expect(page.getByRole('heading', { name: studentName })).toBeVisible({
+      timeout: 15000,
+    });
   });
 });

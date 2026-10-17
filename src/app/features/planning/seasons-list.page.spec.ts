@@ -38,6 +38,7 @@ const SEASONS = [
     total_weeks: 42,
     total_sessions: 126,
     is_current: true,
+    center_id: 1,
     first_term_id: 7,
   },
   {
@@ -49,6 +50,7 @@ const SEASONS = [
     total_weeks: 42,
     total_sessions: 126,
     is_current: false,
+    center_id: null,
     first_term_id: 13,
   },
 ];
@@ -57,6 +59,18 @@ const PAGE = {
   success: true,
   message: null,
   data: { data: SEASONS, meta: { current_page: 1, total: 2, per_page: 20 } },
+};
+
+const CENTERS = {
+  success: true,
+  message: null,
+  data: {
+    data: [
+      { id: 1, name: 'مركز النور' },
+      { id: 2, name: 'مركز الفرقان' },
+    ],
+    meta: { current_page: 1, total: 2, per_page: 20 },
+  },
 };
 
 describe('SeasonsListPage rename', () => {
@@ -80,6 +94,10 @@ describe('SeasonsListPage rename', () => {
 
   const flushList = (): void => {
     http.expectOne((r) => r.url.endsWith('/seasons') && r.method === 'GET').flush(PAGE);
+  };
+
+  const flushCenters = (): void => {
+    http.expectOne((r) => r.url.endsWith('/centers') && r.method === 'GET').flush(CENTERS);
   };
 
   const renameInput = (id: number): HTMLInputElement | null =>
@@ -112,6 +130,7 @@ describe('SeasonsListPage rename', () => {
 
   it('renames a season inline and reloads the list', async () => {
     mount();
+    flushCenters();
     flushList();
     await settle();
 
@@ -138,9 +157,22 @@ describe('SeasonsListPage rename', () => {
     expect(el.querySelector<HTMLButtonElement>('[data-testid="rename-season-2"]')).not.toBeNull();
   });
 
+  it('names the owning center on each card and marks legacy shared seasons', async () => {
+    mount();
+    flushCenters();
+    flushList();
+    await settle();
+
+    const owners = [...el.querySelectorAll<HTMLElement>('.season-center')];
+    expect(owners).toHaveLength(2);
+    expect(owners[0].textContent).toContain('مركز النور');
+    expect(owners[1].textContent).toContain('planning.shared');
+  });
+
   it('hides rename and delete controls from non-managers', async () => {
     role = 'teacher';
     mount();
+    flushCenters();
     flushList();
     await settle();
 
@@ -151,6 +183,7 @@ describe('SeasonsListPage rename', () => {
 
   it('shows a translated banner on duplicate-name 422', async () => {
     mount();
+    flushCenters();
     flushList();
     await settle();
 

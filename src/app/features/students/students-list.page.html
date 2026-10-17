@@ -88,18 +88,42 @@
   } @else if (rows().length === 0) {
     <app-empty-state />
   } @else {
-    <div class="grid-auto">
-      @for (s of rows(); track s.id) {
-        <a class="card anim-rise" [style.--i]="$index" [routerLink]="['/students', s.id]">
-          <span class="row-top">
-            <span class="avatar-sm" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span>
-            <strong>{{ s.full_name }}</strong>
-          </span>
-          <small class="muted"
-            >{{ s.group?.name ?? '—' }} · {{ 'mode.' + s.memorization_mode | translate }}</small
-          >
-        </a>
-      }
+    <div class="table-responsive">
+      <table class="students-table">
+        <thead>
+          <tr>
+            <th>{{ 'dash.studentName' | translate }}</th>
+            <th>{{ 'list.group' | translate }}</th>
+            <th>{{ 'list.level' | translate }}</th>
+            <th>{{ 'list.status' | translate }}</th>
+            <th>{{ 'list.mode' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of rows(); track s.id) {
+            <tr class="row-link" tabindex="0" (click)="open(s.id)" (keydown.enter)="open(s.id)">
+              <td [attr.data-label]="'dash.studentName' | translate">
+                <span class="cell-name">
+                  <span class="avatar-sm" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span>
+                  <strong>{{ s.full_name }}</strong>
+                </span>
+              </td>
+              <td [attr.data-label]="'list.group' | translate">{{ s.group?.name ?? '—' }}</td>
+              <td [attr.data-label]="'list.level' | translate">{{ levelLabel(s.level_id) }}</td>
+              <td [attr.data-label]="'list.status' | translate">
+                @if (s.status === 'active') {
+                  <span class="pill ok">{{ 'studentStatus.active' | translate }}</span>
+                } @else {
+                  <span class="pill warn">{{ 'studentStatus.' + s.status | translate }}</span>
+                }
+              </td>
+              <td [attr.data-label]="'list.mode' | translate">
+                {{ 'mode.' + s.memorization_mode | translate }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
     <app-paginator [page]="page()" [total]="total()" (pageChange)="page.set($event)" />
   }

@@ -263,10 +263,10 @@
               [class.is-override]="isOverride(l.center_id)"
               [class.is-inherited]="activeScope() !== null && !isOverride(l.center_id)"
             >
-              <td>
+              <td [attr.data-label]="'level.code' | translate">
                 <code class="ltr-num" dir="ltr">{{ l.code }}</code>
               </td>
-              <td>
+              <td [attr.data-label]="'level.name' | translate">
                 <strong>{{ l.name_ar }}</strong>
                 @if (activeScope() !== null) {
                   @if (isOverride(l.center_id)) {
@@ -276,13 +276,19 @@
                   }
                 }
               </td>
-              <td class="ltr-num">{{ l.sessions_per_week }}</td>
-              <td class="ltr-num">{{ l.thumn_per_session_value }}</td>
-              <td class="ltr-num">
+              <td class="ltr-num" [attr.data-label]="'level.sessions' | translate">
+                {{ l.sessions_per_week }}
+              </td>
+              <td class="ltr-num" [attr.data-label]="'level.thumnSession' | translate">
+                {{ l.thumn_per_session_value }}
+              </td>
+              <td class="ltr-num" [attr.data-label]="'level.thumnWeek' | translate">
                 {{ l.thumn_per_week_value | thumnDisplay: language.current() }}
               </td>
-              <td class="ltr-num">{{ l.ahzab_per_term }}</td>
-              <td class="actions-col">
+              <td class="ltr-num" [attr.data-label]="'level.ahzabTerm' | translate">
+                {{ l.ahzab_per_term }}
+              </td>
+              <td class="actions-col" [attr.data-label]="'common.actions' | translate">
                 <button
                   type="button"
                   class="btn btn-ghost btn-sm"

@@ -165,7 +165,7 @@
                 [class.is-override]="isOverride(m.center_id)"
                 [class.is-inherited]="activeScope() !== null && !isOverride(m.center_id)"
               >
-                <td>
+                <td [attr.data-label]="'scoring.name' | translate">
                   <strong>{{ m.name_ar }}</strong>
                   @if (activeScope() !== null) {
                     @if (isOverride(m.center_id)) {
@@ -177,10 +177,10 @@
                     }
                   }
                 </td>
-                <td>
+                <td [attr.data-label]="'scoring.code' | translate">
                   <code class="ltr-num" dir="ltr">{{ m.code }}</code>
                 </td>
-                <td>
+                <td [attr.data-label]="'scoring.max' | translate">
                   <input
                     type="number"
                     class="ltr-num mini"
@@ -198,8 +198,10 @@
                     "
                   />
                 </td>
-                <td>{{ 'scopeType.' + m.scope | translate }}</td>
-                <td>
+                <td [attr.data-label]="'scoring.scope' | translate">
+                  {{ 'scopeType.' + m.scope | translate }}
+                </td>
+                <td [attr.data-label]="'scoring.active' | translate">
                   <input
                     type="checkbox"
                     [checked]="m.is_active"
@@ -213,7 +215,7 @@
                     "
                   />
                 </td>
-                <td>
+                <td [attr.data-label]="'scoring.in_total' | translate">
                   @if (m.scope === 'weekly') {
                     <input
                       type="checkbox"
@@ -231,7 +233,7 @@
                     <span class="muted">—</span>
                   }
                 </td>
-                <td class="actions-col">
+                <td class="actions-col" [attr.data-label]="'common.actions' | translate">
                   @if (armingDeleteId() === m.id) {
                     <button
                       type="button"
