@@ -18,7 +18,7 @@ export type AcceptRegistrationRequest = {
  */
 export type AnnouncementResource = {
     id: number;
-    audience: string;
+    audience: 'all' | 'teachers' | 'manager' | 'my_students';
     group_id: number;
     title: string;
     body: string;
@@ -27,6 +27,58 @@ export type AnnouncementResource = {
         full_name: string;
     };
     created_at: string;
+};
+
+/**
+ * AppearanceResource
+ */
+export type AppearanceResource = {
+    center_id: number | null;
+    background_url: string | null;
+    background_type: 'none' | 'color' | 'image' | 'gradient';
+    background_color: string;
+    gradient_type: 'linear' | 'radial' | 'conic';
+    gradient_angle: number;
+    gradient_from: string;
+    gradient_to: string;
+    background_opacity: number;
+    background_size: string;
+    background_position: string;
+    background_repeat: 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y' | 'space' | 'round';
+    background_attachment: 'scroll' | 'fixed';
+    background_blend_mode: 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 'color-dodge' | 'color-burn' | 'hard-light' | 'soft-light' | 'difference' | 'exclusion' | 'hue' | 'saturation' | 'color' | 'luminosity';
+    pattern_url: string | null;
+    pattern_enabled: boolean;
+    pattern_opacity: number;
+    pattern_size: number;
+    pattern_tint: string | null;
+    pattern_invert: boolean;
+    backdrop_blur: number;
+    glass_tint: string;
+    glass_opacity: number;
+    orb_enabled: boolean;
+    orb_primary: string;
+    orb_secondary: string;
+    orb_opacity: number;
+    scrim_enabled: boolean;
+    scrim_color: string | null;
+    scrim_opacity: number;
+    updated_at: string | null;
+};
+
+/**
+ * AttendanceRateRow
+ */
+export type AttendanceRateRow = {
+    student_id: number;
+    season_id: number;
+    term_id: number;
+    total_sessions: number;
+    present_count: number | null;
+    absent_count: number | null;
+    late_count: number | null;
+    excused_count: number | null;
+    attendance_rate_pct: number | null;
 };
 
 /**
@@ -41,7 +93,7 @@ export type AttendanceResource = {
     };
     session_id: number;
     week_id: number;
-    status: string;
+    status: 'present' | 'absent' | 'late' | 'excused';
     notes: string | null;
 };
 
@@ -108,7 +160,7 @@ export type ExamQuestionResource = {
     ayah_from: number | null;
     ayah_to: number | null;
     sort_order: number;
-    model_type: string | null;
+    model_type: 'model1' | 'model2_full' | 'single' | null;
     max_score: number | null;
     score: number | null;
     notes: string | null;
@@ -123,7 +175,7 @@ export type ExamResource = {
     student_name: string;
     season_id: number;
     term_id: number | null;
-    exam_type: string;
+    exam_type: 'hizb_completion' | 'term_batch' | 'final_season' | 'weekly';
     exam_date: string | null;
     examiner_id: number;
     overall_avg: number | null;
@@ -163,7 +215,7 @@ export type GroupResource = {
         id: number;
         full_name: string;
         phone: string | null;
-        teacher_type: string | null;
+        teacher_type: 'hifz' | 'murajaa' | 'both' | null;
     };
     students_count?: number;
     fill_pct?: number | null;
@@ -184,10 +236,10 @@ export type Level = {
     name_ar: string;
     sessions_per_week: number;
     thumn_per_session_label: string;
-    thumn_per_session_value: string;
-    thumn_per_week_value: string;
-    ahzab_per_term: string;
-    ahzab_per_dawra: string;
+    thumn_per_session_value: number;
+    thumn_per_week_value: number;
+    ahzab_per_term: number;
+    ahzab_per_dawra: number;
     duration_label: string;
     total_ahzab: number;
 };
@@ -212,11 +264,11 @@ export type MemorizationLog = {
     session_id: number;
     log_date: string;
     log_mode: string;
-    hizb_no: string | null;
+    hizb_no: number | null;
     thumn_no: number | null;
-    thumn_amount: string;
-    hizb_from: string | null;
-    hizb_to: string | null;
+    thumn_amount: number;
+    hizb_from: number | null;
+    hizb_to: number | null;
     surah_from: number | null;
     ayah_from: number | null;
     surah_to: number | null;
@@ -234,30 +286,6 @@ export type MemorizationMode = 'surah' | 'thumn';
  * ModuleScope
  */
 export type ModuleScope = 'weekly' | 'murajaa';
-
-/**
- * MurajaaReview
- */
-export type MurajaaReview = {
-    id: number;
-    student_id: number;
-    season_id: number;
-    term_id: number;
-    week_from: number;
-    week_to: number;
-    weeks_covered: number | null;
-    session_id: number;
-    hizb_from: string | null;
-    hizb_to: string | null;
-    surah_from: number | null;
-    ayah_from: number | null;
-    surah_to: number | null;
-    ayah_to: number | null;
-    score: string;
-    entered_by: number;
-    reviewed_at: string | null;
-    created_at: string;
-};
 
 /**
  * MurajaaReviewResource
@@ -288,8 +316,8 @@ export type NotificationResource = {
     id: number;
     recipient_phone: string;
     wa_link: string;
-    channel: string;
-    status: string;
+    channel: 'whatsapp' | 'other';
+    status: 'queued' | 'sent' | 'failed';
     sent_at: string | null;
 };
 
@@ -302,17 +330,6 @@ export type NotificationStatus = 'queued' | 'sent' | 'failed';
  * QuestionModel
  */
 export type QuestionModel = 'model1' | 'model2_full' | 'single';
-
-/**
- * QuranVerse
- */
-export type QuranVerse = {
-    id: number;
-    sura_no: number;
-    surah_name: string;
-    ayah_no: number;
-    text: string;
-};
 
 /**
  * RedeemDelegationRequest
@@ -341,6 +358,21 @@ export type RegisterRequest = {
 };
 
 /**
+ * RegistrationRequestResource
+ */
+export type RegistrationRequestResource = {
+    id: number;
+    full_name: string;
+    email: string;
+    role: 'supervisor' | 'teacher' | 'student' | 'board';
+    teacher_type: 'hifz' | 'murajaa' | 'both' | null;
+    phone: string | null;
+    birth_date: string | null;
+    gender: 'male' | 'female' | null;
+    requested_at: string;
+};
+
+/**
  * ReplaceUserRequest
  */
 export type ReplaceUserRequest = {
@@ -358,9 +390,9 @@ export type RevisionLog = {
     week_id: number;
     session_id: number;
     log_date: string;
-    hizb_from: string | null;
-    hizb_to: string | null;
-    murajaa_score: string | null;
+    hizb_from: number | null;
+    hizb_to: number | null;
+    murajaa_score: number | null;
     entered_by: number;
 };
 
@@ -400,10 +432,27 @@ export type ScoringModuleResource = {
     name_ar: string;
     center_id: number | null;
     max_points: number;
-    scope: string;
+    scope: 'weekly' | 'murajaa';
     is_active: boolean;
     is_in_weekly_total: boolean;
     sort_order: number;
+};
+
+/**
+ * SeasonDashboardRow
+ */
+export type SeasonDashboardRow = {
+    student_id: number;
+    full_name: string;
+    level_id: number | null;
+    group_id: number | null;
+    season_id: number;
+    season_thumn: number | null;
+    season_avg_score: number | null;
+    season_avg_sarraj: number | null;
+    season_attendance_pct: number | null;
+    season_overall_avg: number | null;
+    honor_flag: string;
 };
 
 /**
@@ -424,22 +473,6 @@ export type SeasonResource = {
 };
 
 /**
- * SeasonResult
- */
-export type SeasonResult = {
-    id: number;
-    student_id: number;
-    season_id: number;
-    total_memorized_label: string | null;
-    total_memorized_thumn: string | null;
-    hifz_total: string | null;
-    murajaa_total: string | null;
-    overall_avg: string | null;
-    board_report: string | null;
-    honor_flag: string;
-};
-
-/**
  * SeasonResultResource
  */
 export type SeasonResultResource = {
@@ -452,7 +485,28 @@ export type SeasonResultResource = {
     murajaa_total: number | null;
     overall_avg: number | null;
     board_report: string | null;
-    honor_flag: string;
+    honor_flag: 'none' | 'tashji3' | 'intibah';
+};
+
+/**
+ * SessionCalendarResource
+ */
+export type SessionCalendarResource = {
+    id: number;
+    season_id: number;
+    term_id: number;
+    week_id: number;
+    group_id: number;
+    group_name: string | null;
+    term_name: string | null;
+    week_number_global: number | null;
+    week_type: 'study' | 'review' | null;
+    session_number_global: number;
+    session_type: 'memorization' | 'revision' | 'exam';
+    planned_date: string | null;
+    start_time: string | null;
+    end_time: string | null;
+    status: 'planned' | 'done' | 'cancelled';
 };
 
 /**
@@ -465,11 +519,11 @@ export type SessionResource = {
     week_id: number;
     session_number_global: number;
     session_number_in_week: number;
-    session_type: string;
+    session_type: 'memorization' | 'revision' | 'exam';
     planned_date: string | null;
     start_time: string | null;
     end_time: string | null;
-    status: string;
+    status: 'planned' | 'done' | 'cancelled';
     group_id: number;
 };
 
@@ -728,27 +782,6 @@ export type StoreUserRequest = {
 };
 
 /**
- * Student
- */
-export type Student = {
-    id: number;
-    user_id: number | null;
-    group_id: number;
-    center_id: number | null;
-    level_id: number;
-    full_name: string;
-    birth_date: string | null;
-    gender: string | null;
-    enrollment_date: string | null;
-    status: string;
-    student_type: string | null;
-    memorization_mode: string;
-    start_hizb: string | null;
-    notes: string | null;
-    created_at: string;
-};
-
-/**
  * StudentResource
  */
 export type StudentResource = {
@@ -769,10 +802,10 @@ export type StudentResource = {
     enrollment_date: string | null;
     notes: string | null;
     user_id: number | null;
-    gender: string | null;
-    status: string;
-    student_type: string | null;
-    memorization_mode: string;
+    gender: 'male' | 'female' | null;
+    status: 'active' | 'paused' | 'graduated' | 'left';
+    student_type: 'child' | 'adult' | null;
+    memorization_mode: 'surah' | 'thumn';
     start_hizb: number | null;
 };
 
@@ -792,28 +825,6 @@ export type StudentType = 'child' | 'adult';
 export type TeacherType = 'hifz' | 'murajaa' | 'both';
 
 /**
- * TermPlan
- */
-export type TermPlan = {
-    id: number;
-    student_id: number;
-    season_id: number;
-    term_id: number;
-    goal_text: string | null;
-    plan_mode: string;
-    start_hizb: string | null;
-    end_hizb: string | null;
-    plan_surah_from: number | null;
-    plan_ayah_from: number | null;
-    plan_surah_to: number | null;
-    plan_ayah_to: number | null;
-    expected_hifz_week_thumn: string | null;
-    expected_hifz_term_ahzab: string | null;
-    expected_hifz_season_ahzab: string | null;
-    khatm_expected_at: string | null;
-};
-
-/**
  * TermPlanResource
  */
 export type TermPlanResource = {
@@ -822,7 +833,7 @@ export type TermPlanResource = {
     season_id: number;
     term_id: number;
     goal_text: string | null;
-    plan_mode: string;
+    plan_mode: 'surah' | 'thumn';
     start_hizb: number | null;
     end_hizb: number | null;
     plan_surah_from: number | null;
@@ -833,6 +844,18 @@ export type TermPlanResource = {
     expected_hifz_term_ahzab: number | null;
     expected_hifz_season_ahzab: number | null;
     khatm_expected_at: string | null;
+};
+
+/**
+ * TermQuizAvgRow
+ */
+export type TermQuizAvgRow = {
+    student_id: number;
+    season_id: number;
+    term_id: number | null;
+    exam_type: string;
+    avg_score: number | null;
+    questions_count: number;
 };
 
 /**
@@ -852,23 +875,6 @@ export type TermResource = {
 };
 
 /**
- * TermResult
- */
-export type TermResult = {
-    id: number;
-    student_id: number;
-    season_id: number;
-    term_id: number;
-    hifz_total: string | null;
-    murajaa_total: string | null;
-    exam_score: string | null;
-    general_avg: string | null;
-    teacher_notes: string | null;
-    supervisor_note: string | null;
-    honor_flag: string;
-};
-
-/**
  * TermResultResource
  */
 export type TermResultResource = {
@@ -882,7 +888,7 @@ export type TermResultResource = {
     general_avg: number | null;
     teacher_notes: string | null;
     supervisor_note: string | null;
-    honor_flag: string;
+    honor_flag: 'none' | 'tashji3' | 'intibah';
 };
 
 /**
@@ -1165,10 +1171,10 @@ export type User = {
     id: number;
     full_name: string;
     email: string;
-    role: string;
+    role: 'admin' | 'supervisor' | 'teacher' | 'student' | 'board';
     phone: string | null;
     center_id: number | null;
-    teacher_type: string | null;
+    teacher_type: 'hifz' | 'murajaa' | 'both' | null;
     is_active: boolean;
     created_at: string;
     updated_at: string;
@@ -1181,10 +1187,10 @@ export type UserResource = {
     id: number;
     full_name: string;
     email: string;
-    role: string;
+    role: 'admin' | 'supervisor' | 'teacher' | 'student' | 'board';
     phone: string | null;
     center_id: number | null;
-    teacher_type: string | null;
+    teacher_type: 'hifz' | 'murajaa' | 'both' | null;
     is_active: boolean;
 };
 
@@ -1199,7 +1205,7 @@ export type WeekResource = {
     season_name: string | null;
     week_number_global: number;
     week_number_in_term: number;
-    week_type: string;
+    week_type: 'study' | 'review';
     start_date: string | null;
     end_date: string | null;
     sessions?: Array<SessionResource>;
@@ -1217,6 +1223,11 @@ export type Weekday = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
 
 /**
  * WeeklyBatchRequest
+ *
+ * `rows.*.scores` is keyed by scoring-module code (a map), but the `scores.*`
+ * rule makes Scramble infer a numeric list — so the wildcard child is hidden
+ * from the docs and the map type is declared explicitly. Runtime rules are
+ * unchanged; this only corrects the generated OpenAPI/TS shape.
  */
 export type WeeklyBatchRequest = {
     group_id: number;
@@ -1230,7 +1241,9 @@ export type WeeklyBatchRequest = {
             ayah_from?: number | null;
             ayah_to?: number | null;
         };
-        scores: Array<number | null>;
+        scores: {
+            [key: string]: number | null;
+        };
     }>;
 };
 
@@ -1243,6 +1256,20 @@ export type WeeklyGoalResource = {
     week_id: number;
     target_text: string | null;
     is_completed: boolean | null;
+};
+
+/**
+ * WeeklyProgressRow
+ */
+export type WeeklyProgressRow = {
+    student_id: number;
+    season_id: number;
+    term_id: number;
+    week_id: number;
+    total_thumn: number;
+    total_ahzab: number;
+    avg_score: number | null;
+    sessions_logged: number;
 };
 
 export type GetV1HealthData = {
@@ -1298,8 +1325,30 @@ export type AnnouncementsIndexError = AnnouncementsIndexErrors[keyof Announcemen
 export type AnnouncementsIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<AnnouncementResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -1595,40 +1644,8 @@ export type AppearanceShowError = AppearanceShowErrors[keyof AppearanceShowError
 export type AppearanceShowResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: {
-            center_id: number | null;
-            background_url: string | null;
-            background_type: string;
-            background_color: string;
-            gradient_type: string;
-            gradient_angle: number;
-            gradient_from: string;
-            gradient_to: string;
-            background_opacity: number;
-            background_size: string;
-            background_position: string;
-            background_repeat: string;
-            background_attachment: string;
-            background_blend_mode: string;
-            pattern_url: string | null;
-            pattern_enabled: boolean;
-            pattern_opacity: number;
-            pattern_size: number;
-            pattern_tint: string | null;
-            pattern_invert: boolean;
-            backdrop_blur: number;
-            glass_tint: string;
-            glass_opacity: number;
-            orb_enabled: boolean;
-            orb_primary: string;
-            orb_secondary: string;
-            orb_opacity: number;
-            scrim_enabled: boolean;
-            scrim_color: string | null;
-            scrim_opacity: number;
-            updated_at: string | null;
-        };
+        message: string | null;
+        data: AppearanceResource;
     };
 };
 
@@ -1682,40 +1699,8 @@ export type AppearanceUpdateError = AppearanceUpdateErrors[keyof AppearanceUpdat
 export type AppearanceUpdateResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: {
-            center_id: number | null;
-            background_url: string | null;
-            background_type: string;
-            background_color: string;
-            gradient_type: string;
-            gradient_angle: number;
-            gradient_from: string;
-            gradient_to: string;
-            background_opacity: number;
-            background_size: string;
-            background_position: string;
-            background_repeat: string;
-            background_attachment: string;
-            background_blend_mode: string;
-            pattern_url: string | null;
-            pattern_enabled: boolean;
-            pattern_opacity: number;
-            pattern_size: number;
-            pattern_tint: string | null;
-            pattern_invert: boolean;
-            backdrop_blur: number;
-            glass_tint: string;
-            glass_opacity: number;
-            orb_enabled: boolean;
-            orb_primary: string;
-            orb_secondary: string;
-            orb_opacity: number;
-            scrim_enabled: boolean;
-            scrim_color: string | null;
-            scrim_opacity: number;
-            updated_at: string | null;
-        };
+        message: string | null;
+        data: AppearanceResource;
     };
 };
 
@@ -1756,40 +1741,8 @@ export type AppearanceDestroyError = AppearanceDestroyErrors[keyof AppearanceDes
 export type AppearanceDestroyResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: {
-            center_id: number | null;
-            background_url: string | null;
-            background_type: string;
-            background_color: string;
-            gradient_type: string;
-            gradient_angle: number;
-            gradient_from: string;
-            gradient_to: string;
-            background_opacity: number;
-            background_size: string;
-            background_position: string;
-            background_repeat: string;
-            background_attachment: string;
-            background_blend_mode: string;
-            pattern_url: string | null;
-            pattern_enabled: boolean;
-            pattern_opacity: number;
-            pattern_size: number;
-            pattern_tint: string | null;
-            pattern_invert: boolean;
-            backdrop_blur: number;
-            glass_tint: string;
-            glass_opacity: number;
-            orb_enabled: boolean;
-            orb_primary: string;
-            orb_secondary: string;
-            orb_opacity: number;
-            scrim_enabled: boolean;
-            scrim_color: string | null;
-            scrim_opacity: number;
-            updated_at: string | null;
-        };
+        message: string | null;
+        data: AppearanceResource;
     };
 };
 
@@ -1845,40 +1798,8 @@ export type AppearanceUploadError = AppearanceUploadErrors[keyof AppearanceUploa
 export type AppearanceUploadResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: {
-            center_id: number | null;
-            background_url: string | null;
-            background_type: string;
-            background_color: string;
-            gradient_type: string;
-            gradient_angle: number;
-            gradient_from: string;
-            gradient_to: string;
-            background_opacity: number;
-            background_size: string;
-            background_position: string;
-            background_repeat: string;
-            background_attachment: string;
-            background_blend_mode: string;
-            pattern_url: string | null;
-            pattern_enabled: boolean;
-            pattern_opacity: number;
-            pattern_size: number;
-            pattern_tint: string | null;
-            pattern_invert: boolean;
-            backdrop_blur: number;
-            glass_tint: string;
-            glass_opacity: number;
-            orb_enabled: boolean;
-            orb_primary: string;
-            orb_secondary: string;
-            orb_opacity: number;
-            scrim_enabled: boolean;
-            scrim_color: string | null;
-            scrim_opacity: number;
-            updated_at: string | null;
-        };
+        message: string | null;
+        data: AppearanceResource;
     };
 };
 
@@ -1932,9 +1853,9 @@ export type AttendanceBulkError = AttendanceBulkErrors[keyof AttendanceBulkError
 export type AttendanceBulkResponses = {
     201: {
         success: boolean;
-        message: 'Attendance saved.';
+        message: string;
         data: {
-            attendance_ids: Array<string>;
+            attendance_ids: Array<number>;
         };
     };
 };
@@ -1974,8 +1895,30 @@ export type AttendanceIndexError = AttendanceIndexErrors[keyof AttendanceIndexEr
 export type AttendanceIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<AttendanceResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -2129,10 +2072,10 @@ export type AuthLoginResponses = {
             user: {
                 id: number;
                 full_name: string;
-                role: string;
+                role: 'admin' | 'supervisor' | 'teacher' | 'student' | 'board';
                 center_id: number | null;
                 center_name: string | null;
-                teacher_type: string | null;
+                teacher_type: 'hifz' | 'murajaa' | 'both' | null;
             };
         };
     };
@@ -2201,15 +2144,15 @@ export type AuthMeError = AuthMeErrors[keyof AuthMeErrors];
 export type AuthMeResponses = {
     200: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: {
-            id: string;
+            id: number;
             full_name: string;
             email: string;
-            role: string;
-            center_id: string;
+            role: 'admin' | 'supervisor' | 'teacher' | 'student' | 'board';
+            center_id: number | null;
             center_name: string | null;
-            teacher_type: string;
+            teacher_type: 'hifz' | 'murajaa' | 'both' | null;
         };
     };
 };
@@ -2248,10 +2191,10 @@ export type AuthRefreshResponses = {
             user: {
                 id: number;
                 full_name: string;
-                role: string;
+                role: 'admin' | 'supervisor' | 'teacher' | 'student' | 'board';
                 center_id: number | null;
                 center_name: string | null;
-                teacher_type: string | null;
+                teacher_type: 'hifz' | 'murajaa' | 'both' | null;
             };
         };
     };
@@ -2392,9 +2335,7 @@ export type CalendarShowTermResponses = {
     200: {
         success: boolean;
         message: null;
-        data: TermResource & {
-            [key: string]: unknown;
-        };
+        data: TermResource;
     };
 };
 
@@ -2461,7 +2402,9 @@ export type CalendarUpdateTermError = CalendarUpdateTermErrors[keyof CalendarUpd
 
 export type CalendarUpdateTermResponses = {
     200: {
-        [key: string]: unknown;
+        success: boolean;
+        message: string | null;
+        data: TermResource;
     };
 };
 
@@ -2500,8 +2443,30 @@ export type CalendarWeeksError = CalendarWeeksErrors[keyof CalendarWeeksErrors];
 export type CalendarWeeksResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<WeekResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -2568,7 +2533,9 @@ export type CalendarUpdateWeekError = CalendarUpdateWeekErrors[keyof CalendarUpd
 
 export type CalendarUpdateWeekResponses = {
     200: {
-        [key: string]: unknown;
+        success: boolean;
+        message: string | null;
+        data: WeekResource;
     };
 };
 
@@ -2612,8 +2579,30 @@ export type CalendarSessionsError = CalendarSessionsErrors[keyof CalendarSession
 export type CalendarSessionsResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<SessionResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -2680,7 +2669,9 @@ export type CalendarUpdateSessionError = CalendarUpdateSessionErrors[keyof Calen
 
 export type CalendarUpdateSessionResponses = {
     200: {
-        [key: string]: unknown;
+        success: boolean;
+        message: string | null;
+        data: SessionResource;
     };
 };
 
@@ -2738,8 +2729,30 @@ export type CalendarFeedError = CalendarFeedErrors[keyof CalendarFeedErrors];
 export type CalendarFeedResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<SessionCalendarResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -2778,8 +2791,30 @@ export type CentersIndexError = CentersIndexErrors[keyof CentersIndexErrors];
 export type CentersIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<CenterResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -2862,14 +2897,12 @@ export type CentersDestroyErrors = {
          */
         message: string;
     };
-    /**
-     * Authorization error
-     */
     403: {
-        /**
-         * Error overview.
-         */
+        success: boolean;
         message: string;
+        errors: {
+            code: string;
+        };
     };
     /**
      * Not found
@@ -3040,34 +3073,13 @@ export type DashboardMeError = DashboardMeErrors[keyof DashboardMeErrors];
 export type DashboardMeResponses = {
     200: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: {
-            student: StudentResource & {
-                [key: string]: unknown;
-            };
-            season: {
-                [key: string]: unknown;
-            } | null;
-            weekly: Array<{
-                [key: string]: unknown;
-            }>;
+            student: StudentResource;
+            season: SeasonDashboardRow | null;
+            weekly: Array<WeeklyProgressRow>;
             final: number | null;
-        };
-    } | {
-        success: boolean;
-        message: null;
-        data: {
-            student: StudentResource & {
-                [key: string]: unknown;
-            };
-            season: null;
-            weekly: Array<string>;
-            final: null;
-        };
-    } | {
-        success: boolean;
-        message: null;
-        data: null;
+        } | null;
     };
 };
 
@@ -3124,10 +3136,8 @@ export type DashboardSeasonError = DashboardSeasonErrors[keyof DashboardSeasonEr
 export type DashboardSeasonResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: {
-            [key: string]: unknown;
-        } | null;
+        message: string | null;
+        data: SeasonDashboardRow | null;
     };
 };
 
@@ -3184,10 +3194,8 @@ export type DashboardWeeklyError = DashboardWeeklyErrors[keyof DashboardWeeklyEr
 export type DashboardWeeklyResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: Array<{
-            [key: string]: unknown;
-        }>;
+        message: string | null;
+        data: Array<WeeklyProgressRow>;
     };
 };
 
@@ -3244,14 +3252,21 @@ export type DashboardCenterError = DashboardCenterErrors[keyof DashboardCenterEr
 export type DashboardCenterResponses = {
     200: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: {
-            cards: Array<unknown>;
+            cards: {
+                students: number;
+                avg_score: number | null;
+                avg_sarraj: number | null;
+                avg_attendance: number | null;
+            };
             honors: Array<{
-                [key: string]: unknown;
+                honor_flag: 'none' | 'tashji3' | 'intibah';
+                n: number;
             }>;
             attendance: Array<{
-                [key: string]: unknown;
+                status: 'present' | 'absent' | 'late' | 'excused';
+                n: number;
             }>;
         };
     };
@@ -3310,16 +3325,14 @@ export type DashboardFinalError = DashboardFinalErrors[keyof DashboardFinalError
 export type DashboardFinalResponses = {
     200: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: {
             inputs: {
                 avg_murajaa: number | null;
                 avg_weekly: number | null;
                 avg_sarraj: number | null;
             };
-            quizzes: Array<{
-                [key: string]: unknown;
-            }>;
+            quizzes: Array<TermQuizAvgRow>;
             divisor: number;
             final: number | null;
         };
@@ -3630,7 +3643,11 @@ export type ExamWeeklyTemplateResponses = {
                 name_ar: string;
                 max_points: number;
             }>;
-            pupils: Array<Student>;
+            pupils: Array<{
+                id: number;
+                full_name: string;
+                memorization_mode: 'surah' | 'thumn';
+            }>;
         };
     };
 };
@@ -3728,8 +3745,30 @@ export type ExamsIndexError = ExamsIndexErrors[keyof ExamsIndexErrors];
 export type ExamsIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<ExamResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -4318,7 +4357,67 @@ export type GroupStatsResponses = {
     200: {
         success: boolean;
         message: null;
-        data: Array<unknown>;
+        data: {
+            season: {
+                id: number;
+            } | null;
+            season_name: string | null;
+            kpis: {
+                groups: number;
+                students: number;
+                avg_score: number | null;
+                attendance_pct: number | null;
+                fill_pct: number | null;
+            };
+            breakdown: {
+                status: {
+                    [key: string]: number;
+                };
+                gender: {
+                    [key: string]: number;
+                };
+                student_type: {
+                    [key: string]: number;
+                };
+                memorization_mode: {
+                    [key: string]: number;
+                };
+            };
+            groups: Array<{
+                id: number;
+                name: string;
+                center_id: number;
+                teacher: {
+                    id: number;
+                    full_name: string;
+                    phone: string | null;
+                    teacher_type: 'hifz' | 'murajaa' | 'both';
+                } | null;
+                academic_year: string | null;
+                schedule_days: string;
+                is_active: boolean;
+                capacity: number | null;
+                students_count: number;
+                fill_pct: number | null;
+                avg_score: number | null;
+                attendance_pct: number | null;
+                thumn_total: number;
+                breakdown: {
+                    status?: {
+                        [key: string]: number;
+                    };
+                    gender?: {
+                        [key: string]: number;
+                    };
+                    student_type?: {
+                        [key: string]: number;
+                    };
+                    memorization_mode?: {
+                        [key: string]: number;
+                    };
+                };
+            }>;
+        };
     };
 };
 
@@ -4372,7 +4471,77 @@ export type GroupDetailResponses = {
     200: {
         success: boolean;
         message: null;
-        data: Array<unknown>;
+        data: {
+            season_name: string | null;
+            group: {
+                id: number;
+                name: string;
+                center_id: number;
+                teacher: {
+                    id: number;
+                    full_name: string;
+                    phone: string | null;
+                    teacher_type: 'hifz' | 'murajaa' | 'both';
+                } | null;
+                academic_year: string | null;
+                schedule_days: string;
+                is_active: boolean;
+                capacity: number | null;
+                students_count: number;
+                fill_pct: number | null;
+                avg_score: number | null;
+                attendance_pct: number | null;
+                thumn_total: number;
+                breakdown: {
+                    status?: {
+                        [key: string]: number;
+                    };
+                    gender?: {
+                        [key: string]: number;
+                    };
+                    student_type?: {
+                        [key: string]: number;
+                    };
+                    memorization_mode?: {
+                        [key: string]: number;
+                    };
+                };
+            };
+            breakdown: {
+                status: {
+                    [key: string]: number;
+                };
+                gender: {
+                    [key: string]: number;
+                };
+                student_type: {
+                    [key: string]: number;
+                };
+                memorization_mode: {
+                    [key: string]: number;
+                };
+            };
+            trend: Array<{
+                week: number;
+                avg_score: number;
+            }>;
+            students: Array<{
+                id: number;
+                full_name: string;
+                gender: string | null;
+                status: string;
+                student_type: string | null;
+                memorization_mode: 'surah' | 'thumn';
+                start_hizb: number | null;
+                birth_date: string | null;
+                enrollment_date: string | null;
+                level_id: number | null;
+                notes: string | null;
+                avg_score: number | null;
+                attendance_pct: number | null;
+                thumn_total: number;
+            }>;
+        };
     };
 };
 
@@ -4413,8 +4582,30 @@ export type GroupsIndexError = GroupsIndexErrors[keyof GroupsIndexErrors];
 export type GroupsIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<GroupResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -4499,14 +4690,12 @@ export type GroupsDestroyErrors = {
          */
         message: string;
     };
-    /**
-     * Authorization error
-     */
     403: {
-        /**
-         * Error overview.
-         */
+        success: boolean;
         message: string;
+        errors: {
+            code: string;
+        };
     };
     /**
      * Not found
@@ -4696,13 +4885,7 @@ export type LevelResetError = LevelResetErrors[keyof LevelResetErrors];
 export type LevelResetResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: {
-            deleted: unknown;
-        };
-    } | {
-        success: boolean;
-        message: null;
+        message: string | null;
         data: {
             deleted: number;
         };
@@ -4969,8 +5152,30 @@ export type MurajaaIndexReviewsError = MurajaaIndexReviewsErrors[keyof MurajaaIn
 export type MurajaaIndexReviewsResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<MurajaaReviewResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -5172,8 +5377,30 @@ export type MurajaaIndexLogsError = MurajaaIndexLogsErrors[keyof MurajaaIndexLog
 export type MurajaaIndexLogsResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<RevisionLogResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -5378,8 +5605,30 @@ export type NotificationsIndexError = NotificationsIndexErrors[keyof Notificatio
 export type NotificationsIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<NotificationResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -5673,7 +5922,11 @@ export type ReferenceSurahsResponses = {
     200: {
         success: boolean;
         message: null;
-        data: Array<QuranVerse>;
+        data: Array<{
+            id: number;
+            name_ar: string;
+            ayahs_count: number;
+        }>;
     };
 };
 
@@ -5712,8 +5965,30 @@ export type RegistrationRequestIndexError = RegistrationRequestIndexErrors[keyof
 export type RegistrationRequestIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<RegistrationRequestResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -5893,7 +6168,7 @@ export type ReportTermError = ReportTermErrors[keyof ReportTermErrors];
 export type ReportTermResponses = {
     200: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: {
             student: {
                 id: number;
@@ -5903,18 +6178,12 @@ export type ReportTermResponses = {
                 id: number;
                 name_ar: string;
             };
-            result: TermResult | null;
-            plan: TermPlan | null;
-            quizzes: Array<{
-                [key: string]: unknown;
-            }>;
-            attendance: {
-                [key: string]: unknown;
-            } | null;
-            weekly: Array<{
-                [key: string]: unknown;
-            }>;
-            murajaa_cycles: Array<MurajaaReview>;
+            result: TermResultResource | null;
+            plan: TermPlanResource | null;
+            quizzes: Array<TermQuizAvgRow>;
+            attendance: AttendanceRateRow | null;
+            weekly: Array<WeeklyProgressRow>;
+            murajaa_cycles: Array<MurajaaReviewResource>;
         };
     };
 };
@@ -5972,24 +6241,22 @@ export type ReportSeasonError = ReportSeasonErrors[keyof ReportSeasonErrors];
 export type ReportSeasonResponses = {
     200: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: {
             student: {
                 id: number;
                 full_name: string;
             };
-            result: SeasonResult | null;
-            term_results: Array<TermResult>;
+            result: SeasonResultResource | null;
+            term_results: Array<TermResultResource>;
             inputs: {
                 avg_murajaa: number | null;
                 avg_weekly: number | null;
                 avg_sarraj: number | null;
             };
             final: number | null;
-            quizzes: Array<{
-                [key: string]: unknown;
-            }>;
-            honor: unknown;
+            quizzes: Array<TermQuizAvgRow>;
+            honor: 'none' | 'tashji3' | 'intibah' | null;
         };
     };
 };
@@ -6029,8 +6296,30 @@ export type ResultIndexTermsError = ResultIndexTermsErrors[keyof ResultIndexTerm
 export type ResultIndexTermsResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<TermResultResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -6124,8 +6413,30 @@ export type ResultIndexSeasonsError = ResultIndexSeasonsErrors[keyof ResultIndex
 export type ResultIndexSeasonsResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<SeasonResultResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -6234,9 +6545,11 @@ export type ScoreBulkError = ScoreBulkErrors[keyof ScoreBulkErrors];
 export type ScoreBulkResponses = {
     201: {
         success: boolean;
-        message: 'Scores saved.';
+        message: string;
         data: {
-            weekly_totals: Array<string>;
+            weekly_totals: {
+                [key: string]: number;
+            };
             memorizations_saved: number;
         };
     };
@@ -6277,8 +6590,30 @@ export type ScoreIndexError = ScoreIndexErrors[keyof ScoreIndexErrors];
 export type ScoreIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<SessionScoreResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -6321,7 +6656,7 @@ export type ScoreBySessionResponses = {
         success: boolean;
         message: null;
         data: Array<{
-            student_id: string;
+            student_id: number;
             scores: Array<SessionScoreResource>;
             weekly_total: number;
         }>;
@@ -6386,12 +6721,12 @@ export type ScoreFollowupResponses = {
             student: {
                 id: number;
                 full_name: string;
-                memorization_mode: string;
+                memorization_mode: 'surah' | 'thumn';
             };
             week: {
                 id: number;
                 week_number_global: number;
-                week_type: string;
+                week_type: 'study' | 'review';
             };
             logs: Array<MemorizationLog>;
             scores_by_session: Array<Array<SessionScoreResource>>;
@@ -6437,7 +6772,7 @@ export type ScoringModulesIndexError = ScoringModulesIndexErrors[keyof ScoringMo
 export type ScoringModulesIndexResponses = {
     200: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: Array<ScoringModuleResource>;
     };
 };
@@ -6492,7 +6827,7 @@ export type ScoringModulesStoreError = ScoringModulesStoreErrors[keyof ScoringMo
 export type ScoringModulesStoreResponses = {
     201: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: ScoringModuleResource;
     };
 };
@@ -6547,7 +6882,7 @@ export type ScoringModuleBulkError = ScoringModuleBulkErrors[keyof ScoringModule
 export type ScoringModuleBulkResponses = {
     200: {
         success: boolean;
-        message: 'Scoring updated.';
+        message: string | null;
         data: {
             modules: Array<ScoringModuleResource>;
             check: {
@@ -6610,13 +6945,7 @@ export type ScoringModuleResetError = ScoringModuleResetErrors[keyof ScoringModu
 export type ScoringModuleResetResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: {
-            deleted: unknown;
-        };
-    } | {
-        success: boolean;
-        message: null;
+        message: string | null;
         data: {
             deleted: number;
         };
@@ -6658,7 +6987,7 @@ export type ScoringModuleScoringCheckError = ScoringModuleScoringCheckErrors[key
 export type ScoringModuleScoringCheckResponses = {
     200: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: {
             valid: boolean;
             total: number;
@@ -6791,7 +7120,7 @@ export type ScoringModulesUpdateError = ScoringModulesUpdateErrors[keyof Scoring
 export type ScoringModulesUpdateResponses = {
     200: {
         success: boolean;
-        message: null;
+        message: string | null;
         data: ScoringModuleResource;
     };
 };
@@ -6885,8 +7214,30 @@ export type SeasonsIndexError = SeasonsIndexErrors[keyof SeasonsIndexErrors];
 export type SeasonsIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<SeasonResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -7204,8 +7555,30 @@ export type StudentsIndexError = StudentsIndexErrors[keyof StudentsIndexErrors];
 export type StudentsIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<StudentResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -7478,8 +7851,30 @@ export type TermPlansIndexError = TermPlansIndexErrors[keyof TermPlansIndexError
 export type TermPlansIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<TermPlanResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -7710,10 +8105,12 @@ export type UserReplaceError = UserReplaceErrors[keyof UserReplaceErrors];
 export type UserReplaceResponses = {
     200: {
         success: boolean;
-        message: 'Replaced and deleted.';
+        message: string;
         data: {
             replacer_id: number;
-            moved: Array<string>;
+            moved: {
+                [key: string]: number;
+            };
         };
     };
 };
@@ -7756,8 +8153,30 @@ export type UsersIndexError = UsersIndexErrors[keyof UsersIndexErrors];
 export type UsersIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<UserResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 
@@ -8041,8 +8460,30 @@ export type WeeklyGoalsIndexError = WeeklyGoalsIndexErrors[keyof WeeklyGoalsInde
 export type WeeklyGoalsIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: unknown;
+        message: string | null;
+        data: {
+            data: Array<WeeklyGoalResource>;
+            links: {
+                first: string | null;
+                last: string | null;
+                prev: string | null;
+                next: string | null;
+            };
+            meta: {
+                current_page: number;
+                from: number | null;
+                last_page: number;
+                links: Array<{
+                    url: string | null;
+                    label: string;
+                    active: boolean;
+                }>;
+                path: string;
+                per_page: number;
+                to: number | null;
+                total: number;
+            };
+        };
     };
 };
 

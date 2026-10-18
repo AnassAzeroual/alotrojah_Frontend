@@ -1,71 +1,42 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient } from './api-client';
-
-export interface Level {
-  id: number;
-  code: string;
-  name_ar: string;
-  center_id?: number | null;
-  sessions_per_week: number;
-  thumn_per_session_label: string;
-  thumn_per_session_value: number;
-  thumn_per_week_value: number;
-  ahzab_per_term: number;
-  ahzab_per_dawra: number;
-  duration_label: string;
-  total_ahzab: number;
-}
-
-export interface LevelCreate {
-  name_ar: string;
-  center_id?: number | null;
-  sessions_per_week: number;
-  thumn_per_session_label: string;
-  thumn_per_session_value: number;
-  thumn_per_week_value: number;
-  ahzab_per_term: number;
-  ahzab_per_dawra: number;
-  duration_label: string;
-  total_ahzab: number;
-}
-
-export interface LevelPatch {
-  name_ar?: string;
-  sessions_per_week?: number;
-  thumn_per_session_label?: string;
-  thumn_per_session_value?: number;
-  thumn_per_week_value?: number;
-  ahzab_per_term?: number;
-  ahzab_per_dawra?: number;
-  duration_label?: string;
-  total_ahzab?: number;
-  center_id?: number | null;
-}
+import {
+  LevelResetResponse,
+  LevelsDestroyResponse,
+  LevelsIndexResponse,
+  LevelsStoreResponse,
+  LevelsUpdateResponse,
+  StoreLevelRequest,
+  UpdateLevelRequest,
+} from './models';
 
 @Injectable({ providedIn: 'root' })
 export class LevelsService {
   private readonly api = inject(ApiClient);
 
-  list(centerId?: number | null): Observable<Level[]> {
-    return this.api.get<Level[]>('/levels', centerId ? { center_id: centerId } : undefined);
+  list(centerId?: number | null): Observable<LevelsIndexResponse['data']> {
+    return this.api.get<LevelsIndexResponse['data']>(
+      '/levels',
+      centerId ? { center_id: centerId } : undefined,
+    );
   }
 
   /** Dynamic codes: the server assigns `L{id}`; the payload carries no code. */
-  create(payload: LevelCreate): Observable<Level> {
-    return this.api.post<Level>('/levels', payload);
+  create(payload: StoreLevelRequest): Observable<LevelsStoreResponse['data']> {
+    return this.api.post<LevelsStoreResponse['data']>('/levels', payload);
   }
 
-  update(id: number, patch: LevelPatch): Observable<Level> {
-    return this.api.put<Level>(`/levels/${id}`, patch);
+  update(id: number, patch: UpdateLevelRequest): Observable<LevelsUpdateResponse['data']> {
+    return this.api.put<LevelsUpdateResponse['data']>(`/levels/${id}`, patch);
   }
 
-  remove(id: number): Observable<null> {
-    return this.api.delete<null>(`/levels/${id}`);
+  remove(id: number): Observable<LevelsDestroyResponse['data']> {
+    return this.api.delete<LevelsDestroyResponse['data']>(`/levels/${id}`);
   }
 
   /** T2: delete one center's override set (all-or-nothing server-side). */
-  reset(centerId: number): Observable<{ deleted: number }> {
-    return this.api.delete<{ deleted: number }>('/levels/reset', { center_id: centerId });
+  reset(centerId: number): Observable<LevelResetResponse['data']> {
+    return this.api.delete<LevelResetResponse['data']>('/levels/reset', { center_id: centerId });
   }
 }

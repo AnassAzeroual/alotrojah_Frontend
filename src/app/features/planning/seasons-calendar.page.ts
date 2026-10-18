@@ -34,7 +34,8 @@ import {
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { SeasonsService } from '../../core/api/seasons.service';
 import { PlanningService } from '../../core/api/planning.service';
-import { CalendarService, type CalendarEntry } from '../../core/api/calendar.service';
+import { CalendarService } from '../../core/api/calendar.service';
+import { SessionCalendarResource } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -212,9 +213,9 @@ export class SeasonsCalendarPage {
     season: number | null,
     from: string,
     to: string,
-  ): Promise<CalendarEntry[]> {
+  ): Promise<SessionCalendarResource[]> {
     if (season === null) return [];
-    const out: CalendarEntry[] = [];
+    const out: SessionCalendarResource[] = [];
     let page = 1;
     for (;;) {
       const res = await firstValueFrom(this.calendar.feed({ season_id: season, from, to, page }));

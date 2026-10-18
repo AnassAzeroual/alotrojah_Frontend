@@ -1,41 +1,40 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
-import { Paginated, Student, UpdateStudentPayload } from './api-models';
+import {
+  StoreStudentRequest,
+  StudentResource,
+  StudentsIndexResponse,
+  StudentUnlinkedAccountsResponse,
+  UpdateStudentRequest,
+} from './models';
 
 @Injectable({ providedIn: 'root' })
 export class StudentsService {
   private readonly api = inject(ApiClient);
 
-  list(params?: QueryParams): Observable<Paginated<Student>> {
-    return this.api.get<Paginated<Student>>('/students', params);
+  list(params?: QueryParams): Observable<StudentsIndexResponse['data']> {
+    return this.api.get<StudentsIndexResponse['data']>('/students', params);
   }
 
-  get(id: number): Observable<Student> {
-    return this.api.get<Student>(`/students/${id}`);
+  get(id: number): Observable<StudentResource> {
+    return this.api.get<StudentResource>(`/students/${id}`);
   }
 
-  create(payload: import('./api-models').CreateStudentPayload): Observable<Student> {
-    return this.api.post<Student>('/students', payload);
+  create(payload: StoreStudentRequest): Observable<StudentResource> {
+    return this.api.post<StudentResource>('/students', payload);
   }
 
   /** Partial update (group assignment, profile fields, status…). */
-  update(id: number, payload: UpdateStudentPayload): Observable<Student> {
-    return this.api.put<Student>(`/students/${id}`, payload);
+  update(id: number, payload: UpdateStudentRequest): Observable<StudentResource> {
+    return this.api.put<StudentResource>(`/students/${id}`, payload);
   }
 
   /** Linkable login accounts: active student-role users with no pupil row. */
-  unlinkedAccounts(centerId?: number | null): Observable<UnlinkedAccount[]> {
-    return this.api.get<UnlinkedAccount[]>(
+  unlinkedAccounts(centerId?: number | null): Observable<StudentUnlinkedAccountsResponse['data']> {
+    return this.api.get<StudentUnlinkedAccountsResponse['data']>(
       '/students/unlinked-accounts',
       centerId ? { center_id: centerId } : undefined,
     );
   }
-}
-
-export interface UnlinkedAccount {
-  id: number;
-  full_name: string;
-  email: string;
-  center_id: number | null;
 }

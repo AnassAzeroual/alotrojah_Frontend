@@ -8,16 +8,17 @@ import {
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
-import { CurrentUser } from '../../core/api/api-models';
+import { AuthLoginResponse } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { LevelsPage } from './levels.page';
 
-const ADMIN: CurrentUser = {
+const ADMIN: AuthLoginResponse['data']['user'] = {
   id: 1,
   full_name: 'Admin',
   role: 'admin',
   center_id: null,
+  center_name: null,
   teacher_type: 'both',
 };
 
@@ -67,8 +68,8 @@ describe('LevelsPage create', () => {
         {
           provide: AuthService,
           useFactory: () => ({
-            currentUser: signal<CurrentUser>(ADMIN),
-            role: signal<CurrentUser['role']>('admin'),
+            currentUser: signal<AuthLoginResponse['data']['user']>(ADMIN),
+            role: signal<AuthLoginResponse['data']['user']['role']>('admin'),
           }),
         },
         { provide: AdminPrefsService, useValue: { hideScopePickers: signal(false) } },

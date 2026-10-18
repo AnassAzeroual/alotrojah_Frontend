@@ -20,28 +20,29 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, forkJoin, map, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ScoringModule, SessionScore, Student } from '../../../core/api/api-models';
+import { EntryService } from '../../../core/api/entry.service';
 import {
-  AttendanceRow,
-  EntryService,
-  SessionStudentScores,
-  WeeklyGoal,
-} from '../../../core/api/entry.service';
+  AttendanceResource,
+  AttendanceStatus,
+  ScoreBySessionResponse,
+  ScoringModuleResource,
+  StudentResource,
+  WeeklyGoalResource,
+} from '../../../core/api/models';
 import { ScoreInputComponent } from '../../../shared/ui/score-input/score-input.component';
 import { SpinnerComponent } from '../../../shared/ui/spinner/spinner.component';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
 import { DropdownComponent, DropdownOption } from '../../../shared/ui/dropdown/dropdown.component';
 
-type AttStatus = 'present' | 'late' | 'absent' | 'excused';
-const ATT_STATES: AttStatus[] = ['present', 'late', 'absent', 'excused'];
+const ATT_STATES: AttendanceStatus[] = ['present', 'late', 'absent', 'excused'];
 
 interface ScoreCell {
-  module: ScoringModule;
+  module: ScoringModuleResource;
   current: number | null;
 }
 
 interface RowForm {
-  att: FormControl<AttStatus>;
+  att: FormControl<AttendanceStatus>;
   scores: FormGroup<Record<string, FormControl<number | null>>>;
   mem: FormControl<number | null>;
   goal: FormGroup<{
@@ -82,10 +83,10 @@ interface PartResult {
 export class EntryTableComponent {
   private readonly entry = inject(EntryService);
 
-  readonly students = input.required<Student[]>();
-  readonly modules = input.required<ScoringModule[]>();
-  readonly scoreRows = input.required<SessionStudentScores[]>();
-  readonly attendanceRows = input.required<AttendanceRow[]>();
+  readonly students = input.required<StudentResource[]>();
+  readonly modules = input.required<ScoringModuleResource[]>();
+  readonly scoreRows = input.required<ScoreBySessionResponse['data']>();
+  readonly attendanceRows = input.required<AttendanceResource[]>();
   readonly sessionId = input.required<number | null>();
   readonly weekId = input.required<number | null>();
   /** Murajaa teachers: scores off, attendance + goal stay on. */
@@ -107,7 +108,7 @@ export class EntryTableComponent {
   }));
 
   private readonly attMap = computed(() => {
-    const m = new Map<number, AttendanceRow>();
+    const m = new Map<number, AttendanceResource>();
     for (const r of this.attendanceRows()) m.set(r.student_id, r);
     return m;
   });
@@ -115,8 +116,9 @@ export class EntryTableComponent {
   private readonly existingMap = computed(() => {
     const m = new Map<string, number>();
     for (const row of this.scoreRows()) {
-      for (const s of row.scores as SessionScore[])
-        m.set(`${row.student_id}:${s.module.code}`, s.score);
+      for (const s of row.scores) {
+        if (s.module) m.set(`${row.student_id}:${s.module.code}`, s.score);
+      }
     }
     return m;
   });
@@ -132,12 +134,12 @@ export class EntryTableComponent {
     params: () => ({ w: this.weekId(), t: this.tick() }),
     loader: ({ params }) =>
       params.w === null
-        ? Promise.resolve([] as WeeklyGoal[])
+        ? Promise.resolve<WeeklyGoalResource[]>([])
         : firstValueFrom(this.entry.goals({ week_id: params.w }).pipe(map((p) => p.data))),
   });
 
   private readonly goalMap = computed(() => {
-    const m = new Map<number, WeeklyGoal>();
+    const m = new Map<number, WeeklyGoalResource>();
     for (const g of this.goals.value() ?? []) m.set(g.student_id, g);
     return m;
   });
@@ -155,7 +157,7 @@ export class EntryTableComponent {
     return created;
   }
 
-  private pupilOf(key: string): Student | undefined {
+  private pupilOf(key: string): StudentResource | undefined {
     return this.students().find((s) => String(s.id) === key);
   }
 
@@ -171,7 +173,7 @@ export class EntryTableComponent {
     }
     const goal = this.goalMap().get(sid);
     return new FormGroup<RowForm>({
-      att: new FormControl<AttStatus>(this.attMap().get(sid)?.status ?? 'present', {
+      att: new FormControl<AttendanceStatus>(this.attMap().get(sid)?.status ?? 'present', {
         nonNullable: true,
       }),
       scores: new FormGroup(scores),
@@ -206,7 +208,7 @@ export class EntryTableComponent {
     }
   }
 
-  attCtrl(id: number): FormControl<AttStatus> {
+  attCtrl(id: number): FormControl<AttendanceStatus> {
     this.bump();
     return this.rowGroup(id).controls.att;
   }
@@ -308,12 +310,12 @@ export class EntryTableComponent {
   }
 
   // --- compatibility readers (specs + template) ---
-  attStatus(id: number): AttStatus {
+  attStatus(id: number): AttendanceStatus {
     this.bump();
     return this.rowGroup(id).controls.att.value;
   }
 
-  setStatus(id: number, status: AttStatus): void {
+  setStatus(id: number, status: AttendanceStatus): void {
     const c = this.attCtrl(id);
     c.setValue(status);
     c.markAsDirty();
@@ -328,7 +330,7 @@ export class EntryTableComponent {
     }
   }
 
-  cellsFor(student: Student): ScoreCell[] {
+  cellsFor(student: StudentResource): ScoreCell[] {
     this.bump();
     return this.sheetModules().map((mod) => ({
       module: mod,
@@ -336,7 +338,7 @@ export class EntryTableComponent {
     }));
   }
 
-  totalFor(student: Student): number | null {
+  totalFor(student: StudentResource): number | null {
     this.bump();
     const counted = this.cellsFor(student).filter(
       (c) => c.module.is_active && c.module.is_in_weekly_total && c.current !== null,

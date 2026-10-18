@@ -19,7 +19,7 @@ import { LanguageSwitcherComponent } from './language-switcher.component';
 import { AdminPrefsService } from '../settings/admin-prefs.service';
 import { AppearanceService } from '../settings/appearance.service';
 import { ThemeService } from '../theme/theme.service';
-import { Role } from '../api/api-models';
+import { Role } from '../api/models';
 import { APP_VERSION_SHORT } from '../version';
 
 interface NavItem {

@@ -6,16 +6,20 @@ import {
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
-import { ScoringModule, Student } from '../../../core/api/api-models';
+import { ScoringModuleResource, StudentResource } from '../../../core/api/models';
 import { EntryService } from '../../../core/api/entry.service';
 import { EntryTableComponent } from './entry-table.component';
 
-const STUDENTS: Student[] = [
+const STUDENTS: StudentResource[] = [
   {
     id: 1,
     full_name: 'A',
     center_id: 1,
     level_id: 1,
+    birth_date: null,
+    enrollment_date: null,
+    notes: null,
+    user_id: null,
     gender: null,
     status: 'active',
     student_type: 'child',
@@ -27,6 +31,10 @@ const STUDENTS: Student[] = [
     full_name: 'B',
     center_id: 1,
     level_id: 1,
+    birth_date: null,
+    enrollment_date: null,
+    notes: null,
+    user_id: null,
     gender: null,
     status: 'active',
     student_type: 'child',
@@ -35,11 +43,12 @@ const STUDENTS: Student[] = [
   },
 ];
 
-const MODULES: ScoringModule[] = [
+const MODULES: ScoringModuleResource[] = [
   {
     id: 1,
     code: 'hifz',
     name_ar: 'h',
+    center_id: 1,
     max_points: 14,
     scope: 'weekly',
     is_active: true,
@@ -50,6 +59,7 @@ const MODULES: ScoringModule[] = [
     id: 2,
     code: 'mowathaba',
     name_ar: 'm',
+    center_id: 1,
     max_points: 4,
     scope: 'weekly',
     is_active: true,
@@ -60,6 +70,7 @@ const MODULES: ScoringModule[] = [
     id: 5,
     code: 'sarraj',
     name_ar: 's',
+    center_id: 1,
     max_points: 20,
     scope: 'weekly',
     is_active: true,

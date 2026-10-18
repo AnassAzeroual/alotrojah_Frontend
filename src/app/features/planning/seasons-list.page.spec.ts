@@ -8,23 +8,25 @@ import {
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
-import { CurrentUser } from '../../core/api/api-models';
+import { AuthLoginResponse } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { SeasonsListPage } from './seasons-list.page';
 
-const ADMIN: CurrentUser = {
+const ADMIN: AuthLoginResponse['data']['user'] = {
   id: 1,
   full_name: 'Admin',
   role: 'admin',
   center_id: null,
+  center_name: null,
   teacher_type: 'both',
 };
 
-const TEACHER: CurrentUser = {
+const TEACHER: AuthLoginResponse['data']['user'] = {
   id: 3,
   full_name: 'Teacher',
   role: 'teacher',
   center_id: 1,
+  center_name: 'C',
   teacher_type: 'hifz',
 };
 
@@ -78,7 +80,7 @@ describe('SeasonsListPage rename', () => {
   let page!: SeasonsListPage;
   let http!: HttpTestingController;
   let el!: HTMLElement;
-  let role: CurrentUser['role'];
+  let role: AuthLoginResponse['data']['user']['role'];
 
   const settle = async (): Promise<void> => {
     await new Promise<void>((r) => setTimeout(r, 0));
@@ -117,8 +119,10 @@ describe('SeasonsListPage rename', () => {
         {
           provide: AuthService,
           useFactory: () => ({
-            currentUser: signal<CurrentUser>(role === 'admin' ? ADMIN : TEACHER),
-            role: signal<CurrentUser['role']>(role),
+            currentUser: signal<AuthLoginResponse['data']['user']>(
+              role === 'admin' ? ADMIN : TEACHER,
+            ),
+            role: signal<AuthLoginResponse['data']['user']['role']>(role),
           }),
         },
       ],

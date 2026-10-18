@@ -2,24 +2,26 @@ import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { of, Subject } from 'rxjs';
 import { ApiClient } from '../api/api-client';
-import { CurrentUser } from '../api/api-models';
+import { AuthLoginResponse } from '../api/models';
 import { AuthService } from '../auth/auth.service';
 import { AdminPrefsService } from './admin-prefs.service';
 import { AppearanceService, DEFAULT_APPEARANCE } from './appearance.service';
 
-const ADMIN: CurrentUser = {
+const ADMIN: AuthLoginResponse['data']['user'] = {
   id: 1,
   full_name: 'Admin',
   role: 'admin',
   center_id: null,
+  center_name: null,
   teacher_type: 'both',
 };
 
-const SUPERVISOR: CurrentUser = {
+const SUPERVISOR: AuthLoginResponse['data']['user'] = {
   id: 2,
   full_name: 'Supervisor',
   role: 'supervisor',
   center_id: 2,
+  center_name: 'C',
   teacher_type: 'both',
 };
 
@@ -62,7 +64,7 @@ function config(centerId: number | null, patch: Record<string, unknown> = {}) {
 
 describe('AppearanceService', () => {
   let service: AppearanceService;
-  let user: WritableSignal<CurrentUser | null>;
+  let user: WritableSignal<AuthLoginResponse['data']['user'] | null>;
   let prefCenter: WritableSignal<number | null>;
   let api: {
     get: ReturnType<typeof vi.fn>;
@@ -72,7 +74,7 @@ describe('AppearanceService', () => {
   };
 
   beforeEach(() => {
-    user = signal<CurrentUser | null>(null);
+    user = signal<AuthLoginResponse['data']['user'] | null>(null);
     prefCenter = signal<number | null>(null);
     api = {
       get: vi.fn(),

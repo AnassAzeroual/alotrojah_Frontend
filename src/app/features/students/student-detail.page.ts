@@ -21,6 +21,7 @@ import {
 import { StudentsService } from '../../core/api/students.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { CentersService } from '../../core/api/centers.service';
+import { Gender, MemorizationMode, StudentStatus, StudentType } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { leaveController } from '../../core/guards/leave-controller';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
@@ -42,12 +43,12 @@ interface StudentForm {
   center_id: FormControl<number | null>;
   group_id: FormControl<number | null>;
   level_id: FormControl<number | null>;
-  gender: FormControl<'male' | 'female' | null>;
-  student_type: FormControl<string | null>;
-  memorization_mode: FormControl<'surah' | 'thumn'>;
+  gender: FormControl<Gender | null>;
+  student_type: FormControl<StudentType | null>;
+  memorization_mode: FormControl<MemorizationMode>;
   birth_date: FormControl<string | null>;
   start_hizb: FormControl<number | null>;
-  status: FormControl<string>;
+  status: FormControl<StudentStatus>;
   notes: FormControl<string | null>;
 }
 
@@ -178,15 +179,18 @@ export class StudentDetailPage {
     center_id: new FormControl<number | null>(null),
     group_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
     level_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
-    gender: new FormControl<'male' | 'female' | null>(null),
-    student_type: new FormControl<string | null>(null),
-    memorization_mode: new FormControl<'surah' | 'thumn'>('thumn', {
+    gender: new FormControl<Gender | null>(null),
+    student_type: new FormControl<StudentType | null>(null),
+    memorization_mode: new FormControl<MemorizationMode>('thumn', {
       nonNullable: true,
       validators: [Validators.required],
     }),
     birth_date: new FormControl<string | null>(null),
     start_hizb: new FormControl<number | null>(null),
-    status: new FormControl('active', { nonNullable: true, validators: [Validators.required] }),
+    status: new FormControl<StudentStatus>('active', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     notes: new FormControl<string | null>(null),
   });
 
@@ -316,7 +320,7 @@ export class StudentDetailPage {
             center_id: params.s.center_id,
             group_id: params.s.group?.id ?? null,
             level_id: params.s.level_id,
-            gender: params.s.gender as 'male' | 'female' | null,
+            gender: params.s.gender,
             status: params.s.status,
             student_type: params.s.student_type,
             memorization_mode: params.s.memorization_mode,
@@ -367,8 +371,18 @@ export class StudentDetailPage {
     }
 
     const req$ = this.isNew()
-      ? this.studentsSvc.create({ ...v, user_id: v.user_id! })
-      : this.studentsSvc.update(this.studentVal()!.id, v);
+      ? this.studentsSvc.create({
+          ...v,
+          user_id: v.user_id!,
+          group_id: v.group_id!,
+          level_id: v.level_id!,
+        })
+      : this.studentsSvc.update(this.studentVal()!.id, {
+          ...v,
+          user_id: v.user_id ?? undefined,
+          group_id: v.group_id ?? undefined,
+          level_id: v.level_id ?? undefined,
+        });
 
     req$.subscribe({
       next: (res) => {
@@ -396,17 +410,12 @@ export class StudentDetailPage {
 
   protected saveAssign(): void {
     const s = this.studentVal();
-    if (
-      !s ||
-      this.assignPicked() === null ||
-      !this.assignChosen() ||
-      !this.assignDirty() ||
-      this.assignSaving()
-    )
+    const picked = this.assignPicked();
+    if (!s || picked === null || !this.assignChosen() || !this.assignDirty() || this.assignSaving())
       return;
     this.assignSaving.set(true);
     this.assignFailed.set(null);
-    this.studentsSvc.update(s.id, { group_id: this.assignPicked() }).subscribe({
+    this.studentsSvc.update(s.id, { group_id: picked }).subscribe({
       next: () => {
         this.assignSaving.set(false);
         this.assignChosen.set(false);

@@ -11,7 +11,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
 import { leaveController } from '../../core/guards/leave-controller';
-import { ReferenceService, Surah } from '../../core/api/reference.service';
+import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
 import {
   DropdownComponent,
@@ -112,7 +112,7 @@ export class PlansPage {
 
   ayahMax(surahId: number | null): number {
     if (surahId === null) return 286;
-    return this.surahs.value()?.find((s: Surah) => s.id === surahId)?.ayahs_count ?? 286;
+    return this.surahs.value()?.find((s) => s.id === surahId)?.ayahs_count ?? 286;
   }
 
   loadIntoForm(): void {

@@ -10,7 +10,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ChartData } from 'chart.js';
 import { firstValueFrom } from 'rxjs';
-import { GroupStatsRow } from '../../core/api/api-models';
+import { GroupStatsResponse } from '../../core/api/models';
 import { GroupsService } from '../../core/api/groups.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -75,7 +75,7 @@ export class GroupsListPage {
   readonly canCreate = computed(() => ['admin', 'supervisor'].includes(this.auth.role() ?? ''));
 
   /** Row pencil mirrors detail canEdit: admin/supervisor, or the owning teacher. */
-  protected canEditRow(g: GroupStatsRow): boolean {
+  protected canEditRow(g: GroupStatsResponse['data']['groups'][number]): boolean {
     const role = this.auth.role();
     if (role === 'admin' || role === 'supervisor') return true;
     return role === 'teacher' && (g.teacher?.id ?? null) === this.auth.currentUser()?.id;
@@ -137,7 +137,7 @@ export class GroupsListPage {
   readonly sorted = computed(() => {
     const key = this.sortKey();
     const dir = this.sortDir();
-    const val = (g: GroupStatsRow): string | number => {
+    const val = (g: GroupStatsResponse['data']['groups'][number]): string | number => {
       switch (key) {
         case 'name':
           return g.name;
@@ -196,7 +196,7 @@ export class GroupsListPage {
   }
 
   protected chips(
-    b: GroupStatsRow['breakdown'],
+    b: GroupStatsResponse['data']['groups'][number]['breakdown'],
     dim: 'status' | 'gender' | 'student_type' | 'memorization_mode',
     labelKey: (k: string) => string,
   ): { label: string; n: number }[] {

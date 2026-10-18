@@ -13,12 +13,15 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { provideNgCryptoStore } from 'ng-cryptostore';
 import { AuthService } from './auth.service';
 import { roleGuard, roleMatchGuard } from './role.guard';
-import { CurrentUser } from '../api/api-models';
+import { AuthLoginResponse } from '../api/models';
 
 @Component({ template: '', standalone: true })
 class DummyComponent {}
 
-function runGuard(user: CurrentUser | null, data: Record<string, unknown>): boolean | unknown {
+function runGuard(
+  user: AuthLoginResponse['data']['user'] | null,
+  data: Record<string, unknown>,
+): boolean | unknown {
   const auth = TestBed.inject(AuthService);
   auth.token.set(user ? 'T' : null);
   auth.currentUser.set(user);
@@ -30,7 +33,7 @@ function runGuard(user: CurrentUser | null, data: Record<string, unknown>): bool
 }
 
 function runMatchGuard(
-  user: CurrentUser | null,
+  user: AuthLoginResponse['data']['user'] | null,
   data?: Record<string, unknown>,
 ): boolean | unknown {
   const auth = TestBed.inject(AuthService);
@@ -57,14 +60,19 @@ describe('roleGuard', () => {
     });
   });
 
-  const teacher: CurrentUser = {
+  const teacher: AuthLoginResponse['data']['user'] = {
     id: 3,
     full_name: 'T',
     role: 'teacher',
     center_id: 1,
+    center_name: 'C',
     teacher_type: 'hifz',
   };
-  const murajaa: CurrentUser = { ...teacher, id: 19, teacher_type: 'murajaa' };
+  const murajaa: AuthLoginResponse['data']['user'] = {
+    ...teacher,
+    id: 19,
+    teacher_type: 'murajaa',
+  };
 
   it('redirects guests', () => {
     expect(runGuard(null, {})).toBe(false);
@@ -142,11 +150,12 @@ describe('roleMatchGuard', () => {
     });
   });
 
-  const teacher: CurrentUser = {
+  const teacher: AuthLoginResponse['data']['user'] = {
     id: 3,
     full_name: 'T',
     role: 'teacher',
     center_id: 1,
+    center_name: 'C',
     teacher_type: 'hifz',
   };
 

@@ -1,38 +1,40 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
-import { Paginated } from './api-models';
-
-export interface OutboxMessage {
-  id: number;
-  recipient_phone: string;
-  wa_link: string;
-  channel: string;
-  status: string;
-  sent_at: string | null;
-}
+import {
+  NotificationMarkResponse,
+  NotificationsDestroyResponse,
+  NotificationsIndexResponse,
+  NotificationsStoreResponse,
+  UpdateNotificationStatusRequest,
+} from './models';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
   private readonly api = inject(ApiClient);
 
-  list(params?: QueryParams): Observable<Paginated<OutboxMessage>> {
-    return this.api.get<Paginated<OutboxMessage>>('/notifications', params);
+  list(params?: QueryParams): Observable<NotificationsIndexResponse['data']> {
+    return this.api.get<NotificationsIndexResponse['data']>('/notifications', params);
   }
 
-  queue(recipientPhone: string, message: string): Observable<OutboxMessage> {
-    return this.api.post<OutboxMessage>('/notifications', {
+  queue(recipientPhone: string, message: string): Observable<NotificationsStoreResponse['data']> {
+    return this.api.post<NotificationsStoreResponse['data']>('/notifications', {
       recipient_phone: recipientPhone,
       message,
       channel: 'whatsapp',
     });
   }
 
-  mark(id: number, status: 'sent' | 'failed'): Observable<OutboxMessage> {
-    return this.api.patch<OutboxMessage>(`/notifications/${id}/status`, { status });
+  mark(
+    id: number,
+    status: UpdateNotificationStatusRequest['status'],
+  ): Observable<NotificationMarkResponse['data']> {
+    return this.api.patch<NotificationMarkResponse['data']>(`/notifications/${id}/status`, {
+      status,
+    });
   }
 
-  remove(id: number): Observable<null> {
-    return this.api.delete<null>(`/notifications/${id}`);
+  remove(id: number): Observable<NotificationsDestroyResponse['data']> {
+    return this.api.delete<NotificationsDestroyResponse['data']>(`/notifications/${id}`);
   }
 }

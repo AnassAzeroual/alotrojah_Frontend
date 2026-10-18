@@ -5,13 +5,14 @@ import { provideRouter } from '@angular/router';
 import { provideNgCryptoStore } from 'ng-cryptostore';
 import { AuthService } from './auth.service';
 import { authInterceptor } from './auth.interceptor';
-import { CurrentUser } from '../api/api-models';
+import { AuthLoginResponse } from '../api/models';
 
-const USER: CurrentUser = {
+const USER: AuthLoginResponse['data']['user'] = {
   id: 3,
   full_name: 'T',
   role: 'teacher',
   center_id: 1,
+  center_name: 'C',
   teacher_type: 'hifz',
 };
 

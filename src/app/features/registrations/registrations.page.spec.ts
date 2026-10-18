@@ -6,10 +6,10 @@ import {
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
-import { RegistrationRequest } from '../../core/api/api-models';
+import { RegistrationRequestResource } from '../../core/api/models';
 import { RegistrationsPage } from './registrations.page';
 
-const TEACHER_REQ: RegistrationRequest = {
+const TEACHER_REQ: RegistrationRequestResource = {
   id: 7,
   full_name: 'Fatima Zahra',
   email: 'fatima@example.com',
@@ -21,7 +21,7 @@ const TEACHER_REQ: RegistrationRequest = {
   requested_at: '2026-10-01T10:00:00.000000Z',
 };
 
-const STUDENT_REQ: RegistrationRequest = {
+const STUDENT_REQ: RegistrationRequestResource = {
   id: 8,
   full_name: 'Youssef Amine',
   email: 'youssef@example.com',
@@ -33,7 +33,7 @@ const STUDENT_REQ: RegistrationRequest = {
   requested_at: '2026-10-02T08:30:00.000000Z',
 };
 
-const PAGE = (rows: RegistrationRequest[], total = rows.length) => ({
+const PAGE = (rows: RegistrationRequestResource[], total = rows.length) => ({
   success: true,
   message: null,
   data: { data: rows, meta: { current_page: 1, total, per_page: 20 } },
@@ -68,7 +68,7 @@ describe('RegistrationsPage', () => {
     });
   };
 
-  const flushRequests = (rows: RegistrationRequest[], total = rows.length): void => {
+  const flushRequests = (rows: RegistrationRequestResource[], total = rows.length): void => {
     const req = http.expectOne((r) => r.url.endsWith('/registration-requests'));
     req.flush(PAGE(rows, total));
   };

@@ -1,90 +1,63 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
-import { Paginated, ScoringModule, SessionScore } from './api-models';
-
-export interface AttendanceRow {
-  id: number;
-  student_id: number;
-  session_id: number;
-  week_id: number;
-  status: 'present' | 'absent' | 'late' | 'excused';
-  notes: string | null;
-}
-
-export interface ScoreRecord {
-  student_id: number;
-  module_code: string;
-  score: number;
-}
-
-export interface AttendanceRecord {
-  student_id: number;
-  status: string;
-  notes?: string;
-}
-
-export interface WeeklyGoal {
-  id: number;
-  student_id: number;
-  week_id: number;
-  target_text: string | null;
-  is_completed: boolean | null;
-}
-
-export interface SessionStudentScores {
-  student_id: number;
-  scores: SessionScore[];
-  weekly_total: number;
-}
+import {
+  AttendanceBulkResponse,
+  AttendanceDestroyResponse,
+  AttendanceIndexResponse,
+  ScoreBySessionResponse,
+  ScoreBulkResponse,
+  ScoringModulesIndexResponse,
+  StoreAttendanceBulkRequest,
+  StoreScoresBulkRequest,
+  WeeklyGoalResource,
+  WeeklyGoalsIndexResponse,
+} from './models';
 
 @Injectable({ providedIn: 'root' })
 export class EntryService {
   private readonly api = inject(ApiClient);
 
-  modules(): Observable<ScoringModule[]> {
-    return this.api.get<ScoringModule[]>('/scoring-modules');
+  modules(): Observable<ScoringModulesIndexResponse['data']> {
+    return this.api.get<ScoringModulesIndexResponse['data']>('/scoring-modules');
   }
 
   attendanceBulk(
     sessionId: number,
-    records: AttendanceRecord[],
-  ): Observable<{ attendance_ids: number[] }> {
-    return this.api.post<{ attendance_ids: number[] }>('/attendance/bulk', {
+    records: StoreAttendanceBulkRequest['records'],
+  ): Observable<AttendanceBulkResponse['data']> {
+    return this.api.post<AttendanceBulkResponse['data']>('/attendance/bulk', {
       session_id: sessionId,
       records,
     });
   }
 
-  attendanceList(params?: QueryParams): Observable<Paginated<AttendanceRow>> {
-    return this.api.get<Paginated<AttendanceRow>>('/attendance', params);
+  attendanceList(params?: QueryParams): Observable<AttendanceIndexResponse['data']> {
+    return this.api.get<AttendanceIndexResponse['data']>('/attendance', params);
   }
 
-  deleteAttendance(id: number): Observable<null> {
-    return this.api.delete<null>(`/attendance/${id}`);
+  deleteAttendance(id: number): Observable<AttendanceDestroyResponse['data']> {
+    return this.api.delete<AttendanceDestroyResponse['data']>(`/attendance/${id}`);
   }
 
   scoresBulk(
     sessionId: number,
-    records: ScoreRecord[],
-    memorizations?: { student_id: number; thumn_amount: number | null }[],
-  ): Observable<{ weekly_totals: Record<string, number>; memorizations_saved: number }> {
-    return this.api.post<{ weekly_totals: Record<string, number>; memorizations_saved: number }>(
-      '/scores/bulk',
-      {
-        session_id: sessionId,
-        records,
-        ...(memorizations && memorizations.length > 0 ? { memorizations } : {}),
-      },
-    );
+    records: StoreScoresBulkRequest['records'],
+    memorizations?: StoreScoresBulkRequest['memorizations'],
+  ): Observable<ScoreBulkResponse['data']> {
+    return this.api.post<ScoreBulkResponse['data']>('/scores/bulk', {
+      session_id: sessionId,
+      records,
+      ...(memorizations && memorizations.length > 0 ? { memorizations } : {}),
+    });
   }
 
-  sessionScores(sessionId: number): Observable<SessionStudentScores[]> {
-    return this.api.get<SessionStudentScores[]>(`/sessions/${sessionId}/scores`);
+  sessionScores(sessionId: number): Observable<ScoreBySessionResponse['data']> {
+    return this.api.get<ScoreBySessionResponse['data']>(`/sessions/${sessionId}/scores`);
   }
 
-  goals(params?: QueryParams): Observable<Paginated<WeeklyGoal>> {
-    return this.api.get<Paginated<WeeklyGoal>>('/weekly-goals', params);
+  goals(params?: QueryParams): Observable<WeeklyGoalsIndexResponse['data']> {
+    return this.api.get<WeeklyGoalsIndexResponse['data']>('/weekly-goals', params);
   }
 
   upsertGoal(
@@ -92,8 +65,8 @@ export class EntryService {
     weekId: number,
     targetText: string | null,
     completed: boolean | null,
-  ): Observable<WeeklyGoal> {
-    return this.api.put<WeeklyGoal>('/weekly-goals', {
+  ): Observable<WeeklyGoalResource> {
+    return this.api.put<WeeklyGoalResource>('/weekly-goals', {
       student_id: studentId,
       week_id: weekId,
       target_text: targetText,

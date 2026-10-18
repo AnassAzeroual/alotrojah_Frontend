@@ -9,7 +9,8 @@
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
-import { DelegationsService, GeneratedDelegation } from '../../core/api/delegations.service';
+import { DelegationsService } from '../../core/api/delegations.service';
+import { DelegationGenerateResponse } from '../../core/api/models';
 import { leaveController } from '../../core/guards/leave-controller';
 import { GroupsService } from '../../core/api/groups.service';
 import {
@@ -42,7 +43,7 @@ export class DelegatePage {
 
   readonly pickedGroup = signal<number | null>(null);
   readonly saving = signal(false);
-  readonly generated = signal<GeneratedDelegation | null>(null);
+  readonly generated = signal<DelegationGenerateResponse['data'] | null>(null);
   private readonly tick = signal(0);
 
   readonly groups = resource({

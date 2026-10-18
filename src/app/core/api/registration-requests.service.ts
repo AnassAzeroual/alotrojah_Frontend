@@ -1,15 +1,19 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
-import { Paginated, RegistrationRequest, User } from './api-models';
+import {
+  RegistrationRequestAcceptResponse,
+  RegistrationRequestDestroyResponse,
+  RegistrationRequestIndexResponse,
+} from './models';
 
 /** Waiting-room registrations (admin only). */
 @Injectable({ providedIn: 'root' })
 export class RegistrationRequestsService {
   private readonly api = inject(ApiClient);
 
-  list(params?: QueryParams): Observable<Paginated<RegistrationRequest>> {
-    return this.api.get<Paginated<RegistrationRequest>>('/registration-requests', params);
+  list(params?: QueryParams): Observable<RegistrationRequestIndexResponse['data']> {
+    return this.api.get<RegistrationRequestIndexResponse['data']>('/registration-requests', params);
   }
 
   /**
@@ -22,16 +26,21 @@ export class RegistrationRequestsService {
     centerId: number,
     groupId: number | null = null,
     levelId: number | null = null,
-  ): Observable<User> {
-    return this.api.post<User>(`/registration-requests/${id}/accept`, {
-      center_id: centerId,
-      ...(groupId !== null ? { group_id: groupId } : {}),
-      ...(levelId !== null ? { level_id: levelId } : {}),
-    });
+  ): Observable<RegistrationRequestAcceptResponse['data']> {
+    return this.api.post<RegistrationRequestAcceptResponse['data']>(
+      `/registration-requests/${id}/accept`,
+      {
+        center_id: centerId,
+        ...(groupId !== null ? { group_id: groupId } : {}),
+        ...(levelId !== null ? { level_id: levelId } : {}),
+      },
+    );
   }
 
   /** Hard-deletes the request; the email can register again afterwards. */
-  remove(id: number): Observable<null> {
-    return this.api.delete<null>(`/registration-requests/${id}`);
+  remove(id: number): Observable<RegistrationRequestDestroyResponse['data']> {
+    return this.api.delete<RegistrationRequestDestroyResponse['data']>(
+      `/registration-requests/${id}`,
+    );
   }
 }

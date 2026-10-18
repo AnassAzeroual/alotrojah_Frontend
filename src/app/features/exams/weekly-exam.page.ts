@@ -10,8 +10,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
-import { ExamsService, WeeklyModule } from '../../core/api/exams.service';
+import { ExamsService } from '../../core/api/exams.service';
 import { GroupsService } from '../../core/api/groups.service';
+import { ExamWeeklyTemplateResponse } from '../../core/api/models';
 import { ReferenceService } from '../../core/api/reference.service';
 import { leaveController } from '../../core/guards/leave-controller';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
@@ -113,7 +114,9 @@ export class WeeklyExamPage {
         : firstValueFrom(this.examsSvc.weeklyTemplate(params.g)),
   });
 
-  protected readonly modules = computed<WeeklyModule[]>(() => this.tpl.value()?.modules ?? []);
+  protected readonly modules = computed<ExamWeeklyTemplateResponse['data']['modules']>(
+    () => this.tpl.value()?.modules ?? [],
+  );
 
   constructor() {
     // Seed one editable row per pupil when the group (template) lands;

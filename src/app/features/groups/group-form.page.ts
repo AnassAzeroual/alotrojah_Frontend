@@ -15,6 +15,7 @@ import { firstValueFrom } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { UsersService } from '../../core/api/users.service';
+import { Weekday } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { leaveController } from '../../core/guards/leave-controller';
 import {
@@ -59,7 +60,7 @@ export class GroupFormPage {
   protected readonly centerId = signal<number | null>(null);
   protected readonly teacherId = signal<number | null>(null);
   protected readonly capacity = signal<number | null>(null);
-  protected readonly days = signal<string[]>([]);
+  protected readonly days = signal<Weekday[]>([]);
   protected readonly active = signal(true);
 
   /** Edit mode: router binds :id via withComponentInputBinding (`/groups/new` has none). */
@@ -154,7 +155,14 @@ export class GroupFormPage {
       this.centerId.set(g.center_id);
       this.teacherId.set(g.teacher?.id ?? null);
       this.capacity.set(g.capacity);
-      this.days.set(g.schedule_days ? g.schedule_days.split(',').filter((d) => d !== '') : []);
+      this.days.set(
+        g.schedule_days
+          ? g.schedule_days
+              .split(',')
+              .map((d) => d.trim())
+              .filter((d): d is Weekday => WEEKDAY_KEYS.some((k) => k === d))
+          : [],
+      );
       this.active.set(g.is_active);
       this.editSeed.set(this.snapshot());
       this.seededFor.set(id);
@@ -184,7 +192,7 @@ export class GroupFormPage {
     this.centerId.set(v);
   }
 
-  protected toggleDay(day: string): void {
+  protected toggleDay(day: Weekday): void {
     this.days.update((d) => (d.includes(day) ? d.filter((x) => x !== day) : [...d, day]));
   }
 
@@ -226,12 +234,15 @@ export class GroupFormPage {
 
   private submitCreate(): void {
     if (!this.canSave()) return;
+    const centerId = this.effectiveCenterId();
+    const teacherId = this.teacherId();
+    if (centerId === null || teacherId === null) return;
     this.saving.set(true);
     this.groupsSvc
       .create({
         name: this.name().trim(),
-        center_id: this.effectiveCenterId(),
-        teacher_id: this.teacherId()!,
+        center_id: centerId,
+        teacher_id: teacherId,
         capacity: this.capacity(),
         schedule_days: this.days(),
       })

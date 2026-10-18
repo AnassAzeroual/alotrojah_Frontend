@@ -10,7 +10,7 @@ import {
 } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
-import { CurrentUser, GroupDetail } from '../../core/api/api-models';
+import { AuthLoginResponse, GroupDetailResponse } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { ChartComponent } from '../../shared/ui/chart/chart.component';
 import { GroupDetailPage } from './group-detail.page';
@@ -39,7 +39,7 @@ vi.mock('chart.js', () => {
   };
 });
 
-const DETAIL: GroupDetail = {
+const DETAIL: GroupDetailResponse['data'] = {
   season_name: '2025/2026',
   group: {
     id: 5,
@@ -57,7 +57,12 @@ const DETAIL: GroupDetail = {
     thumn_total: 12,
     breakdown: { status: { active: 9 }, student_type: { child: 9 } },
   },
-  breakdown: { memorization_mode: { thumn: 6, surah: 3 } },
+  breakdown: {
+    status: { active: 9 },
+    gender: { male: 5, female: 4 },
+    student_type: { child: 9 },
+    memorization_mode: { thumn: 6, surah: 3 },
+  },
   trend: [
     { week: 1, avg_score: 10 },
     { week: 2, avg_score: 14 },
@@ -130,17 +135,18 @@ const DETAIL: GroupDetail = {
   ],
 };
 
-const ADMIN: CurrentUser = {
+const ADMIN: AuthLoginResponse['data']['user'] = {
   id: 1,
   full_name: 'Admin',
   role: 'admin',
   center_id: null,
+  center_name: null,
   teacher_type: 'both',
 };
 
 const authStub = {
-  currentUser: signal<CurrentUser | null>(ADMIN),
-  role: signal<CurrentUser['role'] | null>('admin'),
+  currentUser: signal<AuthLoginResponse['data']['user'] | null>(ADMIN),
+  role: signal<AuthLoginResponse['data']['user']['role'] | null>('admin'),
 };
 
 describe('GroupDetailPage', () => {

@@ -9,15 +9,16 @@ import {
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
 import { vi } from 'vitest';
-import { CurrentUser } from '../../core/api/api-models';
+import { AuthLoginResponse } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { SeasonCreatePage } from './season-create.page';
 
-const ADMIN: CurrentUser = {
+const ADMIN: AuthLoginResponse['data']['user'] = {
   id: 1,
   full_name: 'Admin',
   role: 'admin',
   center_id: null,
+  center_name: null,
   teacher_type: 'both',
 };
 
@@ -71,8 +72,8 @@ describe('SeasonCreatePage edit mode (/planning/:id/edit)', () => {
         {
           provide: AuthService,
           useFactory: () => ({
-            currentUser: signal<CurrentUser>(ADMIN),
-            role: signal<CurrentUser['role']>('admin'),
+            currentUser: signal<AuthLoginResponse['data']['user']>(ADMIN),
+            role: signal<AuthLoginResponse['data']['user']['role']>('admin'),
           }),
         },
       ],

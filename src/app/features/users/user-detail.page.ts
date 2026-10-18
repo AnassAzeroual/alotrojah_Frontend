@@ -24,7 +24,7 @@ import {
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { PasswordFieldComponent } from '../../shared/ui/password-field/password-field.component';
 import { leaveController } from '../../core/guards/leave-controller';
-import { Role, TeacherType } from '../../core/api/api-models';
+import { Role, TeacherType } from '../../core/api/models';
 
 interface UserForm {
   full_name: FormControl<string>;

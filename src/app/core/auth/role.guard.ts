@@ -2,7 +2,7 @@ import { CanActivateFn, CanMatchFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { first, from, map } from 'rxjs';
 import { AuthService } from './auth.service';
-import { Role, TeacherType } from '../api/api-models';
+import { Role, TeacherType } from '../api/models';
 
 /** Route data: { roles?: Role[], teacherTypes?: TeacherType[] } */
 function decide(
@@ -25,7 +25,7 @@ function decide(
     void router.navigate(['/']);
     return false;
   }
-  if (types && !types.includes(user.teacher_type)) {
+  if (types && (user.teacher_type === null || !types.includes(user.teacher_type))) {
     void router.navigate(['/']);
     return false;
   }

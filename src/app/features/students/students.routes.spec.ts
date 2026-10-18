@@ -9,7 +9,7 @@ import {
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
-import { CurrentUser } from '../../core/api/api-models';
+import { AuthLoginResponse } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { StudentDetailPage } from './student-detail.page';
 import { STUDENTS_ROUTES } from './students.routes';
@@ -53,14 +53,15 @@ describe('students/new renders the create form', () => {
             isLoggedIn: () => true,
             sessionProbed: signal(true),
             ready: Promise.resolve(),
-            currentUser: signal<CurrentUser | null>({
+            currentUser: signal<AuthLoginResponse['data']['user'] | null>({
               id: 1,
               full_name: 'Admin',
               role: 'admin',
               center_id: null,
+              center_name: null,
               teacher_type: 'both',
             }),
-            role: signal<CurrentUser['role']>('admin'),
+            role: signal<AuthLoginResponse['data']['user']['role']>('admin'),
           },
         },
       ],

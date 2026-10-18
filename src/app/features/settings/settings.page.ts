@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Center } from '../../core/api/api-models';
+import { CenterResource } from '../../core/api/models';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
@@ -59,7 +59,7 @@ export class SettingsPage {
   readonly activeTab = signal<SettingsTab>('general');
 
   readonly isAdmin = computed(() => this.auth.role() === 'admin');
-  readonly centers = signal<Center[]>([]);
+  readonly centers = signal<CenterResource[]>([]);
   readonly centersLoading = signal(true);
   /** The center may not switch mid-edit; drafts are per center. */
   readonly centerLocked = computed(
@@ -220,7 +220,7 @@ export class SettingsPage {
   }
 
   /** A global admin starts on the first center; a saved choice is kept. */
-  private chooseCenter(centers: Center[]): void {
+  private chooseCenter(centers: CenterResource[]): void {
     if (centers.length === 0) {
       this.appearance.setCenter(null);
       return;

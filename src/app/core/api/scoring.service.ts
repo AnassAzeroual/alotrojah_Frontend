@@ -1,62 +1,49 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient } from './api-client';
-import { ScoringModule } from './api-models';
-
-export interface ModulePatch {
-  code: string;
-  max_points?: number;
-  is_active?: boolean;
-  is_in_weekly_total?: boolean;
-  sort_order?: number;
-}
-
-export interface ScoringCheck {
-  valid: boolean;
-  total: number;
-}
+import {
+  BulkModulesRequest,
+  ScoringModuleBulkResponse,
+  ScoringModuleResource,
+  ScoringModuleResetResponse,
+  ScoringModulesDestroyResponse,
+  ScoringModulesIndexResponse,
+  StoreModuleRequest,
+} from './models';
 
 @Injectable({ providedIn: 'root' })
 export class ScoringService {
   private readonly api = inject(ApiClient);
 
-  modules(centerId?: number | null): Observable<ScoringModule[]> {
-    return this.api.get<ScoringModule[]>(
+  modules(centerId?: number | null): Observable<ScoringModulesIndexResponse['data']> {
+    return this.api.get<ScoringModulesIndexResponse['data']>(
       '/scoring-modules',
       centerId ? { center_id: centerId } : undefined,
     );
   }
 
   bulk(
-    patches: ModulePatch[],
+    patches: BulkModulesRequest['modules'],
     centerId?: number | null,
-  ): Observable<{ modules: ScoringModule[]; check: ScoringCheck }> {
-    return this.api.put<{ modules: ScoringModule[]; check: ScoringCheck }>('/scoring-modules', {
+  ): Observable<ScoringModuleBulkResponse['data']> {
+    return this.api.put<ScoringModuleBulkResponse['data']>('/scoring-modules', {
       center_id: centerId ?? null,
       modules: patches,
     });
   }
 
-  remove(id: number): Observable<null> {
-    return this.api.delete<null>(`/scoring-modules/${id}`);
+  remove(id: number): Observable<ScoringModulesDestroyResponse['data']> {
+    return this.api.delete<ScoringModulesDestroyResponse['data']>(`/scoring-modules/${id}`);
   }
 
   /** T2: delete one center's override set (all-or-nothing server-side). */
-  reset(centerId: number): Observable<{ deleted: number }> {
-    return this.api.delete<{ deleted: number }>('/scoring-modules/reset', {
+  reset(centerId: number): Observable<ScoringModuleResetResponse['data']> {
+    return this.api.delete<ScoringModuleResetResponse['data']>('/scoring-modules/reset', {
       center_id: centerId,
     });
   }
 
-  create(payload: {
-    code: string;
-    name_ar: string;
-    max_points: number;
-    scope: 'weekly' | 'murajaa';
-    is_active?: boolean;
-    is_in_weekly_total?: boolean;
-    center_id?: number | null;
-  }): Observable<ScoringModule> {
-    return this.api.post<ScoringModule>('/scoring-modules', payload);
+  create(payload: StoreModuleRequest): Observable<ScoringModuleResource> {
+    return this.api.post<ScoringModuleResource>('/scoring-modules', payload);
   }
 }

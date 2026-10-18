@@ -12,7 +12,7 @@ import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } fr
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
-import { SeasonsService, SeasonTerm } from '../../core/api/seasons.service';
+import { SeasonsService } from '../../core/api/seasons.service';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { leaveController } from '../../core/guards/leave-controller';
@@ -239,7 +239,7 @@ export class SeasonCreatePage {
     this.saving.set(true);
     this.error.set(null);
     const v = this.form.getRawValue();
-    const terms: SeasonTerm[] = v.terms.map((t) => ({ name: t.name, weeks: t.weeks }));
+    const terms = v.terms.map((t) => ({ name: t.name, weeks: t.weeks }));
     this.seasonsSvc
       .create({
         name: v.name,

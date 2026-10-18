@@ -11,7 +11,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth/auth.service';
-import { RegisterPayload, RegisterRole, TeacherType } from '../../core/api/api-models';
+import { RegisterRequest, TeacherType } from '../../core/api/models';
 import { DropdownComponent, DropdownOption } from '../../shared/ui/dropdown/dropdown.component';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
@@ -22,7 +22,7 @@ interface RegisterForm {
   full_name: FormControl<string>;
   email: FormControl<string>;
   phone: FormControl<string>;
-  role: FormControl<RegisterRole | null>;
+  role: FormControl<RegisterRequest['role'] | null>;
   teacher_type: FormControl<TeacherType | null>;
   birth_date: FormControl<string>;
   gender: FormControl<'male' | 'female' | null>;
@@ -87,7 +87,7 @@ export class RegisterPage {
         validators: [Validators.required, Validators.email],
       }),
       phone: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-      role: new FormControl<RegisterRole | null>(null, Validators.required),
+      role: new FormControl<RegisterRequest['role'] | null>(null, Validators.required),
       teacher_type: new FormControl<TeacherType | null>(null),
       birth_date: new FormControl('', { nonNullable: true }),
       gender: new FormControl<'male' | 'female' | null>(null),
@@ -109,7 +109,7 @@ export class RegisterPage {
       .subscribe((role) => this.onRoleChange(role));
   }
 
-  private onRoleChange(role: RegisterRole | null): void {
+  private onRoleChange(role: RegisterRequest['role'] | null): void {
     this.isTeacher.set(role === 'teacher');
     this.isStudent.set(role === 'student');
 
@@ -140,7 +140,7 @@ export class RegisterPage {
 
     const v = this.form.getRawValue();
     if (!v.role) return;
-    const payload: RegisterPayload = {
+    const payload: RegisterRequest = {
       full_name: v.full_name,
       email: v.email,
       password: v.password,

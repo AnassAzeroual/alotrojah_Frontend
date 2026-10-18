@@ -10,24 +10,26 @@ import {
 } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
-import { CurrentUser } from '../../core/api/api-models';
+import { AuthLoginResponse } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { GroupFormPage } from './group-form.page';
 
-const ADMIN: CurrentUser = {
+const ADMIN: AuthLoginResponse['data']['user'] = {
   id: 1,
   full_name: 'Admin',
   role: 'admin',
   center_id: null,
+  center_name: null,
   teacher_type: 'both',
 };
 
-const SUPERVISOR: CurrentUser = {
+const SUPERVISOR: AuthLoginResponse['data']['user'] = {
   id: 2,
   full_name: 'المشرف',
   role: 'supervisor',
   center_id: 1,
+  center_name: 'C',
   teacher_type: 'hifz',
 };
 
@@ -148,8 +150,10 @@ describe('GroupFormPage', () => {
         {
           provide: AuthService,
           useFactory: () => ({
-            currentUser: signal<CurrentUser>(role === 'admin' ? ADMIN : SUPERVISOR),
-            role: signal<CurrentUser['role'] | null>(role),
+            currentUser: signal<AuthLoginResponse['data']['user']>(
+              role === 'admin' ? ADMIN : SUPERVISOR,
+            ),
+            role: signal<AuthLoginResponse['data']['user']['role'] | null>(role),
           }),
         },
       ],

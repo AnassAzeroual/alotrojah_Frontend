@@ -16,6 +16,7 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { AnnouncementsService } from '../../core/api/announcements.service';
+import { Audience } from '../../core/api/models';
 import { leaveController } from '../../core/guards/leave-controller';
 import { AuthService } from '../../core/auth/auth.service';
 import { GroupsService } from '../../core/api/groups.service';
@@ -123,7 +124,10 @@ export class NewsPage {
   ]);
 
   readonly form = new FormGroup({
-    audience: new FormControl('all', { nonNullable: true, validators: [Validators.required] }),
+    audience: new FormControl<Audience>('all', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
     group_id: new FormControl<number | null>(null),
     title: new FormControl('', {
       nonNullable: true,

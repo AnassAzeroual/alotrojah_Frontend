@@ -15,7 +15,8 @@ import { ThumnDisplayPipe } from '../../shared/ui/thumn-display/thumn-display.pi
 import { sessionAmountLabel } from '../../shared/ui/thumn-display/thumn-label';
 import { leaveController } from '../../core/guards/leave-controller';
 import { CentersService } from '../../core/api/centers.service';
-import { Level, LevelsService } from '../../core/api/levels.service';
+import { LevelsService } from '../../core/api/levels.service';
+import { Level } from '../../core/api/models';
 import {
   DropdownComponent,
   DropdownValue,

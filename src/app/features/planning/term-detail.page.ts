@@ -96,7 +96,7 @@ export class TermDetailPage {
       // fresh term load (user toggles afterwards are never overridden).
       if (t && this.expandedSeed() !== this.id()) {
         this.expandedSeed.set(this.id());
-        this.openWeek.set(t.weeks[0]?.id ?? null);
+        this.openWeek.set(t.weeks?.[0]?.id ?? null);
       }
     });
   }

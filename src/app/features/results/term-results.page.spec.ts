@@ -8,11 +8,12 @@ import { of } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
-import { ResultsService, TermResult } from '../../core/api/results.service';
+import { TermResultResource } from '../../core/api/models';
+import { ResultsService } from '../../core/api/results.service';
 import { StudentsService } from '../../core/api/students.service';
 import { TermResultsPage } from './term-results.page';
 
-const OWN_RESULT: TermResult = {
+const OWN_RESULT: TermResultResource = {
   id: 9,
   student_id: 5,
   season_id: 1,

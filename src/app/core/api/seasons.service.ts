@@ -1,69 +1,44 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient } from './api-client';
-import { Paginated } from './api-models';
-
-export interface Season {
-  id: number;
-  name: string;
-  hijri_year: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  total_weeks: number;
-  total_sessions: number;
-  is_current: boolean;
-  center_id: number | null;
-  terms_count?: number;
-  first_term_id?: number | null;
-}
-
-export interface SeasonTerm {
-  name: string;
-  weeks: number;
-}
+import {
+  SeasonActivateResponse,
+  SeasonsDestroyResponse,
+  SeasonsIndexResponse,
+  SeasonsShowResponse,
+  SeasonsStoreResponse,
+  SeasonsUpdateResponse,
+  StoreSeasonRequest,
+  UpdateSeasonRequest,
+} from './models';
 
 @Injectable({ providedIn: 'root' })
 export class SeasonsService {
   private readonly api = inject(ApiClient);
 
-  list(): Observable<Paginated<Season>> {
-    return this.api.get<Paginated<Season>>('/seasons');
+  list(): Observable<SeasonsIndexResponse['data']> {
+    return this.api.get<SeasonsIndexResponse['data']>('/seasons');
   }
 
-  create(payload: {
-    name: string;
-    center_id: number | null;
-    start_date: string;
-    hijri_year?: string;
-    review_weeks_per_term?: number;
-    terms?: SeasonTerm[];
-  }): Observable<Season> {
-    return this.api.post<Season>('/seasons', payload);
+  create(payload: StoreSeasonRequest): Observable<SeasonsStoreResponse['data']> {
+    return this.api.post<SeasonsStoreResponse['data']>('/seasons', payload);
   }
 
-  activate(id: number): Observable<Season> {
-    return this.api.post<Season>(`/seasons/${id}/activate`, {});
+  activate(id: number): Observable<SeasonActivateResponse['data']> {
+    return this.api.post<SeasonActivateResponse['data']>(`/seasons/${id}/activate`, {});
   }
 
   /** One season (edit form seeds from it). */
-  get(id: number): Observable<Season> {
-    return this.api.get<Season>(`/seasons/${id}`);
+  get(id: number): Observable<SeasonsShowResponse['data']> {
+    return this.api.get<SeasonsShowResponse['data']>(`/seasons/${id}`);
   }
 
   /** Rename / adjust dates (UpdateSeasonRequest: sometimes-rules). */
-  update(
-    id: number,
-    payload: {
-      name?: string;
-      start_date?: string;
-      end_date?: string | null;
-      hijri_year?: string | null;
-    },
-  ): Observable<Season> {
-    return this.api.put<Season>(`/seasons/${id}`, payload);
+  update(id: number, payload: UpdateSeasonRequest): Observable<SeasonsUpdateResponse['data']> {
+    return this.api.put<SeasonsUpdateResponse['data']>(`/seasons/${id}`, payload);
   }
 
-  remove(id: number): Observable<null> {
-    return this.api.delete<null>(`/seasons/${id}`);
+  remove(id: number): Observable<SeasonsDestroyResponse['data']> {
+    return this.api.delete<SeasonsDestroyResponse['data']>(`/seasons/${id}`);
   }
 }

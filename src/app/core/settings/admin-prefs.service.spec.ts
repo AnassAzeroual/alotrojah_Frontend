@@ -5,26 +5,28 @@ import { TestBed } from '@angular/core/testing';
 import { provideNgCryptoStore } from 'ng-cryptostore';
 import { provideRouter } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
-import { CurrentUser } from '../api/api-models';
+import { AuthLoginResponse } from '../api/models';
 import { AdminPrefsService } from './admin-prefs.service';
 import { SecureStorageService } from '../storage/secure-storage.service';
 
 @Component({ template: '', standalone: true })
 class DummyComponent {}
 
-const ADMIN: CurrentUser = {
+const ADMIN: AuthLoginResponse['data']['user'] = {
   id: 1,
   full_name: 'Admin',
   role: 'admin',
   center_id: null,
+  center_name: null,
   teacher_type: 'both',
 };
 
-const TEACHER: CurrentUser = {
+const TEACHER: AuthLoginResponse['data']['user'] = {
   id: 7,
   full_name: 'Teacher',
   role: 'teacher',
   center_id: 3,
+  center_name: 'C',
   teacher_type: 'hifz',
 };
 

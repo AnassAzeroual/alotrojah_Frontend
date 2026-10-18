@@ -81,7 +81,7 @@ describe('RegisterPage', () => {
     expect(formDropdowns()).toBe(2); // role + gender
     expect(page.form.controls.teacher_type.value).toBeNull();
 
-    page.form.controls.role.setValue('board');
+    page.form.controls.role.setValue(null);
     fixture.detectChanges();
     expect(page.isStudent()).toBe(false);
     expect(fixture.nativeElement.querySelector('app-date-picker')).toBeNull();

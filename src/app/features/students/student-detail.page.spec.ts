@@ -9,17 +9,21 @@ import {
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
-import { CurrentUser, Student } from '../../core/api/api-models';
+import { AuthLoginResponse, StudentResource } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
 import { StudentDetailPage } from './student-detail.page';
 
-const STUDENT: Student = {
+const STUDENT: StudentResource = {
   id: 11,
   full_name: 'أحمد بن يوسف',
   center_id: 1,
   group: { id: 5, name: 'حلقة النور' },
   level_id: 1,
+  birth_date: null,
+  enrollment_date: null,
+  notes: null,
+  user_id: null,
   gender: 'male',
   status: 'active',
   student_type: 'child',
@@ -27,17 +31,18 @@ const STUDENT: Student = {
   start_hizb: 3,
 };
 
-const ADMIN: CurrentUser = {
+const ADMIN: AuthLoginResponse['data']['user'] = {
   id: 1,
   full_name: 'Admin',
   role: 'admin',
   center_id: null,
+  center_name: null,
   teacher_type: 'both',
 };
 
 const authStub = {
-  currentUser: signal<CurrentUser | null>(ADMIN),
-  role: signal<CurrentUser['role'] | null>('admin'),
+  currentUser: signal<AuthLoginResponse['data']['user'] | null>(ADMIN),
+  role: signal<AuthLoginResponse['data']['user']['role'] | null>('admin'),
 };
 
 // The save flow navigates to /students and /students/:id after a successful
@@ -50,7 +55,7 @@ describe('StudentDetailPage', () => {
   let http!: HttpTestingController;
   let el!: HTMLElement;
 
-  const flushStudent = (s: Student = STUDENT): void => {
+  const flushStudent = (s: StudentResource = STUDENT): void => {
     http
       .expectOne((r) => r.url.endsWith('/students/11') && r.method === 'GET')
       .flush({
@@ -196,7 +201,7 @@ describe('StudentDetailPage account link', () => {
   let http!: HttpTestingController;
   let el!: HTMLElement;
 
-  const LINKED: Student = {
+  const LINKED: StudentResource = {
     ...STUDENT,
     user: { id: 9, full_name: 'Karim Pupil', email: 'karim@example.org' },
   };

@@ -8,19 +8,20 @@ import {
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
-import { CurrentUser, User } from '../../core/api/api-models';
+import { AuthLoginResponse, UserResource } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { UsersListPage } from './users-list.page';
 
-const ADMIN: CurrentUser = {
+const ADMIN: AuthLoginResponse['data']['user'] = {
   id: 1,
   full_name: 'Admin',
   role: 'admin',
   center_id: null,
+  center_name: null,
   teacher_type: 'both',
 };
 
-const USERS: User[] = [
+const USERS: UserResource[] = [
   { ...ADMIN, email: 'admin@example.org', phone: null, is_active: true },
   {
     id: 2,
@@ -36,7 +37,7 @@ const USERS: User[] = [
 
 const CENTERS = [{ id: 1, name: 'مركز النور', city: null }];
 
-const envelope = (data: User[], total = data.length) => ({
+const envelope = (data: UserResource[], total = data.length) => ({
   success: true,
   message: null,
   data: { data, meta: { current_page: 1, total, per_page: 20 } },
@@ -85,8 +86,8 @@ describe('UsersListPage', () => {
         {
           provide: AuthService,
           useFactory: () => ({
-            currentUser: signal<CurrentUser>(ADMIN),
-            role: signal<CurrentUser['role']>('admin'),
+            currentUser: signal<AuthLoginResponse['data']['user']>(ADMIN),
+            role: signal<AuthLoginResponse['data']['user']['role']>('admin'),
           }),
         },
       ],

@@ -1,43 +1,35 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
-import { Paginated } from './api-models';
-
-export interface Announcement {
-  id: number;
-  audience: string;
-  group_id: number | null;
-  title: string;
-  body: string;
-  author?: { id: number; full_name: string };
-  created_at: string | null;
-}
+import {
+  AnnouncementsDestroyResponse,
+  AnnouncementsIndexResponse,
+  AnnouncementsStoreResponse,
+  AnnouncementsUpdateResponse,
+  StoreAnnouncementRequest,
+  UpdateAnnouncementRequest,
+} from './models';
 
 @Injectable({ providedIn: 'root' })
 export class AnnouncementsService {
   private readonly api = inject(ApiClient);
 
-  list(params?: QueryParams): Observable<Paginated<Announcement>> {
-    return this.api.get<Paginated<Announcement>>('/announcements', params);
+  list(params?: QueryParams): Observable<AnnouncementsIndexResponse['data']> {
+    return this.api.get<AnnouncementsIndexResponse['data']>('/announcements', params);
   }
 
-  create(payload: {
-    audience: string;
-    group_id?: number | null;
-    title: string;
-    body: string;
-  }): Observable<Announcement> {
-    return this.api.post<Announcement>('/announcements', payload);
+  create(payload: StoreAnnouncementRequest): Observable<AnnouncementsStoreResponse['data']> {
+    return this.api.post<AnnouncementsStoreResponse['data']>('/announcements', payload);
   }
 
   update(
     id: number,
-    patch: Partial<Pick<Announcement, 'title' | 'body'>>,
-  ): Observable<Announcement> {
-    return this.api.patch<Announcement>(`/announcements/${id}`, patch);
+    patch: UpdateAnnouncementRequest,
+  ): Observable<AnnouncementsUpdateResponse['data']> {
+    return this.api.patch<AnnouncementsUpdateResponse['data']>(`/announcements/${id}`, patch);
   }
 
-  remove(id: number): Observable<null> {
-    return this.api.delete<null>(`/announcements/${id}`);
+  remove(id: number): Observable<AnnouncementsDestroyResponse['data']> {
+    return this.api.delete<AnnouncementsDestroyResponse['data']>(`/announcements/${id}`);
   }
 }

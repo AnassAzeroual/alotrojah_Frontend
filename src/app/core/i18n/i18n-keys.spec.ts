@@ -115,7 +115,7 @@ describe('i18n dictionaries', () => {
   it('covers every status-badge value union', () => {
     // status-badge builds `prefix.value` at runtime, so static template
     // scanning cannot see these — enumerate the unions instead.
-    // Value lists mirror the backend enums + api-models conventions.
+    // Value lists mirror the backend enums + generated API model unions.
     const ar = JSON.parse(raw('ar')) as Record<string, Record<string, unknown>>;
     const cases: Array<[string, string[]]> = [
       ['attendance', ['present', 'late', 'absent', 'excused']],

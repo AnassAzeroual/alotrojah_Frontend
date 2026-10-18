@@ -9,7 +9,7 @@ import {
 } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
-import { GroupStats, GroupStatsRow } from '../../core/api/api-models';
+import { GroupStatsResponse } from '../../core/api/models';
 import { ChartComponent } from '../../shared/ui/chart/chart.component';
 import { GroupsListPage } from './groups-list.page';
 
@@ -39,7 +39,7 @@ vi.mock('chart.js', () => {
   };
 });
 
-const NOOR: GroupStatsRow = {
+const NOOR: GroupStatsResponse['data']['groups'][number] = {
   id: 1,
   name: 'حلقة النور — L1',
   center_id: 1,
@@ -56,8 +56,9 @@ const NOOR: GroupStatsRow = {
   breakdown: { status: { active: 9 }, student_type: { child: 9 } },
 };
 
-// Teacher-less, paused, no metrics, and breakdown serialised as [] by PHP.
-const FURQAN: GroupStatsRow = {
+// Teacher-less, paused, no metrics, and an empty breakdown (backend emits
+// stdClass → {} when a group has no students to bucket).
+const FURQAN: GroupStatsResponse['data']['groups'][number] = {
   id: 2,
   name: 'حلقة الفرقان — L2',
   center_id: 1,
@@ -71,14 +72,19 @@ const FURQAN: GroupStatsRow = {
   avg_score: null,
   attendance_pct: null,
   thumn_total: 0,
-  breakdown: [],
+  breakdown: {},
 };
 
-const STATS: GroupStats = {
+const STATS: GroupStatsResponse['data'] = {
   season: { id: 3 },
   season_name: '2025/2026',
   kpis: { groups: 2, students: 17, avg_score: 14.54, attendance_pct: 95.2, fill_pct: 7.4 },
-  breakdown: { status: { active: 1, inactive: 1 }, gender: { male: 9, female: 8 } },
+  breakdown: {
+    status: { active: 1, inactive: 1 },
+    gender: { male: 9, female: 8 },
+    student_type: { child: 17 },
+    memorization_mode: { thumn: 17 },
+  },
   groups: [NOOR, FURQAN],
 };
 
@@ -236,7 +242,7 @@ describe('GroupsListPage', () => {
     expect(detailRow.textContent).toContain('teacher_type.hifz');
     expect(detailRow.textContent).toContain('0611223344');
 
-    // PHP serialises an empty breakdown as [] — the row expands without chips
+    // An empty breakdown ({}) — the row still expands, just without chips
     rowOf('حلقة الفرقان').querySelector<HTMLButtonElement>('.expander')!.click();
     fixture.detectChanges();
     const rows = el.querySelectorAll('tr.detail-row');

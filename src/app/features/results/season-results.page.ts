@@ -4,6 +4,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ResultsService } from '../../core/api/results.service';
+import { HonorFlag } from '../../core/api/models';
 import { leaveController } from '../../core/guards/leave-controller';
 import { StudentsService } from '../../core/api/students.service';
 import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
@@ -81,7 +82,7 @@ export class SeasonResultsPage {
     total_memorized_label: new FormControl('', { nonNullable: true }),
     overall_avg: new FormControl<number | null>(null),
     board_report: new FormControl('', { nonNullable: true }),
-    honor_flag: new FormControl('none', { nonNullable: true }),
+    honor_flag: new FormControl<HonorFlag>('none', { nonNullable: true }),
   });
 
   fill(): void {

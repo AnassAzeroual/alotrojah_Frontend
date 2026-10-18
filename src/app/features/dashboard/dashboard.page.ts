@@ -12,11 +12,15 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ChartData } from 'chart.js';
 import { firstValueFrom, map, of } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
-import { CenterDashboard, DashboardService, MeDashboard } from '../../core/api/dashboard.service';
+import { DashboardService } from '../../core/api/dashboard.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { StudentsService } from '../../core/api/students.service';
-import { Paginated, Student } from '../../core/api/api-models';
+import {
+  DashboardCenterResponse,
+  DashboardMeResponse,
+  StudentsIndexResponse,
+} from '../../core/api/models';
 import { LanguageService } from '../../core/i18n/language.service';
 import {
   DropdownComponent,
@@ -112,7 +116,7 @@ export class DashboardPage {
   /** §2.16: the student's own dashboard (null while loading or unlinked). */
   readonly me = resource({
     params: () => ({ s: this.auth.role() }),
-    loader: ({ params }): Promise<MeDashboard | null> =>
+    loader: ({ params }): Promise<DashboardMeResponse['data']> =>
       params.s !== 'student' ? Promise.resolve(null) : firstValueFrom(this.dash.me()),
   });
 
@@ -170,7 +174,7 @@ export class DashboardPage {
 
   readonly centerData = resource({
     params: () => ({ c: this.pickedCenter(), s: this.seasonId.value() ?? null }),
-    loader: ({ params }): Promise<CenterDashboard | null> => {
+    loader: ({ params }): Promise<DashboardCenterResponse['data'] | null> => {
       if (params.c === null || params.s === null) return Promise.resolve(null);
       return firstValueFrom(this.dash.center(params.c, params.s));
     },
@@ -184,7 +188,7 @@ export class DashboardPage {
       c: this.pickedCenter(),
       p: this.page(),
     }),
-    loader: ({ params }): Promise<Paginated<Student>> => {
+    loader: ({ params }): Promise<StudentsIndexResponse['data']> => {
       const query: Record<string, string | number> = { page: params.p };
       if (params.q.trim() !== '') query['q'] = params.q.trim();
       if (params.s !== '') query['status'] = params.s;

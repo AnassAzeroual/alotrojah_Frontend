@@ -2,9 +2,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { finalize, map, Observable, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from './api-models';
 
 export type QueryParams = Record<string, string | number | boolean>;
+
+/**
+ * The backend wraps every payload in `{success, message, data}`. Scramble emits
+ * that envelope per-operation (no shared generic), so the choke point only needs
+ * the `data` slot it unwraps; each service names the concrete generated type.
+ */
+type Envelope<T> = { data: T };
 
 /**
  * Set to '1' before the app boots to disable the GET cache. Seeded into every
@@ -66,7 +72,7 @@ export class ApiClient {
   }
 
   post<T>(path: string, body: unknown): Observable<T> {
-    return this.http.post<ApiResponse<T>>(`${this.base}${path}`, body).pipe(
+    return this.http.post<Envelope<T>>(`${this.base}${path}`, body).pipe(
       map((r) => r.data),
       finalize(() => this.entries.clear()),
     );
@@ -74,21 +80,21 @@ export class ApiClient {
 
   /** Multipart POST; the browser supplies the boundary, so no headers are set. */
   postForm<T>(path: string, body: FormData): Observable<T> {
-    return this.http.post<ApiResponse<T>>(`${this.base}${path}`, body).pipe(
+    return this.http.post<Envelope<T>>(`${this.base}${path}`, body).pipe(
       map((r) => r.data),
       finalize(() => this.entries.clear()),
     );
   }
 
   put<T>(path: string, body: unknown): Observable<T> {
-    return this.http.put<ApiResponse<T>>(`${this.base}${path}`, body).pipe(
+    return this.http.put<Envelope<T>>(`${this.base}${path}`, body).pipe(
       map((r) => r.data),
       finalize(() => this.entries.clear()),
     );
   }
 
   patch<T>(path: string, body: unknown): Observable<T> {
-    return this.http.patch<ApiResponse<T>>(`${this.base}${path}`, body).pipe(
+    return this.http.patch<Envelope<T>>(`${this.base}${path}`, body).pipe(
       map((r) => r.data),
       finalize(() => this.entries.clear()),
     );
@@ -96,7 +102,7 @@ export class ApiClient {
 
   delete<T>(path: string, params?: QueryParams): Observable<T> {
     return this.http
-      .delete<ApiResponse<T>>(`${this.base}${path}`, { params: this.toHttpParams(params) })
+      .delete<Envelope<T>>(`${this.base}${path}`, { params: this.toHttpParams(params) })
       .pipe(
         map((r) => r.data),
         finalize(() => this.entries.clear()),
@@ -110,7 +116,7 @@ export class ApiClient {
 
   private rawGet<T>(path: string, params?: QueryParams): Observable<T> {
     return this.http
-      .get<ApiResponse<T>>(`${this.base}${path}`, { params: this.toHttpParams(params) })
+      .get<Envelope<T>>(`${this.base}${path}`, { params: this.toHttpParams(params) })
       .pipe(map((r) => r.data));
   }
 

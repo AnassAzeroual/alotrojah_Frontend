@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ChartData } from 'chart.js';
 import { firstValueFrom } from 'rxjs';
-import { GroupDetail } from '../../core/api/api-models';
+import { GroupDetailResponse, Weekday } from '../../core/api/models';
 import { GroupsService } from '../../core/api/groups.service';
 import { UsersService } from '../../core/api/users.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -77,7 +77,7 @@ export class GroupDetailPage {
   });
 
   readonly loading = () => this.data.isLoading();
-  readonly detail = (): GroupDetail | null => this.data.value() ?? null;
+  readonly detail = (): GroupDetailResponse['data'] | null => this.data.value() ?? null;
   readonly group = () => this.detail()?.group ?? null;
   readonly seasonName = () => this.detail()?.season_name ?? null;
   readonly students = () => this.detail()?.students ?? [];
@@ -105,7 +105,7 @@ export class GroupDetailPage {
   protected readonly editName = signal('');
   protected readonly editTeacherId = signal<number | null>(null);
   protected readonly editCapacity = signal<number | null>(null);
-  protected readonly editDays = signal<string[]>([]);
+  protected readonly editDays = signal<Weekday[]>([]);
   protected readonly editActive = signal(true);
 
   private readonly teachersRes = resource({
@@ -138,7 +138,7 @@ export class GroupDetailPage {
     this.editing.set(false);
   }
 
-  protected toggleDay(day: string): void {
+  protected toggleDay(day: Weekday): void {
     this.editDays.update((d) => (d.includes(day) ? d.filter((x) => x !== day) : [...d, day]));
   }
 
@@ -192,11 +192,11 @@ export class GroupDetailPage {
     return this.i18n.instant(key);
   }
 
-  protected scheduleKeys(days: string): string[] {
+  protected scheduleKeys(days: string): Weekday[] {
     return days
       .split(',')
       .map((d) => d.trim())
-      .filter((d) => (WEEKDAY_KEYS as readonly string[]).includes(d));
+      .filter((d): d is Weekday => WEEKDAY_KEYS.some((k) => k === d));
   }
 
   protected waLink(phone: string | null): string | null {

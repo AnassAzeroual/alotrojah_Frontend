@@ -11,9 +11,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, forkJoin, map } from 'rxjs';
 import { CalendarService } from '../../core/api/calendar.service';
-import { EntryService, SessionStudentScores, AttendanceRow } from '../../core/api/entry.service';
+import { EntryService } from '../../core/api/entry.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { LevelsService } from '../../core/api/levels.service';
+import { AttendanceResource, ScoreBySessionResponse } from '../../core/api/models';
 import { StudentsService } from '../../core/api/students.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -188,9 +189,11 @@ export class EntryPage {
     },
   });
 
-  readonly scoreRows = computed((): SessionStudentScores[] => this.existing.value()?.scores ?? []);
+  readonly scoreRows = computed(
+    (): ScoreBySessionResponse['data'] => this.existing.value()?.scores ?? [],
+  );
   readonly attendanceRows = computed(
-    (): AttendanceRow[] => this.existing.value()?.attendance ?? [],
+    (): AttendanceResource[] => this.existing.value()?.attendance ?? [],
   );
   readonly ready = computed(() => this.selectedGroup() !== null && this.selectedSession() !== null);
 

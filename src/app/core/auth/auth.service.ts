@@ -2,7 +2,13 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, finalize, map, shareReplay, tap } from 'rxjs';
 import { ApiClient } from '../api/api-client';
-import { CurrentUser, LoginData, RegisterPayload } from '../api/api-models';
+import {
+  AuthLoginResponse,
+  AuthMeResponse,
+  AuthRefreshResponse,
+  AuthRegisterResponse,
+  RegisterRequest,
+} from '../api/models';
 import { SecureStorageService } from '../storage/secure-storage.service';
 
 const TOKEN_KEY = 'alotrojah_token';
@@ -14,7 +20,7 @@ export class AuthService {
   private readonly storage = inject(SecureStorageService);
 
   readonly token = signal<string | null>(this.storage.read(TOKEN_KEY));
-  readonly currentUser = signal<CurrentUser | null>(null);
+  readonly currentUser = signal<AuthLoginResponse['data']['user'] | null>(null);
   readonly isLoggedIn = computed(() => this.token() !== null && this.currentUser() !== null);
   readonly role = computed(() => this.currentUser()?.role ?? null);
 
@@ -43,7 +49,7 @@ export class AuthService {
       this.settleProbe();
       return;
     }
-    this.api.get<CurrentUser>('/auth/me').subscribe({
+    this.api.get<AuthMeResponse['data']>('/auth/me').subscribe({
       next: (u) => {
         if (this.token() === t) this.currentUser.set(u);
         this.settleProbe();
@@ -60,8 +66,8 @@ export class AuthService {
     this.readyResolve();
   }
 
-  login(email: string, password: string): Observable<LoginData> {
-    return this.api.post<LoginData>('/auth/login', { email, password }).pipe(
+  login(email: string, password: string): Observable<AuthLoginResponse['data']> {
+    return this.api.post<AuthLoginResponse['data']>('/auth/login', { email, password }).pipe(
       tap((d) => {
         this.storage.write(TOKEN_KEY, d.access_token);
         this.token.set(d.access_token);
@@ -74,14 +80,14 @@ export class AuthService {
    * Waiting-room registration. Deliberately stores nothing: the account only
    * exists (and can log in) after an admin accepts the request.
    */
-  register(payload: RegisterPayload): Observable<null> {
-    return this.api.post<null>('/auth/register', payload);
+  register(payload: RegisterRequest): Observable<AuthRegisterResponse['data']> {
+    return this.api.post<AuthRegisterResponse['data']>('/auth/register', payload);
   }
 
   /** Single-flight refresh: concurrent 401s share one call. */
   refreshOnce(): Observable<string> {
     if (!this.inflightRefresh) {
-      this.inflightRefresh = this.api.post<LoginData>('/auth/refresh', {}).pipe(
+      this.inflightRefresh = this.api.post<AuthRefreshResponse['data']>('/auth/refresh', {}).pipe(
         map((d) => {
           this.storage.write(TOKEN_KEY, d.access_token);
           this.token.set(d.access_token);

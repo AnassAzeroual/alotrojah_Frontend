@@ -26,7 +26,7 @@ import {
   ListTableColDef,
   ListTableComponent,
 } from '../../shared/ui/list-table/list-table.component';
-import { Role, User } from '../../core/api/api-models';
+import { Role, UserResource } from '../../core/api/models';
 
 const ROLES: Role[] = ['admin', 'supervisor', 'teacher', 'student', 'board'];
 
@@ -111,7 +111,7 @@ export class UsersListPage {
     },
   });
 
-  readonly rows = linkedSignal<User[] | undefined, User[]>({
+  readonly rows = linkedSignal<UserResource[] | undefined, UserResource[]>({
     source: () => this.query.value()?.data,
     computation: (source, previous) => source ?? previous?.value ?? [],
   });
@@ -156,8 +156,8 @@ export class UsersListPage {
   }
 
   /** Cell templates receive the row as unknown (directive keeps cells data-agnostic). */
-  protected userCell(u: unknown): User {
-    return u as User;
+  protected userCell(u: unknown): UserResource {
+    return u as UserResource;
   }
 
   canDelete(u: { id: number; role: Role }): boolean {

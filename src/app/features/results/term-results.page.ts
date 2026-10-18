@@ -13,6 +13,7 @@ import { firstValueFrom, map } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ResultsService } from '../../core/api/results.service';
+import { HonorFlag } from '../../core/api/models';
 import { leaveController } from '../../core/guards/leave-controller';
 import { StudentsService } from '../../core/api/students.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -138,7 +139,7 @@ export class TermResultsPage {
     general_avg: new FormControl<number | null>(null),
     teacher_notes: new FormControl('', { nonNullable: true }),
     supervisor_note: new FormControl('', { nonNullable: true }),
-    honor_flag: new FormControl('none', { nonNullable: true }),
+    honor_flag: new FormControl<HonorFlag>('none', { nonNullable: true }),
   });
   readonly scoreFields = SCORE_FIELDS;
 

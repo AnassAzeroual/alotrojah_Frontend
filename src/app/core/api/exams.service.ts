@@ -1,137 +1,88 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
-import { Paginated } from './api-models';
-
-export interface Exam {
-  id: number;
-  student_id: number;
-  student_name: string | null;
-  season_id: number;
-  term_id: number | null;
-  exam_type: 'hizb_completion' | 'term_batch' | 'weekly' | 'final_season';
-  exam_date: string | null;
-  examiner_id: number | null;
-  overall_avg: number | null;
-  examiner_report: string | null;
-  questions?: ExamQuestion[];
-}
-
-export interface ExamQuestion {
-  id: number;
-  exam_id: number;
-  question_no: number;
-  prompt_text: string | null;
-  hizb_ref: number | null;
-  surah_ref: number | null;
-  ayah_from: number | null;
-  ayah_to: number | null;
-  sort_order: number;
-  model_type: string | null;
-  max_score: number;
-  score: number | null;
-  notes: string | null;
-}
-
-export interface QuestionInput {
-  question_no: number;
-  prompt_text?: string;
-  hizb_ref?: number;
-  surah_ref?: number;
-  ayah_from?: number;
-  ayah_to?: number;
-  max_score: number;
-  score?: number;
-  notes?: string;
-}
+import {
+  ExamQuestionBulkResponse,
+  ExamQuestionReweightResponse,
+  ExamQuestionsDestroyResponse,
+  ExamQuestionsUpdateResponse,
+  ExamsDestroyResponse,
+  ExamsIndexResponse,
+  ExamsShowResponse,
+  ExamsStoreResponse,
+  ExamsUpdateResponse,
+  ExamWeeklyBatchResponse,
+  ExamWeeklyTemplateResponse,
+  ReweightExamQuestionsRequest,
+  StoreExamRequest,
+  StoreQuestionsBulkRequest,
+  UpdateExamRequest,
+  UpdateQuestionRequest,
+  WeeklyBatchRequest,
+} from './models';
 
 @Injectable({ providedIn: 'root' })
 export class ExamsService {
   private readonly api = inject(ApiClient);
 
-  list(params?: QueryParams): Observable<Paginated<Exam>> {
-    return this.api.get<Paginated<Exam>>('/exams', params);
+  list(params?: QueryParams): Observable<ExamsIndexResponse['data']> {
+    return this.api.get<ExamsIndexResponse['data']>('/exams', params);
   }
 
-  create(payload: {
-    student_id: number;
-    exam_type: string;
-    term_id?: number;
-    season_id?: number;
-    exam_date?: string;
-  }): Observable<Exam> {
-    return this.api.post<Exam>('/exams', payload);
+  create(payload: StoreExamRequest): Observable<ExamsStoreResponse['data']> {
+    return this.api.post<ExamsStoreResponse['data']>('/exams', payload);
   }
 
-  get(id: number): Observable<Exam> {
-    return this.api.get<Exam>(`/exams/${id}`);
+  get(id: number): Observable<ExamsShowResponse['data']> {
+    return this.api.get<ExamsShowResponse['data']>(`/exams/${id}`);
   }
 
-  update(id: number, patch: Partial<Exam>): Observable<Exam> {
-    return this.api.patch<Exam>(`/exams/${id}`, patch);
+  update(id: number, patch: UpdateExamRequest): Observable<ExamsUpdateResponse['data']> {
+    return this.api.patch<ExamsUpdateResponse['data']>(`/exams/${id}`, patch);
   }
 
-  remove(id: number): Observable<null> {
-    return this.api.delete<null>(`/exams/${id}`);
+  remove(id: number): Observable<ExamsDestroyResponse['data']> {
+    return this.api.delete<ExamsDestroyResponse['data']>(`/exams/${id}`);
   }
 
-  addQuestions(examId: number, questions: QuestionInput[]): Observable<ExamQuestion[]> {
-    return this.api.post<ExamQuestion[]>(`/exams/${examId}/questions`, { questions });
+  addQuestions(
+    examId: number,
+    questions: StoreQuestionsBulkRequest['questions'],
+  ): Observable<ExamQuestionBulkResponse['data']> {
+    return this.api.post<ExamQuestionBulkResponse['data']>(`/exams/${examId}/questions`, {
+      questions,
+    });
   }
 
-  reweight(examId: number, weights: { id: number; max_score: number }[]): Observable<unknown> {
-    return this.api.put<unknown>(`/exams/${examId}/question-weights`, { weights });
+  reweight(
+    examId: number,
+    weights: ReweightExamQuestionsRequest['weights'],
+  ): Observable<ExamQuestionReweightResponse['data']> {
+    return this.api.put<ExamQuestionReweightResponse['data']>(`/exams/${examId}/question-weights`, {
+      weights,
+    });
   }
 
-  updateQuestion(id: number, patch: Partial<ExamQuestion>): Observable<ExamQuestion> {
-    return this.api.patch<ExamQuestion>(`/exam-questions/${id}`, patch);
+  updateQuestion(
+    id: number,
+    patch: UpdateQuestionRequest,
+  ): Observable<ExamQuestionsUpdateResponse['data']> {
+    return this.api.patch<ExamQuestionsUpdateResponse['data']>(`/exam-questions/${id}`, patch);
   }
 
-  deleteQuestion(id: number): Observable<null> {
-    return this.api.delete<null>(`/exam-questions/${id}`);
+  deleteQuestion(id: number): Observable<ExamQuestionsDestroyResponse['data']> {
+    return this.api.delete<ExamQuestionsDestroyResponse['data']>(`/exam-questions/${id}`);
   }
 
   /** Weekly sheet bootstrap: season + active weekly modules + group pupils. */
-  weeklyTemplate(groupId: number): Observable<WeeklyTemplate> {
-    return this.api.get<WeeklyTemplate>('/exams/weekly-template', { group_id: groupId });
+  weeklyTemplate(groupId: number): Observable<ExamWeeklyTemplateResponse['data']> {
+    return this.api.get<ExamWeeklyTemplateResponse['data']>('/exams/weekly-template', {
+      group_id: groupId,
+    });
   }
 
   /** Weekly batch save: one official weekly exam per pupil row. */
-  weeklyBatch(payload: {
-    group_id: number;
-    exam_date: string;
-    rows: WeeklyRow[];
-  }): Observable<{ created: number; exam_ids: number[] }> {
-    return this.api.post<{ created: number; exam_ids: number[] }>('/exams/weekly-batch', payload);
+  weeklyBatch(payload: WeeklyBatchRequest): Observable<ExamWeeklyBatchResponse['data']> {
+    return this.api.post<ExamWeeklyBatchResponse['data']>('/exams/weekly-batch', payload);
   }
-}
-
-export interface WeeklyModule {
-  code: string;
-  name_ar: string;
-  max_points: number;
-}
-
-export interface WeeklyPupil {
-  id: number;
-  full_name: string;
-  memorization_mode: 'surah' | 'thumn';
-}
-
-export interface WeeklyTemplate {
-  season_id: number;
-  modules: WeeklyModule[];
-  pupils: WeeklyPupil[];
-}
-
-export interface WeeklyRow {
-  student_id: number;
-  portion: {
-    hizb?: number | null;
-    thumn?: number | null;
-    surah?: number | null;
-    ayah_from?: number | null;
-    ayah_to?: number | null;
-  };
-  scores: Record<string, number | null>;
 }
