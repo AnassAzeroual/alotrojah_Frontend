@@ -55,7 +55,6 @@ export class NewsPage {
     loader: () => firstValueFrom(this.news.list().pipe(map((p) => p.data))),
   });
 
-
   readonly editingId = signal<number | null>(null);
   readonly draftTitle = signal('');
   readonly draftBody = signal('');

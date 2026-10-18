@@ -121,18 +121,43 @@ describe('AppearanceService', () => {
     expect(service.patternSize()).toBe(320);
   });
 
-  it('falls back to the admin own center and permits no center at all', () => {
+  it('falls back to the admin own center, else the first center on first load', () => {
     user.set({ ...ADMIN, center_id: 1 });
     api.get.mockReturnValue(of(config(1)));
     service.load();
     expect(api.get).toHaveBeenCalledWith('/appearance', { center_id: 1 });
 
+    // Global admin, no saved pick: the first center is resolved once, then read.
     user.set(ADMIN);
     prefCenter.set(null);
-    api.get.mockReturnValue(of(config(null)));
+    api.get.mockImplementation((url: string) =>
+      url === '/centers'
+        ? of({
+            data: [{ id: 7, name: 'First' }],
+            meta: { current_page: 1, total: 1, per_page: 20 },
+          })
+        : of(config(7, { pattern_size: 90 })),
+    );
     service.load();
+    expect(api.get).toHaveBeenCalledWith('/centers', undefined);
+    expect(api.get).toHaveBeenLastCalledWith('/appearance', { center_id: 7 });
+    expect(service.centerId()).toBe(7);
+    expect(service.patternSize()).toBe(90);
+  });
+
+  it('keeps the defaults-only read when a global admin has no centers', () => {
+    user.set(ADMIN);
+    api.get.mockImplementation((url: string) =>
+      url === '/centers'
+        ? of({ data: [], meta: { current_page: 1, total: 0, per_page: 20 } })
+        : of(config(null)),
+    );
+
+    service.load();
+
     expect(api.get).toHaveBeenLastCalledWith('/appearance', undefined);
     expect(service.hasCenter()).toBe(false);
+    expect(service.loaded()).toBe(true);
   });
 
   it('sends the selected center on save, delete and upload', () => {

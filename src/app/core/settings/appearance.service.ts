@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { ApiClient, QueryParams } from '../api/api-client';
+import { CentersService } from '../api/centers.service';
 import { AuthService } from '../auth/auth.service';
 import { AdminPrefsService } from './admin-prefs.service';
 
@@ -106,6 +107,7 @@ export class AppearanceService {
   private readonly api = inject(ApiClient);
   private readonly auth = inject(AuthService);
   private readonly prefs = inject(AdminPrefsService);
+  private readonly centers = inject(CentersService);
 
   /** Center currently loaded; null when a global admin has selected none. */
   readonly centerId = signal<number | null>(null);
@@ -149,6 +151,9 @@ export class AppearanceService {
   private readonly savedOptions = signal<AppearanceOptions>({ ...DEFAULT_APPEARANCE });
   /** Monotonic guard so a slow response for a previous center can never apply. */
   private loadSeq = 0;
+  /** First center id, resolved once for a global admin with no saved pick. */
+  private readonly fallbackCenterId = signal<number | null>(null);
+  private fallbackSettled = false;
 
   readonly options = computed<AppearanceOptions>(() => ({
     background_type: this.backgroundType(),
@@ -368,6 +373,15 @@ export class AppearanceService {
     const centerId = this.resolveCenterId();
     if (centerId !== this.centerId()) this.reset(centerId);
 
+    // A global admin's first read has neither a saved pick nor a center of
+    // their own, and the server answers such reads with bare defaults — the
+    // shell would paint the stock pattern instead of any configured center.
+    // Resolve the first center once (the dashboard's initial-lock rule) first.
+    if (centerId === null && !this.fallbackSettled && this.auth.currentUser()?.role === 'admin') {
+      this.resolveFallbackCenter();
+      return;
+    }
+
     const seq = ++this.loadSeq;
     this.api.get<AppearanceConfig>('/appearance', this.centerParams()).subscribe({
       // Preserve edits made before the initial GET lands.
@@ -480,7 +494,21 @@ export class AppearanceService {
     const user = this.auth.currentUser();
     if (!user) return null;
     if (user.role !== 'admin') return user.center_id;
-    return this.prefs.appearanceCenterId() ?? user.center_id;
+    return this.prefs.appearanceCenterId() ?? user.center_id ?? this.fallbackCenterId();
+  }
+
+  /** One-shot: the first center becomes the global admin's implicit center. */
+  private resolveFallbackCenter(): void {
+    this.fallbackSettled = true;
+    this.centers.list().subscribe({
+      next: (page) => {
+        const first = page.data[0];
+        if (first) this.fallbackCenterId.set(first.id);
+        this.load();
+      },
+      // No centers (or a failed read): keep today's defaults-only rendering.
+      error: () => this.load(),
+    });
   }
 
   private centerParams(): QueryParams | undefined {

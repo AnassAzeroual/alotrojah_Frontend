@@ -7,7 +7,7 @@ import angular from 'angular-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'coverage/**', '.angular/**', 'node_modules/**', 'test-results/**'],
+    ignores: ['dist/**', 'coverage/**', '.angular/**', 'node_modules/**', 'test-results/**', 'src/app/core/api/models/**'],
   },
   {
     files: ['**/*.ts'],
