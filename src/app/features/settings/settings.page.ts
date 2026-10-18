@@ -18,6 +18,7 @@ import {
 
 type FlashKind = AppearanceKind | 'options';
 type SettingsTab = 'general' | 'appearance';
+type LayerKey = 'pattern' | 'glass' | 'scrim' | 'orbs';
 
 const SIZE_PRESETS = ['cover', 'contain', 'fill', 'tile'];
 const SIZE_TOKEN = String.raw`\d{1,4}(?:\.\d+)?(?:px|%)`;
@@ -141,6 +142,8 @@ export class SettingsPage {
   readonly error = signal<string | null>(null);
   readonly toast = signal<string | null>(null);
   readonly copiedCss = signal(false);
+  /** Layers accordion: one row open at a time. */
+  readonly openLayer = signal<LayerKey | null>('pattern');
 
   private static readonly ACCEPTED = ['image/png', 'image/jpeg', 'image/webp'];
   private static readonly MAX_BYTES = 2 * 1024 * 1024;
@@ -193,6 +196,11 @@ export class SettingsPage {
     const tab = this.tabs[(next + this.tabs.length) % this.tabs.length];
     this.selectTab(tab);
     document.getElementById(`settings-tab-${tab}`)?.focus();
+  }
+
+  /** Layers accordion: clicking the open row collapses it. */
+  toggleLayer(layer: LayerKey): void {
+    this.openLayer.update((cur) => (cur === layer ? null : layer));
   }
 
   private loadCenters(): void {

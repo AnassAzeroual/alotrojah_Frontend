@@ -10,6 +10,9 @@
 //   npm run shots -- --viewport phone   → 390×844 into screenshots/<day>/phone/
 //   npm run shots -- --viewport tablet  → 768×1024 into screenshots/<day>/tablet/
 //   (default viewport: desktop 1440×900 → screenshots/<day>/ flat, as before)
+// Env overrides for a foreign --reuse stack that bound differently:
+//   SHOTS_BACKEND / SHOTS_FRONTEND default to 127.0.0.1:8002 / 127.0.0.1:4202
+//   (e.g. an ng serve that landed on [::1] only → SHOTS_FRONTEND=http://[::1]:4202).
 // Boots its OWN backend (verify DB via env, never dev) + frontend, refuses to
 // run if :8002/:4202 are busy (a foreign server there means "hands off"),
 // captures the pages in both themes, then tears everything down. Read-only:
@@ -23,8 +26,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, expect } from '@playwright/test';
 
-const BACKEND = 'http://127.0.0.1:8002';
-const FRONTEND = 'http://127.0.0.1:4202';
+const BACKEND = process.env.SHOTS_BACKEND ?? 'http://127.0.0.1:8002';
+const FRONTEND = process.env.SHOTS_FRONTEND ?? 'http://127.0.0.1:4202';
 const BACKEND_PORT = Number(new URL(BACKEND).port);
 const FRONTEND_PORT = Number(new URL(FRONTEND).port);
 const ADMIN_EMAIL = 'admin@example.org';
@@ -87,6 +90,9 @@ const PAGES = [
   { path: '/notifications', name: 'notifications', ready: 'إضافة' },
   { path: '/registrations', name: 'registrations', readySelector: '.req-card, .empty' },
   { path: '/settings', name: 'settings', ready: 'تحرير النطاق' },
+  // Appearance tab is fragment-routed; the layers accordion heading is the
+  // ready signal (the general-tab 'تحرير النطاق' never renders on this tab).
+  { path: '/settings#appearance', name: 'settings-appearance', ready: 'الطبقات فوق الخلفية' },
   // NOTE: volatile :id detail pages stay out of the defaults (ids drift as
   // e2e creates/deletes rows) — shoot them explicitly, e.g. `students/5`.
 ];

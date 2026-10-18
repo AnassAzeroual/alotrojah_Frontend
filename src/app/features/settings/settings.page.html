@@ -83,11 +83,11 @@
       aria-labelledby="settings-tab-appearance"
       data-testid="settings-panel-appearance"
     >
-      <div class="card stack anim-rise" style="--i: 1">
-        <h2>{{ 'settings.appearance_section' | translate }}</h2>
-        <p class="muted appearance-hint">{{ 'settings.appearance_hint' | translate }}</p>
+      @if (isAdmin()) {
+        <div class="card stack anim-rise" style="--i: 1">
+          <h2>{{ 'settings.appearance_section' | translate }}</h2>
+          <p class="muted appearance-hint">{{ 'settings.appearance_hint' | translate }}</p>
 
-        @if (isAdmin()) {
           <div class="appearance-center">
             <label class="control-label" for="appearance-center">{{
               'settings.center' | translate
@@ -117,855 +117,1048 @@
           @if (!centersLoading() && centers().length === 0) {
             <p class="appearance-error" role="alert">{{ 'settings.no_centers' | translate }}</p>
           }
-        }
-      </div>
+        </div>
+      }
 
       @if (centerReady()) {
-        <div class="card stack anim-rise" style="--i: 2">
-          <h2>{{ 'settings.background_section' | translate }}</h2>
+        <div class="work">
+          <div class="appearance-controls-col">
+            <div class="card stack anim-rise" style="--i: 2">
+              <h2>{{ 'settings.background_section' | translate }}</h2>
 
-          <div class="engine-block">
-            <span class="control-label">{{ 'settings.background_type' | translate }}</span>
-            <div
-              class="segmented"
-              role="group"
-              [attr.aria-label]="'settings.background_type' | translate"
-            >
-              @for (type of backgroundTypes; track type) {
-                <button
-                  type="button"
-                  class="segment"
-                  [class.active]="appearance.backgroundType() === type"
-                  [attr.aria-pressed]="appearance.backgroundType() === type"
-                  (click)="setBackgroundType(type)"
-                  [attr.data-testid]="'appearance-type-' + type"
+              <div class="engine-block">
+                <span class="control-label">{{ 'settings.background_type' | translate }}</span>
+                <div
+                  class="segmented"
+                  role="group"
+                  [attr.aria-label]="'settings.background_type' | translate"
                 >
-                  {{ 'settings.bg_type_' + type | translate }}
-                </button>
-              }
-            </div>
-            <small class="muted">{{ 'settings.background_mode_hint' | translate }}</small>
-          </div>
-
-          @switch (appearance.backgroundType()) {
-            @case ('color') {
-              <div class="control color-control">
-                <label class="control-label" for="appearance-bg-color">{{
-                  'settings.background_color' | translate
-                }}</label>
-                <input
-                  id="appearance-bg-color"
-                  type="color"
-                  [value]="appearance.backgroundColor()"
-                  (input)="setBackgroundColor($event)"
-                  data-testid="appearance-bg-color"
-                />
-                <output class="control-value ltr-num">{{ appearance.backgroundColor() }}</output>
-              </div>
-            }
-            @case ('image') {
-              <div class="appearance-item">
-                <div class="preview" [class.empty]="!appearance.backgroundUrl()">
-                  @if (appearance.backgroundUrl()) {
-                    <div
-                      class="preview-art"
-                      aria-hidden="true"
-                      [style]="appearance.backgroundLayerStyle()"
-                    ></div>
-                  } @else {
-                    <span>{{ 'settings.no_background' | translate }}</span>
-                  }
-                </div>
-                <div class="appearance-body">
-                  <strong>{{ 'settings.background_image' | translate }}</strong>
-                  <small class="muted">{{ 'settings.background_hint' | translate }}</small>
-                  <div class="appearance-actions">
-                    <label class="btn btn-ghost upload-btn" [class.disabled]="busy() !== null">
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        [disabled]="busy() !== null"
-                        (change)="onPick('background', $event)"
-                        data-testid="appearance-background-input"
-                      />
-                      <span>{{
-                        (appearance.backgroundUrl()
-                          ? 'settings.replace_image'
-                          : 'settings.choose_image'
-                        ) | translate
-                      }}</span>
-                    </label>
-                    @if (appearance.backgroundUrl()) {
-                      <button
-                        type="button"
-                        class="btn btn-danger-ghost"
-                        [disabled]="busy() !== null"
-                        (click)="remove('background')"
-                        data-testid="appearance-background-remove"
-                      >
-                        {{
-                          (armedRemove() === 'background'
-                            ? 'settings.remove_confirm'
-                            : 'settings.remove'
-                          ) | translate
-                        }}
-                      </button>
-                    }
-                    @if (busy() === 'background') {
-                      <span class="status" role="status">{{
-                        'settings.uploading' | translate
-                      }}</span>
-                    } @else if (saved() === 'background') {
-                      <span class="status ok" role="status">{{
-                        'settings.saved' | translate
-                      }}</span>
-                    }
-                  </div>
-                  @if (!appearance.backgroundUrl()) {
-                    <small class="muted" role="status">{{
-                      'settings.image_mode_needs_upload' | translate
-                    }}</small>
-                  }
-                </div>
-              </div>
-            }
-            @case ('gradient') {
-              <div class="gradient-block">
-                <div class="control">
-                  <label class="control-label" for="appearance-gradient-type">{{
-                    'settings.gradient_type' | translate
-                  }}</label>
-                  <select
-                    id="appearance-gradient-type"
-                    (change)="setGradientType($event)"
-                    data-testid="appearance-gradient-type"
-                  >
-                    @for (type of gradientTypes; track type) {
-                      <option [value]="type" [selected]="type === appearance.gradientType()">
-                        {{ 'settings.gradient_' + type | translate }}
-                      </option>
-                    }
-                  </select>
-                </div>
-                @if (appearance.gradientType() !== 'radial') {
-                  <div class="control">
-                    <label class="control-label" for="appearance-gradient-angle">{{
-                      'settings.gradient_angle' | translate
-                    }}</label>
-                    <output class="control-value ltr-num" for="appearance-gradient-angle"
-                      >{{ appearance.gradientAngle() }}°</output
+                  @for (type of backgroundTypes; track type) {
+                    <button
+                      type="button"
+                      class="segment"
+                      [class.active]="appearance.backgroundType() === type"
+                      [attr.aria-pressed]="appearance.backgroundType() === type"
+                      (click)="setBackgroundType(type)"
+                      [attr.data-testid]="'appearance-type-' + type"
                     >
+                      {{ 'settings.bg_type_' + type | translate }}
+                    </button>
+                  }
+                </div>
+                <small class="muted">{{ 'settings.background_mode_hint' | translate }}</small>
+              </div>
+
+              @switch (appearance.backgroundType()) {
+                @case ('color') {
+                  <div class="control color-control">
+                    <label class="control-label" for="appearance-bg-color">{{
+                      'settings.background_color' | translate
+                    }}</label>
                     <input
-                      id="appearance-gradient-angle"
-                      type="range"
-                      min="0"
-                      max="360"
-                      step="1"
-                      [value]="appearance.gradientAngle()"
-                      (input)="setGradientAngle($event)"
-                      data-testid="appearance-gradient-angle"
+                      id="appearance-bg-color"
+                      type="color"
+                      [value]="appearance.backgroundColor()"
+                      (input)="setBackgroundColor($event)"
+                      data-testid="appearance-bg-color"
                     />
+                    <output class="control-value ltr-num">{{
+                      appearance.backgroundColor()
+                    }}</output>
                   </div>
                 }
-                <div class="control color-control">
-                  <label class="control-label" for="appearance-gradient-from">{{
-                    'settings.gradient_from' | translate
-                  }}</label>
-                  <input
-                    id="appearance-gradient-from"
-                    type="color"
-                    [value]="appearance.gradientFrom()"
-                    (input)="setGradientFrom($event)"
-                    data-testid="appearance-gradient-from"
-                  />
-                  <output class="control-value ltr-num">{{ appearance.gradientFrom() }}</output>
-                </div>
-                <div class="control color-control">
-                  <label class="control-label" for="appearance-gradient-to">{{
-                    'settings.gradient_to' | translate
-                  }}</label>
-                  <input
-                    id="appearance-gradient-to"
-                    type="color"
-                    [value]="appearance.gradientTo()"
-                    (input)="setGradientTo($event)"
-                    data-testid="appearance-gradient-to"
-                  />
-                  <output class="control-value ltr-num">{{ appearance.gradientTo() }}</output>
-                </div>
-                <div
-                  class="gradient-strip"
-                  role="img"
-                  [attr.aria-label]="'settings.gradient_preview' | translate"
-                  [style.background]="appearance.gradientCss()"
-                  data-testid="appearance-gradient-strip"
-                ></div>
-              </div>
-            }
-          }
-
-          @if (appearance.backgroundType() !== 'none') {
-            <div class="engine-controls">
-              <h3>{{ 'settings.layout_controls' | translate }}</h3>
-              <div class="appearance-controls layout-grid">
-                <div class="control">
-                  <label class="control-label" for="appearance-bg-opacity">{{
-                    'settings.opacity' | translate
-                  }}</label>
-                  <output class="control-value ltr-num" for="appearance-bg-opacity"
-                    >{{ appearance.backgroundOpacity() }}%</output
-                  >
-                  <input
-                    id="appearance-bg-opacity"
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="1"
-                    [value]="appearance.backgroundOpacity()"
-                    (input)="setBackgroundOpacity($event)"
-                    data-testid="appearance-background-opacity"
-                  />
-                </div>
-
-                @if (appearance.backgroundType() !== 'color') {
-                  <div class="control">
-                    <label class="control-label" for="appearance-bg-size">{{
-                      'settings.size' | translate
-                    }}</label>
-                    <select
-                      id="appearance-bg-size"
-                      (change)="onSizeModeChange($event)"
-                      data-testid="appearance-background-size"
-                    >
-                      @for (size of backgroundSizes; track size) {
-                        <option [value]="size" [selected]="sizeMode() === size">
-                          {{ 'settings.bg_size_' + size | translate }}
-                        </option>
+                @case ('image') {
+                  <div class="appearance-item">
+                    <div class="preview" [class.empty]="!appearance.backgroundUrl()">
+                      @if (appearance.backgroundUrl()) {
+                        <div
+                          class="preview-art"
+                          aria-hidden="true"
+                          [style]="appearance.backgroundLayerStyle()"
+                        ></div>
+                      } @else {
+                        <span>{{ 'settings.no_background' | translate }}</span>
                       }
-                      <option value="custom" [selected]="sizeMode() === 'custom'">
-                        {{ 'settings.bg_size_custom' | translate }}
-                      </option>
-                    </select>
-                    @if (sizeMode() === 'custom') {
-                      <input
-                        class="text-input ltr-num"
-                        type="text"
-                        dir="ltr"
-                        [value]="customSize()"
-                        (input)="onCustomSizeInput($event)"
-                        [attr.aria-invalid]="customSizeInvalid()"
-                        aria-describedby="appearance-size-help"
-                        data-testid="appearance-custom-size"
-                      />
-                      <small
-                        id="appearance-size-help"
-                        [class.field-error]="customSizeInvalid()"
-                        [class.muted]="!customSizeInvalid()"
-                      >
-                        {{
-                          (customSizeInvalid()
-                            ? 'settings.custom_size_invalid'
-                            : 'settings.custom_size_hint'
-                          ) | translate
-                        }}
-                      </small>
-                    }
+                    </div>
+                    <div class="appearance-body">
+                      <strong>{{ 'settings.background_image' | translate }}</strong>
+                      <small class="muted">{{ 'settings.background_hint' | translate }}</small>
+                      <div class="appearance-actions">
+                        <label class="btn btn-ghost upload-btn" [class.disabled]="busy() !== null">
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            [disabled]="busy() !== null"
+                            (change)="onPick('background', $event)"
+                            data-testid="appearance-background-input"
+                          />
+                          <span>{{
+                            (appearance.backgroundUrl()
+                              ? 'settings.replace_image'
+                              : 'settings.choose_image'
+                            ) | translate
+                          }}</span>
+                        </label>
+                        @if (appearance.backgroundUrl()) {
+                          <button
+                            type="button"
+                            class="btn btn-danger-ghost"
+                            [disabled]="busy() !== null"
+                            (click)="remove('background')"
+                            data-testid="appearance-background-remove"
+                          >
+                            {{
+                              (armedRemove() === 'background'
+                                ? 'settings.remove_confirm'
+                                : 'settings.remove'
+                              ) | translate
+                            }}
+                          </button>
+                        }
+                        @if (busy() === 'background') {
+                          <span class="status" role="status">{{
+                            'settings.uploading' | translate
+                          }}</span>
+                        } @else if (saved() === 'background') {
+                          <span class="status ok" role="status">{{
+                            'settings.saved' | translate
+                          }}</span>
+                        }
+                      </div>
+                      @if (!appearance.backgroundUrl()) {
+                        <small class="muted" role="status">{{
+                          'settings.image_mode_needs_upload' | translate
+                        }}</small>
+                      }
+                    </div>
                   </div>
-
-                  <div class="control">
-                    <label class="control-label" for="appearance-bg-position">{{
-                      'settings.position' | translate
-                    }}</label>
-                    <select
-                      id="appearance-bg-position"
-                      (change)="onPositionModeChange($event)"
-                      data-testid="appearance-background-position"
-                    >
-                      @for (position of backgroundPositions; track position) {
-                        <option [value]="position" [selected]="positionMode() === position">
-                          {{ positionKey(position) | translate }}
-                        </option>
-                      }
-                      <option value="custom" [selected]="positionMode() === 'custom'">
-                        {{ 'settings.bg_pos_custom' | translate }}
-                      </option>
-                    </select>
-                    @if (positionMode() === 'custom') {
-                      <div class="control-pair">
+                }
+                @case ('gradient') {
+                  <div class="gradient-block">
+                    <div class="control">
+                      <label class="control-label" for="appearance-gradient-type">{{
+                        'settings.gradient_type' | translate
+                      }}</label>
+                      <select
+                        id="appearance-gradient-type"
+                        (change)="setGradientType($event)"
+                        data-testid="appearance-gradient-type"
+                      >
+                        @for (type of gradientTypes; track type) {
+                          <option [value]="type" [selected]="type === appearance.gradientType()">
+                            {{ 'settings.gradient_' + type | translate }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                    @if (appearance.gradientType() !== 'radial') {
+                      <div class="control">
+                        <label class="control-label" for="appearance-gradient-angle">{{
+                          'settings.gradient_angle' | translate
+                        }}</label>
+                        <output class="control-value ltr-num" for="appearance-gradient-angle"
+                          >{{ appearance.gradientAngle() }}°</output
+                        >
                         <input
-                          class="text-input ltr-num"
-                          type="text"
-                          dir="ltr"
-                          [value]="customPositionX() ?? ''"
-                          (input)="onCustomPositionInput('x', $event)"
-                          [attr.aria-label]="'settings.custom_pos_x' | translate"
-                          [attr.aria-invalid]="customPositionInvalid()"
-                          aria-describedby="appearance-position-help"
-                          data-testid="appearance-custom-pos-x"
-                        />
-                        <input
-                          class="text-input ltr-num"
-                          type="text"
-                          dir="ltr"
-                          [value]="customPositionY() ?? ''"
-                          (input)="onCustomPositionInput('y', $event)"
-                          [attr.aria-label]="'settings.custom_pos_y' | translate"
-                          [attr.aria-invalid]="customPositionInvalid()"
-                          aria-describedby="appearance-position-help"
-                          data-testid="appearance-custom-pos-y"
+                          id="appearance-gradient-angle"
+                          type="range"
+                          min="0"
+                          max="360"
+                          step="1"
+                          [value]="appearance.gradientAngle()"
+                          (input)="setGradientAngle($event)"
+                          data-testid="appearance-gradient-angle"
                         />
                       </div>
-                      <small
-                        id="appearance-position-help"
-                        [class.field-error]="customPositionInvalid()"
-                        [class.muted]="!customPositionInvalid()"
-                      >
-                        {{
-                          (customPositionInvalid()
-                            ? 'settings.custom_pos_invalid'
-                            : 'settings.custom_pos_hint'
-                          ) | translate
-                        }}
-                      </small>
                     }
-                  </div>
-
-                  <div class="control">
-                    <label class="control-label" for="appearance-bg-repeat">{{
-                      'settings.repeat' | translate
-                    }}</label>
-                    <select
-                      id="appearance-bg-repeat"
-                      (change)="setBackgroundRepeat($event)"
-                      data-testid="appearance-background-repeat"
-                    >
-                      @for (repeat of backgroundRepeats; track repeat) {
-                        <option
-                          [value]="repeat"
-                          [selected]="repeat === appearance.backgroundRepeat()"
-                        >
-                          {{ optionKey('repeat', repeat) | translate }}
-                        </option>
-                      }
-                    </select>
-                  </div>
-
-                  <div class="control">
-                    <label class="control-label" for="appearance-bg-attachment">{{
-                      'settings.attachment' | translate
-                    }}</label>
-                    <select
-                      id="appearance-bg-attachment"
-                      (change)="setBackgroundAttachment($event)"
-                      data-testid="appearance-background-attachment"
-                    >
-                      @for (attachment of backgroundAttachments; track attachment) {
-                        <option
-                          [value]="attachment"
-                          [selected]="attachment === appearance.backgroundAttachment()"
-                        >
-                          {{ optionKey('attachment', attachment) | translate }}
-                        </option>
-                      }
-                    </select>
+                    <div class="control color-control">
+                      <label class="control-label" for="appearance-gradient-from">{{
+                        'settings.gradient_from' | translate
+                      }}</label>
+                      <input
+                        id="appearance-gradient-from"
+                        type="color"
+                        [value]="appearance.gradientFrom()"
+                        (input)="setGradientFrom($event)"
+                        data-testid="appearance-gradient-from"
+                      />
+                      <output class="control-value ltr-num">{{ appearance.gradientFrom() }}</output>
+                    </div>
+                    <div class="control color-control">
+                      <label class="control-label" for="appearance-gradient-to">{{
+                        'settings.gradient_to' | translate
+                      }}</label>
+                      <input
+                        id="appearance-gradient-to"
+                        type="color"
+                        [value]="appearance.gradientTo()"
+                        (input)="setGradientTo($event)"
+                        data-testid="appearance-gradient-to"
+                      />
+                      <output class="control-value ltr-num">{{ appearance.gradientTo() }}</output>
+                    </div>
+                    <div
+                      class="gradient-strip"
+                      role="img"
+                      [attr.aria-label]="'settings.gradient_preview' | translate"
+                      [style.background]="appearance.gradientCss()"
+                      data-testid="appearance-gradient-strip"
+                    ></div>
                   </div>
                 }
+              }
 
-                <div class="control">
-                  <label class="control-label" for="appearance-bg-blend">{{
-                    'settings.blend_mode' | translate
-                  }}</label>
-                  <select
-                    id="appearance-bg-blend"
-                    (change)="setBackgroundBlendMode($event)"
-                    data-testid="appearance-background-blend"
-                  >
-                    @for (mode of backgroundBlendModes; track mode) {
-                      <option [value]="mode" [selected]="mode === appearance.backgroundBlendMode()">
-                        {{ optionKey('blend', mode) | translate }}
-                      </option>
+              @if (appearance.backgroundType() !== 'none') {
+                <div class="engine-controls">
+                  <h3>{{ 'settings.layout_controls' | translate }}</h3>
+                  <div class="appearance-controls layout-grid">
+                    <div class="control">
+                      <label class="control-label" for="appearance-bg-opacity">{{
+                        'settings.opacity' | translate
+                      }}</label>
+                      <output class="control-value ltr-num" for="appearance-bg-opacity"
+                        >{{ appearance.backgroundOpacity() }}%</output
+                      >
+                      <input
+                        id="appearance-bg-opacity"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        [value]="appearance.backgroundOpacity()"
+                        (input)="setBackgroundOpacity($event)"
+                        data-testid="appearance-background-opacity"
+                      />
+                    </div>
+
+                    @if (appearance.backgroundType() !== 'color') {
+                      <div class="control">
+                        <label class="control-label" for="appearance-bg-size">{{
+                          'settings.size' | translate
+                        }}</label>
+                        <select
+                          id="appearance-bg-size"
+                          (change)="onSizeModeChange($event)"
+                          data-testid="appearance-background-size"
+                        >
+                          @for (size of backgroundSizes; track size) {
+                            <option [value]="size" [selected]="sizeMode() === size">
+                              {{ 'settings.bg_size_' + size | translate }}
+                            </option>
+                          }
+                          <option value="custom" [selected]="sizeMode() === 'custom'">
+                            {{ 'settings.bg_size_custom' | translate }}
+                          </option>
+                        </select>
+                        @if (sizeMode() === 'custom') {
+                          <input
+                            class="text-input ltr-num"
+                            type="text"
+                            dir="ltr"
+                            [value]="customSize()"
+                            (input)="onCustomSizeInput($event)"
+                            [attr.aria-invalid]="customSizeInvalid()"
+                            aria-describedby="appearance-size-help"
+                            data-testid="appearance-custom-size"
+                          />
+                          <small
+                            id="appearance-size-help"
+                            [class.field-error]="customSizeInvalid()"
+                            [class.muted]="!customSizeInvalid()"
+                          >
+                            {{
+                              (customSizeInvalid()
+                                ? 'settings.custom_size_invalid'
+                                : 'settings.custom_size_hint'
+                              ) | translate
+                            }}
+                          </small>
+                        }
+                      </div>
+
+                      <div class="control">
+                        <label class="control-label" for="appearance-bg-position">{{
+                          'settings.position' | translate
+                        }}</label>
+                        <select
+                          id="appearance-bg-position"
+                          (change)="onPositionModeChange($event)"
+                          data-testid="appearance-background-position"
+                        >
+                          @for (position of backgroundPositions; track position) {
+                            <option [value]="position" [selected]="positionMode() === position">
+                              {{ positionKey(position) | translate }}
+                            </option>
+                          }
+                          <option value="custom" [selected]="positionMode() === 'custom'">
+                            {{ 'settings.bg_pos_custom' | translate }}
+                          </option>
+                        </select>
+                        @if (positionMode() === 'custom') {
+                          <div class="control-pair">
+                            <input
+                              class="text-input ltr-num"
+                              type="text"
+                              dir="ltr"
+                              [value]="customPositionX() ?? ''"
+                              (input)="onCustomPositionInput('x', $event)"
+                              [attr.aria-label]="'settings.custom_pos_x' | translate"
+                              [attr.aria-invalid]="customPositionInvalid()"
+                              aria-describedby="appearance-position-help"
+                              data-testid="appearance-custom-pos-x"
+                            />
+                            <input
+                              class="text-input ltr-num"
+                              type="text"
+                              dir="ltr"
+                              [value]="customPositionY() ?? ''"
+                              (input)="onCustomPositionInput('y', $event)"
+                              [attr.aria-label]="'settings.custom_pos_y' | translate"
+                              [attr.aria-invalid]="customPositionInvalid()"
+                              aria-describedby="appearance-position-help"
+                              data-testid="appearance-custom-pos-y"
+                            />
+                          </div>
+                          <small
+                            id="appearance-position-help"
+                            [class.field-error]="customPositionInvalid()"
+                            [class.muted]="!customPositionInvalid()"
+                          >
+                            {{
+                              (customPositionInvalid()
+                                ? 'settings.custom_pos_invalid'
+                                : 'settings.custom_pos_hint'
+                              ) | translate
+                            }}
+                          </small>
+                        }
+                      </div>
+
+                      <div class="control">
+                        <label class="control-label" for="appearance-bg-repeat">{{
+                          'settings.repeat' | translate
+                        }}</label>
+                        <select
+                          id="appearance-bg-repeat"
+                          (change)="setBackgroundRepeat($event)"
+                          data-testid="appearance-background-repeat"
+                        >
+                          @for (repeat of backgroundRepeats; track repeat) {
+                            <option
+                              [value]="repeat"
+                              [selected]="repeat === appearance.backgroundRepeat()"
+                            >
+                              {{ optionKey('repeat', repeat) | translate }}
+                            </option>
+                          }
+                        </select>
+                      </div>
+
+                      <div class="control">
+                        <label class="control-label" for="appearance-bg-attachment">{{
+                          'settings.attachment' | translate
+                        }}</label>
+                        <select
+                          id="appearance-bg-attachment"
+                          (change)="setBackgroundAttachment($event)"
+                          data-testid="appearance-background-attachment"
+                        >
+                          @for (attachment of backgroundAttachments; track attachment) {
+                            <option
+                              [value]="attachment"
+                              [selected]="attachment === appearance.backgroundAttachment()"
+                            >
+                              {{ optionKey('attachment', attachment) | translate }}
+                            </option>
+                          }
+                        </select>
+                      </div>
                     }
-                  </select>
+
+                    <div class="control">
+                      <label class="control-label" for="appearance-bg-blend">{{
+                        'settings.blend_mode' | translate
+                      }}</label>
+                      <select
+                        id="appearance-bg-blend"
+                        (change)="setBackgroundBlendMode($event)"
+                        data-testid="appearance-background-blend"
+                      >
+                        @for (mode of backgroundBlendModes; track mode) {
+                          <option
+                            [value]="mode"
+                            [selected]="mode === appearance.backgroundBlendMode()"
+                          >
+                            {{ optionKey('blend', mode) | translate }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="card stack anim-rise" style="--i: 3">
-          <h2>{{ 'settings.pattern_overlay' | translate }}</h2>
-
-          <label class="check">
-            <input
-              type="checkbox"
-              [checked]="appearance.patternEnabled()"
-              (change)="setPatternEnabled($event)"
-              data-testid="appearance-pattern-enabled"
-            />
-            <span>
-              {{ 'settings.pattern_enabled' | translate }}
-              <small>{{ 'settings.pattern_hint' | translate }}</small>
-            </span>
-          </label>
-
-          <div class="appearance-item">
-            <div class="preview pattern" [class.default]="!appearance.patternUrl()">
-              <div
-                class="preview-art pattern-art"
-                aria-hidden="true"
-                [style]="appearance.patternLayerStyle()"
-              ></div>
-              @if (!appearance.patternUrl()) {
-                <span class="preview-tag">{{ 'settings.default_pattern' | translate }}</span>
               }
             </div>
-            <div class="appearance-body">
-              <strong>{{ 'settings.pattern_image' | translate }}</strong>
-              <small class="muted">{{ 'settings.pattern_hint' | translate }}</small>
-              <div class="appearance-actions">
-                <label class="btn btn-ghost upload-btn" [class.disabled]="busy() !== null">
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    [disabled]="busy() !== null"
-                    (change)="onPick('pattern', $event)"
-                    data-testid="appearance-pattern-input"
-                  />
-                  <span>{{
-                    (appearance.patternUrl() ? 'settings.replace_image' : 'settings.choose_image')
-                      | translate
-                  }}</span>
-                </label>
-                @if (appearance.patternUrl()) {
+
+            <div class="card stack anim-rise" style="--i: 3">
+              <h2>{{ 'settings.layers_section' | translate }}</h2>
+              <p class="muted">{{ 'settings.layers_hint' | translate }}</p>
+
+              <div class="layer" [class.open]="openLayer() === 'pattern'">
+                <div class="layer-head">
                   <button
                     type="button"
-                    class="btn btn-danger-ghost"
-                    [disabled]="busy() !== null"
-                    (click)="remove('pattern')"
-                    data-testid="appearance-pattern-remove"
+                    class="layer-toggle"
+                    [attr.aria-expanded]="openLayer() === 'pattern'"
+                    aria-controls="layer-body-pattern"
+                    (click)="toggleLayer('pattern')"
+                    data-testid="appearance-layer-pattern"
                   >
-                    {{
-                      (armedRemove() === 'pattern' ? 'settings.remove_confirm' : 'settings.remove')
-                        | translate
-                    }}
+                    <span class="layer-ico" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                      </svg>
+                    </span>
+                    <span class="layer-titles">
+                      <span class="layer-name">{{ 'settings.pattern_overlay' | translate }}</span>
+                      <span class="layer-sum" dir="ltr">
+                        @if (appearance.patternEnabled()) {
+                          {{ appearance.patternOpacity() }}% · {{ appearance.patternSize() }}px
+                        } @else {
+                          {{ 'settings.layer_off' | translate }}
+                        }
+                      </span>
+                    </span>
+                    <svg
+                      class="layer-chev"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                  <label class="layer-switch">
+                    <input
+                      type="checkbox"
+                      [checked]="appearance.patternEnabled()"
+                      (change)="setPatternEnabled($event)"
+                      [attr.aria-label]="'settings.pattern_enabled' | translate"
+                      data-testid="appearance-pattern-enabled"
+                    />
+                    <i aria-hidden="true"></i>
+                  </label>
+                </div>
+                <div
+                  class="layer-body"
+                  id="layer-body-pattern"
+                  [hidden]="openLayer() !== 'pattern'"
+                >
+                  <div class="appearance-item">
+                    <div class="preview pattern" [class.default]="!appearance.patternUrl()">
+                      <div
+                        class="preview-art pattern-art"
+                        aria-hidden="true"
+                        [style]="appearance.patternLayerStyle()"
+                      ></div>
+                      @if (!appearance.patternUrl()) {
+                        <span class="preview-tag">{{
+                          'settings.default_pattern' | translate
+                        }}</span>
+                      }
+                    </div>
+                    <div class="appearance-body">
+                      <strong>{{ 'settings.pattern_image' | translate }}</strong>
+                      <small class="muted">{{ 'settings.pattern_hint' | translate }}</small>
+                      <div class="appearance-actions">
+                        <label class="btn btn-ghost upload-btn" [class.disabled]="busy() !== null">
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            [disabled]="busy() !== null"
+                            (change)="onPick('pattern', $event)"
+                            data-testid="appearance-pattern-input"
+                          />
+                          <span>{{
+                            (appearance.patternUrl()
+                              ? 'settings.replace_image'
+                              : 'settings.choose_image'
+                            ) | translate
+                          }}</span>
+                        </label>
+                        @if (appearance.patternUrl()) {
+                          <button
+                            type="button"
+                            class="btn btn-danger-ghost"
+                            [disabled]="busy() !== null"
+                            (click)="remove('pattern')"
+                            data-testid="appearance-pattern-remove"
+                          >
+                            {{
+                              (armedRemove() === 'pattern'
+                                ? 'settings.remove_confirm'
+                                : 'settings.remove'
+                              ) | translate
+                            }}
+                          </button>
+                        }
+                        @if (busy() === 'pattern') {
+                          <span class="status" role="status">{{
+                            'settings.uploading' | translate
+                          }}</span>
+                        } @else if (saved() === 'pattern') {
+                          <span class="status ok" role="status">{{
+                            'settings.saved' | translate
+                          }}</span>
+                        }
+                      </div>
+
+                      <div class="appearance-controls">
+                        <div class="control">
+                          <label class="control-label" for="appearance-pattern-opacity">{{
+                            'settings.opacity' | translate
+                          }}</label>
+                          <output class="control-value ltr-num" for="appearance-pattern-opacity"
+                            >{{ appearance.patternOpacity() }}%</output
+                          >
+                          <input
+                            id="appearance-pattern-opacity"
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="1"
+                            [value]="appearance.patternOpacity()"
+                            (input)="setPatternOpacity($event)"
+                            data-testid="appearance-pattern-opacity"
+                          />
+                        </div>
+                        <div class="control">
+                          <label class="control-label" for="appearance-pattern-size">{{
+                            'settings.pattern_size' | translate
+                          }}</label>
+                          <output class="control-value ltr-num" for="appearance-pattern-size"
+                            >{{ appearance.patternSize() }}px</output
+                          >
+                          <input
+                            id="appearance-pattern-size"
+                            type="range"
+                            min="32"
+                            max="800"
+                            step="1"
+                            [value]="appearance.patternSize()"
+                            (input)="setPatternSize($event)"
+                            data-testid="appearance-pattern-size"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pattern-tint">
+                    <label class="check">
+                      <input
+                        type="checkbox"
+                        [checked]="appearance.patternTint() !== null"
+                        (change)="setPatternTintEnabled($event)"
+                        data-testid="appearance-pattern-tint-enabled"
+                      />
+                      <span>
+                        {{ 'settings.pattern_tint' | translate }}
+                        <small>{{ 'settings.pattern_tint_hint' | translate }}</small>
+                      </span>
+                    </label>
+                    @if (appearance.patternTint() !== null) {
+                      <div class="control color-control">
+                        <label class="control-label" for="appearance-pattern-tint">{{
+                          'settings.pattern_tint_color' | translate
+                        }}</label>
+                        <input
+                          id="appearance-pattern-tint"
+                          type="color"
+                          [value]="appearance.patternTint()"
+                          (input)="setPatternTint($event)"
+                          data-testid="appearance-pattern-tint"
+                        />
+                        <output class="control-value ltr-num">{{
+                          appearance.patternTint()
+                        }}</output>
+                      </div>
+                    }
+                    <label class="check">
+                      <input
+                        type="checkbox"
+                        [checked]="appearance.patternInvert()"
+                        [disabled]="appearance.patternTint() !== null"
+                        (change)="setPatternInvert($event)"
+                        data-testid="appearance-pattern-invert"
+                      />
+                      <span>{{ 'settings.pattern_invert' | translate }}</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="layer" [class.open]="openLayer() === 'glass'">
+                <div class="layer-head">
+                  <button
+                    type="button"
+                    class="layer-toggle"
+                    [attr.aria-expanded]="openLayer() === 'glass'"
+                    aria-controls="layer-body-glass"
+                    (click)="toggleLayer('glass')"
+                    data-testid="appearance-layer-glass"
+                  >
+                    <span class="layer-ico" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 3s6 6.6 6 11a6 6 0 0 1-12 0c0-4.4 6-11 6-11z" />
+                      </svg>
+                    </span>
+                    <span class="layer-titles">
+                      <span class="layer-name">{{ 'settings.glass_section' | translate }}</span>
+                      <span class="layer-sum" dir="ltr"
+                        >{{ appearance.backdropBlur() }}px · {{ appearance.glassOpacity() }}%</span
+                      >
+                    </span>
+                    <svg
+                      class="layer-chev"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="layer-body" id="layer-body-glass" [hidden]="openLayer() !== 'glass'">
+                  <p class="muted">{{ 'settings.glass_hint' | translate }}</p>
+
+                  <div class="appearance-controls">
+                    <div class="control">
+                      <label class="control-label" for="appearance-glass-blur">{{
+                        'settings.backdrop_blur' | translate
+                      }}</label>
+                      <output class="control-value ltr-num" for="appearance-glass-blur"
+                        >{{ appearance.backdropBlur() }}px</output
+                      >
+                      <input
+                        id="appearance-glass-blur"
+                        type="range"
+                        min="0"
+                        max="40"
+                        step="1"
+                        [value]="appearance.backdropBlur()"
+                        (input)="setBackdropBlur($event)"
+                        data-testid="appearance-glass-blur"
+                      />
+                    </div>
+                    <div class="control">
+                      <label class="control-label" for="appearance-glass-tint">{{
+                        'settings.glass_tint' | translate
+                      }}</label>
+                      <input
+                        id="appearance-glass-tint"
+                        type="color"
+                        [value]="appearance.glassTint()"
+                        (input)="setGlassTint($event)"
+                        data-testid="appearance-glass-tint"
+                      />
+                      <output class="control-value ltr-num">{{ appearance.glassTint() }}</output>
+                    </div>
+                    <div class="control">
+                      <label class="control-label" for="appearance-glass-opacity">{{
+                        'settings.glass_opacity' | translate
+                      }}</label>
+                      <output class="control-value ltr-num" for="appearance-glass-opacity"
+                        >{{ appearance.glassOpacity() }}%</output
+                      >
+                      <input
+                        id="appearance-glass-opacity"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        [value]="appearance.glassOpacity()"
+                        (input)="setGlassOpacity($event)"
+                        data-testid="appearance-glass-opacity"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="layer" [class.open]="openLayer() === 'scrim'">
+                <div class="layer-head">
+                  <button
+                    type="button"
+                    class="layer-toggle"
+                    [attr.aria-expanded]="openLayer() === 'scrim'"
+                    aria-controls="layer-body-scrim"
+                    (click)="toggleLayer('scrim')"
+                    data-testid="appearance-layer-scrim"
+                  >
+                    <span class="layer-ico" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="5" width="16" height="14" rx="2" />
+                        <path d="M4 14h16" />
+                      </svg>
+                    </span>
+                    <span class="layer-titles">
+                      <span class="layer-name">{{ 'settings.scrim_section' | translate }}</span>
+                      <span class="layer-sum ltr-num">
+                        @if (appearance.scrimEnabled()) {
+                          {{ appearance.scrimOpacity() }}%
+                        } @else {
+                          {{ 'settings.layer_off' | translate }}
+                        }
+                      </span>
+                    </span>
+                    <svg
+                      class="layer-chev"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                  <label class="layer-switch">
+                    <input
+                      type="checkbox"
+                      [checked]="appearance.scrimEnabled()"
+                      (change)="setScrimEnabled($event)"
+                      [attr.aria-label]="'settings.scrim_enabled' | translate"
+                      data-testid="appearance-scrim-enabled"
+                    />
+                    <i aria-hidden="true"></i>
+                  </label>
+                </div>
+                <div class="layer-body" id="layer-body-scrim" [hidden]="openLayer() !== 'scrim'">
+                  <p class="muted">{{ 'settings.scrim_hint' | translate }}</p>
+
+                  <label class="check">
+                    <input
+                      type="checkbox"
+                      [checked]="appearance.scrimColor() === null"
+                      [disabled]="!appearance.scrimEnabled()"
+                      (change)="setScrimThemeColor($event)"
+                      data-testid="appearance-scrim-theme-color"
+                    />
+                    <span>
+                      {{ 'settings.scrim_theme_color' | translate }}
+                      <small>{{ 'settings.scrim_theme_color_hint' | translate }}</small>
+                    </span>
+                  </label>
+
+                  <div class="appearance-controls">
+                    @if (appearance.scrimColor() !== null) {
+                      <div class="control">
+                        <label class="control-label" for="appearance-scrim-color">{{
+                          'settings.scrim_color' | translate
+                        }}</label>
+                        <input
+                          id="appearance-scrim-color"
+                          type="color"
+                          [value]="appearance.scrimColor()"
+                          [disabled]="!appearance.scrimEnabled()"
+                          (input)="setScrimColor($event)"
+                          data-testid="appearance-scrim-color"
+                        />
+                        <output class="control-value ltr-num">{{ appearance.scrimColor() }}</output>
+                      </div>
+                    }
+                    <div class="control">
+                      <label class="control-label" for="appearance-scrim-opacity">{{
+                        'settings.scrim_opacity' | translate
+                      }}</label>
+                      <output class="control-value ltr-num" for="appearance-scrim-opacity"
+                        >{{ appearance.scrimOpacity() }}%</output
+                      >
+                      <input
+                        id="appearance-scrim-opacity"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        [value]="appearance.scrimOpacity()"
+                        [disabled]="!appearance.scrimEnabled()"
+                        (input)="setScrimOpacity($event)"
+                        data-testid="appearance-scrim-opacity"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="layer" [class.open]="openLayer() === 'orbs'">
+                <div class="layer-head">
+                  <button
+                    type="button"
+                    class="layer-toggle"
+                    [attr.aria-expanded]="openLayer() === 'orbs'"
+                    aria-controls="layer-body-orbs"
+                    (click)="toggleLayer('orbs')"
+                    data-testid="appearance-layer-orbs"
+                  >
+                    <span class="layer-ico" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="9.5" r="4" />
+                        <circle cx="15" cy="14.5" r="4" />
+                      </svg>
+                    </span>
+                    <span class="layer-titles">
+                      <span class="layer-name">{{ 'settings.ambient_section' | translate }}</span>
+                      <span class="layer-sum ltr-num">
+                        @if (appearance.orbEnabled()) {
+                          {{ appearance.orbOpacity() }}%
+                        } @else {
+                          {{ 'settings.layer_off' | translate }}
+                        }
+                      </span>
+                    </span>
+                    <svg
+                      class="layer-chev"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+                  <label class="layer-switch">
+                    <input
+                      type="checkbox"
+                      [checked]="appearance.orbEnabled()"
+                      (change)="setOrbEnabled($event)"
+                      [attr.aria-label]="'settings.ambient_enabled' | translate"
+                      data-testid="appearance-orb-enabled"
+                    />
+                    <i aria-hidden="true"></i>
+                  </label>
+                </div>
+                <div class="layer-body" id="layer-body-orbs" [hidden]="openLayer() !== 'orbs'">
+                  <p class="muted">{{ 'settings.ambient_hint' | translate }}</p>
+
+                  <div class="appearance-controls">
+                    <div class="control">
+                      <label class="control-label" for="appearance-orb-primary">{{
+                        'settings.ambient_primary' | translate
+                      }}</label>
+                      <input
+                        id="appearance-orb-primary"
+                        type="color"
+                        [value]="appearance.orbPrimary()"
+                        [disabled]="!appearance.orbEnabled()"
+                        (input)="setOrbPrimary($event)"
+                        data-testid="appearance-orb-primary"
+                      />
+                      <output class="control-value ltr-num">{{ appearance.orbPrimary() }}</output>
+                    </div>
+                    <div class="control">
+                      <label class="control-label" for="appearance-orb-secondary">{{
+                        'settings.ambient_secondary' | translate
+                      }}</label>
+                      <input
+                        id="appearance-orb-secondary"
+                        type="color"
+                        [value]="appearance.orbSecondary()"
+                        [disabled]="!appearance.orbEnabled()"
+                        (input)="setOrbSecondary($event)"
+                        data-testid="appearance-orb-secondary"
+                      />
+                      <output class="control-value ltr-num">{{ appearance.orbSecondary() }}</output>
+                    </div>
+                    <div class="control">
+                      <label class="control-label" for="appearance-orb-opacity">{{
+                        'settings.ambient_intensity' | translate
+                      }}</label>
+                      <output class="control-value ltr-num" for="appearance-orb-opacity"
+                        >{{ appearance.orbOpacity() }}%</output
+                      >
+                      <input
+                        id="appearance-orb-opacity"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        [value]="appearance.orbOpacity()"
+                        [disabled]="!appearance.orbEnabled()"
+                        (input)="setOrbOpacity($event)"
+                        data-testid="appearance-orb-opacity"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <details class="advanced anim-rise" style="--i: 4">
+              <summary>{{ 'settings.advanced' | translate }}</summary>
+              <div class="advanced-body">
+                <div class="css-head">
+                  <p class="muted">{{ 'settings.css_hint' | translate }}</p>
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    (click)="copyCss()"
+                    [class.copied]="copiedCss()"
+                    data-testid="appearance-copy-css"
+                  >
+                    {{ (copiedCss() ? 'settings.copied' : 'settings.copy_css') | translate }}
+                  </button>
+                </div>
+                <pre
+                  class="css-snippet ltr-num"
+                  dir="ltr"
+                  tabindex="0"
+                  data-testid="appearance-css"
+                  >{{ appearance.cssSnippet() }}</pre>
+              </div>
+            </details>
+
+            <small class="muted">{{ 'settings.controls_hint' | translate }}</small>
+            <small class="muted">{{ 'settings.image_help' | translate }}</small>
+            @if (error()) {
+              <p class="appearance-error" role="alert">{{ error()! | translate }}</p>
+            }
+
+            @if (appearance.dirty() || saving() || saved() === 'options') {
+              <div
+                class="appearance-savebar"
+                [class.ok]="!appearance.dirty() && !saving()"
+                data-testid="appearance-savebar"
+              >
+                @if (saving()) {
+                  <strong class="savebar-msg" role="status">{{
+                    'settings.saving' | translate
+                  }}</strong>
+                } @else if (!appearance.dirty() && saved() === 'options') {
+                  <strong class="savebar-msg" role="status">{{
+                    'settings.saved' | translate
+                  }}</strong>
+                } @else {
+                  <strong class="savebar-msg">{{ 'settings.unsaved' | translate }}</strong>
+                  <span class="savebar-spacer"></span>
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    [disabled]="saving()"
+                    (click)="discard()"
+                    data-testid="appearance-discard"
+                  >
+                    {{ 'settings.discard' | translate }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    [disabled]="saving() || busy() !== null"
+                    (click)="save()"
+                    data-testid="appearance-save"
+                  >
+                    {{ 'settings.save' | translate }}
                   </button>
                 }
-                @if (busy() === 'pattern') {
-                  <span class="status" role="status">{{ 'settings.uploading' | translate }}</span>
-                } @else if (saved() === 'pattern') {
-                  <span class="status ok" role="status">{{ 'settings.saved' | translate }}</span>
-                }
-              </div>
-
-              <div class="appearance-controls">
-                <div class="control">
-                  <label class="control-label" for="appearance-pattern-opacity">{{
-                    'settings.opacity' | translate
-                  }}</label>
-                  <output class="control-value ltr-num" for="appearance-pattern-opacity"
-                    >{{ appearance.patternOpacity() }}%</output
-                  >
-                  <input
-                    id="appearance-pattern-opacity"
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="1"
-                    [value]="appearance.patternOpacity()"
-                    (input)="setPatternOpacity($event)"
-                    data-testid="appearance-pattern-opacity"
-                  />
-                </div>
-                <div class="control">
-                  <label class="control-label" for="appearance-pattern-size">{{
-                    'settings.pattern_size' | translate
-                  }}</label>
-                  <output class="control-value ltr-num" for="appearance-pattern-size"
-                    >{{ appearance.patternSize() }}px</output
-                  >
-                  <input
-                    id="appearance-pattern-size"
-                    type="range"
-                    min="32"
-                    max="800"
-                    step="1"
-                    [value]="appearance.patternSize()"
-                    (input)="setPatternSize($event)"
-                    data-testid="appearance-pattern-size"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="pattern-tint">
-            <label class="check">
-              <input
-                type="checkbox"
-                [checked]="appearance.patternTint() !== null"
-                (change)="setPatternTintEnabled($event)"
-                data-testid="appearance-pattern-tint-enabled"
-              />
-              <span>
-                {{ 'settings.pattern_tint' | translate }}
-                <small>{{ 'settings.pattern_tint_hint' | translate }}</small>
-              </span>
-            </label>
-            @if (appearance.patternTint() !== null) {
-              <div class="control color-control">
-                <label class="control-label" for="appearance-pattern-tint">{{
-                  'settings.pattern_tint_color' | translate
-                }}</label>
-                <input
-                  id="appearance-pattern-tint"
-                  type="color"
-                  [value]="appearance.patternTint()"
-                  (input)="setPatternTint($event)"
-                  data-testid="appearance-pattern-tint"
-                />
-                <output class="control-value ltr-num">{{ appearance.patternTint() }}</output>
               </div>
             }
-            <label class="check">
-              <input
-                type="checkbox"
-                [checked]="appearance.patternInvert()"
-                [disabled]="appearance.patternTint() !== null"
-                (change)="setPatternInvert($event)"
-                data-testid="appearance-pattern-invert"
-              />
-              <span>{{ 'settings.pattern_invert' | translate }}</span>
-            </label>
           </div>
-        </div>
+          <div class="pv-col">
+            <div class="card stack anim-rise" style="--i: 5">
+              <h2>{{ 'settings.preview_section' | translate }}</h2>
+              <p class="muted">{{ 'settings.preview_hint' | translate }}</p>
 
-        <div class="card stack anim-rise" style="--i: 4">
-          <h2>{{ 'settings.glass_section' | translate }}</h2>
-          <p class="muted">{{ 'settings.glass_hint' | translate }}</p>
-
-          <div class="appearance-controls">
-            <div class="control">
-              <label class="control-label" for="appearance-glass-blur">{{
-                'settings.backdrop_blur' | translate
-              }}</label>
-              <output class="control-value ltr-num" for="appearance-glass-blur"
-                >{{ appearance.backdropBlur() }}px</output
-              >
-              <input
-                id="appearance-glass-blur"
-                type="range"
-                min="0"
-                max="40"
-                step="1"
-                [value]="appearance.backdropBlur()"
-                (input)="setBackdropBlur($event)"
-                data-testid="appearance-glass-blur"
-              />
-            </div>
-            <div class="control">
-              <label class="control-label" for="appearance-glass-tint">{{
-                'settings.glass_tint' | translate
-              }}</label>
-              <input
-                id="appearance-glass-tint"
-                type="color"
-                [value]="appearance.glassTint()"
-                (input)="setGlassTint($event)"
-                data-testid="appearance-glass-tint"
-              />
-              <output class="control-value ltr-num">{{ appearance.glassTint() }}</output>
-            </div>
-            <div class="control">
-              <label class="control-label" for="appearance-glass-opacity">{{
-                'settings.glass_opacity' | translate
-              }}</label>
-              <output class="control-value ltr-num" for="appearance-glass-opacity"
-                >{{ appearance.glassOpacity() }}%</output
-              >
-              <input
-                id="appearance-glass-opacity"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                [value]="appearance.glassOpacity()"
-                (input)="setGlassOpacity($event)"
-                data-testid="appearance-glass-opacity"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div class="card stack anim-rise" style="--i: 5">
-          <h2>{{ 'settings.scrim_section' | translate }}</h2>
-          <p class="muted">{{ 'settings.scrim_hint' | translate }}</p>
-
-          <label class="check">
-            <input
-              type="checkbox"
-              [checked]="appearance.scrimEnabled()"
-              (change)="setScrimEnabled($event)"
-              data-testid="appearance-scrim-enabled"
-            />
-            <span>{{ 'settings.scrim_enabled' | translate }}</span>
-          </label>
-
-          <label class="check">
-            <input
-              type="checkbox"
-              [checked]="appearance.scrimColor() === null"
-              [disabled]="!appearance.scrimEnabled()"
-              (change)="setScrimThemeColor($event)"
-              data-testid="appearance-scrim-theme-color"
-            />
-            <span>
-              {{ 'settings.scrim_theme_color' | translate }}
-              <small>{{ 'settings.scrim_theme_color_hint' | translate }}</small>
-            </span>
-          </label>
-
-          <div class="appearance-controls">
-            @if (appearance.scrimColor() !== null) {
-              <div class="control">
-                <label class="control-label" for="appearance-scrim-color">{{
-                  'settings.scrim_color' | translate
-                }}</label>
-                <input
-                  id="appearance-scrim-color"
-                  type="color"
-                  [value]="appearance.scrimColor()"
-                  [disabled]="!appearance.scrimEnabled()"
-                  (input)="setScrimColor($event)"
-                  data-testid="appearance-scrim-color"
-                />
-                <output class="control-value ltr-num">{{ appearance.scrimColor() }}</output>
-              </div>
-            }
-            <div class="control">
-              <label class="control-label" for="appearance-scrim-opacity">{{
-                'settings.scrim_opacity' | translate
-              }}</label>
-              <output class="control-value ltr-num" for="appearance-scrim-opacity"
-                >{{ appearance.scrimOpacity() }}%</output
-              >
-              <input
-                id="appearance-scrim-opacity"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                [value]="appearance.scrimOpacity()"
-                [disabled]="!appearance.scrimEnabled()"
-                (input)="setScrimOpacity($event)"
-                data-testid="appearance-scrim-opacity"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div class="card stack anim-rise" style="--i: 6">
-          <h2>{{ 'settings.ambient_section' | translate }}</h2>
-          <p class="muted">{{ 'settings.ambient_hint' | translate }}</p>
-
-          <label class="check">
-            <input
-              type="checkbox"
-              [checked]="appearance.orbEnabled()"
-              (change)="setOrbEnabled($event)"
-              data-testid="appearance-orb-enabled"
-            />
-            <span>{{ 'settings.ambient_enabled' | translate }}</span>
-          </label>
-
-          <div class="appearance-controls">
-            <div class="control">
-              <label class="control-label" for="appearance-orb-primary">{{
-                'settings.ambient_primary' | translate
-              }}</label>
-              <input
-                id="appearance-orb-primary"
-                type="color"
-                [value]="appearance.orbPrimary()"
-                [disabled]="!appearance.orbEnabled()"
-                (input)="setOrbPrimary($event)"
-                data-testid="appearance-orb-primary"
-              />
-              <output class="control-value ltr-num">{{ appearance.orbPrimary() }}</output>
-            </div>
-            <div class="control">
-              <label class="control-label" for="appearance-orb-secondary">{{
-                'settings.ambient_secondary' | translate
-              }}</label>
-              <input
-                id="appearance-orb-secondary"
-                type="color"
-                [value]="appearance.orbSecondary()"
-                [disabled]="!appearance.orbEnabled()"
-                (input)="setOrbSecondary($event)"
-                data-testid="appearance-orb-secondary"
-              />
-              <output class="control-value ltr-num">{{ appearance.orbSecondary() }}</output>
-            </div>
-            <div class="control">
-              <label class="control-label" for="appearance-orb-opacity">{{
-                'settings.ambient_intensity' | translate
-              }}</label>
-              <output class="control-value ltr-num" for="appearance-orb-opacity"
-                >{{ appearance.orbOpacity() }}%</output
-              >
-              <input
-                id="appearance-orb-opacity"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                [value]="appearance.orbOpacity()"
-                [disabled]="!appearance.orbEnabled()"
-                (input)="setOrbOpacity($event)"
-                data-testid="appearance-orb-opacity"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div class="card stack anim-rise" style="--i: 7">
-          <h2>{{ 'settings.preview_section' | translate }}</h2>
-          <p class="muted">{{ 'settings.preview_hint' | translate }}</p>
-
-          <div class="preview-grid">
-            <figure class="device desktop">
-              <div class="device-screen">
-                <div class="p-scene" aria-hidden="true" [style]="appearance.sceneVars()">
-                  @if (appearance.hasBackground()) {
-                    <div class="p-bg" [style]="appearance.backgroundLayerStyle()"></div>
-                    @if (appearance.scrimEnabled()) {
-                      <div class="p-scrim"></div>
-                    }
-                  }
-                  @if (appearance.orbEnabled()) {
-                    <div class="p-orb p-orb-a"></div>
-                    <div class="p-orb p-orb-b"></div>
-                  }
-                  @if (appearance.backdropBlur() > 0 || appearance.glassOpacity() > 0) {
-                    <div class="p-glass" [style]="appearance.glassLayerStyle()"></div>
-                  }
-                  @if (appearance.patternEnabled()) {
-                    <div
-                      class="p-pattern"
-                      [class.default]="!appearance.patternUrl()"
-                      [style]="appearance.patternLayerStyle()"
-                    ></div>
-                  }
-                </div>
-                <div class="p-ui">
-                  <span class="p-chip"></span>
-                  <strong>{{ 'app.title' | translate }}</strong>
-                  <div class="p-card">
-                    <b>{{ 'settings.preview_card_title' | translate }}</b>
-                    <span>{{ 'settings.preview_card_line' | translate }}</span>
+              <div class="preview-grid">
+                <figure class="device desktop">
+                  <div class="device-screen">
+                    <div class="p-scene" aria-hidden="true" [style]="appearance.sceneVars()">
+                      @if (appearance.hasBackground()) {
+                        <div class="p-bg" [style]="appearance.backgroundLayerStyle()"></div>
+                        @if (appearance.scrimEnabled()) {
+                          <div class="p-scrim"></div>
+                        }
+                      }
+                      @if (appearance.orbEnabled()) {
+                        <div class="p-orb p-orb-a"></div>
+                        <div class="p-orb p-orb-b"></div>
+                      }
+                      @if (appearance.backdropBlur() > 0 || appearance.glassOpacity() > 0) {
+                        <div class="p-glass" [style]="appearance.glassLayerStyle()"></div>
+                      }
+                      @if (appearance.patternEnabled()) {
+                        <div
+                          class="p-pattern"
+                          [class.default]="!appearance.patternUrl()"
+                          [style]="appearance.patternLayerStyle()"
+                        ></div>
+                      }
+                    </div>
+                    <div class="p-ui">
+                      <span class="p-chip"></span>
+                      <strong>{{ 'app.title' | translate }}</strong>
+                      <div class="p-card">
+                        <b>{{ 'settings.preview_card_title' | translate }}</b>
+                        <span>{{ 'settings.preview_card_line' | translate }}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <figcaption>{{ 'settings.preview_desktop' | translate }}</figcaption>
-            </figure>
+                  <figcaption>{{ 'settings.preview_desktop' | translate }}</figcaption>
+                </figure>
 
-            <figure class="device phone">
-              <div class="device-screen">
-                <div class="p-scene" aria-hidden="true" [style]="appearance.sceneVars()">
-                  @if (appearance.hasBackground()) {
-                    <div class="p-bg" [style]="appearance.backgroundLayerStyle()"></div>
-                    @if (appearance.scrimEnabled()) {
-                      <div class="p-scrim"></div>
-                    }
-                  }
-                  @if (appearance.orbEnabled()) {
-                    <div class="p-orb p-orb-a"></div>
-                    <div class="p-orb p-orb-b"></div>
-                  }
-                  @if (appearance.backdropBlur() > 0 || appearance.glassOpacity() > 0) {
-                    <div class="p-glass" [style]="appearance.glassLayerStyle()"></div>
-                  }
-                  @if (appearance.patternEnabled()) {
-                    <div
-                      class="p-pattern"
-                      [class.default]="!appearance.patternUrl()"
-                      [style]="appearance.patternLayerStyle()"
-                    ></div>
-                  }
-                </div>
-                <div class="p-ui">
-                  <span class="p-chip"></span>
-                  <strong>{{ 'app.title' | translate }}</strong>
-                  <div class="p-card">
-                    <b>{{ 'settings.preview_card_title' | translate }}</b>
-                    <span>{{ 'settings.preview_card_line' | translate }}</span>
+                <figure class="device phone">
+                  <div class="device-screen">
+                    <div class="p-scene" aria-hidden="true" [style]="appearance.sceneVars()">
+                      @if (appearance.hasBackground()) {
+                        <div class="p-bg" [style]="appearance.backgroundLayerStyle()"></div>
+                        @if (appearance.scrimEnabled()) {
+                          <div class="p-scrim"></div>
+                        }
+                      }
+                      @if (appearance.orbEnabled()) {
+                        <div class="p-orb p-orb-a"></div>
+                        <div class="p-orb p-orb-b"></div>
+                      }
+                      @if (appearance.backdropBlur() > 0 || appearance.glassOpacity() > 0) {
+                        <div class="p-glass" [style]="appearance.glassLayerStyle()"></div>
+                      }
+                      @if (appearance.patternEnabled()) {
+                        <div
+                          class="p-pattern"
+                          [class.default]="!appearance.patternUrl()"
+                          [style]="appearance.patternLayerStyle()"
+                        ></div>
+                      }
+                    </div>
+                    <div class="p-ui">
+                      <span class="p-chip"></span>
+                      <strong>{{ 'app.title' | translate }}</strong>
+                      <div class="p-card">
+                        <b>{{ 'settings.preview_card_title' | translate }}</b>
+                        <span>{{ 'settings.preview_card_line' | translate }}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                  <figcaption>{{ 'settings.preview_phone' | translate }}</figcaption>
+                </figure>
               </div>
-              <figcaption>{{ 'settings.preview_phone' | translate }}</figcaption>
-            </figure>
+            </div>
           </div>
         </div>
-
-        <div class="card stack anim-rise" style="--i: 8">
-          <div class="css-head">
-            <h2>{{ 'settings.css_section' | translate }}</h2>
-            <button
-              type="button"
-              class="btn btn-ghost"
-              (click)="copyCss()"
-              [class.copied]="copiedCss()"
-              data-testid="appearance-copy-css"
-            >
-              {{ (copiedCss() ? 'settings.copied' : 'settings.copy_css') | translate }}
-            </button>
-          </div>
-          <p class="muted">{{ 'settings.css_hint' | translate }}</p>
-          <pre class="css-snippet ltr-num" dir="ltr" tabindex="0" data-testid="appearance-css">{{
-            appearance.cssSnippet()
-          }}</pre>
-        </div>
-
-        <small class="muted">{{ 'settings.controls_hint' | translate }}</small>
-        <small class="muted">{{ 'settings.image_help' | translate }}</small>
-        @if (error()) {
-          <p class="appearance-error" role="alert">{{ error()! | translate }}</p>
-        }
-
-        @if (appearance.dirty() || saving() || saved() === 'options') {
-          <div
-            class="appearance-savebar"
-            [class.ok]="!appearance.dirty() && !saving()"
-            data-testid="appearance-savebar"
-          >
-            @if (saving()) {
-              <strong class="savebar-msg" role="status">{{ 'settings.saving' | translate }}</strong>
-            } @else if (!appearance.dirty() && saved() === 'options') {
-              <strong class="savebar-msg" role="status">{{ 'settings.saved' | translate }}</strong>
-            } @else {
-              <strong class="savebar-msg">{{ 'settings.unsaved' | translate }}</strong>
-              <span class="savebar-spacer"></span>
-              <button
-                type="button"
-                class="btn btn-ghost"
-                [disabled]="saving()"
-                (click)="discard()"
-                data-testid="appearance-discard"
-              >
-                {{ 'settings.discard' | translate }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                [disabled]="saving() || busy() !== null"
-                (click)="save()"
-                data-testid="appearance-save"
-              >
-                {{ 'settings.save' | translate }}
-              </button>
-            }
-          </div>
-        }
       } @else if (centersLoading()) {
         <div class="card stack anim-rise">
           <p class="status" role="status">{{ 'settings.center_loading' | translate }}</p>
