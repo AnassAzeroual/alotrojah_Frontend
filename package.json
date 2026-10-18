@@ -61,7 +61,7 @@
     "@angular/build": "^22.2.0",
     "@angular/cli": "^22.2.0",
     "@angular/compiler-cli": "^22.2.0",
-    "@hey-api/openapi-ts": "^0.97.0",
+    "@hey-api/openapi-ts": "^0.97.3",
     "@playwright/test": "^1.63.0",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^26.6.3",
