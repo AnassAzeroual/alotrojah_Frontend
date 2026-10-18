@@ -36,14 +36,23 @@ export const API_ERROR_CODES = [
   'ADMIN_LAST_ACTIVE',
 ] as const;
 
+export function apiErrorCode(err: unknown): string | null {
+  if (err instanceof HttpErrorResponse) {
+    const errors = (err.error as { errors?: Record<string, unknown> | null } | null)?.errors;
+    const raw = errors?.['code'];
+    const code = Array.isArray(raw) ? raw[0] : raw;
+    return typeof code === 'string' ? code : null;
+  }
+  return null;
+}
+
 export function apiErrorKey(err: unknown): string {
   if (err instanceof HttpErrorResponse) {
     const body = (err.error ?? {}) as { errors?: Record<string, unknown> | null };
     const errors = body.errors;
     if (errors && typeof errors === 'object') {
-      const raw = (errors as Record<string, unknown>)['code'];
-      const code = Array.isArray(raw) ? raw[0] : raw;
-      if (typeof code === 'string' && (API_ERROR_CODES as readonly string[]).includes(code)) {
+      const code = apiErrorCode(err);
+      if (code && (API_ERROR_CODES as readonly string[]).includes(code)) {
         return `apiErrors.${code}`;
       }
       const flat = Object.values(errors).flat(3);

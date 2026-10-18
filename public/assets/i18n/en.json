@@ -85,6 +85,7 @@
     "score": "Score",
     "of20": "/ 20",
     "error": "An unexpected error occurred",
+    "error_title": "Error",
     "active": "Active",
     "paused": "Paused",
     "graduated": "Graduated",

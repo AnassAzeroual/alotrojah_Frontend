@@ -4,7 +4,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { leaveController } from '../../core/guards/leave-controller';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
@@ -31,7 +30,6 @@ export class CentersListPage {
 
   private readonly tick = signal(0);
   readonly saving = signal(false);
-  readonly createErrorKey = signal<string | null>(null);
   readonly creating = signal(false);
   readonly createDraft = signal<CenterDraft>({ ...EMPTY_DRAFT });
 
@@ -66,7 +64,6 @@ export class CentersListPage {
     );
   }
   readonly editSaving = signal(false);
-  readonly editErrorKey = signal<string | null>(null);
 
   readonly centers = resource({
     params: () => ({ t: this.tick() }),
@@ -81,7 +78,6 @@ export class CentersListPage {
   startCreate(): void {
     this.editingId.set(null);
     this.createDraft.set({ ...EMPTY_DRAFT });
-    this.createErrorKey.set(null);
     this.creating.set(true);
   }
 
@@ -91,7 +87,6 @@ export class CentersListPage {
 
   cancelCreate(): void {
     this.creating.set(false);
-    this.createErrorKey.set(null);
   }
 
   saveCreate(): void {
@@ -99,7 +94,6 @@ export class CentersListPage {
     const name = d.name.trim();
     if (name === '' || name.length > 150 || this.saving()) return;
     this.saving.set(true);
-    this.createErrorKey.set(null);
     this.centersSvc
       .create({
         name,
@@ -115,9 +109,8 @@ export class CentersListPage {
           this.createDraft.set({ ...EMPTY_DRAFT });
           this.tick.update((n) => n + 1);
         },
-        error: (err: unknown) => {
+        error: () => {
           this.saving.set(false);
-          this.createErrorKey.set(apiErrorKey(err));
         },
       });
   }
@@ -142,7 +135,6 @@ export class CentersListPage {
       manager: c.manager_name ?? '',
     });
     this.editSeed.set({ ...this.draft() });
-    this.editErrorKey.set(null);
   }
 
   setDraft(field: keyof CenterDraft, value: string): void {
@@ -152,7 +144,6 @@ export class CentersListPage {
   cancelEdit(): void {
     this.editingId.set(null);
     this.editSeed.set(null);
-    this.editErrorKey.set(null);
   }
 
   saveEdit(id: number): void {
@@ -160,7 +151,6 @@ export class CentersListPage {
     const name = d.name.trim();
     if (name === '' || name.length > 150 || this.editSaving()) return;
     this.editSaving.set(true);
-    this.editErrorKey.set(null);
     this.centersSvc
       .update(id, {
         name,
@@ -176,9 +166,8 @@ export class CentersListPage {
           this.editSeed.set(null);
           this.tick.update((n) => n + 1);
         },
-        error: (err: unknown) => {
+        error: () => {
           this.editSaving.set(false);
-          this.editErrorKey.set(apiErrorKey(err));
         },
       });
   }

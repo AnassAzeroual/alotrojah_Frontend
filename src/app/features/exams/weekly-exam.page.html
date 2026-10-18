@@ -162,9 +162,6 @@
           {{ 'weeklyExam.saved' | translate: { count: savedCount() } }}
         </div>
       }
-      @if (errorKey()) {
-        <div class="banner danger">{{ errorKey()! | translate }}</div>
-      }
     }
   }
 </section>

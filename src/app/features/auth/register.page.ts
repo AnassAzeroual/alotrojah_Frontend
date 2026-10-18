@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { HttpErrorResponse } from '@angular/common/http';
 import {
   AbstractControl,
   FormControl,
@@ -37,8 +36,6 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   return password && confirm && password !== confirm ? { passwordMismatch: true } : null;
 }
 
-type RegisterErrorCode = 'email_taken' | 'in_waiting_room' | 'invalid';
-
 @Component({
   selector: 'app-register-page',
   standalone: true,
@@ -61,17 +58,9 @@ export class RegisterPage {
 
   readonly loading = signal(false);
   readonly submitted = signal(false);
-  readonly errorCode = signal<RegisterErrorCode | null>(null);
   readonly isTeacher = signal(false);
   readonly isStudent = signal(false);
   readonly today = new Date().toISOString().slice(0, 10);
-
-  readonly errorKey = computed(() => {
-    const code = this.errorCode();
-    if (code === 'email_taken') return 'auth.email_taken';
-    if (code === 'in_waiting_room') return 'auth.in_waiting_room';
-    return code === null ? null : 'auth.invalid';
-  });
 
   readonly roleOptions: DropdownOption[] = [
     { value: 'teacher', labelKey: 'role.teacher' },
@@ -148,7 +137,6 @@ export class RegisterPage {
   submit(): void {
     if (this.form.invalid || this.loading()) return;
     this.loading.set(true);
-    this.errorCode.set(null);
 
     const v = this.form.getRawValue();
     if (!v.role) return;
@@ -170,13 +158,9 @@ export class RegisterPage {
         this.loading.set(false);
         this.submitted.set(true);
       },
-      error: (err: HttpErrorResponse) => {
-        this.loading.set(false);
-        const code = (err.error as { errors?: Record<string, string[]> } | null)?.errors?.[
-          'email'
-        ]?.[0];
-        this.errorCode.set(code === 'email_taken' || code === 'in_waiting_room' ? code : 'invalid');
-      },
+      // API failures surface in the global error dialog (errorInterceptor);
+      // the email-taken / waiting-room tokens are translated there.
+      error: () => this.loading.set(false),
     });
   }
 }

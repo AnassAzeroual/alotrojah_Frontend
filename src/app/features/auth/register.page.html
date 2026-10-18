@@ -119,10 +119,6 @@
             <p class="field-error">{{ 'auth.password_mismatch' | translate }}</p>
           }
 
-          @if (errorKey()) {
-            <p class="auth-error">{{ errorKey() | translate }}</p>
-          }
-
           <button type="submit" class="auth-btn" [disabled]="form.invalid || loading()">
             @if (loading()) {
               <app-spinner />

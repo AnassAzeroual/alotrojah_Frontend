@@ -12,7 +12,6 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { UsersService } from '../../core/api/users.service';
 import { CentersService } from '../../core/api/centers.service';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import {
@@ -61,7 +60,6 @@ export class UsersListPage {
   readonly currentId = computed(() => this.auth.currentUser()?.id ?? null);
   readonly armingDeleteId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
-  readonly deleteErrorKey = signal<string | null>(null);
   readonly pendingReplace = signal<{
     id: number;
     name: string;
@@ -168,7 +166,6 @@ export class UsersListPage {
 
   armDelete(id: number): void {
     this.armingDeleteId.set(id);
-    this.deleteErrorKey.set(null);
   }
 
   disarmDelete(): void {
@@ -178,7 +175,6 @@ export class UsersListPage {
   confirmDelete(id: number): void {
     if (this.busyId() !== null) return;
     this.busyId.set(id);
-    this.deleteErrorKey.set(null);
     this.usersSvc.delete(id).subscribe({
       next: () => {
         this.busyId.set(null);
@@ -196,8 +192,6 @@ export class UsersListPage {
             name: (errors['teacher'] as { full_name?: string })?.full_name ?? row?.full_name ?? '',
             groups: (errors['groups'] as { id: number; name: string }[]) ?? [],
           });
-        } else {
-          this.deleteErrorKey.set(apiErrorKey(err));
         }
       },
     });

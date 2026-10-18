@@ -9,7 +9,6 @@ import {
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import { ThumnDisplayPipe } from '../../shared/ui/thumn-display/thumn-display.pipe';
@@ -149,23 +148,20 @@ export class LevelsPage {
 
   readonly armingReset = signal(false);
   readonly resetBusy = signal(false);
-  readonly resetErrorKey = signal<string | null>(null);
 
   resetScope(): void {
     const scope = this.activeScope();
     if (scope === null || this.resetBusy()) return;
     this.resetBusy.set(true);
-    this.resetErrorKey.set(null);
     this.levelsSvc.reset(scope).subscribe({
       next: () => {
         this.resetBusy.set(false);
         this.armingReset.set(false);
         this.tick.update((n) => n + 1);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.resetBusy.set(false);
         this.armingReset.set(false);
-        this.resetErrorKey.set(apiErrorKey(err));
       },
     });
   }
@@ -199,14 +195,12 @@ export class LevelsPage {
 
   readonly armingDeleteId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
-  readonly deleteErrorKey = signal<string | null>(null);
 
   setCenterScope(v: DropdownValue): void {
     this.centerScope.set(dropdownNumber(v));
     this.editingId.set(null);
     this.armingDeleteId.set(null);
     this.armingReset.set(false);
-    this.resetErrorKey.set(null);
     this.creating.set(false);
   }
 
@@ -384,9 +378,8 @@ export class LevelsPage {
           this.createDraft.set({ ...BLANK_DRAFT });
           this.tick.update((n) => n + 1);
         },
-        error: (err: unknown) => {
+        error: () => {
           this.createSaving.set(false);
-          this.createErrorKey.set(apiErrorKey(err));
         },
       });
   }
@@ -422,9 +415,8 @@ export class LevelsPage {
           this.editSeed.set(null);
           this.tick.update((n) => n + 1);
         },
-        error: (err: unknown) => {
+        error: () => {
           this.editSaving.set(false);
-          this.editErrorKey.set(apiErrorKey(err));
         },
       });
   }
@@ -432,7 +424,6 @@ export class LevelsPage {
   armDelete(id: number): void {
     this.editingId.set(null);
     this.armingDeleteId.set(id);
-    this.deleteErrorKey.set(null);
   }
 
   disarmDelete(): void {
@@ -442,17 +433,15 @@ export class LevelsPage {
   remove(id: number): void {
     if (this.busyId() !== null) return;
     this.busyId.set(id);
-    this.deleteErrorKey.set(null);
     this.levelsSvc.remove(id).subscribe({
       next: () => {
         this.busyId.set(null);
         this.armingDeleteId.set(null);
         this.tick.update((n) => n + 1);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.busyId.set(null);
         this.armingDeleteId.set(null);
-        this.deleteErrorKey.set(apiErrorKey(err));
       },
     });
   }

@@ -19,7 +19,6 @@ import {
   dropdownNumber,
 } from '../../shared/ui/dropdown/dropdown.component';
 import { StudentsService } from '../../core/api/students.service';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { ReferenceService } from '../../core/api/reference.service';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -382,10 +381,7 @@ export class StudentDetailPage {
           this.tick.update((n) => n + 1);
         }
       },
-      error: (err: unknown) => {
-        this.assignSaving.set(false);
-        this.assignFailed.set(apiErrorKey(err));
-      },
+      error: () => this.assignSaving.set(false),
     });
   }
 
@@ -417,10 +413,7 @@ export class StudentDetailPage {
         this.assignPicked.set(null);
         this.tick.update((n) => n + 1);
       },
-      error: (err: unknown) => {
-        this.assignSaving.set(false);
-        this.assignFailed.set(apiErrorKey(err));
-      },
+      error: () => this.assignSaving.set(false),
     });
   }
 }

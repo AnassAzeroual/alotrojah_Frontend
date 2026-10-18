@@ -17,7 +17,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { AnnouncementsService } from '../../core/api/announcements.service';
 import { leaveController } from '../../core/guards/leave-controller';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { DropdownComponent } from '../../shared/ui/dropdown/dropdown.component';
@@ -56,7 +55,6 @@ export class NewsPage {
     loader: () => firstValueFrom(this.news.list().pipe(map((p) => p.data))),
   });
 
-  readonly submitErrorKey = signal<string | null>(null);
 
   readonly editingId = signal<number | null>(null);
   readonly draftTitle = signal('');
@@ -73,7 +71,6 @@ export class NewsPage {
     return this.draftTitle() !== seed.title || this.draftBody() !== seed.body;
   }
   readonly editSaving = signal(false);
-  readonly editErrorKey = signal<string | null>(null);
 
   canEdit(authorId: number | undefined): boolean {
     const me = this.auth.currentUser();
@@ -90,7 +87,6 @@ export class NewsPage {
   cancelEdit(): void {
     this.editingId.set(null);
     this.editSeed.set(null);
-    this.editErrorKey.set(null);
   }
 
   saveEdit(id: number): void {
@@ -98,7 +94,6 @@ export class NewsPage {
     const body = this.draftBody().trim();
     if (title === '' || body === '' || this.editSaving()) return;
     this.editSaving.set(true);
-    this.editErrorKey.set(null);
     this.news.update(id, { title, body }).subscribe({
       next: () => {
         this.editSaving.set(false);
@@ -106,9 +101,8 @@ export class NewsPage {
         this.editSeed.set(null);
         this.tick.update((n) => n + 1);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.editSaving.set(false);
-        this.editErrorKey.set(apiErrorKey(err));
       },
     });
   }
@@ -166,7 +160,6 @@ export class NewsPage {
     // §D: only my_students posts must target a section.
     if (v.audience === 'my_students' && v.group_id === null) return;
     this.saving.set(true);
-    this.submitErrorKey.set(null);
     this.news
       .create({
         audience: v.audience,
@@ -180,9 +173,8 @@ export class NewsPage {
           this.form.reset({ audience: 'all', group_id: null, title: '', body: '' });
           this.tick.update((n) => n + 1);
         },
-        error: (err: unknown) => {
+        error: () => {
           this.saving.set(false);
-          this.submitErrorKey.set(apiErrorKey(err));
         },
       });
   }

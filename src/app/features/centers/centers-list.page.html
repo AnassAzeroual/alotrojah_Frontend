@@ -127,9 +127,6 @@
                       {{ 'common.cancel' | translate }}
                     </button>
                   </div>
-                  @if (createErrorKey()) {
-                    <div class="banner danger">{{ createErrorKey()! | translate }}</div>
-                  }
                 </form>
               </td>
             </tr>
@@ -239,9 +236,6 @@
                         {{ 'common.cancel' | translate }}
                       </button>
                     </div>
-                    @if (editErrorKey()) {
-                      <div class="banner danger">{{ editErrorKey()! | translate }}</div>
-                    }
                   </form>
                 </td>
               </tr>

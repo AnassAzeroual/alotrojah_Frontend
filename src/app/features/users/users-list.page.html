@@ -167,9 +167,6 @@
     </ng-template>
   </app-list-table>
 
-  @if (deleteErrorKey()) {
-    <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
-  }
 
   @if (pendingReplace(); as p) {
     <div class="modal-backdrop" (click)="pendingReplace.set(null)">

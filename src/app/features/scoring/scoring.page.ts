@@ -17,7 +17,6 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { ScoringService } from '../../core/api/scoring.service';
 import { CentersService } from '../../core/api/centers.service';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { leaveController } from '../../core/guards/leave-controller';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -109,13 +108,11 @@ export class ScoringPage {
 
   readonly armingReset = signal(false);
   readonly resetBusy = signal(false);
-  readonly resetErrorKey = signal<string | null>(null);
 
   resetScope(): void {
     const scope = this.activeScope();
     if (scope === null || this.resetBusy()) return;
     this.resetBusy.set(true);
-    this.resetErrorKey.set(null);
     this.scoring.reset(scope).subscribe({
       next: () => {
         this.resetBusy.set(false);
@@ -123,10 +120,9 @@ export class ScoringPage {
         this.drafts.set(new Map());
         this.tick.update((n) => n + 1);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.resetBusy.set(false);
         this.armingReset.set(false);
-        this.resetErrorKey.set(apiErrorKey(err));
       },
     });
   }
@@ -151,7 +147,6 @@ export class ScoringPage {
     this.centerScope.set(dropdownNumber(v));
     this.drafts.set(new Map());
     this.armingReset.set(false);
-    this.resetErrorKey.set(null);
   }
 
   readonly rows = computed(() => {
@@ -168,7 +163,6 @@ export class ScoringPage {
 
   readonly armingDeleteId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
-  readonly deleteErrorKey = signal<string | null>(null);
 
   /** Live sum of active weekly-total modules — must stay 20. */
   readonly liveSum = computed(() => {
@@ -242,7 +236,6 @@ export class ScoringPage {
 
   armDelete(id: number): void {
     this.armingDeleteId.set(id);
-    this.deleteErrorKey.set(null);
   }
 
   disarmDelete(): void {
@@ -252,17 +245,15 @@ export class ScoringPage {
   remove(id: number): void {
     if (this.busyId() !== null) return;
     this.busyId.set(id);
-    this.deleteErrorKey.set(null);
     this.scoring.remove(id).subscribe({
       next: () => {
         this.busyId.set(null);
         this.armingDeleteId.set(null);
         this.tick.update((n) => n + 1);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.busyId.set(null);
         this.armingDeleteId.set(null);
-        this.deleteErrorKey.set(apiErrorKey(err));
       },
     });
   }

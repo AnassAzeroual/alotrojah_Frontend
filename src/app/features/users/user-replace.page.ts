@@ -12,7 +12,6 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { GroupsService } from '../../core/api/groups.service';
 import { UsersService } from '../../core/api/users.service';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { LanguageService } from '../../core/i18n/language.service';
 import {
   DropdownComponent,
@@ -46,7 +45,6 @@ export class UserReplacePage {
   protected readonly num = dropdownNumber;
   readonly replacer = signal<number | null>(null);
   readonly saving = signal(false);
-  readonly errorKey = signal<string | null>(null);
 
   private readonly teacherRes = resource({
     params: () => ({ id: this.id() }),
@@ -112,15 +110,13 @@ export class UserReplacePage {
     const replacerId = this.replacer();
     if (replacerId === null || this.saving()) return;
     this.saving.set(true);
-    this.errorKey.set(null);
     this.usersSvc.replace(this.id(), replacerId).subscribe({
       next: () => {
         this.saving.set(false);
         void this.router.navigate(['/users']);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.saving.set(false);
-        this.errorKey.set(apiErrorKey(err));
       },
     });
   }

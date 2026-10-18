@@ -36,10 +36,6 @@
           <button type="button" class="link-quiet">{{ 'auth.recovery' | translate }}</button>
         </div>
 
-        @if (failed()) {
-          <p class="auth-error">{{ 'auth.invalid' | translate }}</p>
-        }
-
         <button
           type="submit"
           class="auth-btn"

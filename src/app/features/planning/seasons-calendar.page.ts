@@ -35,7 +35,6 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { SeasonsService } from '../../core/api/seasons.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { CalendarService, type CalendarEntry } from '../../core/api/calendar.service';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { AuthService } from '../../core/auth/auth.service';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -126,7 +125,6 @@ export class SeasonsCalendarPage {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly saving = signal(false);
-  readonly errorKey = signal<string | null>(null);
   readonly pickedSeason = signal<number | null>(null);
   readonly selectedId = signal<number | null>(null);
   readonly viewDate = signal<Date>(new Date());
@@ -549,15 +547,13 @@ export class SeasonsCalendarPage {
     if (this.saving()) return;
     const { id, ...patch } = drop;
     this.saving.set(true);
-    this.errorKey.set(null);
     this.patchOverlay.update((m) => ({ ...m, [id]: { ...m[id], ...patch } }));
     this.planning.updateSession(id, patch).subscribe({
       next: () => {
         this.saving.set(false);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.saving.set(false);
-        this.errorKey.set(apiErrorKey(err));
         this.patchOverlay.update((m) => {
           const next = { ...m };
           delete next[id];

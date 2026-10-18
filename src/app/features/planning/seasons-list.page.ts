@@ -12,7 +12,6 @@ import { firstValueFrom, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { CentersService } from '../../core/api/centers.service';
 import { SeasonsService } from '../../core/api/seasons.service';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
@@ -172,12 +171,6 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
                   }
                 }
               </div>
-              @if (deleteFailed()?.id === s.id) {
-                <div class="banner danger">{{ deleteFailed()!.key | translate }}</div>
-              }
-              @if (renameFailed()?.id === s.id) {
-                <div class="banner danger">{{ renameFailed()!.key | translate }}</div>
-              }
             </div>
           }
         </div>
@@ -196,11 +189,9 @@ export class SeasonsListPage {
   readonly canManage = computed(() => ['admin', 'supervisor'].includes(this.auth.role() ?? ''));
   readonly armingDeleteId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
-  readonly deleteFailed = signal<{ id: number; key: string } | null>(null);
   readonly renamingId = signal<number | null>(null);
   readonly renameValue = signal('');
   readonly renameSaving = signal(false);
-  readonly renameFailed = signal<{ id: number; key: string } | null>(null);
 
   protected readonly seasons = resource({
     params: () => ({}),
@@ -226,7 +217,6 @@ export class SeasonsListPage {
 
   armDelete(id: number): void {
     this.armingDeleteId.set(id);
-    this.deleteFailed.set(null);
   }
 
   disarmDelete(): void {
@@ -236,18 +226,16 @@ export class SeasonsListPage {
   confirmDelete(id: number): void {
     if (this.busyId() !== null) return;
     this.busyId.set(id);
-    this.deleteFailed.set(null);
     this.seasonsSvc.remove(id).subscribe({
       next: () => {
         this.busyId.set(null);
         this.armingDeleteId.set(null);
         this.seasons.reload();
       },
-      error: (err: unknown) => {
+      error: () => {
         // 422 when the season holds recorded facts (terms cascade otherwise).
         this.busyId.set(null);
         this.armingDeleteId.set(null);
-        this.deleteFailed.set({ id, key: apiErrorKey(err) });
       },
     });
   }
@@ -255,29 +243,25 @@ export class SeasonsListPage {
   startRename(s: { id: number; name: string }): void {
     this.renamingId.set(s.id);
     this.renameValue.set(s.name);
-    this.renameFailed.set(null);
   }
 
   cancelRename(): void {
     this.renamingId.set(null);
-    this.renameFailed.set(null);
   }
 
   submitRename(id: number): void {
     const name = this.renameValue().trim();
     if (name === '' || name.length > 50 || this.renameSaving()) return;
     this.renameSaving.set(true);
-    this.renameFailed.set(null);
     this.seasonsSvc.update(id, { name }).subscribe({
       next: () => {
         this.renameSaving.set(false);
         this.renamingId.set(null);
         this.seasons.reload();
       },
-      // 422 on duplicate names (unique rule) surfaces here, translated.
-      error: (err: unknown) => {
+      // 422 on duplicate names (unique rule).
+      error: () => {
         this.renameSaving.set(false);
-        this.renameFailed.set({ id, key: apiErrorKey(err) });
       },
     });
   }

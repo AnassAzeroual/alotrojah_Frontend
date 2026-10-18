@@ -14,7 +14,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
 import { leaveController } from '../../core/guards/leave-controller';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import {
   DropdownComponent,
@@ -88,7 +87,6 @@ export class TermDetailPage {
     return cur !== (this.term.value()?.name_ar ?? '');
   }
   readonly renameSaving = signal(false);
-  readonly renameErrorKey = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -108,29 +106,25 @@ export class TermDetailPage {
   }
 
   startRename(): void {
-    this.renameErrorKey.set(null);
     this.renaming.set(true);
   }
 
   cancelRename(): void {
     this.renaming.set(false);
-    this.renameErrorKey.set(null);
   }
 
   submitRename(): void {
     const name = this.renameValue().trim();
     if (name === '' || name.length > 50 || this.renameSaving()) return;
     this.renameSaving.set(true);
-    this.renameErrorKey.set(null);
     this.planning.renameTerm(this.id(), name).subscribe({
       next: () => {
         this.renameSaving.set(false);
         this.renaming.set(false);
         this.tick.update((n) => n + 1);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.renameSaving.set(false);
-        this.renameErrorKey.set(apiErrorKey(err));
       },
     });
   }

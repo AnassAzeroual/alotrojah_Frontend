@@ -254,7 +254,7 @@ describe('RegistrationsPage', () => {
     expect(page.acceptingId()).toBeNull();
   });
 
-  it('keeps the panel and flags failure when accept errors', () => {
+  it('keeps the panel and clears busy when accept errors', () => {
     page.startAccept(TEACHER_REQ.id);
     page.centerId.set(1);
     page.groupId.set(2);
@@ -268,8 +268,7 @@ describe('RegistrationsPage', () => {
     flushLevels();
 
     expect(page.acceptingId()).toBe(TEACHER_REQ.id);
-    expect(page.actionFailed()).toBe('apiErrors.server');
-    expect(el.textContent).toContain('apiErrors.server');
+    expect(page.busyId()).toBeNull();
   });
 
   it('requires two clicks to cancel and then hard-deletes the request', async () => {

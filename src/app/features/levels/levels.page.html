@@ -80,9 +80,6 @@
       }
     }
   </div>
-  @if (resetErrorKey()) {
-    <div class="banner danger">{{ resetErrorKey()! | translate }}</div>
-  }
 
   @if (levels.isLoading()) {
     <div class="stack" aria-hidden="true">
@@ -452,9 +449,6 @@
                       {{ 'common.cancel' | translate }}
                     </button>
                   </div>
-                  @if (deleteErrorKey()) {
-                    <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
-                  }
                 </td>
               </tr>
             }

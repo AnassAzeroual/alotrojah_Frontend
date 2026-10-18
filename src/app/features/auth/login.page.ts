@@ -33,7 +33,6 @@ export class LoginPage {
   private readonly router = inject(Router);
 
   readonly loading = signal(false);
-  readonly failed = signal(false);
   readonly version = APP_VERSION_SHORT;
 
   readonly form = new FormGroup<LoginForm>({
@@ -50,17 +49,14 @@ export class LoginPage {
   submit(): void {
     if (this.form.invalid || this.loading()) return;
     this.loading.set(true);
-    this.failed.set(false);
     const { email, password } = this.form.getRawValue();
     this.auth.login(email, password).subscribe({
       next: () => {
         this.loading.set(false);
         void this.router.navigate(['/']);
       },
-      error: () => {
-        this.loading.set(false);
-        this.failed.set(true);
-      },
+      // API failures surface in the global error dialog (errorInterceptor).
+      error: () => this.loading.set(false),
     });
   }
 }

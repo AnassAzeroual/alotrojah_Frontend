@@ -73,9 +73,6 @@
       }
     }
   </div>
-  @if (resetErrorKey()) {
-    <div class="banner danger">{{ resetErrorKey()! | translate }}</div>
-  }
 
   <div class="toolbar card anim-rise" style="--i: 1">
     <label class="field search grow">
@@ -254,9 +251,6 @@
           </tbody>
         </table>
       </div>
-      @if (deleteErrorKey()) {
-        <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
-      }
       <button
         type="submit"
         class="btn btn-primary btn-block"

@@ -3,7 +3,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Center } from '../../core/api/api-models';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
@@ -208,10 +207,7 @@ export class SettingsPage {
         this.centersLoading.set(false);
         this.chooseCenter(centers);
       },
-      error: (err) => {
-        this.centersLoading.set(false);
-        this.error.set(apiErrorKey(err));
-      },
+      error: () => this.centersLoading.set(false),
     });
   }
 
@@ -252,7 +248,6 @@ export class SettingsPage {
         this.flashSaved(kind);
         this.showToast('settings.toast_uploaded');
       },
-      error: (err) => this.error.set(apiErrorKey(err)),
       complete: () => this.busy.set(null),
     });
   }
@@ -272,7 +267,6 @@ export class SettingsPage {
         this.flashSaved(kind);
         this.showToast('settings.toast_removed');
       },
-      error: (err) => this.error.set(apiErrorKey(err)),
       complete: () => this.busy.set(null),
     });
   }
@@ -494,7 +488,6 @@ export class SettingsPage {
         this.flashSaved('options');
         this.showToast('settings.toast_saved');
       },
-      error: (err) => this.error.set(apiErrorKey(err)),
       complete: () => this.saving.set(false),
     });
   }

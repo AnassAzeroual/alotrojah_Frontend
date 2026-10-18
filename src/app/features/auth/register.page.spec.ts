@@ -137,40 +137,6 @@ describe('RegisterPage', () => {
     expect(sessionStorage.getItem('alotrojah_token')).toBeNull();
   });
 
-  it('maps the email_taken backend code', () => {
-    fillTeacherForm(page);
-    page.submit();
-    const req = http.expectOne((r) => r.url.endsWith('/auth/register'));
-    req.flush(
-      { message: 'The email has already been taken.', errors: { email: ['email_taken'] } },
-      { status: 422, statusText: 'Unprocessable Entity' },
-    );
-    fixture.detectChanges();
-    expect(page.errorKey()).toBe('auth.email_taken');
-    expect(fixture.nativeElement.textContent).toContain('auth.email_taken');
-  });
-
-  it('maps the in_waiting_room backend code', () => {
-    fillTeacherForm(page);
-    page.submit();
-    const req = http.expectOne((r) => r.url.endsWith('/auth/register'));
-    req.flush(
-      { message: 'Already pending.', errors: { email: ['in_waiting_room'] } },
-      { status: 422, statusText: 'Unprocessable Entity' },
-    );
-    fixture.detectChanges();
-    expect(page.errorKey()).toBe('auth.in_waiting_room');
-  });
-
-  it('falls back to a generic error for other failures', () => {
-    fillTeacherForm(page);
-    page.submit();
-    const req = http.expectOne((r) => r.url.endsWith('/auth/register'));
-    req.flush(null, { status: 500, statusText: 'Server Error' });
-    fixture.detectChanges();
-    expect(page.errorKey()).toBe('auth.invalid');
-  });
-
   it('blocks submit while the form is invalid', () => {
     page.submit();
     http.expectNone((r) => r.url.endsWith('/auth/register'));

@@ -65,7 +65,8 @@ test.describe.serial('Account safety', () => {
     await fillStable(page.getByTestId('auth-email'), supEmail);
     await fillStable(page.getByTestId('auth-password'), password);
     await page.getByTestId('auth-submit').click();
-    await expect(page.locator('.auth-error')).toBeVisible();
+    await expect(page.getByTestId('dialog-confirm')).toBeVisible();
+    await page.getByTestId('dialog-confirm').click();
 
     // admin reactivates then removes the account (self-cleaning)
     await adminLogin(page);
@@ -113,7 +114,8 @@ test.describe.serial('Account safety', () => {
         // wiped/disabled beneath us again — one refill, then fail loudly below
       }
     }
-    await expect(page.locator('.auth-error')).toBeVisible();
+    await expect(page.getByTestId('dialog-confirm')).toBeVisible();
+    await page.getByTestId('dialog-confirm').click();
 
     await adminLogin(page);
     await deleteUserByName(page, offName);

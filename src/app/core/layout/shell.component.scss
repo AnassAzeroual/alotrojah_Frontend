@@ -328,6 +328,12 @@
 .shell.collapsed .brand-badge,
 .shell.collapsed .nav-caption,
 .shell.collapsed .side-search,
+.shell.collapsed .side-foot .foot-btn {
+  justify-content: center;
+  padding: var(--space-2);
+  gap: 0;
+}
+
 .shell.collapsed .side-foot .foot-btn span {
   display: none;
 }

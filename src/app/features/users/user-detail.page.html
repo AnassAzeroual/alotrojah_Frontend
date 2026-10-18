@@ -25,11 +25,6 @@
       (ngSubmit)="submit()"
       autocomplete="off"
     >
-      @if (errorKey()) {
-        <div class="banner danger" data-testid="user-error">
-          {{ errorKey()! | translate }}
-        </div>
-      }
 
       <div class="grid" style="--cols: 2">
         <label class="field">

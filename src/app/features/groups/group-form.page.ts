@@ -14,7 +14,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { GroupsService } from '../../core/api/groups.service';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { UsersService } from '../../core/api/users.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { leaveController } from '../../core/guards/leave-controller';
@@ -55,7 +54,6 @@ export class GroupFormPage {
   private readonly router = inject(Router);
 
   readonly saving = signal(false);
-  readonly saveFailed = signal<string | null>(null);
 
   protected readonly name = signal('');
   protected readonly centerId = signal<number | null>(null);
@@ -207,7 +205,6 @@ export class GroupFormPage {
       return;
     }
     this.saving.set(true);
-    this.saveFailed.set(null);
     this.groupsSvc
       .update(id, {
         name: this.name().trim(),
@@ -223,17 +220,13 @@ export class GroupFormPage {
           this.editSeed.set(this.snapshot());
           void this.router.navigate(['/groups', id]);
         },
-        error: (err: unknown) => {
-          this.saving.set(false);
-          this.saveFailed.set(apiErrorKey(err));
-        },
+        error: () => this.saving.set(false),
       });
   }
 
   private submitCreate(): void {
     if (!this.canSave()) return;
     this.saving.set(true);
-    this.saveFailed.set(null);
     this.groupsSvc
       .create({
         name: this.name().trim(),
@@ -252,10 +245,7 @@ export class GroupFormPage {
           this.days.set([]);
           void this.router.navigate(['/groups']);
         },
-        error: (err: unknown) => {
-          this.saving.set(false);
-          this.saveFailed.set(apiErrorKey(err));
-        },
+        error: () => this.saving.set(false),
       });
   }
 }

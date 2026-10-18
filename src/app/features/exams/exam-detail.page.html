@@ -56,9 +56,6 @@
             </button>
           }
         </div>
-        @if (deleteErrorKey()) {
-          <div class="banner danger">{{ deleteErrorKey()! | translate }}</div>
-        }
       }
     </section>
 
@@ -99,9 +96,6 @@
             </label>
           }
         </div>
-        @if (editErrorKey()) {
-          <div class="banner danger">{{ editErrorKey()! | translate }}</div>
-        }
         <button
           type="button"
           class="btn btn-primary"

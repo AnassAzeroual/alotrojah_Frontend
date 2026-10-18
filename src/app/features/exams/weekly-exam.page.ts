@@ -13,7 +13,6 @@ import { firstValueFrom } from 'rxjs';
 import { ExamsService, WeeklyModule } from '../../core/api/exams.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { ReferenceService } from '../../core/api/reference.service';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { leaveController } from '../../core/guards/leave-controller';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import {
@@ -79,7 +78,6 @@ export class WeeklyExamPage {
   readonly rows = signal<RowState[]>([]);
   readonly saving = signal(false);
   readonly savedCount = signal<number | null>(null);
-  readonly errorKey = signal<string | null>(null);
 
   private readonly seededFor = signal<number | null>(null);
 
@@ -139,7 +137,6 @@ export class WeeklyExamPage {
       );
       this.seededFor.set(g);
       this.savedCount.set(null);
-      this.errorKey.set(null);
     });
   }
 
@@ -148,7 +145,6 @@ export class WeeklyExamPage {
     this.seededFor.set(null);
     this.rows.set([]);
     this.savedCount.set(null);
-    this.errorKey.set(null);
   }
 
   private touch(): void {
@@ -216,7 +212,6 @@ export class WeeklyExamPage {
     const ready = this.readyRows();
     if (g === null || ready.length === 0 || this.saving()) return;
     this.saving.set(true);
-    this.errorKey.set(null);
     this.examsSvc
       .weeklyBatch({
         group_id: g,
@@ -236,9 +231,8 @@ export class WeeklyExamPage {
           this.savedCount.set(res.created);
           this.dirty.set(false);
         },
-        error: (err: unknown) => {
+        error: () => {
           this.saving.set(false);
-          this.errorKey.set(apiErrorKey(err));
         },
       });
   }

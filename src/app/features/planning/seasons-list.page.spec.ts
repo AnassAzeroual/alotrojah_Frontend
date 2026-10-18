@@ -181,7 +181,7 @@ describe('SeasonsListPage rename', () => {
     expect(el.querySelector('[data-testid="delete-season-2"]')).toBeNull();
   });
 
-  it('shows a translated banner on duplicate-name 422', async () => {
+  it('keeps the rename editor open on duplicate-name 422', async () => {
     mount();
     flushCenters();
     flushList();
@@ -202,6 +202,7 @@ describe('SeasonsListPage rename', () => {
     );
     await settle();
 
-    expect(el.querySelector('.banner.danger')!.textContent).toContain('apiErrors.validation');
+    expect(renameInput(1)).not.toBeNull();
+    expect(page.renameSaving()).toBe(false);
   });
 });

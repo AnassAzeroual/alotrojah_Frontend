@@ -19,7 +19,6 @@ import { firstValueFrom } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ExamsService } from '../../core/api/exams.service';
 import { leaveController } from '../../core/guards/leave-controller';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
@@ -60,7 +59,6 @@ export class ExamNewPage {
   readonly groupId = signal<number | null>(null);
   readonly pickedStudent = signal<number | null>(null);
   readonly saving = signal(false);
-  readonly errorKey = signal<string | null>(null);
 
   /** Group narrowing (backend center-scoped; admin sees every center). */
   private readonly groupsRes = resource({
@@ -169,7 +167,6 @@ export class ExamNewPage {
       return;
     }
     this.saving.set(true);
-    this.errorKey.set(null);
     const seasonScoped = v.exam_type === 'final_season' || v.exam_type === 'weekly';
     this.examsSvc
       .create({
@@ -185,9 +182,8 @@ export class ExamNewPage {
           this.form.markAsPristine();
           void this.router.navigate(['/exams', e.id]);
         },
-        error: (err: unknown) => {
+        error: () => {
           this.saving.set(false);
-          this.errorKey.set(apiErrorKey(err));
         },
       });
   }

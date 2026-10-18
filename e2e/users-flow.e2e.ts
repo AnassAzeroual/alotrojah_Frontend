@@ -8,6 +8,10 @@ test.describe.serial('Users management', () => {
   const teacherPassword = 'password123';
 
   test('admin creates, deactivates, deletes and replaces teachers', async ({ page }) => {
+    // verify backend is slow — full flow (create ×3, group, deactivate, 2 logins,
+    // delete + replacer) needs more than the default 60 s
+    test.slow();
+
     // ---- create (one admin login for the whole flow) ----
     await adminLogin(page);
 
@@ -42,7 +46,7 @@ test.describe.serial('Users management', () => {
     await page.getByTestId('user-submit').click();
     await expect(page).toHaveURL(/\/users$/);
 
-    // duplicate email → translated 422 banner, zero new rows
+    // duplicate email → translated 422 dialog, zero new rows
     await page.getByTestId('users-new').click();
     await expect(page).toHaveURL(/\/users\/new$/);
     await page.getByTestId('user-name').fill(`E2E Dup ${stamp}`);
@@ -55,7 +59,9 @@ test.describe.serial('Users management', () => {
     await page.getByTestId('user-center').click();
     await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
     await page.getByTestId('user-submit').click();
-    await expect(page.getByTestId('user-error')).toContainText('مسجل مسبقاً');
+    await expect(page.locator('.dlg-msg')).toContainText('مسجل مسبقاً');
+    // dismiss the error dialog before the logout dirty-guard can stack on it
+    await page.getByTestId('dialog-confirm').click();
     await expect(page).toHaveURL(/\/users\/new$/);
 
     // logout (the half-filled duplicate form is dirty, so the unsaved
@@ -82,7 +88,7 @@ test.describe.serial('Users management', () => {
     await searchBox.fill(teacherName);
     await searchBox.press('Enter');
     const teacherRow = page.locator('.users-table tbody tr', { hasText: teacherName });
-    await expect(teacherRow).toHaveCount(1);
+    await expect(teacherRow).toHaveCount(1, { timeout: 15000 });
     await teacherRow.locator('.user-link').click();
     await expect(page).toHaveURL(/\/users\/\d+$/);
 
@@ -112,8 +118,9 @@ test.describe.serial('Users management', () => {
       }
     }
 
-    // Should see error and stay on login
-    await expect(page.locator('.auth-error')).toBeVisible();
+    // Should see the error dialog and stay on login
+    await expect(page.getByTestId('dialog-confirm')).toBeVisible();
+    await page.getByTestId('dialog-confirm').click();
     await expect(page).toHaveURL(/\/login$/);
 
     // ---- admin deletes the teacher and the row disappears ----
@@ -126,7 +133,7 @@ test.describe.serial('Users management', () => {
     await searchBox2.fill(teacherName);
     await searchBox2.press('Enter');
     const teacherRow2 = page.locator('.users-table tbody tr', { hasText: teacherName });
-    await expect(teacherRow2).toHaveCount(1);
+    await expect(teacherRow2).toHaveCount(1, { timeout: 15000 });
 
     await teacherRow2.locator('button[data-testid^="delete-user-"]').click();
     await teacherRow2.locator('button[data-testid^="confirm-delete-user-"]').click();
@@ -185,7 +192,7 @@ test.describe.serial('Users management', () => {
     // deleting the old teacher is blocked → replacer dialog (exact testids:
     // row-scoped regex clicks can land on stale re-rendered rows)
     const oldRow = page.locator('.users-table tbody tr', { hasText: oldName });
-    await expect(oldRow).toHaveCount(1);
+    await expect(oldRow).toHaveCount(1, { timeout: 15000 });
     const armTestId =
       (await oldRow.locator('button[data-testid^="delete-user-"]').getAttribute('data-testid')) ??
       '';
@@ -214,7 +221,9 @@ test.describe.serial('Users management', () => {
     const groupSearch = page.getByTestId('groups-search');
     await groupSearch.fill(groupName);
     await groupSearch.press('Enter');
-    await expect(page.locator('tbody tr', { hasText: groupName })).toHaveCount(1);
+    await expect(page.locator('tbody tr', { hasText: groupName })).toHaveCount(1, {
+      timeout: 15000,
+    });
 
     // the new teacher now owns the group → hidden by the unassigned filter
     await page.getByTestId('nav-users').click();
@@ -224,11 +233,11 @@ test.describe.serial('Users management', () => {
     await searchBox3.fill(newName);
     await searchBox3.press('Enter');
     const newRow = page.locator('.users-table tbody tr', { hasText: newName });
-    await expect(newRow).toHaveCount(1);
+    await expect(newRow).toHaveCount(1, { timeout: 15000 });
     await page.getByTestId('users-unassigned').check();
     await expect(newRow).toHaveCount(0);
     await page.getByTestId('users-unassigned').uncheck();
-    await expect(newRow).toHaveCount(1);
+    await expect(newRow).toHaveCount(1, { timeout: 15000 });
 
     await page.getByTestId('nav-logout').click();
     await expect(page).toHaveURL(/\/login$/);

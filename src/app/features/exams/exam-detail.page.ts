@@ -21,7 +21,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ExamsService } from '../../core/api/exams.service';
 import { leaveController } from '../../core/guards/leave-controller';
-import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
@@ -93,11 +92,9 @@ export class ExamDetailPage implements OnDestroy {
   readonly editTerm = signal<number | null>(null);
   private editInit = false;
   readonly editSaving = signal(false);
-  readonly editErrorKey = signal<string | null>(null);
 
   readonly armingDelete = signal(false);
   readonly deleteSaving = signal(false);
-  readonly deleteErrorKey = signal<string | null>(null);
 
   private readonly termsRes = resource({
     params: () => ({ season: this.exam.value()?.season_id ?? null }),
@@ -210,7 +207,6 @@ export class ExamDetailPage implements OnDestroy {
   submitEdit(): void {
     if (!this.canSaveEdit()) return;
     this.editSaving.set(true);
-    this.editErrorKey.set(null);
     const type = this.editType();
     const seasonScoped = type === 'final_season' || type === 'weekly';
     this.examsSvc
@@ -225,16 +221,14 @@ export class ExamDetailPage implements OnDestroy {
           this.editInit = false;
           this.tick.update((n) => n + 1);
         },
-        error: (err: unknown) => {
+        error: () => {
           this.editSaving.set(false);
-          this.editErrorKey.set(apiErrorKey(err));
         },
       });
   }
 
   armDelete(): void {
     this.armingDelete.set(true);
-    this.deleteErrorKey.set(null);
   }
 
   disarmDelete(): void {
@@ -244,7 +238,6 @@ export class ExamDetailPage implements OnDestroy {
   confirmDelete(): void {
     if (this.deleteSaving()) return;
     this.deleteSaving.set(true);
-    this.deleteErrorKey.set(null);
     this.examsSvc.remove(this.id()).subscribe({
       next: () => {
         this.deleteSaving.set(false);
@@ -257,9 +250,8 @@ export class ExamDetailPage implements OnDestroy {
         this.weights.set({});
         void this.router.navigate(['/exams']);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.deleteSaving.set(false);
-        this.deleteErrorKey.set(apiErrorKey(err));
       },
     });
   }
@@ -402,9 +394,8 @@ export class ExamDetailPage implements OnDestroy {
           this.draft.set([]);
           this.tick.update((n) => n + 1);
         },
-        error: (err: unknown) => {
+        error: () => {
           this.saving.set(false);
-          this.addErrorKey.set(apiErrorKey(err));
         },
       });
   }
@@ -445,9 +436,8 @@ export class ExamDetailPage implements OnDestroy {
         this.reweighting.set(false);
         this.tick.update((n) => n + 1);
       },
-      error: (err: unknown) => {
+      error: () => {
         this.reweightSaving.set(false);
-        this.reweightErrorKey.set(apiErrorKey(err));
       },
     });
   }
