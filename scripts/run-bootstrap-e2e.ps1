@@ -9,10 +9,18 @@
 # IMPORTANT: playwright.config.ts reuses an already-running :8000 server
 # (reuseExistingServer: true). A stale artisan holding alotrojah_verify would
 # serve the WRONG data — make sure no :8000 process is running before this.
+#
+# The CLI is invoked as `node node_modules/@playwright/test/cli.js` DIRECTLY,
+# not via `npx playwright`: under `npm run`, PATH resolves `npx` to
+# nvm-windows' npx.ps1 shim (npm 11), whose "-Command" branch re-parses the
+# caller's source line and drops splatted arguments (see run-e2e.ps1).
 $ErrorActionPreference = 'Stop'
 $backend = 'C:\Users\devtips\Documents\AlOtrojah\alotrojah_Backend'
 $envFile = Join-Path $backend '.env'
 $bakFile = Join-Path $backend '.env.bootautoswap'
+$root = Split-Path $PSScriptRoot -Parent
+$playwrightCli = Join-Path $root 'node_modules\@playwright\test\cli.js'
+if (-not (Test-Path $playwrightCli)) { throw "Playwright CLI not found: $playwrightCli" }
 
 try {
   Copy-Item $envFile $bakFile -Force
@@ -21,7 +29,7 @@ try {
   $db = Select-String -Path $envFile -Pattern '^DB_DATABASE=' | Select-Object -First 1
   Write-Host "e2e: backend DB -> $db"
   if ("$db" -notlike '*alotrojah_bootstrap*') { throw 'DB swap failed, aborting.' }
-  & npx playwright test @args
+  & node $playwrightCli test @args
   exit $LASTEXITCODE
 }
 finally {
