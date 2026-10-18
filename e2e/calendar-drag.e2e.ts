@@ -69,7 +69,8 @@ async function openFirstEvent(
   // taller than the viewport.
   await event.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await event.click();
-  const dateInput = page.locator('[data-testid^="cal-date-"]');
+  // Start leg only — the end leg suffixes `-end` (two single-date pickers).
+  const dateInput = page.locator('[data-testid^="cal-date-"]:not([data-testid$="-end"])');
   await expect(dateInput).toBeVisible();
   const timeLine = page.locator('[data-testid^="cal-time-"]');
   await expect(timeLine).toBeVisible();

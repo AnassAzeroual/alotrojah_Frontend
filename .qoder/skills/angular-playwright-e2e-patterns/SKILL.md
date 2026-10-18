@@ -9,7 +9,7 @@ description: Debugging and writing Playwright e2e specs for the AlOtrojah Angula
 
 Playwright specs for the AlOtrojah Angular frontend live in `alotrojah_Frontend/e2e/*.e2e.ts` and run against a real backend plus `ng serve`, both started automatically by `playwright.config.ts`. The specs run against a **shared, seeded database** (`alotrojah_verify`, selected by `scripts/run-e2e.ps1` swapping the backend `.env` — never dev) — interrupted runs and parallel flows leave residue rows in that same DB between runs. That one fact causes most flakiness: an assertion that was exact yesterday drifts today.
 
-The suite covers the workflow in `roadmap-qa.html` (**35 steps, S1–S35**): **51 tests across 24 spec files** covering **S1–S35** (S35 — the app-wide dirty-guard / Enter-to-submit flow — is covered by `unsaved-flow.e2e.ts`), all `test.describe.serial`. Several specs are deliberate **cut-detectors** — they assert the app's actual (broken) behavior at known workflow cuts so a fix flips them red (see Gotcha G). The specs are the source of truth for current selectors and credentials — re-read the spec closest to your page before relying on any locator below. Key references:
+The suite covers the workflow in `roadmap-qa.html` (**35 steps, S1–S35**): **59 tests across 26 spec files** covering **S1–S35** (S35 — the app-wide dirty-guard / Enter-to-submit flow — is covered by `unsaved-flow.e2e.ts`), all `test.describe.serial`. Several specs are deliberate **cut-detectors** — they assert the app's actual (broken) behavior at known workflow cuts so a fix flips them red (see Gotcha G). The specs are the source of truth for current selectors and credentials — re-read the spec closest to your page before relying on any locator below. Key references:
 
 - `alotrojah_Frontend/e2e/api.ts` — shared helpers: `loginAs(page, email, pwd)`, `adminLogin(page)`, `apiToken(request)`, `apiNames`.
 - `alotrojah_Frontend/e2e/auth-flow.e2e.ts`, `groups-flow.e2e.ts` — base CRUD + theme/locale patterns.
@@ -21,7 +21,7 @@ The suite covers the workflow in `roadmap-qa.html` (**35 steps, S1–S35**): **5
 - `webServer` auto-starts PHP `artisan serve` (:8000) and `ng serve` (:4201) with `reuseExistingServer: true` — do not start them by hand. **Check :8000 ownership before every run**: a reused API server keeps whatever DB it booted with (the wrapper swaps `.env`, but a stale artisan still holds its boot-time DB — a contamination hazard both ways).
 - Admin login used by the specs: `admin@example.org` / `password123` (all seeded accounts share it).
 - Run e2e **only** via the wrapper `scripts/run-e2e.ps1` (swaps backend `.env` to `alotrojah_verify`, verifies, restores). Full suite: `npm run e2e`. Single/multiple files: `MSYS_NO_PATHCONV=1 powershell -ExecutionPolicy Bypass -File scripts/run-e2e.ps1 e2e/<file>.e2e.ts` — **npm drops the file-filter arg**, so `npm run e2e -- e2e/x.e2e.ts` runs EVERYTHING. Raw `npx playwright test` is `npm run e2e:direct` for emergencies only.
-- Current suite = 51 tests across 24 spec files (covering steps S1–S35 of the 35-step roadmap; S35 covered by `unsaved-flow.e2e.ts`); a healthy full run is 51/51 green (~4.5 min, workers 1).
+- Current suite = 59 tests across 26 spec files: the verify batch (`npm run e2e`, 25 specs / 53 tests) runs on `alotrojah_verify`; `bootstrap-flow.e2e.ts` (6 tests) asserts an empty starting DB and runs on `alotrojah_bootstrap` — `scripts/run-e2e.ps1` auto-detects that spec in its arguments, swaps the DB and re-provisions it first (the menu's ALL flow runs it after the verify batch). Healthy full run = 53/53 + 6/6 green (workers 1; S35 is covered by `unsaved-flow.e2e.ts`).
 - **Stored values are AES-encrypted** (the app's `SecureStorageService` vault). Assert on them with `e2e/storage.ts` `readStoredValue(page, key)` — it decrypts using the shared `STORAGE_SECRET` and mirrors the library's JSON round-trip; a raw `localStorage.getItem` returns ciphertext. The `alotrojah_e2e_no_http_cache` bypass key is the one deliberate plaintext exception (seeded via `storageState`).
 
 ## Gotcha A — fill() does NOT fire Angular (change)
@@ -82,6 +82,17 @@ page.locator('tbody tr.row-link', { hasText: 'الإحسان' });
   Same for dropdown options — `getByRole('option', { name: 'حفظ' })` prefix-matches `حفظ ومراجعة`; pass `exact: true`.
 - Target the intended combobox explicitly — the language switcher is often the first `option`/`select` on the page, so a bare `getByRole('combobox')` grabs the wrong one.
 - Unlabeled `<select>` elements break `getByLabel`; they must be wrapped/labeled in the component (also an a11y win).
+- Paired test-ids with start/end legs: the session range picker keeps the bare id on the START input and suffixes `-end` on the end leg (`cal-date-7` / `cal-date-7-end`), so a `^=` prefix locator resolves to BOTH and fails strict mode. Scope the intended leg explicitly:
+  ```ts
+  const start = page.locator('[data-testid^="cal-date-"]:not([data-testid$="-end"])');
+  const end = page.locator('[data-testid^="cal-date-"][data-testid$="-end"]');
+  ```
+- Backend failures raise the global CDK alert dialog (`error.interceptor.ts`, `role="alertdialog"`, `aria-modal`). An `aria-modal` removes everything behind it from the accessibility tree, so `getByRole`/`getByLabel` fail with "element(s) not found" while CSS/`data-testid` locators still match. Dismiss it before any role-scoped assert that follows a failed request:
+  ```ts
+  await expect(page.getByTestId('dialog-confirm')).toBeVisible();
+  await page.getByTestId('dialog-confirm').click();
+  ```
+  (entry-flow S18: the 422 dialog hid the حفظ button from `getByRole` even though the row banner — a CSS locator — was visibly rendering.)
 
 ## Gotcha E — a test only guards the pages it visits
 
@@ -110,9 +121,23 @@ The suite's job is detecting cuts in the workflow (`roadmap-qa.html`, **35 steps
 
 Freeze-assertion pattern (F5/F6): await the error response, settle ~1.5s (`waitForTimeout`), then assert the spinner/skeleton is STILL visible and the empty-state message count is 0.
 
+## Gotcha H — never-run specs carry stale selectors
+
+A spec that has never executed can hold locators from an older UI generation. Before treating its failure as an app bug, re-derive the selector from the current template and the green spec closest to that page. 2026-10-18, `bootstrap-flow.e2e.ts` pupil leg: `.grid-auto .card` on `/students` (card-grid era) — the list has been `.students-table tbody tr` since the students-table rebuild, and the server-scoped data was correct all along; only the locator was stale.
+
+## Gotcha I — scoring modules shift order; select the cell, anchor the total
+
+Scoring modules are ordered by `sort_order` alone (`ScoringModule::activeOrdered`, backend), so ties are DB-arbitrary — and `scoring-flow.e2e.ts` creates throwaway `E2E Book <stamp>` modules (max 5) that are only deleted when the run reaches its inline delete. A run that dies earlier leaks them with `sort_order 0`, i.e. **sorted before hifz**. Never select a module input positionally (`row.locator('input').first()` / `.nth(i)`); every module cell carries the module name as `data-label` on its `.ecell`, so target the cell:
+
+```ts
+const hifz = row.locator('.ecell[data-label="الحفظ"] input');
+```
+
+And anchor numeric total assertions: the row total renders `<value>/20`, so a bare `/20/` regex matches the literal "/20" suffix and passes even when the sum never changed (2026-10-18 S18: it was silently filling a leaked `e2ebook` module — cap 5, its 422 said "Must be between 0 and 5" — while `/20/` "passed" against "18.2/20"). Use `/^18\.2/`, `/^20/`, `/^13\.2/`. If order-dependent specs misbehave, check for leaked modules first: `SELECT id, code, sort_order FROM scoring_modules WHERE code LIKE 'e2ebook%';` (the 6 leaked rows were purged from `alotrojah_verify` — no `session_scores` referenced them — leaving the 5 seeded modules).
+
 ## Done-gate (run before considering e2e work complete)
 
-1. Full suite green via the wrapper — `npm run e2e`, expect 51/51. Read the head of the failure output first; Playwright prints received vs expected and the trace path (`trace: 'retain-on-failure'`).
+1. Full suite green via the wrapper — `npm run e2e` (the verify batch, expect 53/53); the bootstrap leg (6 tests, own DB) runs via `scripts/run-e2e.ps1 e2e/bootstrap-flow.e2e.ts` (auto-provisioning) or the menu ALL flow, which runs both. Read the head of the failure output first; Playwright prints received vs expected and the trace path (`trace: 'retain-on-failure'`).
 2. `npm run format:check` — prettier covers `e2e/**/*.ts`, and freshly edited specs frequently fail formatting. To target only e2e: `npx prettier --check "e2e/**/*.ts"`.
 
 ### Windows / Git Bash cautions

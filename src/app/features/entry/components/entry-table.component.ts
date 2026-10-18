@@ -400,7 +400,10 @@ export class EntryTableComponent {
     this.onFieldEdit(id);
   }
 
-  /** A native-bound input was edited: drop the goal flag so it can re-fire. */
+  /** A native-bound input was edited (mem / goal text / goal done): drop the
+   *  goal flag so it can re-fire, and bump so `anyDirty`/`rowTouched` re-read
+   *  the raw form state - form state is not a signal, so without the bump the
+   *  save button never re-enables after typing a goal or memorized value. */
   onFieldEdit(id: number): void {
     if (this.goalBad().has(id)) {
       this.goalBad.update((s) => {
@@ -410,6 +413,7 @@ export class EntryTableComponent {
       });
     }
     this.clearRowErrorIfClean(id);
+    this.bump.update((n) => n + 1);
   }
 
   showScoreError(id: number, code: string): boolean {

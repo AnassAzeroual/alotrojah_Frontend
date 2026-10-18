@@ -18,9 +18,10 @@
 #   - the backend .env is forced back to DB_DATABASE=alotrojah_dev after every
 #     run and again on quit (the wrappers restore their own backup first)
 #   - verify runs go through run-e2e.ps1 (DB -> alotrojah_verify)
-#   - bootstrap-flow.e2e.ts goes through run-bootstrap-e2e.ps1 (DB ->
-#     alotrojah_bootstrap); that spec asserts an EMPTY starting DB and can
-#     never pass against the seeded verify DB
+#   - bootstrap-flow.e2e.ts goes through the same run-e2e.ps1, which
+#     auto-detects it and switches to alotrojah_bootstrap (re-provisioned
+#     first); that spec asserts an EMPTY starting DB and can never pass
+#     against the seeded verify DB
 #
 # A backend already listening on :8000 blocks the run: playwright.config.ts
 # reuses an existing server (reuseExistingServer: true), so the .env swap would
@@ -38,11 +39,10 @@ Set-Location $root
 
 $backend = Join-Path (Split-Path $root -Parent) 'alotrojah_Backend'
 $envFile = Join-Path $backend '.env'
-$verifyRunner = Join-Path $PSScriptRoot 'run-e2e.ps1'
-$bootstrapRunner = Join-Path $PSScriptRoot 'run-bootstrap-e2e.ps1'
+$runner = Join-Path $PSScriptRoot 'run-e2e.ps1'
 $bootstrapSpec = 'bootstrap-flow.e2e.ts'
 
-foreach ($required in @($envFile, $verifyRunner, $bootstrapRunner)) {
+foreach ($required in @($envFile, $runner)) {
   if (-not (Test-Path $required)) { throw "Missing required path: $required" }
 }
 
@@ -247,12 +247,12 @@ try {
         Write-Host '  UI mode: close the verify-batch UI when done; bootstrap-flow opens next.' -ForegroundColor Yellow
       }
       $batchArgs = @($verifySpecs | ForEach-Object { "e2e/$($_.Name)" }) + $modeArgs
-      $verifyCode = Invoke-Runner $verifyRunner $batchArgs
+      $verifyCode = Invoke-Runner $runner $batchArgs
       if ($null -eq $verifyCode) { continue }
       $colour = if ($verifyCode -eq 0) { 'Green' } else { 'Red' }
       Write-Host ("  verify batch exit code: {0}" -f $verifyCode) -ForegroundColor $colour
       if ($bootstrap) {
-        $bootCode = Invoke-Runner $bootstrapRunner (@("e2e/$bootstrapSpec") + $modeArgs)
+        $bootCode = Invoke-Runner $runner (@("e2e/$bootstrapSpec") + $modeArgs)
         if ($null -ne $bootCode) {
           $colour = if ($bootCode -eq 0) { 'Green' } else { 'Red' }
           Write-Host ("  bootstrap-flow exit code: {0}" -f $bootCode) -ForegroundColor $colour
@@ -269,12 +269,7 @@ try {
       }
       $spec = $specs[$index - 1]
       $modeArgs = Read-RunMode
-      if ($spec.Name -eq $bootstrapSpec) {
-        $code = Invoke-Runner $bootstrapRunner (@("e2e/$($spec.Name)") + $modeArgs)
-      }
-      else {
-        $code = Invoke-Runner $verifyRunner (@("e2e/$($spec.Name)") + $modeArgs)
-      }
+      $code = Invoke-Runner $runner (@("e2e/$($spec.Name)") + $modeArgs)
       if ($null -ne $code) {
         $colour = if ($code -eq 0) { 'Green' } else { 'Red' }
         Write-Host ("  exit code: {0}" -f $code) -ForegroundColor $colour

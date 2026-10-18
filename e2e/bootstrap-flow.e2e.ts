@@ -10,9 +10,10 @@ import { adminLogin, loginAs } from './api';
  *
  * ⚠️ This spec REQUIRES a freshly provisioned admin-only database. Test 1
  * asserts the empty starting state via the API, so it MUST NOT run against the
- * canonical seeded `alotrojah_verify` the rest of the suite uses. Launch it
- * with `scripts/run-bootstrap-e2e.ps1`, which swaps the backend `.env` to
- * `alotrojah_bootstrap`.
+ * canonical seeded `alotrojah_verify` the rest of the suite uses. Launch it by
+ * passing this file to `scripts/run-e2e.ps1`, which auto-detects it, swaps the
+ * backend `.env` to `alotrojah_bootstrap` and re-provisions the DB first:
+ * `powershell -File scripts/run-e2e.ps1 e2e/bootstrap-flow.e2e.ts`.
  *
  * Selector conventions follow the suite skill: `data-testid` for static
  * controls, content for dynamic values, `{ exact: true }` where a sibling
@@ -268,10 +269,11 @@ test.describe.serial('Bootstrap from empty DB (first-use chain)', () => {
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await expect(page.getByTestId('user-center')).toContainText(centerName);
 
-    // The pupil list is server-scoped to the pupil's own record.
+    // The pupil list is server-scoped to the pupil's own record (the list is a
+    // table since the students page was rebuilt - was stale .grid-auto .card).
     await page.getByTestId('nav-students').click();
     await expect(page).toHaveURL(/\/students$/);
-    const own = page.locator('.grid-auto .card');
+    const own = page.locator('.students-table tbody tr');
     await expect(own).toHaveCount(1);
     await expect(own).toContainText(pupilName);
 

@@ -109,12 +109,16 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
 
     const row = page.locator('app-entry-table .line', { hasText: STUDENT });
     const total = row.locator('strong.total');
-    await expect(total).toHaveText(/18\.2/); // seed: 13.2 + 3 + 2
+    await expect(total).toHaveText(/^18\.2/); // seed: 13.2 + 3 + 2
 
-    // module 1 is capped at 14; typing 15 shows a legal total of 20
-    const module1 = row.locator('input').first();
+    // hifz (الحفظ) is capped at 14; typing 15 lifts the total to 20. Anchor the
+    // total assert: the rendered label ends in the literal "/20", so a bare
+    // /20/ passes even with an unchanged sum. Target the cell by module name:
+    // leaked E2E modules (sort_order 0) can sort before hifz, so `input.first()`
+    // is not stable (was filling a leftover module, cap 5).
+    const module1 = row.locator('.ecell[data-label="الحفظ"] input');
     await module1.fill('15');
-    await expect(total).toHaveText(/20/);
+    await expect(total).toHaveText(/^20/);
 
     const saveBtn = page.getByRole('button', { name: 'حفظ', exact: true });
     const resp = page.waitForResponse(
@@ -123,9 +127,18 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     await saveBtn.click();
     expect((await resp).status()).toBe(422);
 
+    // The global error interceptor alerts every backend failure with ONE CDK
+    // dialog (by design; only non-login 401s and the users-page replacer are
+    // skipped). Dismiss it before role-scoped asserts: everything behind the
+    // aria-modal is invisible to getByRole.
+    await expect(page.getByTestId('dialog-confirm')).toBeVisible();
+    await page.getByTestId('dialog-confirm').click();
+
     // FIXED (was F1 silent): the teacher is told — banner plus the refused
     // cell flagged; the button is usable again and nothing typed is lost.
-    await expect(row.getByTestId('row-banner')).toBeVisible();
+    // The banner is a SIBLING of the `.line` row (`.erow-error` after it), so
+    // it must be located page-wide, not via a descendant of `row`.
+    await expect(page.getByTestId('row-banner')).toBeVisible();
     await expect(row.locator('.field-error')).toHaveCount(1);
     await expect(saveBtn).toBeEnabled();
     await expect(module1).toHaveValue('15');
@@ -134,7 +147,9 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     await page.reload();
     await pickSession1(page);
     await expect(
-      page.locator('app-entry-table .line', { hasText: STUDENT }).locator('input').first(),
-    ).toHaveValue(/13\.2/);
+      page
+        .locator('app-entry-table .line', { hasText: STUDENT })
+        .locator('.ecell[data-label="الحفظ"] input'),
+    ).toHaveValue(/^13\.2/);
   });
 });

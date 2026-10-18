@@ -164,6 +164,21 @@ describe('EntryTableComponent', () => {
     expect(calls.length).toBe(3);
   });
 
+  it('re-enables save after a native goal input edit without another change', () => {
+    const save = el.querySelector<HTMLButtonElement>('.save-all')!;
+    expect(save.disabled).toBe(true);
+
+    const goal = el.querySelector<HTMLInputElement>('.ecell.goal input[type="text"]')!;
+    goal.value = 'goal typed';
+    goal.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // The value accessor dirtied the row; the view must follow without any
+    // other edit (form state is not a signal - onFieldEdit bumps).
+    expect(cmp.rowTouched(1)).toBe(true);
+    fixture.detectChanges();
+    expect(save.disabled).toBe(false);
+  });
+
   it('flags the refused cells and the row banner on a scores 422, keeping edits', () => {
     cmp.setScore(1, 'mowathaba', 5);
     fail.scores = cap422({ 'records.0.score': ['Must be between 0 and 4.'] });
