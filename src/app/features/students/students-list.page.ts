@@ -9,7 +9,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { firstValueFrom, map } from 'rxjs';
+import { firstValueFrom, from } from 'rxjs';
 import { GroupsService } from '../../core/api/groups.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
@@ -70,7 +70,7 @@ export class StudentsListPage {
     ...MODES.map((m) => ({ value: m, labelKey: `mode.${m}` })),
   ]);
 
-  readonly groups = toSignal(this.groupsSvc.list().pipe(map((p) => p.data)), { initialValue: [] });
+  readonly groups = toSignal(from(this.groupsSvc.listAll()), { initialValue: [] });
   readonly levels = toSignal(this.ref.levels(), { initialValue: [] });
 
   private readonly levelNames = computed(

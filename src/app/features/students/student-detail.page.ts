@@ -109,11 +109,33 @@ export class StudentDetailPage {
   });
 
   private readonly season = resource({
-    params: () => ({}),
-    loader: () =>
-      firstValueFrom(this.ref.seasons()).then(
-        (r) => r.data.find((s) => s.is_current) ?? r.data[0] ?? null,
-      ),
+    // Wait for the pupil: the admin season feed spans every center, so picking
+    // its first current row can land on another center's season. Resolve the
+    // pupil's own-center current season with the legacy shared fallback.
+    params: () => {
+      const s = this.student.value();
+      return {
+        nid: this.numericId(),
+        center: s?.center_id ?? null,
+        ready: this.student.hasValue(),
+      };
+    },
+    loader: ({ params }) => {
+      if (!params.ready || params.nid === null) return Promise.resolve(null);
+      return firstValueFrom(this.ref.seasons(params.center, true)).then((r) => {
+        const rows = r.data ?? [];
+        const own =
+          params.center !== null
+            ? rows.find((s) => s.is_current && s.center_id === params.center)
+            : undefined;
+        return (
+          own ??
+          rows.find((s) => s.is_current && s.center_id === null) ??
+          (params.center === null ? (rows.find((s) => s.is_current) ?? rows[0]) : undefined) ??
+          null
+        );
+      });
+    },
   });
 
   private readonly summary = resource({
