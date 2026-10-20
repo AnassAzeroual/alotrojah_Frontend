@@ -1,10 +1,14 @@
 @use '../../../styles/tokens' as *;
 
 .table-card {
+  min-width: 0;
   padding: var(--space-4);
 }
 
 .table-scroll {
+  // A wide sheet must scroll inside this box, never widen the shell/sidebar.
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
 }
 
