@@ -574,10 +574,10 @@
 
 .content {
   // Without width, flex-item auto inline margins size this box to fit-content.
+  // The app is edge-to-edge: the main column already accounts for the sidebar,
+  // so no arbitrary max-width should re-center and shrink wide screens.
   width: 100%;
   padding: var(--space-4) var(--space-4) var(--space-6);
-  max-width: 1520px;
-  margin-inline: auto;
 
   @include up($bp-md) {
     padding: var(--space-5);
