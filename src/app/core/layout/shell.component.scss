@@ -610,10 +610,11 @@
 }
 
 // Tablet + phone: the topbar budget cannot carry the full date strings or the
-// identity block below $bp-lg (the rail leaves ~684px; an expanded sidebar
-// ~500px). Chips switch to numeric short forms, the decorative "today" label,
+// identity block once the expanded sidebar leaves under ~842px. That happens
+// below 1120px; starting at $bp-lg (1024) leaves a ~96px overflow at the
+// boundary. Chips switch to numeric short forms, the decorative "today" label,
 // identity block and the bell (with its registrations badge) drop out.
-@include down($bp-lg) {
+@include down(1120px) {
   .topbar {
     padding-inline: var(--space-3);
     gap: var(--space-2);
