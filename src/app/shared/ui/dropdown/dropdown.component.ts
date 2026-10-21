@@ -295,6 +295,14 @@ export class DropdownComponent implements ControlValueAccessor {
     this.options().find((o) => o.value === this.current()),
   );
 
+  /** External trigger for breadcrumbs/quick filters: open and focus the list button. */
+  openMenu(): void {
+    if (this.isDisabled()) return;
+    this.open.set(true);
+    const button = this.host.nativeElement.querySelector('.dd-btn') as HTMLButtonElement | null;
+    button?.focus();
+  }
+
   protected choose(v: DropdownValue): void {
     this.open.set(false);
     this.onTouched();

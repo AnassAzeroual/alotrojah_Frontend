@@ -517,7 +517,17 @@
     "inherited_tag": "Défaut",
     "override_tag": "Dérogation",
     "reset": "Réinitialiser",
-    "reset_confirm": "Confirmer"
+    "reset_confirm": "Confirmer",
+    "subtitle": "Gérez les plafonds de points, les totaux hebdomadaires et les dérogations par centre.",
+    "filters": "Filtres",
+    "clear_filters": "Effacer les filtres",
+    "search": "Rechercher une matière",
+    "subjects": "Matières",
+    "showing": "Affichées",
+    "context": "Fil de sélection",
+    "change": "Modifier {{filter}}",
+    "sum_ok": "Tous les points hebdomadaires sont répartis",
+    "add_hint": "Ajoutez une nouvelle matière à la portée actuelle."
   },
   "settings": {
     "title": "Paramètres",

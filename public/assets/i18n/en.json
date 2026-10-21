@@ -517,7 +517,17 @@
     "inherited_tag": "Default",
     "override_tag": "Override",
     "reset": "Reset to defaults",
-    "reset_confirm": "Confirm reset"
+    "reset_confirm": "Confirm reset",
+    "subtitle": "Manage point caps, weekly totals and center overrides.",
+    "filters": "Filters",
+    "clear_filters": "Clear filters",
+    "search": "Search subject",
+    "subjects": "Subjects",
+    "showing": "Showing",
+    "context": "Selection path",
+    "change": "Change {{filter}}",
+    "sum_ok": "All weekly points are allocated",
+    "add_hint": "Add a new subject to the current scope."
   },
   "settings": {
     "title": "Settings",
