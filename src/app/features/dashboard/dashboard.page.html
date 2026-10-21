@@ -6,7 +6,7 @@
     </div>
   </div>
 
-  <div class="filters card">
+  <div class="filters card" [class.no-center]="isStudent()">
     <div class="f-search">
       <input
         type="search"
@@ -32,14 +32,16 @@
         ariaLabelKey="list.level"
       />
     </div>
-    <div class="f-field">
-      <app-dropdown
-        [options]="centerOptions()"
-        [value]="txt(pickedCenter())"
-        (valueChange)="pickCenter(num($event))"
-        ariaLabelKey="dash.center"
-      />
-    </div>
+    @if (!isStudent()) {
+      <div class="f-field f-center">
+        <app-dropdown
+          [options]="centerOptions()"
+          [value]="txt(pickedCenter())"
+          (valueChange)="pickCenter(num($event))"
+          ariaLabelKey="dash.center"
+        />
+      </div>
+    }
   </div>
 
   @if (isStudent()) {
@@ -48,20 +50,21 @@
     } @else {
       <div class="kpis">
         <div class="kpi card anim">
-          <span class="kpi-ico">◎</span>
+          <span class="kpi-ico" aria-hidden="true">◎</span>
           <div class="kpi-txt">
             <small>{{ 'dash.avgScore' | translate }}</small>
             <strong class="ltr-num">{{ meKpis().avgScore ?? '—' }}</strong>
           </div>
         </div>
         <div class="kpi card anim" style="--d: 60ms">
-          <span class="kpi-ico">▣</span>
+          <span class="kpi-ico" aria-hidden="true">▣</span>
           <div class="kpi-txt">
             <small>{{ 'dash.avgSarraj' | translate }}</small>
             <strong class="ltr-num">{{ meKpis().avgSarraj ?? '—' }}</strong>
           </div>
         </div>
         <div class="kpi card anim" style="--d: 120ms">
+          <span class="kpi-ico" aria-hidden="true">%</span>
           <div class="kpi-txt">
             <small>{{ 'dash.commitRate' | translate }}</small>
             <strong class="ltr-num">{{
@@ -70,6 +73,7 @@
           </div>
         </div>
         <div class="kpi card anim" style="--d: 180ms">
+          <span class="kpi-ico" aria-hidden="true">★</span>
           <div class="kpi-txt">
             <small>{{ 'dash.myFinal' | translate }}</small>
             <strong class="ltr-num">{{ meKpis().final ?? '—' }}</strong>
@@ -80,21 +84,21 @@
   } @else {
     <div class="kpis">
       <div class="kpi card anim">
-        <span class="kpi-ico">◉</span>
+        <span class="kpi-ico" aria-hidden="true">◉</span>
         <div class="kpi-txt">
           <small>{{ 'dash.totalStudents' | translate }}</small>
           <strong class="ltr-num">{{ kpis().students ?? '—' }}</strong>
         </div>
       </div>
       <div class="kpi card anim" style="--d: 60ms">
-        <span class="kpi-ico">◎</span>
+        <span class="kpi-ico" aria-hidden="true">◎</span>
         <div class="kpi-txt">
           <small>{{ 'dash.avgScore' | translate }}</small>
           <strong class="ltr-num">{{ kpis().avgScore ?? '—' }}</strong>
         </div>
       </div>
       <div class="kpi card anim" style="--d: 120ms">
-        <span class="kpi-ico">▣</span>
+        <span class="kpi-ico" aria-hidden="true">▣</span>
         <div class="kpi-txt">
           <small>{{ 'dash.avgSarraj' | translate }}</small>
           <strong class="ltr-num">{{ kpis().avgSarraj ?? '—' }}</strong>
@@ -119,7 +123,6 @@
               <stop offset="1" stop-color="#8b5cf6" />
             </linearGradient>
           </defs>
-          <text x="42" y="47">{{ kpis().rate === null ? '—' : kpis().rate + '%' }}</text>
         </svg>
       </div>
     </div>
@@ -150,7 +153,9 @@
                 <td [attr.data-label]="'dash.studentName' | translate">
                   <span class="stud"
                     ><span class="ava" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span
-                    >{{ s.full_name }}</span
+                    ><span class="stud-name" [attr.title]="s.full_name">{{
+                      s.full_name
+                    }}</span></span
                   >
                 </td>
                 <td class="mut" [attr.data-label]="'list.group' | translate">
