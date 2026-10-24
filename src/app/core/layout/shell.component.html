@@ -63,8 +63,7 @@
       @for (item of items(); track item.path) {
         <a
           [routerLink]="item.path"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: !!item.exact }"
+          [class.active]="item.path === activeNav()"
           (click)="closeMobile()"
           [attr.data-icon]="item.icon"
           [attr.data-testid]="item.testId"

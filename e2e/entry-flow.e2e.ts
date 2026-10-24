@@ -1,28 +1,57 @@
-import { expect, test } from '@playwright/test';
-import { loginAs } from './api';
+import { expect, test, type Page } from '@playwright/test';
+import { loginAs, studentSection } from './api';
 
 const TEACHER = 'teach1a.nour@example.org';
 const STUDENT = 'أحمد بن يوسف';
 
-async function pickSession1(page: import('@playwright/test').Page): Promise<void> {
-  await page.getByRole('button', { name: 'القسم', exact: true }).click();
-  await page.locator('.dd.open [role="option"]').nth(1).click();
-  await page.getByRole('button', { name: 'الأسبوع', exact: true }).click();
-  await page.locator('.dd.open [role="option"]').nth(1).click();
-  await page.getByRole('button', { name: 'الحصة', exact: true }).click();
-  await page.locator('.dd.open [role="option"]').nth(1).click();
+// The card flow is pure navigation. The app zeroes every duration (and drops
+// the `.choice` hover lift) under `prefers-reduced-motion: reduce`, so pin it
+// here: a 3px hover transition can otherwise leave a card click "not stable"
+// mid-flight and burn the whole 60s timeout.
+test.use({ reducedMotion: 'reduce' });
+
+/**
+ * Walk the 3-step card flow (section → week → session) down to the seeded
+ * score sheet. The toolbar dropdowns this helper used to click (القسم /
+ * الأسبوع / الحصة) were removed when the card flow landed (25c7624), and the
+ * section grid's order is not stable — the shared verify DB accumulates E2E
+ * sections — so the section is resolved from the API and the week/session are
+ * content-picked by their seeded global numbers (1).
+ */
+async function openSeedSheet(page: Page, section: string): Promise<void> {
+  await page.locator('.group-choice', { hasText: section }).click();
+
+  const week = page
+    .locator('.week-choice')
+    .filter({ has: page.locator('.ltr-num', { hasText: /^1$/ }) });
+  await expect(week).toHaveCount(1);
+  await week.click();
+
+  const session = page
+    .locator('.session-choice')
+    .filter({ has: page.locator('.ltr-num', { hasText: /^1$/ }) });
+  await expect(session).toHaveCount(1);
+  await session.click();
+
+  await expect(page.locator('app-entry-table .line', { hasText: STUDENT })).toHaveCount(1);
 }
 
 test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-cap errors)', () => {
+  /** Section that owns the seeded pupil — resolved at runtime, never hardcoded. */
+  let section: string;
+
+  test.beforeEach(async ({ request }) => {
+    section = (await studentSection(request, STUDENT, TEACHER)).name;
+  });
+
   test('S17: attendance toggle persists and restores', async ({ page }) => {
     await loginAs(page, TEACHER, 'password123');
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await page.goto('/entry');
     await expect(page).toHaveURL(/\/entry$/);
-    await pickSession1(page);
+    await openSeedSheet(page, section);
 
     const row = page.locator('app-entry-table .line', { hasText: STUDENT });
-    await expect(row).toHaveCount(1);
 
     // seed has this session recorded as present — flip to late, save the row
     const att = row.locator('.dd-btn');
@@ -38,7 +67,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
 
     // persists after reload
     await page.reload();
-    await pickSession1(page);
+    await openSeedSheet(page, section);
     await expect(
       page.locator('app-entry-table .line', { hasText: STUDENT }).locator('.dd-btn'),
     ).toContainText('متأخر');
@@ -54,7 +83,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await savedBack;
     await page.reload();
-    await pickSession1(page);
+    await openSeedSheet(page, section);
     await expect(
       page.locator('app-entry-table .line', { hasText: STUDENT }).locator('.dd-btn'),
     ).toContainText('حاضر');
@@ -64,7 +93,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     await loginAs(page, TEACHER, 'password123');
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await page.goto('/entry');
-    await pickSession1(page);
+    await openSeedSheet(page, section);
 
     const row = page.locator('app-entry-table .line', { hasText: STUDENT });
     const input = row.locator('input[type="text"]');
@@ -79,7 +108,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     await saved;
 
     await page.reload();
-    await pickSession1(page);
+    await openSeedSheet(page, section);
     await expect(
       page.locator('app-entry-table .line', { hasText: STUDENT }).locator('input[type="text"]'),
     ).toHaveValue(probe);
@@ -93,7 +122,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     await page.getByRole('button', { name: 'حفظ', exact: true }).click();
     await restored;
     await page.reload();
-    await pickSession1(page);
+    await openSeedSheet(page, section);
     await expect(
       page.locator('app-entry-table .line', { hasText: STUDENT }).locator('input[type="text"]'),
     ).toHaveValue(original);
@@ -105,7 +134,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
     await loginAs(page, TEACHER, 'password123');
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
     await page.goto('/entry');
-    await pickSession1(page);
+    await openSeedSheet(page, section);
 
     const row = page.locator('app-entry-table .line', { hasText: STUDENT });
     const total = row.locator('strong.total');
@@ -145,7 +174,7 @@ test.describe.serial('Daily entry (roadmap S17 attendance, S19 goals, S18 over-c
 
     // and the bad value was NOT saved
     await page.reload();
-    await pickSession1(page);
+    await openSeedSheet(page, section);
     await expect(
       page
         .locator('app-entry-table .line', { hasText: STUDENT })

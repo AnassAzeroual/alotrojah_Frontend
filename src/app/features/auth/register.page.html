@@ -25,7 +25,9 @@
             </svg>
           </span>
           <h1 class="auth-title">{{ 'auth.request_sent_title' | translate }}</h1>
-          <p class="auth-sub">{{ 'auth.request_sent_body' | translate }}</p>
+          <p class="auth-sub">
+            <bdi>{{ 'auth.request_sent_body' | translate }}</bdi>
+          </p>
           <a routerLink="/login" class="auth-btn">{{ 'auth.back_to_login' | translate }}</a>
         </div>
       } @else {

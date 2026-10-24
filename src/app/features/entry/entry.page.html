@@ -269,7 +269,7 @@
                     <path d="M8 2v4M16 2v4M3 10h18" />
                     <rect x="3" y="4" width="18" height="18" rx="2" />
                   </svg>
-                  <span dir="ltr">{{ formatRange(w.start_date, w.end_date) }}</span>
+                  <span dir="auto">{{ formatRange(w.start_date, w.end_date) }}</span>
                 </span>
                 <span class="tag soft">{{ 'weekType.' + w.week_type | translate }}</span>
               </span>
@@ -340,7 +340,7 @@
                     <path d="M8 2v4M16 2v4M3 10h18" />
                     <rect x="3" y="4" width="18" height="18" rx="2" />
                   </svg>
-                  <span dir="ltr">{{ formatDate(s.planned_date) }}</span>
+                  <span dir="auto">{{ formatDate(s.planned_date) }}</span>
                   @if (isToday(s.planned_date)) {
                     <span class="tag gold">{{ 'entry.today' | translate }}</span>
                   }

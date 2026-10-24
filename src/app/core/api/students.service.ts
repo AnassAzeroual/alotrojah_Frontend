@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
 import {
   StoreStudentRequest,
@@ -15,6 +15,22 @@ export class StudentsService {
 
   list(params?: QueryParams): Observable<StudentsIndexResponse['data']> {
     return this.api.get<StudentsIndexResponse['data']>('/students', params);
+  }
+
+  /**
+   * Every page (the list endpoint paginates 20/page). The entry sheet must
+   * show the whole roster, not just page 1.
+   */
+  async listAll(params?: QueryParams): Promise<StudentResource[]> {
+    const out: StudentResource[] = [];
+    let page = 1;
+    for (;;) {
+      const res = await firstValueFrom(this.list({ ...params, page }));
+      out.push(...res.data);
+      if (res.meta.current_page * res.meta.per_page >= res.meta.total) break;
+      page++;
+    }
+    return out;
   }
 
   get(id: number): Observable<StudentResource> {

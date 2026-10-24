@@ -4,11 +4,23 @@ import { adminLogin } from './api';
 const STUDENT = 'أحمد بن يوسف';
 
 async function pickStudent(page: import('@playwright/test').Page): Promise<void> {
+  if (page.url().includes('/results/term')) {
+    // Term results has no search step — every pupil is already on a card.
+    const card = page.locator('.student-card').filter({ hasText: STUDENT });
+    // The board loads every pupil up front; on a cold/single-worker backend the
+    // first paint can take longer than Playwright's 5s default.
+    await expect(card).toHaveCount(1, { timeout: 15_000 });
+    await card.click();
+    return;
+  }
+
+  // Report pages keep the search + pick list.
   const search = page.getByRole('searchbox', { name: 'الطالب' });
+  await expect(search).toBeVisible();
   await search.fill(STUDENT);
   await search.blur(); // (change)-bound
   const picks = page.locator('.pick');
-  await expect(picks).toHaveCount(1);
+  await expect(picks).toHaveCount(1, { timeout: 15_000 });
   await picks.first().click();
 }
 
@@ -23,12 +35,11 @@ test.describe.serial('Term results & reports (roadmap S25, S26, S27)', () => {
 
     await page.getByRole('button', { name: 'الفصل', exact: true }).click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
-    await page.getByRole('button', { name: 'تحميل الموجودة' }).click();
 
     // seed: hifz 19.00, murajaa 18.80, exam 17.60, avg 18.47, honor تشجيع
-    await expect(page.getByText('18.47')).toBeVisible();
-    // honor also appears in the honor-form dropdown after fill() — scope to the badge
-    await expect(page.locator('app-status-badge').getByText('تشجيع')).toBeVisible();
+    const card = page.locator('.student-card').filter({ hasText: STUDENT });
+    await expect(card.getByText('18.47')).toBeVisible();
+    await expect(card.locator('app-status-badge').getByText('تشجيع')).toBeVisible();
 
     const hifz = page.locator('form').getByLabel('الحفظ', { exact: true });
     await expect(hifz).toHaveValue('19');
@@ -45,7 +56,6 @@ test.describe.serial('Term results & reports (roadmap S25, S26, S27)', () => {
     await pickStudent(page);
     await page.getByRole('button', { name: 'الفصل', exact: true }).click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
-    await page.getByRole('button', { name: 'تحميل الموجودة' }).click();
     await expect(page.locator('form').getByLabel('الحفظ', { exact: true })).toHaveValue('18');
 
     // restore the seed value (drift-safe)
@@ -60,7 +70,6 @@ test.describe.serial('Term results & reports (roadmap S25, S26, S27)', () => {
     await pickStudent(page);
     await page.getByRole('button', { name: 'الفصل', exact: true }).click();
     await page.locator('.dd.open [role="option"]').nth(1).click();
-    await page.getByRole('button', { name: 'تحميل الموجودة' }).click();
     await expect(page.locator('form').getByLabel('الحفظ', { exact: true })).toHaveValue('19');
   });
 

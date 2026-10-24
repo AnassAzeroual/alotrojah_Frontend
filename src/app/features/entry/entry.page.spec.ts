@@ -79,7 +79,10 @@ describe('EntryPage card flow', () => {
           req.flush({ success: true, message: null, data: body });
         });
     };
-    flush('/groups', { data: groups });
+    flush('/groups', {
+      data: groups,
+      meta: { current_page: 1, per_page: 20, total: groups.length },
+    });
     flush('/scoring-modules', []);
     flush('/weeks', { data: weeks });
     flush('/levels', levels);
@@ -98,8 +101,17 @@ describe('EntryPage card flow', () => {
 
   const flushStudents = (students: unknown[] = []): void => {
     http
-      .match((r) => r.url.endsWith('/students') && r.method === 'GET')
-      .forEach((req) => req.flush({ success: true, message: null, data: { data: students } }));
+      .match((r) => r.url.includes('/students') && r.method === 'GET')
+      .forEach((req) =>
+        req.flush({
+          success: true,
+          message: null,
+          data: {
+            data: students,
+            meta: { current_page: 1, per_page: 20, total: students.length },
+          },
+        }),
+      );
   };
 
   const flushSessions = (sessions: unknown[] = [SESSION_50]): void => {
@@ -286,6 +298,56 @@ describe('EntryPage card flow', () => {
     await cycle();
     flushWeeks([]);
     await cycle();
+    expect(page.selectedGroup()).toBeNull();
+    expect(page.step()).toBe(1);
+  });
+
+  it('pages through every section so late groups stay reachable', async () => {
+    const firstPage = Array.from({ length: 20 }, (_, i) => ({
+      id: i + 1,
+      name: `G${i + 1}`,
+      center_id: 11,
+    }));
+    const meta = (current: number, total: number) => ({
+      current_page: current,
+      per_page: 20,
+      total,
+    });
+
+    // Boot: the picker asks for page 1 and is told a second page exists.
+    http
+      .match((r) => r.url.includes('/groups') && r.method === 'GET')
+      .forEach((req) => {
+        expect(req.request.params.get('page')).toBe('1');
+        req.flush({
+          success: true,
+          message: null,
+          data: { data: firstPage, meta: meta(1, 21) },
+        });
+      });
+    http
+      .match((r) => r.url.includes('/scoring-modules'))
+      .forEach((req) => req.flush({ success: true, message: null, data: [] }));
+    http
+      .match((r) => r.url.includes('/weeks'))
+      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
+    http
+      .match((r) => r.url.includes('/levels'))
+      .forEach((req) => req.flush({ success: true, message: null, data: [] }));
+    await cycle(4);
+
+    const second = http.match((r) => r.url.includes('/groups') && r.params.get('page') === '2');
+    expect(second.length).toBe(1);
+    second[0].flush({
+      success: true,
+      message: null,
+      data: { data: [{ id: 21, name: 'G21', center_id: 11 }], meta: meta(2, 21) },
+    });
+    await cycle(4);
+
+    expect(page.groups().length).toBe(21);
+    expect(page.groups().map((g) => g.id)).toContain(21);
+    // 21 sections: the lone-section shortcut must stay out of the way.
     expect(page.selectedGroup()).toBeNull();
     expect(page.step()).toBe(1);
   });

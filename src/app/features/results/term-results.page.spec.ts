@@ -4,7 +4,7 @@ import {
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
@@ -40,12 +40,16 @@ const OWN_STUDENT = {
 };
 
 const resultsStub = {
-  termResults: () => of({ data: [OWN_RESULT] }),
+  termResults: () => of({ data: [OWN_RESULT], meta: { last_page: 1 } }),
   upsertTerm: (p: unknown) => of({ data: OWN_RESULT, ...(p as object) }),
 };
 
 const studentsStub = {
-  list: () => of({ data: [OWN_STUDENT] }),
+  list: () => of({ data: [OWN_STUDENT], meta: { last_page: 1 } }),
+};
+
+const failingStudentsStub = {
+  list: () => throwError(() => new Error('students unavailable')),
 };
 
 const planningStub = {
@@ -54,6 +58,7 @@ const planningStub = {
 
 const refStub = {
   seasons: () => of({ data: [{ id: 1, is_current: true, name_ar: '1448' }] }),
+  levels: () => of([{ id: 1, name_ar: 'المستوى الأول' }]),
 };
 
 const studentAuth = {
@@ -69,7 +74,7 @@ const teacherAuth = {
 };
 
 describe('TermResultsPage', () => {
-  const setup = (auth: unknown) => {
+  const setup = (auth: unknown, students: unknown = studentsStub) => {
     TestBed.configureTestingModule({
       imports: [TermResultsPage],
       providers: [
@@ -78,7 +83,7 @@ describe('TermResultsPage', () => {
         }),
         { provide: AuthService, useValue: auth },
         { provide: ResultsService, useValue: resultsStub },
-        { provide: StudentsService, useValue: studentsStub },
+        { provide: StudentsService, useValue: students },
         { provide: PlanningService, useValue: planningStub },
         { provide: ReferenceService, useValue: refStub },
       ],
@@ -113,16 +118,45 @@ describe('TermResultsPage', () => {
     expect(page.form.pristine).toBe(true);
   });
 
-  it('keeps the staff search/upsert surface for teachers', async () => {
+  it('shows every pupil as a card for teachers, without search', async () => {
     const fixture = setup(teacherAuth);
     const page = fixture.componentInstance;
+    await fixture.whenStable();
+    fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
 
     expect(page.isStudent()).toBe(false);
     expect(page.pickedStudent()).toBeNull();
-    expect(page.pickedTerm()).toBeNull();
-    expect(el.querySelector('[data-testid="results-student-search"]')).not.toBeNull();
-    // The upsert form only renders once a pupil + term are picked; no auto-pick for staff.
-    expect(el.querySelector('button[type="submit"]')).toBeNull();
+    // The first term is auto-picked so cards can show saved results immediately.
+    expect(page.pickedTerm()).toBe(3);
+    expect(el.querySelector('[data-testid="results-student-search"]')).toBeNull();
+    expect(el.querySelectorAll('.pick.student-card')).toHaveLength(1);
+    expect(el.textContent).toContain('أحمد طالب');
+    expect(el.textContent).toContain('16.8');
+
+    // The editor only opens from a card, then hydrates the saved values.
+    const card = el.querySelector('.pick.student-card') as HTMLButtonElement;
+    card.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(page.pickedStudent()).toBe(5);
+    expect(el.querySelector('button[type="submit"]')).not.toBeNull();
+    expect(page.form.controls.hifz_total.value).toBe(17.5);
+  });
+
+  it('renders the students error state instead of crashing', async () => {
+    const fixture = setup(teacherAuth, failingStudentsStub);
+    const page = fixture.componentInstance;
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(page.studentRows()).toEqual([]);
+    const alert = el.querySelector('.board-state[role="alert"]');
+    expect(alert).not.toBeNull();
+    expect(alert?.textContent).toContain('result.students_error');
+    expect(el.querySelectorAll('.pick.student-card')).toHaveLength(0);
   });
 });

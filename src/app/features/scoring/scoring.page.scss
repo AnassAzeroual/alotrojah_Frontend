@@ -102,12 +102,16 @@
   border-radius: 24px;
   border-color: color-mix(in srgb, var(--green-500) 16%, var(--color-border));
   background:
-    radial-gradient(120% 150% at 100% 0%,
+    radial-gradient(
+      120% 150% at 100% 0%,
       color-mix(in srgb, var(--color-accent) 10%, transparent),
-      transparent 55%),
-    linear-gradient(120deg,
+      transparent 55%
+    ),
+    linear-gradient(
+      120deg,
       color-mix(in srgb, var(--green-500) 10%, var(--color-surface)),
-      var(--color-surface) 60%);
+      var(--color-surface) 60%
+    );
 
   &::after {
     content: '';
@@ -220,16 +224,18 @@
   padding: 0;
   overflow: hidden;
   border-radius: 22px;
+  align-items: center;
 }
 
 .stat {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 9px;
   min-width: 0;
   padding: 14px;
 
-  &+.stat {
+  & + .stat {
     border-inline-start: 1px solid var(--color-border);
   }
 }
@@ -576,8 +582,6 @@ app-dropdown {
   align-items: center;
   justify-content: space-between;
   gap: 10px 12px;
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--color-border);
 }
 
 .panel-title {
@@ -782,7 +786,7 @@ app-dropdown {
   gap: 3px;
   min-width: 0;
 
-  >strong {
+  > strong {
     overflow: hidden;
     color: var(--color-text);
     font-weight: 700;
@@ -906,15 +910,15 @@ app-dropdown {
     cursor: pointer;
   }
 
-  input:checked+.switch-track {
+  input:checked + .switch-track {
     background: var(--green-600);
   }
 
-  input:checked+.switch-track::after {
+  input:checked + .switch-track::after {
     transform: translateX(18px);
   }
 
-  input:focus-visible+.switch-track {
+  input:focus-visible + .switch-track {
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-500) 28%, transparent);
   }
 }
@@ -1035,7 +1039,7 @@ app-dropdown {
     transform: scaleX(-1);
   }
 
-  .switch input:checked+.switch-track::after {
+  .switch input:checked + .switch-track::after {
     transform: translateX(-18px);
   }
 
@@ -1236,7 +1240,7 @@ app-dropdown {
     justify-content: flex-end;
   }
 
-  .subject-copy>strong {
+  .subject-copy > strong {
     overflow: visible;
     overflow-wrap: anywhere;
     white-space: normal;

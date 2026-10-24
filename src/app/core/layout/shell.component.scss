@@ -722,3 +722,12 @@
     display: block;
   }
 }
+
+// At 320px the menu, both date chips and the avatar need ~360px. The drawer
+// already carries the identity block, so drop the avatar instead of letting
+// the topbar overflow the page.
+@media (max-width: 359px) {
+  .top-end .user-chip {
+    display: none;
+  }
+}

@@ -1,133 +1,639 @@
-<section class="page">
-  <div class="page-head anim-rise">
-    <h1>{{ 'result.term_title' | translate }}</h1>
-  </div>
-
-  <div class="card anim-rise" style="--i: 1">
-    @if (!isStudent()) {
-      <label class="field search"
-        ><span>{{ 'planning.pick_student' | translate }}</span>
-        <input
-          type="search"
-          data-testid="results-student-search"
-          [value]="search()"
-          (change)="search.set($any($event.target).value)"
-          [placeholder]="'list.search' | translate"
-        />
-      </label>
-      <div class="cluster">
-        @for (s of found.value() ?? []; track s.id) {
-          <button
-            type="button"
-            class="pick"
-            [class.on]="pickedStudent() === s.id"
-            (click)="pickedStudent.set(s.id)"
-          >
-            {{ s.full_name }}
-          </button>
-        }
+<section class="page term-results-page">
+  <header class="page-head results-head anim-rise">
+    <div class="head-main">
+      <span class="head-icon" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+        </svg>
+      </span>
+      <div class="head-copy">
+        <h1>{{ 'result.term_title' | translate }}</h1>
+        <p>
+          {{ (isStudent() ? 'result.student_subtitle' : 'result.staff_subtitle') | translate }}
+        </p>
       </div>
-    }
-    <label class="field"
-      ><span>{{ 'planning.pick_term' | translate }}</span>
+    </div>
+
+    <div class="term-picker">
+      <span class="term-picker-label">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path
+            d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+          />
+        </svg>
+        {{ 'planning.pick_term' | translate }}
+      </span>
       <app-dropdown
         [options]="termOptions()"
-        [value]="txt(pickedTerm())"
-        (valueChange)="pickedTerm.set(num($event))"
+        [value]="pickedTerm() ?? ''"
+        (valueChange)="setTerm($event)"
         ariaLabelKey="planning.pick_term"
+        testId="results-term"
+        [compact]="true"
       />
-    </label>
-    @if (existing.value()) {
-      <div class="cluster">
-        @if (!isStudent()) {
-          <button type="button" class="btn btn-ghost" (click)="fill()">
-            {{ 'planning.load_existing' | translate }}
-          </button>
-        }
-        <app-status-badge kind="honor" [value]="existing.value()!.honor_flag" />
-        <strong class="ltr-num">{{ existing.value()!.general_avg ?? '—' }}</strong>
-      </div>
-    }
-  </div>
+    </div>
+  </header>
 
-  @if (pickedStudent() !== null && pickedTerm() !== null) {
-    @if (isStudent()) {
-      <div class="card anim-rise" style="--i: 2">
-        @if (existing.value()) {
-          <div class="grid-auto">
-            @for (f of scoreFields; track f) {
-              <div class="field">
-                <span>{{ 'result.' + f | translate }}</span>
-                <strong class="ltr-num">{{ existing.value()![f] ?? '—' }}</strong>
+  @let student = selectedStudent();
+
+  @if (isStudent()) {
+    @if (students.isLoading() && !student) {
+      <section class="card loading-card anim-rise" style="--i: 1" aria-hidden="true">
+        <div class="skeleton sk-title"></div>
+        <div class="skeleton sk-panel"></div>
+      </section>
+    } @else if (!student) {
+      <section class="state-card card anim-rise" style="--i: 1">
+        <span class="state-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21a8 8 0 0 1 16 0" />
+          </svg>
+        </span>
+        <h2>{{ 'result.no_student_record' | translate }}</h2>
+        <p>{{ 'dash.noPupil' | translate }}</p>
+      </section>
+    } @else if (pickedTerm() === null) {
+      <section class="state-card card anim-rise" style="--i: 1">
+        <span class="state-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+            />
+            <path d="M9 14h6" />
+          </svg>
+        </span>
+        <h2>{{ 'result.choose_term' | translate }}</h2>
+        <p>{{ 'result.choose_term_hint' | translate }}</p>
+      </section>
+    } @else if (termResults.error()) {
+      <section class="state-card card anim-rise" style="--i: 1" role="alert">
+        <span class="state-icon is-danger" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.9"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v5M12 16h.01" />
+          </svg>
+        </span>
+        <h2>{{ 'common.error' | translate }}</h2>
+        <p>{{ 'result.load_error' | translate }}</p>
+        <button type="button" class="btn btn-ghost" (click)="termResults.reload()">
+          {{ 'result.retry' | translate }}
+        </button>
+      </section>
+    } @else if (termResults.isLoading()) {
+      <section class="card loading-card anim-rise" style="--i: 1" aria-hidden="true">
+        <div class="skeleton sk-title"></div>
+        <div class="skeleton sk-panel"></div>
+      </section>
+    } @else if (selectedResult(); as result) {
+      <section class="result-sheet result-view card anim-rise" style="--i: 1">
+        <header class="result-head">
+          <span class="student-avatar is-large" aria-hidden="true">{{
+            initials(student.full_name)
+          }}</span>
+          <div class="result-copy">
+            <span class="eyebrow">{{ selectedTermName() }}</span>
+            <h2>{{ 'result.your_result' | translate }}</h2>
+            <p>
+              {{ student.full_name }}
+              @if (student.group?.name; as groupName) {
+                <span>· {{ groupName }}</span>
+              }
+            </p>
+          </div>
+          @if (result.honor_flag !== 'none') {
+            <app-status-badge kind="honor" [value]="result.honor_flag" />
+          }
+        </header>
+
+        <div class="result-overview">
+          <div class="average-panel">
+            <span class="average-label">{{ 'result.general_avg' | translate }}</span>
+            <span class="average-value">
+              <strong class="ltr-num">{{ result.general_avg ?? '—' }}</strong>
+              <small>/ 20</small>
+            </span>
+          </div>
+
+          <div class="score-tiles">
+            @for (field of detailScoreFields; track field) {
+              <div class="score-tile">
+                <span>{{ 'result.' + field | translate }}</span>
+                <strong class="ltr-num">{{ result[field] ?? '—' }}</strong>
+                <small>/ 20</small>
               </div>
             }
-            <div class="field">
-              <span>{{ 'result.teacher_notes' | translate }}</span>
-              <span>{{ existing.value()!.teacher_notes ?? '—' }}</span>
-            </div>
-            <div class="field">
-              <span>{{ 'result.supervisor_note' | translate }}</span>
-              <span>{{ existing.value()!.supervisor_note ?? '—' }}</span>
-            </div>
-            <div class="field">
-              <span>{{ 'result.honor' | translate }}</span>
-              <app-status-badge kind="honor" [value]="existing.value()!.honor_flag" />
-            </div>
+          </div>
+        </div>
+
+        <div class="notes-grid result-notes">
+          <div class="note-box">
+            <span>{{ 'result.teacher_notes' | translate }}</span>
+            <p>{{ result.teacher_notes || '—' }}</p>
+          </div>
+          <div class="note-box">
+            <span>{{ 'result.supervisor_note' | translate }}</span>
+            <p>{{ result.supervisor_note || '—' }}</p>
+          </div>
+        </div>
+      </section>
+    } @else {
+      <section class="result-sheet result-view card anim-rise" style="--i: 1">
+        <header class="result-head">
+          <span class="student-avatar is-large" aria-hidden="true">{{
+            initials(student.full_name)
+          }}</span>
+          <div class="result-copy">
+            <span class="eyebrow">{{ selectedTermName() }}</span>
+            <h2>{{ 'result.your_result' | translate }}</h2>
+            <p>{{ student.full_name }}</p>
+          </div>
+        </header>
+        <div class="empty-result">
+          <span class="state-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M6 3h9l4 4v14H6z" />
+              <path d="M14 3v5h5M9 13h6M9 17h4" />
+            </svg>
+          </span>
+          <h3>{{ 'result.no_result_title' | translate }}</h3>
+          <p>{{ 'result.student_none' | translate }}</p>
+        </div>
+      </section>
+    }
+  } @else {
+    <div class="workspace" [class.has-selection]="!!student">
+      <section class="student-board card anim-rise" style="--i: 1">
+        <header class="board-head">
+          <div class="board-copy">
+            <span class="eyebrow">{{ selectedTermName() }}</span>
+            <h2>{{ 'result.students_title' | translate }}</h2>
+            <p>{{ 'result.students_hint' | translate }}</p>
+          </div>
+          @if (!students.isLoading() && studentRows().length) {
+            <span class="board-count">
+              {{ 'result.students_count' | translate: { count: studentRows().length } }}
+            </span>
+          }
+        </header>
+
+        @if (termResults.error()) {
+          <div class="board-alert" role="alert">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 8v5M12 16h.01" />
+            </svg>
+            <span>{{ 'result.load_error' | translate }}</span>
+            <button type="button" class="btn btn-ghost" (click)="termResults.reload()">
+              {{ 'result.retry' | translate }}
+            </button>
+          </div>
+        }
+
+        @if (students.isLoading()) {
+          <div class="student-grid" aria-hidden="true">
+            @for (i of [1, 2, 3, 4]; track i) {
+              <div class="skeleton sk-student"></div>
+            }
+          </div>
+        } @else if (students.error()) {
+          <div class="board-state" role="alert">
+            <span class="state-icon is-danger" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v5M12 16h.01" />
+              </svg>
+            </span>
+            <p>{{ 'result.students_error' | translate }}</p>
+            <button type="button" class="btn btn-ghost" (click)="students.reload()">
+              {{ 'result.retry' | translate }}
+            </button>
+          </div>
+        } @else if (!studentRows().length) {
+          <div class="board-state">
+            <span class="state-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21a8 8 0 0 1 16 0" />
+              </svg>
+            </span>
+            <p>{{ 'result.students_empty' | translate }}</p>
           </div>
         } @else {
-          <p class="muted">{{ 'result.student_none' | translate }}</p>
+          <div class="student-grid">
+            @for (item of studentRows(); track item.id; let i = $index) {
+              <button
+                type="button"
+                class="pick student-card anim-rise"
+                [class.on]="pickedStudent() === item.id"
+                [style.--i]="i + 2"
+                [attr.aria-pressed]="pickedStudent() === item.id"
+                aria-controls="student-result-panel"
+                (click)="selectStudent(item)"
+              >
+                <span class="card-top">
+                  <span class="student-avatar" aria-hidden="true">{{
+                    initials(item.full_name)
+                  }}</span>
+                  <span class="card-flags">
+                    <span
+                      class="status-chip"
+                      [class.is-active]="item.status === 'active'"
+                      [class.is-warn]="item.status !== 'active'"
+                    >
+                      {{ 'studentStatus.' + item.status | translate }}
+                    </span>
+                    @if (pickedStudent() === item.id) {
+                      <span class="selected-check" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.4"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="m5 12 4 4L19 6" />
+                        </svg>
+                      </span>
+                    }
+                  </span>
+                </span>
+
+                <strong class="student-name">{{ item.full_name }}</strong>
+
+                <span class="student-meta">
+                  @if (item.group?.name; as groupName) {
+                    <span class="meta-chip">{{ groupName }}</span>
+                  }
+                  @if (levelName(item.level_id); as level) {
+                    <span class="meta-chip">{{ level }}</span>
+                  }
+                  <span class="meta-chip is-mode">{{
+                    'mode.' + item.memorization_mode | translate
+                  }}</span>
+                </span>
+
+                <span class="card-result">
+                  @if (pickedTerm() === null) {
+                    <span class="result-empty">{{ 'result.choose_term_short' | translate }}</span>
+                  } @else if (termResults.isLoading()) {
+                    <span class="result-empty">{{ 'common.loading' | translate }}</span>
+                  } @else if (termResults.error()) {
+                    <span class="result-empty">{{ 'result.unavailable_short' | translate }}</span>
+                  } @else if (resultFor(item.id); as result) {
+                    <span class="result-score">
+                      <span class="sr-only">{{ 'result.general_avg' | translate }}</span>
+                      <strong class="ltr-num">{{ result.general_avg ?? '—' }}</strong>
+                      <small>/ 20</small>
+                    </span>
+                    @if (result.honor_flag !== 'none') {
+                      <app-status-badge kind="honor" [value]="result.honor_flag" />
+                    }
+                  } @else {
+                    <span class="result-empty is-empty">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                      {{ 'result.no_result_short' | translate }}
+                    </span>
+                  }
+
+                  <svg
+                    class="card-go"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </span>
+              </button>
+            }
+          </div>
         }
-      </div>
-    } @else {
-      <form
-        class="card anim-rise"
-        style="--i: 2"
-        [formGroup]="form"
-        (ngSubmit)="submit()"
-        autocomplete="off"
-      >
-        @for (f of scoreFields; track f) {
-          <label class="field"
-            ><span>{{ 'result.' + f | translate }}</span>
-            <input
-              type="number"
-              class="ltr-num"
-              [formControlName]="f"
-              min="0"
-              max="20"
-              step="0.5"
-            />
-          </label>
+      </section>
+
+      <aside #detailPanel class="detail-panel">
+        @if (student) {
+          <section id="student-result-panel" class="detail-card card anim-rise">
+            <header class="detail-head">
+              <span class="student-avatar is-large" aria-hidden="true">{{
+                initials(student.full_name)
+              }}</span>
+              <div class="detail-identity">
+                <span class="eyebrow">{{ selectedTermName() }}</span>
+                <h2>{{ student.full_name }}</h2>
+                <span class="student-meta">
+                  @if (student.group?.name; as groupName) {
+                    <span class="meta-chip">{{ groupName }}</span>
+                  }
+                  @if (levelName(student.level_id); as level) {
+                    <span class="meta-chip">{{ level }}</span>
+                  }
+                </span>
+              </div>
+              <button
+                type="button"
+                class="detail-close"
+                [attr.aria-label]="'result.close_result' | translate"
+                [attr.title]="'result.close_result' | translate"
+                (click)="closeResult()"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+                <span class="detail-close-label">{{ 'result.back_to_students' | translate }}</span>
+              </button>
+            </header>
+
+            @if (pickedTerm() === null) {
+              <div class="detail-state">
+                <span class="state-icon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+                    />
+                    <path d="M9 14h6" />
+                  </svg>
+                </span>
+                <h3>{{ 'result.choose_term' | translate }}</h3>
+                <p>{{ 'result.choose_term_hint' | translate }}</p>
+              </div>
+            } @else if (termResults.error()) {
+              <div class="detail-state" role="alert">
+                <span class="state-icon is-danger" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 8v5M12 16h.01" />
+                  </svg>
+                </span>
+                <h3>{{ 'common.error' | translate }}</h3>
+                <p>{{ 'result.load_error' | translate }}</p>
+                <button type="button" class="btn btn-ghost" (click)="termResults.reload()">
+                  {{ 'result.retry' | translate }}
+                </button>
+              </div>
+            } @else if (!draftReady()) {
+              <div class="detail-loading" aria-hidden="true">
+                <div class="skeleton sk-field"></div>
+                <div class="skeleton sk-field"></div>
+                <div class="skeleton sk-panel"></div>
+              </div>
+            } @else {
+              <form class="result-form" [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
+                <div class="form-copy">
+                  <div>
+                    <h3>
+                      {{
+                        (selectedResult() ? 'result.edit_result' : 'result.add_result') | translate
+                      }}
+                    </h3>
+                    <p>{{ 'result.form_hint' | translate }}</p>
+                  </div>
+                  @if (selectedResult(); as result) {
+                    @if (result.honor_flag !== 'none') {
+                      <app-status-badge kind="honor" [value]="result.honor_flag" />
+                    }
+                  }
+                </div>
+
+                <div class="score-grid">
+                  @for (field of scoreFields; track field) {
+                    <div class="score-field">
+                      <label [for]="'result-score-' + field">{{
+                        'result.' + field | translate
+                      }}</label>
+                      <span class="score-input">
+                        <input
+                          [id]="'result-score-' + field"
+                          type="number"
+                          class="ltr-num"
+                          dir="ltr"
+                          inputmode="decimal"
+                          [formControlName]="field"
+                          min="0"
+                          max="20"
+                          step="0.5"
+                        />
+                        <span class="score-out" aria-hidden="true">/ 20</span>
+                      </span>
+                    </div>
+                  }
+                </div>
+
+                <div class="notes-grid form-notes">
+                  <div class="note-field">
+                    <label for="result-teacher-notes">{{
+                      'result.teacher_notes' | translate
+                    }}</label>
+                    <textarea
+                      id="result-teacher-notes"
+                      formControlName="teacher_notes"
+                      rows="3"
+                      [placeholder]="'result.teacher_notes' | translate"
+                    ></textarea>
+                  </div>
+                  <div class="note-field">
+                    <label for="result-supervisor-note">{{
+                      'result.supervisor_note' | translate
+                    }}</label>
+                    <textarea
+                      id="result-supervisor-note"
+                      formControlName="supervisor_note"
+                      rows="3"
+                      [placeholder]="'result.supervisor_note' | translate"
+                    ></textarea>
+                  </div>
+                </div>
+
+                @if (saveState() === 'saved') {
+                  <div class="banner success anim-rise" role="status">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m5 12 4 4L19 6" />
+                    </svg>
+                    {{ 'result.saved' | translate }}
+                  </div>
+                } @else if (saveState() === 'error') {
+                  <div class="banner danger" role="alert">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 8v5M12 16h.01" />
+                    </svg>
+                    {{ 'result.save_error' | translate }}
+                  </div>
+                }
+
+                <footer class="form-footer">
+                  <div class="honor-field">
+                    <span class="form-label">{{ 'result.honor' | translate }}</span>
+                    <app-dropdown
+                      formControlName="honor_flag"
+                      [options]="honorOptions"
+                      ariaLabelKey="result.honor"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    class="btn btn-primary save-btn"
+                    [class.is-loading]="saving()"
+                    [disabled]="saving()"
+                  >
+                    @if (saving()) {
+                      <app-spinner />
+                    } @else {
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+                        <path d="M17 21v-8H7v8M7 3v5h8" />
+                      </svg>
+                      <span>{{ 'common.save' | translate }}</span>
+                    }
+                  </button>
+                </footer>
+              </form>
+            }
+          </section>
+        } @else {
+          <section class="pick-prompt card anim-rise" style="--i: 2">
+            <span class="pick-prompt-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+              </svg>
+            </span>
+            <h2>{{ 'result.pick_student_card_title' | translate }}</h2>
+            <p>{{ 'result.pick_student_card_hint' | translate }}</p>
+          </section>
         }
-        <label class="field"
-          ><span>{{ 'result.teacher_notes' | translate }}</span
-          ><input formControlName="teacher_notes"
-        /></label>
-        <label class="field"
-          ><span>{{ 'result.supervisor_note' | translate }}</span
-          ><input formControlName="supervisor_note"
-        /></label>
-        <label class="field"
-          ><span>{{ 'result.honor' | translate }}</span>
-          <app-dropdown
-            formControlName="honor_flag"
-            [options]="honorOptions"
-            ariaLabelKey="result.honor"
-          />
-        </label>
-        <button
-          type="submit"
-          class="btn btn-primary btn-block"
-          [class.is-loading]="saving()"
-          [disabled]="saving()"
-        >
-          @if (saving()) {
-            <app-spinner />
-          } @else {
-            {{ 'common.save' | translate }}
-          }
-        </button>
-      </form>
-    }
+      </aside>
+    </div>
   }
 </section>

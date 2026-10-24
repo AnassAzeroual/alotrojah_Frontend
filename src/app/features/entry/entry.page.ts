@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
-import { firstValueFrom, forkJoin, map } from 'rxjs';
+import { firstValueFrom, forkJoin, from, map } from 'rxjs';
 import { CalendarService } from '../../core/api/calendar.service';
 import { EntryService } from '../../core/api/entry.service';
 import { GroupsService } from '../../core/api/groups.service';
@@ -45,7 +45,11 @@ export class EntryPage {
   private readonly language = inject(LanguageService);
   private readonly levelsSvc = inject(LevelsService);
 
-  readonly groups = toSignal(this.groupsSvc.list().pipe(map((p) => p.data)), { initialValue: [] });
+  /**
+   * Every section the user may enter for — not just the first API page. The
+   * center can hold more than 20 sections, and the picker is the only way in.
+   */
+  readonly groups = toSignal(from(this.groupsSvc.listAll()), { initialValue: [] });
   readonly modules = toSignal(this.entry.modules(), { initialValue: [] });
   /**
    * Center-scoped weeks: the picked group's center fixes the working season
@@ -131,9 +135,9 @@ export class EntryPage {
   readonly students = resource({
     params: () => ({ g: this.selectedGroup(), t: this.savedTick() }),
     loader: ({ params }) =>
-      params.g === null
-        ? Promise.resolve([])
-        : firstValueFrom(this.studentsSvc.list({ group_id: params.g }).pipe(map((p) => p.data))),
+      // Whole roster: the list endpoint paginates 20/page and the sheet is the
+      // only place a teacher can score the pupils beyond page 1.
+      params.g === null ? Promise.resolve([]) : this.studentsSvc.listAll({ group_id: params.g }),
   });
 
   readonly sessions = resource({
