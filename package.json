@@ -52,7 +52,7 @@
     "chart.js": "^4.5.1",
     "date-fns": "^4.4.0",
     "flatpickr": "^4.6.13",
-    "ng-cryptostore": "^21.2.0",
+    "ng-cryptostore": "file:vendor/ng-cryptostore",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
