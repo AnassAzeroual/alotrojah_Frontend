@@ -63,8 +63,7 @@
       @for (item of items(); track item.path) {
         <a
           [routerLink]="item.path"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: !!item.exact }"
+          [class.active]="item.path === activeNav()"
           (click)="closeMobile()"
           [attr.data-icon]="item.icon"
           [attr.data-testid]="item.testId"
@@ -282,6 +281,25 @@
         </div>
       </div>
       <div class="top-end">
+        @if (user()?.role === 'admin') {
+          <button
+            type="button"
+            class="icon-btn guide-btn"
+            (click)="guide.show()"
+            data-testid="setup-guide-open"
+            [attr.aria-label]="'setup.open' | translate"
+            [attr.title]="'setup.open' | translate"
+            [class.has-work]="guide.hasWork()"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M15.5 8.5l-2 5-5 2 2-5z" />
+            </svg>
+            @if (guide.hasWork()) {
+              <span class="guide-dot" aria-hidden="true"></span>
+            }
+          </button>
+        }
         <button
           type="button"
           class="icon-btn theme-btn"
@@ -341,4 +359,5 @@
       <router-outlet />
     </main>
   </div>
+  <app-setup-guide />
 </div>

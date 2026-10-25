@@ -327,7 +327,10 @@
 .shell.collapsed .brand-txt,
 .shell.collapsed .brand-badge,
 .shell.collapsed .nav-caption,
-.shell.collapsed .side-search,
+.shell.collapsed .side-search {
+  display: none;
+}
+
 .shell.collapsed .side-foot .foot-btn {
   justify-content: center;
   padding: var(--space-2);
@@ -574,10 +577,11 @@
 
 .content {
   // Without width, flex-item auto inline margins size this box to fit-content.
+  // The app is edge-to-edge: the main column already accounts for the sidebar,
+  // so no arbitrary max-width should re-center and shrink wide screens.
   width: 100%;
+  min-width: 0;
   padding: var(--space-4) var(--space-4) var(--space-6);
-  max-width: 1520px;
-  margin-inline: auto;
 
   @include up($bp-md) {
     padding: var(--space-5);
@@ -606,10 +610,11 @@
 }
 
 // Tablet + phone: the topbar budget cannot carry the full date strings or the
-// identity block below $bp-lg (the rail leaves ~684px; an expanded sidebar
-// ~500px). Chips switch to numeric short forms, the decorative "today" label,
+// identity block once the expanded sidebar leaves under ~842px. That happens
+// below 1120px; starting at $bp-lg (1024) leaves a ~96px overflow at the
+// boundary. Chips switch to numeric short forms, the decorative "today" label,
 // identity block and the bell (with its registrations badge) drop out.
-@include down($bp-lg) {
+@include down(1120px) {
   .topbar {
     padding-inline: var(--space-3);
     gap: var(--space-2);
@@ -666,6 +671,40 @@
     visibility: visible;
   }
 
+  // The phone drawer is always a full, labelled panel. Ignore a `collapsed`
+  // state inherited from a desktop/tablet session or from resizing the window.
+  .shell.collapsed .sidebar {
+    width: min(300px, 86vw);
+    align-items: stretch;
+  }
+
+  .shell.collapsed .side-nav a {
+    justify-content: flex-start;
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .shell.collapsed .side-nav a .lbl,
+  .shell.collapsed .brand-txt,
+  .shell.collapsed .nav-caption,
+  .shell.collapsed .brand-badge {
+    display: revert;
+  }
+
+  .shell.collapsed .side-search {
+    display: flex;
+  }
+
+  .shell.collapsed .side-foot .foot-btn {
+    justify-content: flex-start;
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .shell.collapsed .side-foot .foot-btn span {
+    display: inline;
+  }
+
   .main,
   .shell.collapsed .main {
     padding-inline-start: 0;
@@ -681,5 +720,52 @@
   // Language switching reachable via the drawer instance at phone widths.
   .drawer-lang {
     display: block;
+  }
+}
+
+// At 320px the menu, both date chips and the avatar need ~360px. The drawer
+// already carries the identity block, so drop the avatar instead of letting
+// the topbar overflow the page.
+@media (max-width: 359px) {
+  .top-end .user-chip {
+    display: none;
+  }
+}
+
+// Setup-guide launcher: a subtle pulse while the checklist still has a step.
+.guide-btn {
+  position: relative;
+
+  &.has-work {
+    color: var(--color-primary);
+    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+  }
+}
+
+.guide-dot {
+  position: absolute;
+  inset-block-start: 6px;
+  inset-inline-end: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-surface);
+  animation: guide-dot-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes guide-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-dot {
+    animation: none;
   }
 }

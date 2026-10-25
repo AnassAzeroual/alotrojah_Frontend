@@ -105,7 +105,7 @@
       }
 
       @if (error()) {
-        <p class="field-error">{{ error() }}</p>
+        <p class="field-error">{{ error()! | translate }}</p>
       }
 
       <button

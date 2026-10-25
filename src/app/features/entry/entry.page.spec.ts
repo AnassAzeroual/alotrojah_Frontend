@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import {
@@ -7,7 +8,22 @@ import {
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
+import { AuthLoginResponse } from '../../core/api/models';
+import { AuthService } from '../../core/auth/auth.service';
 import { EntryPage } from './entry.page';
+
+/**
+ * The signed-in teacher already knows their center, so the level feed is
+ * center-scoped from boot — no unpicked-then-refetch flash in these specs.
+ */
+const TEACHER: AuthLoginResponse['data']['user'] = {
+  id: 2,
+  full_name: 'Teacher',
+  role: 'teacher',
+  center_id: 11,
+  center_name: 'Center 11',
+  teacher_type: 'both',
+};
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 const shift = (days: number): string => {
@@ -20,12 +36,36 @@ const today = (): string => shift(0);
 const SESSION_50 = {
   id: 50,
   group_id: 5,
+  week_id: 7,
   planned_date: today(),
   session_number_global: 12,
   session_type: 'memorization',
+  status: 'planned',
+  start_time: '08:00:00',
+  end_time: '10:00:00',
 };
 
-describe('EntryPage smart defaults', () => {
+const WEEK_7 = {
+  id: 7,
+  week_number_global: 9,
+  start_date: shift(-3),
+  end_date: shift(3),
+  term_name: 'الفصل 1',
+  season_name: 'موسم 1449',
+  week_type: 'study',
+};
+
+const WEEK_8 = {
+  id: 8,
+  week_number_global: 10,
+  start_date: shift(-17),
+  end_date: shift(-11),
+  term_name: 'الفصل 2',
+  season_name: 'موسم 1449',
+  week_type: 'study',
+};
+
+describe('EntryPage card flow', () => {
   let fixture!: ReturnType<typeof TestBed.createComponent<EntryPage>>;
   let page!: EntryPage;
   let http!: HttpTestingController;
@@ -55,7 +95,10 @@ describe('EntryPage smart defaults', () => {
           req.flush({ success: true, message: null, data: body });
         });
     };
-    flush('/groups', { data: groups });
+    flush('/groups', {
+      data: groups,
+      meta: { current_page: 1, per_page: 20, total: groups.length },
+    });
     flush('/scoring-modules', []);
     flush('/weeks', { data: weeks });
     flush('/levels', levels);
@@ -72,6 +115,52 @@ describe('EntryPage smart defaults', () => {
       });
   };
 
+  /** Drain the center-scoped level refetch a cross-center group pick triggers. */
+  const flushLevels = (levels: unknown[] = []): void => {
+    http
+      .match((r) => r.url.includes('/levels') && r.method === 'GET')
+      .forEach((req) => req.flush({ success: true, message: null, data: levels }));
+  };
+
+  const flushStudents = (students: unknown[] = []): void => {
+    http
+      .match((r) => r.url.includes('/students') && r.method === 'GET')
+      .forEach((req) =>
+        req.flush({
+          success: true,
+          message: null,
+          data: {
+            data: students,
+            meta: { current_page: 1, per_page: 20, total: students.length },
+          },
+        }),
+      );
+  };
+
+  const flushSessions = (sessions: unknown[] = [SESSION_50]): void => {
+    http
+      .match((r) => r.url.includes('/sessions-cal') && r.method === 'GET')
+      .forEach((req) => {
+        record(req.request.url, req.request.params);
+        req.flush({ success: true, message: null, data: { data: sessions } });
+      });
+  };
+
+  const flushExisting = (): void => {
+    http
+      .match((r) => r.url.includes('/sessions/50/scores'))
+      .forEach((req) => req.flush({ success: true, message: null, data: [] }));
+    http
+      .match((r) => r.url.includes('/attendance') && r.method === 'GET')
+      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
+  };
+
+  const flushGoals = (): void => {
+    http
+      .match((r) => r.url.includes('/weekly-goals') && r.method === 'GET')
+      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
+  };
+
   const settle = async (): Promise<void> => {
     await new Promise<void>((r) => setTimeout(r, 0));
     fixture.detectChanges();
@@ -82,27 +171,6 @@ describe('EntryPage smart defaults', () => {
     for (let i = 0; i < times; i++) {
       await settle();
     }
-  };
-
-  const flushSessions = (): void => {
-    http
-      .match((r) => r.url.includes('/sessions-cal') && r.method === 'GET')
-      .forEach((req) => {
-        record(req.request.url, req.request.params);
-        req.flush({ success: true, message: null, data: { data: [SESSION_50] } });
-      });
-    http
-      .match((r) => r.url.endsWith('/students') && r.method === 'GET')
-      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
-  };
-
-  const flushExisting = (): void => {
-    http
-      .match((r) => r.url.includes('/sessions/50/scores'))
-      .forEach((req) => req.flush({ success: true, message: null, data: [] }));
-    http
-      .match((r) => r.url.includes('/attendance') && r.method === 'GET')
-      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
   };
 
   beforeEach(async () => {
@@ -116,6 +184,13 @@ describe('EntryPage smart defaults', () => {
         provideTranslateService({
           loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
         }),
+        {
+          provide: AuthService,
+          useFactory: () => ({
+            currentUser: signal<AuthLoginResponse['data']['user']>(TEACHER),
+            role: signal<AuthLoginResponse['data']['user']['role']>('teacher'),
+          }),
+        },
       ],
     }).compileComponents();
     http = TestBed.inject(HttpTestingController);
@@ -126,176 +201,201 @@ describe('EntryPage smart defaults', () => {
 
   afterEach(() => http.verify());
 
-  it('preselects the lone group, the week holding today, and today’s session', async () => {
-    const weeks = [
-      {
-        id: 7,
-        week_number_global: 9,
-        start_date: shift(-3),
-        end_date: shift(3),
-        term_name: 'الفصل 1',
-        season_name: 'موسم 1449',
-      },
-    ];
-    flushBoot([{ id: 5, name: 'G5', center_id: 11 }], weeks);
+  it('auto-selects a lone section and opens its week cards', async () => {
+    flushBoot([{ id: 5, name: 'G5', center_id: 11 }], [WEEK_7]);
     await cycle();
     // The group auto-pick refires weeks scoped to the group's center.
-    flushWeeks(weeks);
+    flushWeeks([WEEK_7]);
+    flushStudents();
     await cycle();
 
     expect(page.selectedGroup()).toBe(5);
-    expect(page.selectedWeek()).toBe(7);
+    expect(page.selectedGroupData()?.name).toBe('G5');
+    expect(page.selectedWeek()).toBeNull();
+    expect(page.step()).toBe(2);
+    expect(page.ready()).toBe(false);
+    expect(page.weekList().map((w) => w.id)).toEqual([7]);
 
-    // The week option carries its term label (NoOp i18n returns the key).
-    expect(page.weekOptions().find((o) => o.value === '7')?.label).toBe(
-      'common.week 9 · الفصل 1 · (موسم 1449)',
-    );
-
-    flushSessions();
-    await cycle();
-    flushSessions();
-    await cycle();
-
-    expect(page.selectedSession()).toBe(50);
-    expect(page.ready()).toBe(true);
-
-    // The weeks refetch carries the picked group's center …
+    // The weeks refetch carries the picked group's center, and no session
+    // request fires until a week card is chosen.
     const weekCenters = requested.filter((p) => p.url.includes('/weeks')).map((p) => p.center);
     expect(weekCenters).toContain('11');
-    // … and sessions carry the picked group alongside the week.
-    const sessionGroups = requested
-      .filter((p) => p.url.includes('/sessions-cal'))
-      .map((p) => ({ group: p.group, week: p.week }));
-    expect(sessionGroups).toContainEqual({ group: '5', week: '7' });
-
-    // The auto-loaded session pulls its existing scores + attendance.
-    flushExisting();
-    await cycle();
-    flushExisting();
-    await cycle();
-
-    // Goal list follows the picked week.
-    http
-      .match((r) => r.url.includes('/weekly-goals') && r.method === 'GET')
-      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
-    await cycle();
+    expect(requested.some((p) => p.url.includes('/sessions-cal'))).toBe(false);
   });
 
-  it('leaves multi-group teachers and manual picks alone', async () => {
-    const weeks = [
-      {
-        id: 7,
-        week_number_global: 9,
-        start_date: shift(-3),
-        end_date: shift(3),
-        term_name: 'الفصل 1',
-        season_name: 'موسم 1449',
-      },
-    ];
+  it('opens the current term by default and lets the teacher switch terms', async () => {
+    flushBoot([{ id: 5, name: 'G5', center_id: 11 }], [WEEK_7, WEEK_8]);
+    await cycle();
+    flushWeeks([WEEK_7, WEEK_8]);
+    flushStudents();
+    await cycle();
+
+    expect(page.weekTerms()).toEqual(['الفصل 1', 'الفصل 2']);
+    expect(page.activeWeekTerm()).toBe('الفصل 1');
+    expect(page.visibleWeeks().map((w) => w.id)).toEqual([7]);
+
+    page.showAllWeeks();
+    expect(page.activeWeekTerm()).toBeNull();
+    expect(page.visibleWeeks().map((w) => w.id)).toEqual([7, 8]);
+
+    page.selectWeekTerm('الفصل 2');
+    expect(page.activeWeekTerm()).toBe('الفصل 2');
+    expect(page.visibleWeeks().map((w) => w.id)).toEqual([8]);
+  });
+
+  it('leaves multi-section teachers on the section cards until they pick one', async () => {
     flushBoot(
       [
         { id: 5, name: 'G5', center_id: 11 },
         { id: 6, name: 'G6', center_id: 12 },
       ],
-      weeks,
+      [WEEK_7],
     );
     await cycle();
 
-    // Two groups: no group auto-pick, but the week still resolves from today.
     expect(page.selectedGroup()).toBeNull();
-    expect(page.selectedWeek()).toBe(7);
+    expect(page.selectedWeek()).toBeNull();
+    expect(page.step()).toBe(1);
     expect(page.ready()).toBe(false);
-
-    // Unpicked: the boot weeks request carries no center, and the pending
-    // sessions request carries the week with no group.
     expect(requested.filter((p) => p.url.includes('/weeks')).map((p) => p.center)).toEqual([null]);
-    const openSessions = http.match((r) => r.url.includes('/sessions-cal') && r.method === 'GET');
-    expect(openSessions.length).toBeGreaterThan(0);
-    openSessions.forEach((req) => {
-      expect(req.request.params.get('week_id')).toBe('7');
-      expect(req.request.params.get('group_id')).toBeNull();
-    });
 
-    // A manual group pick sticks and never retriggers the auto-pick.
+    // A manual section pick sticks and opens that section's weeks only.
     page.onGroup(6);
+    await cycle();
+    flushWeeks([WEEK_7]);
+    flushLevels();
+    flushStudents();
+    await cycle();
+
     expect(page.selectedGroup()).toBe(6);
-    http
-      .match((r) => r.url.includes('/sessions-cal') && r.method === 'GET')
-      .forEach((req) => {
-        record(req.request.url, req.request.params);
-        req.flush({ success: true, message: null, data: { data: [] } });
-      });
-    http
-      .match((r) => r.url.endsWith('/students') && r.method === 'GET')
-      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
-    await cycle();
-    // Drain the onGroup-triggered refetch (fires after the manual pick).
-    http
-      .match((r) => r.url.endsWith('/students') && r.method === 'GET')
-      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
-    // The manual pick re-scopes both feeds: weeks to the group's center …
-    flushWeeks(weeks);
-    // … and sessions to the picked group (fires a cycle after the pick).
-    http
-      .match((r) => r.url.includes('/sessions-cal') && r.method === 'GET')
-      .forEach((req) => {
-        record(req.request.url, req.request.params);
-        req.flush({ success: true, message: null, data: { data: [] } });
-      });
-    await cycle();
-    http
-      .match((r) => r.url.includes('/sessions-cal') && r.method === 'GET')
-      .forEach((req) => {
-        record(req.request.url, req.request.params);
-        req.flush({ success: true, message: null, data: { data: [] } });
-      });
-    await cycle();
-    expect(page.selectedGroup()).toBe(6);
-    expect(page.selectedWeek()).toBe(7);
+    expect(page.selectedGroupData()?.name).toBe('G6');
+    expect(page.selectedWeek()).toBeNull();
+    expect(page.step()).toBe(2);
+    expect(page.weekList().map((w) => w.id)).toEqual([7]);
     expect(requested.filter((p) => p.url.includes('/weeks')).map((p) => p.center)).toContain('12');
-    // … and sessions to the picked group.
+    expect(requested.some((p) => p.url.includes('/sessions-cal'))).toBe(false);
+  });
+
+  it('walks section → week → session and lets every breadcrumb step go back', async () => {
+    flushBoot([{ id: 5, name: 'G5', center_id: 11 }], [WEEK_7]);
+    await cycle();
+    flushWeeks([WEEK_7]);
+    flushStudents();
+    await cycle();
+
+    page.onWeek(7);
+    await cycle();
+    flushSessions();
+    await cycle();
+
+    expect(page.selectedWeek()).toBe(7);
+    expect(page.selectedSession()).toBeNull();
+    expect(page.step()).toBe(3);
+    expect(page.sessionList().map((s) => s.id)).toEqual([50]);
     expect(
       requested
         .filter((p) => p.url.includes('/sessions-cal'))
         .map((p) => ({ group: p.group, week: p.week })),
-    ).toContainEqual({ group: '6', week: '7' });
+    ).toContainEqual({ group: '5', week: '7' });
+
+    page.onSession(50);
+    await cycle();
+    flushExisting();
+    await cycle();
+    flushGoals();
+    await cycle();
+
+    expect(page.ready()).toBe(true);
+    expect(page.step()).toBe(4);
+    expect(page.session()?.id).toBe(50);
+
+    // Week crumb: back to the session cards, keeping the week.
+    page.backToSessions();
+    await cycle();
+    expect(page.selectedWeek()).toBe(7);
+    expect(page.selectedSession()).toBeNull();
+    expect(page.step()).toBe(3);
+
+    // Section crumb: back to the week cards, keeping the section.
+    page.backToWeeks();
+    await cycle();
+    expect(page.selectedGroup()).toBe(5);
+    expect(page.selectedWeek()).toBeNull();
+    expect(page.step()).toBe(2);
+
+    // Root crumb: all the way back to the section cards; the lone-section
+    // shortcut must not immediately pull the user forward again.
+    page.resetGroup();
+    await cycle();
+    flushWeeks([]);
+    await cycle();
+    expect(page.selectedGroup()).toBeNull();
+    expect(page.step()).toBe(1);
   });
 
-  it('resolves the level-expected memorized amount with a bound this', async () => {
-    const weeks = [
-      {
-        id: 7,
-        week_number_global: 9,
-        start_date: shift(-3),
-        end_date: shift(3),
-        term_name: 'الفصل 1',
-        season_name: 'موسم 1449',
-      },
-    ];
-    flushBoot([{ id: 5, name: 'G5', center_id: 11 }], weeks, [
-      { id: 5, name_ar: 'L1', thumn_per_session_value: 1.5 },
-    ]);
-    await cycle();
-    // Drain the group-pick weeks refetch (no-op when the HTTP cache serves it).
-    flushWeeks(weeks);
-    await cycle();
+  it('pages through every section so late groups stay reachable', async () => {
+    const firstPage = Array.from({ length: 20 }, (_, i) => ({
+      id: i + 1,
+      name: `G${i + 1}`,
+      center_id: 11,
+    }));
+    const meta = (current: number, total: number) => ({
+      current_page: current,
+      per_page: 20,
+      total,
+    });
+
+    // Boot: the picker asks for page 1 and is told a second page exists.
     http
-      .match((r) => r.url.includes('/sessions-cal') && r.method === 'GET')
-      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
-    http
-      .match((r) => r.url.includes('/students') && r.method === 'GET')
-      .forEach((req) =>
+      .match((r) => r.url.includes('/groups') && r.method === 'GET')
+      .forEach((req) => {
+        expect(req.request.params.get('page')).toBe('1');
         req.flush({
           success: true,
           message: null,
-          data: {
-            data: [
-              { id: 1, full_name: 'P', level_id: 5 },
-              { id: 2, full_name: 'Q', level_id: null },
-            ],
-          },
-        }),
-      );
+          data: { data: firstPage, meta: meta(1, 21) },
+        });
+      });
+    http
+      .match((r) => r.url.includes('/scoring-modules'))
+      .forEach((req) => req.flush({ success: true, message: null, data: [] }));
+    http
+      .match((r) => r.url.includes('/weeks'))
+      .forEach((req) => req.flush({ success: true, message: null, data: { data: [] } }));
+    http
+      .match((r) => r.url.includes('/levels'))
+      .forEach((req) => req.flush({ success: true, message: null, data: [] }));
+    await cycle(4);
+
+    const second = http.match((r) => r.url.includes('/groups') && r.params.get('page') === '2');
+    expect(second.length).toBe(1);
+    second[0].flush({
+      success: true,
+      message: null,
+      data: { data: [{ id: 21, name: 'G21', center_id: 11 }], meta: meta(2, 21) },
+    });
+    await cycle(4);
+
+    expect(page.groups().length).toBe(21);
+    expect(page.groups().map((g) => g.id)).toContain(21);
+    // 21 sections: the lone-section shortcut must stay out of the way.
+    expect(page.selectedGroup()).toBeNull();
+    expect(page.step()).toBe(1);
+  });
+
+  it('resolves the level-expected memorized amount with a bound this', async () => {
+    flushBoot(
+      [{ id: 5, name: 'G5', center_id: 11 }],
+      [WEEK_7],
+      [{ id: 5, name_ar: 'L1', thumn_per_session_value: 1.5 }],
+    );
+    await cycle();
+    // Drain the group-pick weeks refetch (no-op when the HTTP cache serves it).
+    flushWeeks([WEEK_7]);
+    flushStudents([
+      { id: 1, full_name: 'P', level_id: 5 },
+      { id: 2, full_name: 'Q', level_id: null },
+    ]);
     await cycle();
 
     // Called unbound (as the entry template does) — must not throw.

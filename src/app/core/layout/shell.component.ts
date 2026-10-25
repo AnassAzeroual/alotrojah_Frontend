@@ -19,154 +19,22 @@ import { LanguageSwitcherComponent } from './language-switcher.component';
 import { AdminPrefsService } from '../settings/admin-prefs.service';
 import { AppearanceService } from '../settings/appearance.service';
 import { ThemeService } from '../theme/theme.service';
-import { Role } from '../api/models';
 import { APP_VERSION_SHORT } from '../version';
-
-interface NavItem {
-  path: string;
-  key: string;
-  icon: string;
-  roles: readonly Role[];
-  testId: string;
-  /** Match the URL exactly, so sibling routes don't also light up (e.g. /planning vs /planning/calendar). */
-  exact?: boolean;
-}
-
-const ITEMS: readonly NavItem[] = [
-  {
-    path: '/',
-    key: 'nav.dashboard',
-    icon: 'home',
-    roles: ['admin', 'supervisor', 'teacher', 'student', 'board'],
-    testId: 'nav-dashboard',
-    exact: true,
-  },
-  {
-    path: '/centers',
-    key: 'nav.centers',
-    icon: 'building',
-    roles: ['admin'],
-    testId: 'nav-centers',
-  },
-  {
-    path: '/levels',
-    key: 'nav.levels',
-    icon: 'grid',
-    roles: ['admin'],
-    testId: 'nav-levels',
-  },
-  {
-    path: '/students',
-    key: 'nav.students',
-    icon: 'users',
-    roles: ['admin', 'supervisor', 'teacher', 'student'],
-    testId: 'nav-students',
-  },
-  {
-    path: '/users',
-    key: 'nav.users',
-    icon: 'users',
-    roles: ['admin', 'supervisor'],
-    testId: 'nav-users',
-  },
-  {
-    path: '/groups',
-    key: 'nav.groups',
-    icon: 'grid',
-    roles: ['admin', 'supervisor', 'teacher'],
-    testId: 'nav-groups',
-  },
-  {
-    path: '/entry',
-    key: 'nav.entry',
-    icon: 'edit',
-    roles: ['admin', 'supervisor', 'teacher'],
-    testId: 'nav-entry',
-  },
-  {
-    path: '/planning',
-    key: 'nav.planning',
-    icon: 'calendar',
-    roles: ['admin', 'supervisor'],
-    testId: 'nav-planning',
-    exact: true,
-  },
-  {
-    path: '/planning/calendar',
-    key: 'nav.calendar',
-    icon: 'calendar',
-    roles: ['admin', 'supervisor', 'teacher', 'student', 'board'],
-    testId: 'nav-calendar',
-  },
-  {
-    path: '/scoring',
-    key: 'nav.scoring',
-    icon: 'chart',
-    roles: ['admin'],
-    testId: 'nav-scoring',
-  },
-  {
-    path: '/exams',
-    key: 'nav.exams',
-    icon: 'file',
-    roles: ['admin', 'supervisor', 'teacher', 'student'],
-    testId: 'nav-exams',
-  },
-  {
-    path: '/reviews',
-    key: 'nav.reviews',
-    icon: 'refresh',
-    roles: ['admin', 'supervisor', 'teacher'],
-    testId: 'nav-reviews',
-  },
-  {
-    path: '/results/term',
-    key: 'nav.results',
-    icon: 'award',
-    roles: ['admin', 'supervisor', 'teacher', 'student'],
-    testId: 'nav-results',
-  },
-  {
-    path: '/reports/term',
-    key: 'nav.reports',
-    icon: 'report',
-    roles: ['admin', 'supervisor', 'teacher'],
-    testId: 'nav-reports',
-  },
-  {
-    path: '/news',
-    key: 'nav.news',
-    icon: 'bell',
-    roles: ['admin', 'supervisor', 'teacher', 'student', 'board'],
-    testId: 'nav-news',
-  },
-  {
-    path: '/delegate',
-    key: 'nav.delegate',
-    icon: 'share',
-    roles: ['admin', 'supervisor', 'teacher'],
-    testId: 'nav-delegate',
-  },
-  {
-    path: '/notifications',
-    key: 'nav.notifications',
-    icon: 'mail',
-    roles: ['admin', 'supervisor', 'teacher'],
-    testId: 'nav-notifications',
-  },
-  {
-    path: '/registrations',
-    key: 'nav.registrations',
-    icon: 'shield',
-    roles: ['admin'],
-    testId: 'nav-registrations',
-  },
-];
+import { NAV_ITEMS, resolveActiveNav } from './nav-items';
+import { SetupGuideService } from '../settings/setup-guide.service';
+import { SetupGuideComponent } from './setup-guide/setup-guide.component';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, LanguageSwitcherComponent],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    TranslatePipe,
+    LanguageSwitcherComponent,
+    SetupGuideComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
@@ -181,6 +49,7 @@ export class ShellComponent {
   readonly version = APP_VERSION_SHORT;
   readonly prefs = inject(AdminPrefsService);
   readonly appearance = inject(AppearanceService);
+  readonly guide = inject(SetupGuideService);
   readonly collapsed = signal(false);
   readonly mobileOpen = signal(false);
   private readonly menuBtn = viewChild<ElementRef<HTMLButtonElement>>('menuBtn');
@@ -278,12 +147,20 @@ export class ShellComponent {
 
   readonly items = computed(() => {
     const role = this.user()?.role;
-    return ITEMS.filter((i) => role !== undefined && i.roles.includes(role));
+    return NAV_ITEMS.filter((i) => role !== undefined && i.roles.includes(role));
   });
 
   private readonly regSvc = inject(RegistrationRequestsService);
   private readonly router = inject(Router);
   private readonly regTick = signal(0);
+
+  /** Current URL, kept in sync by the NavigationEnd subscription below. */
+  private readonly currentUrl = signal(this.router.url);
+
+  /** The one nav item that owns the current URL (longest prefix wins). */
+  readonly activeNav = computed(
+    () => resolveActiveNav(this.items(), this.currentUrl())?.path ?? null,
+  );
 
   /** Pending waiting-room count for the header bell badge (admin only). */
   readonly pendingRegistrations = resource({
@@ -318,6 +195,8 @@ export class ShellComponent {
 
   constructor() {
     this.appearance.load();
+    // First-run checklist: one auto-open per account while setup is incomplete.
+    if (this.user()?.role === 'admin') this.guide.maybeAutoOpen();
     // Tablet (768–1023): start with the rail — an expanded 268px sidebar
     // leaves the topbar ~500px, which the date chips + identity cannot fit.
     if (window.matchMedia?.('(min-width: 768px) and (max-width: 1023px)')?.matches) {
@@ -327,8 +206,11 @@ export class ShellComponent {
     const destroy = inject(DestroyRef);
     destroy.onDestroy(() => clearInterval(timer));
     const nav = this.router.events
-      .pipe(filter((e) => e instanceof NavigationEnd))
-      .subscribe(() => this.regTick.update((n) => n + 1));
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        this.currentUrl.set(e.urlAfterRedirects);
+        this.regTick.update((n) => n + 1);
+      });
     destroy.onDestroy(() => nav.unsubscribe());
   }
 
@@ -364,6 +246,10 @@ export class ShellComponent {
   }
 
   onEscape(): void {
+    if (this.guide.open()) {
+      this.guide.hide();
+      return;
+    }
     this.closeMobileToMenu();
   }
 

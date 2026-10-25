@@ -30,3 +30,15 @@
 .assign-card .field-error {
   margin: 0;
 }
+
+// New-pupil account source: create now (default) or link an existing user.
+.account-mode {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.account-hint {
+  margin: -4px 0 0;
+  font-size: 0.82rem;
+}

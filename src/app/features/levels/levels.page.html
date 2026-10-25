@@ -2,25 +2,27 @@
   <div class="page-head anim-rise">
     <h1 class="with-add">
       {{ 'level.title' | translate }}
-      <button
-        type="button"
-        class="btn btn-primary btn-icon"
-        data-testid="level-new"
-        [attr.aria-label]="'level.new' | translate"
-        [attr.title]="'level.new' | translate"
-        (click)="startCreate()"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          aria-hidden="true"
+      @if (seasonId() !== null) {
+        <button
+          type="button"
+          class="btn btn-primary btn-icon"
+          data-testid="level-new"
+          [attr.aria-label]="'level.new' | translate"
+          [attr.title]="'level.new' | translate"
+          (click)="startCreate()"
         >
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      </button>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+      }
     </h1>
   </div>
 
@@ -35,14 +37,31 @@
           testId="levels-center-scope"
         />
       </label>
+      @if (centerScope() !== null && seasonOptions().length > 0) {
+        <label class="field">
+          <app-dropdown
+            [options]="seasonOptions()"
+            [value]="txt(seasonId() ?? '')"
+            (valueChange)="setSeason($event)"
+            ariaLabelKey="level.season"
+            testId="levels-season-scope"
+          />
+        </label>
+      }
     </div>
   }
 
-  <div class="scope-banner anim-rise" style="--i: 1" data-testid="levels-scope-banner">
-    @if (activeScope() === null) {
-      <span>{{ 'level.scope_shared' | translate }}</span>
-    } @else {
-      <span>{{ 'level.scope_center' | translate: { name: centerName() ?? '' } }}</span>
+  @if (seasonId() !== null) {
+    <div class="scope-banner anim-rise" style="--i: 1" data-testid="levels-scope-banner">
+      <span>
+        {{
+          'level.scope_season'
+            | translate: { season: seasonName() ?? '', center: centerName() ?? '' }
+        }}
+        @if (seasonIsShared()) {
+          <span class="src-tag inherited">{{ 'planning.shared' | translate }}</span>
+        }
+      </span>
       @if (armingReset()) {
         <span class="cluster">
           <button
@@ -78,16 +97,20 @@
           {{ 'level.reset' | translate }}
         </button>
       }
-    }
-  </div>
+    </div>
+  }
 
-  @if (levels.isLoading()) {
+  @if (noCenter()) {
+    <app-empty-state messageKey="level.no_center" />
+  } @else if (levels.isLoading() || (centerScope() !== null && seasons.isLoading())) {
     <div class="stack" aria-hidden="true">
       <div class="skeleton sk-card"></div>
       <div class="skeleton sk-card"></div>
     </div>
+  } @else if (noSeason()) {
+    <app-empty-state messageKey="level.no_season" />
   } @else if ((levels.value() ?? []).length === 0 && !creating()) {
-    <app-empty-state />
+    <app-empty-state messageKey="level.no_levels" />
   } @else {
     <div class="table-responsive">
       <table class="levels-table">
@@ -110,114 +133,90 @@
               </td>
               <td colspan="6">
                 <form (ngSubmit)="saveCreate()" autocomplete="off" data-testid="level-create-form">
-                  @if (createErrorKey()) {
+                  @if (errorKey()) {
                     <div class="banner danger" data-testid="level-create-error">
-                      {{ createErrorKey()! | translate }}
+                      {{ errorKey()! | translate }}
                     </div>
                   }
                   <div class="grid-auto">
-                    <label class="field"
-                      ><span>{{ 'level.name' | translate }} *</span>
-                      <input
-                        type="text"
-                        data-testid="level-new-name"
-                        [value]="autoName()"
-                        readonly
-                      />
-                    </label>
+                    <div class="field">
+                      <span>{{ 'level.name' | translate }} *</span>
+                      <span class="ro-value" data-testid="level-new-name">{{
+                        form().name_ar
+                      }}</span>
+                    </div>
                     <label class="field"
                       ><span>{{ 'level.sessions' | translate }}</span>
                       <input
                         type="number"
                         class="ltr-num"
                         data-testid="level-new-sessions"
-                        [value]="createDraft().sessions_per_week"
-                        (input)="setCreateDraft('sessions_per_week', $any($event.target).value)"
+                        [value]="form().sessions_per_week"
+                        (input)="setInput('sessions_per_week', $any($event.target).value)"
                         min="1"
                         max="7"
                       />
                     </label>
-                    <label class="field"
-                      ><span>{{ 'level.thumnSessionLabel' | translate }}</span>
-                      <input
-                        type="text"
-                        data-testid="level-new-thumn-label"
-                        [value]="autoLabel()"
-                        readonly
-                      />
-                    </label>
+                    <div class="field">
+                      <span>{{ 'level.thumnSessionLabel' | translate }}</span>
+                      <span class="ro-value" data-testid="level-new-thumn-label">{{
+                        form().thumn_session_label
+                      }}</span>
+                    </div>
                     <label class="field"
                       ><span>{{ 'level.thumnSession' | translate }}</span>
                       <input
                         type="number"
                         class="ltr-num"
                         data-testid="level-new-thumn-session"
-                        [value]="createDraft().thumn_session_value"
-                        (input)="setCreateDraft('thumn_session_value', $any($event.target).value)"
+                        [value]="form().thumn_session_value"
+                        (input)="setInput('thumn_session_value', $any($event.target).value)"
                         min="1"
                         max="480"
                         step="1"
                       />
                     </label>
-                    <label class="field"
-                      ><span>{{ 'level.thumnWeek' | translate }}</span>
-                      <input
-                        type="text"
-                        class="ltr-num"
-                        data-testid="level-new-thumn-week"
-                        [value]="autoThumnWeek() | thumnDisplay: language.current()"
-                        readonly
-                      />
-                    </label>
-                    <label class="field"
-                      ><span>{{ 'level.ahzabTerm' | translate }}</span>
-                      <input
-                        type="number"
-                        class="ltr-num"
-                        data-testid="level-new-ahzab-term"
-                        [value]="autoAhzabTerm()"
-                        readonly
-                      />
-                    </label>
-                    <label class="field"
-                      ><span>{{ 'level.ahzabDawra' | translate }}</span>
-                      <input
-                        type="number"
-                        class="ltr-num"
-                        data-testid="level-new-ahzab-dawra"
-                        [value]="autoAhzabDawra()"
-                        readonly
-                      />
-                    </label>
-                    <label class="field"
-                      ><span>{{ 'level.duration' | translate }}</span>
-                      <input
-                        type="text"
-                        data-testid="level-new-duration"
-                        [value]="autoDuration()"
-                        readonly
-                      />
-                    </label>
-                    <label class="field"
-                      ><span>{{ 'level.totalAhzab' | translate }}</span>
-                      <input
-                        type="number"
-                        class="ltr-num"
-                        data-testid="level-new-total-ahzab"
-                        [value]="createDraft().total_ahzab"
-                        readonly
-                      />
-                    </label>
+                    <div class="field">
+                      <span>{{ 'level.thumnWeek' | translate }}</span>
+                      <span class="ro-value ltr-num" data-testid="level-new-thumn-week">{{
+                        form().thumn_week_value | thumnDisplay: language.current()
+                      }}</span>
+                    </div>
+                    <div class="field">
+                      <span>{{ 'level.ahzabTerm' | translate }}</span>
+                      <span class="ro-value ltr-num" data-testid="level-new-ahzab-term">{{
+                        form().ahzab_term
+                      }}</span>
+                      <small class="hint">{{ 'level.goal_hint' | translate }}</small>
+                    </div>
+                    <div class="field">
+                      <span>{{ 'level.ahzabDawra' | translate }}</span>
+                      <span class="ro-value ltr-num" data-testid="level-new-ahzab-dawra">{{
+                        form().ahzab_dawra
+                      }}</span>
+                    </div>
+                    <div class="field">
+                      <span>{{ 'level.duration' | translate }}</span>
+                      <span class="ro-value" data-testid="level-new-duration">{{
+                        form().duration
+                      }}</span>
+                    </div>
+                    <div class="field">
+                      <span>{{ 'level.totalAhzab' | translate }}</span>
+                      <span class="ro-value ltr-num" data-testid="level-new-total-ahzab">{{
+                        form().total_ahzab
+                      }}</span>
+                    </div>
                   </div>
                   <div class="cluster">
                     <button
                       type="submit"
                       class="btn btn-primary btn-sm"
                       data-testid="level-create-save"
-                      [disabled]="!createValid() || createSaving()"
+                      [disabled]="!createValid() || saving()"
                       (click)="saveCreate()"
                     >
-                      @if (createSaving()) {
+                      @if (saving()) {
                         <app-spinner />
                       } @else {
                         {{ 'common.save' | translate }}
@@ -226,7 +225,7 @@
                     <button
                       type="button"
                       class="btn btn-ghost btn-sm"
-                      [disabled]="createSaving()"
+                      [disabled]="saving()"
                       (click)="cancelCreate()"
                     >
                       {{ 'common.cancel' | translate }}
@@ -237,22 +236,12 @@
             </tr>
           }
           @for (l of levels.value() ?? []; track l.id) {
-            <tr
-              [class.is-override]="isOverride(l.center_id)"
-              [class.is-inherited]="activeScope() !== null && !isOverride(l.center_id)"
-            >
+            <tr>
               <td [attr.data-label]="'level.code' | translate">
                 <code class="ltr-num" dir="ltr">{{ l.code }}</code>
               </td>
               <td [attr.data-label]="'level.name' | translate">
                 <strong>{{ l.name_ar }}</strong>
-                @if (activeScope() !== null) {
-                  @if (isOverride(l.center_id)) {
-                    <span class="src-tag override">{{ 'level.override_tag' | translate }}</span>
-                  } @else {
-                    <span class="src-tag inherited">{{ 'level.inherited_tag' | translate }}</span>
-                  }
-                }
               </td>
               <td class="ltr-num" [attr.data-label]="'level.sessions' | translate">
                 {{ l.sessions_per_week }}
@@ -264,7 +253,21 @@
                 {{ l.thumn_per_week_value | thumnDisplay: language.current() }}
               </td>
               <td class="ltr-num" [attr.data-label]="'level.ahzabTerm' | translate">
-                {{ l.ahzab_per_term }}
+                <span class="goal-value" [attr.data-testid]="'level-goal-' + l.id">{{
+                  goalHeadline(l)
+                }}</span>
+                @if (l.term_goals.length > 0) {
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm goal-toggle"
+                    [attr.data-testid]="'level-goal-toggle-' + l.id"
+                    [attr.aria-expanded]="openGoalsId() === l.id"
+                    [attr.title]="'level.goal_breakdown' | translate"
+                    (click)="toggleGoals(l.id)"
+                  >
+                    {{ 'level.goal_breakdown' | translate }}
+                  </button>
+                }
               </td>
               <td class="actions-col" [attr.data-label]="'common.actions' | translate">
                 <button
@@ -287,121 +290,101 @@
                 </button>
               </td>
             </tr>
-            @if (editingId() === l.id && draft()) {
+            @if (openGoalsId() === l.id && l.term_goals.length > 0) {
+              <tr class="goal-row">
+                <td colspan="7">
+                  <div class="goal-terms" [attr.data-testid]="'level-goal-terms-' + l.id">
+                    @for (g of l.term_goals; track g.term_id) {
+                      <span class="goal-chip">
+                        <span class="goal-chip-name">{{ g.name_ar }}</span>
+                        <span>{{ g.study_weeks }} {{ 'level.study_weeks' | translate }}</span>
+                        @if (g.review_weeks > 0) {
+                          <span>{{ g.review_weeks }} {{ 'level.review_weeks' | translate }}</span>
+                        }
+                        <strong class="ltr-num">{{ g.ahzab }}</strong>
+                      </span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (editingId() === l.id) {
               <tr class="edit-row">
                 <td colspan="7">
                   <form (ngSubmit)="saveEdit(l.id)" autocomplete="off">
                     <div class="grid-auto">
-                      <label class="field"
-                        ><span>{{ 'level.name' | translate }} *</span>
-                        <input
-                          type="text"
-                          data-testid="level-edit-name"
-                          [value]="draft()!.name_ar"
-                          readonly
-                          maxlength="100"
-                        />
-                      </label>
+                      <div class="field">
+                        <span>{{ 'level.name' | translate }} *</span>
+                        <span class="ro-value" data-testid="level-edit-name">{{
+                          form().name_ar
+                        }}</span>
+                      </div>
                       <label class="field"
                         ><span>{{ 'level.sessions' | translate }}</span>
                         <input
                           type="number"
                           class="ltr-num"
                           data-testid="level-edit-sessions"
-                          [value]="draft()!.sessions_per_week"
-                          (input)="setDraft('sessions_per_week', $any($event.target).value)"
+                          [value]="form().sessions_per_week"
+                          (input)="setInput('sessions_per_week', $any($event.target).value)"
                           min="1"
                           max="7"
                         />
                       </label>
-                      <label class="field"
-                        ><span>{{ 'level.thumnSessionLabel' | translate }}</span>
-                        <input
-                          type="text"
-                          data-testid="level-edit-thumn-label"
-                          [value]="draft()!.thumn_session_label"
-                          (input)="setDraft('thumn_session_label', $any($event.target).value)"
-                          maxlength="50"
-                        />
-                      </label>
+                      <div class="field">
+                        <span>{{ 'level.thumnSessionLabel' | translate }}</span>
+                        <span class="ro-value" data-testid="level-edit-thumn-label">{{
+                          form().thumn_session_label
+                        }}</span>
+                      </div>
                       <label class="field"
                         ><span>{{ 'level.thumnSession' | translate }}</span>
                         <input
                           type="number"
                           class="ltr-num"
                           data-testid="level-edit-thumn-session"
-                          [value]="draft()!.thumn_session_value"
-                          (input)="setDraft('thumn_session_value', $any($event.target).value)"
+                          [value]="form().thumn_session_value"
+                          (input)="setInput('thumn_session_value', $any($event.target).value)"
                           min="1"
                           max="480"
                           step="1"
                         />
                       </label>
-                      <label class="field"
-                        ><span>{{ 'level.thumnWeek' | translate }}</span>
-                        <input
-                          type="number"
-                          class="ltr-num"
-                          data-testid="level-edit-thumn-week"
-                          [value]="draft()!.thumn_week_value"
-                          (input)="setDraft('thumn_week_value', $any($event.target).value)"
-                          min="0"
-                          step="0.01"
-                        />
-                      </label>
-                      <label class="field"
-                        ><span>{{ 'level.ahzabTerm' | translate }}</span>
-                        <input
-                          type="number"
-                          class="ltr-num"
-                          data-testid="level-edit-ahzab-term"
-                          [value]="draft()!.ahzab_term"
-                          (input)="setDraft('ahzab_term', $any($event.target).value)"
-                          min="0"
-                          step="0.01"
-                        />
-                      </label>
-                      <label class="field"
-                        ><span>{{ 'level.ahzabDawra' | translate }}</span>
-                        <input
-                          type="number"
-                          class="ltr-num"
-                          [value]="draft()!.ahzab_dawra"
-                          (input)="setDraft('ahzab_dawra', $any($event.target).value)"
-                          min="0"
-                          step="0.01"
-                        />
-                      </label>
-                      <label class="field"
-                        ><span>{{ 'level.duration' | translate }}</span>
-                        <input
-                          type="text"
-                          [value]="draft()!.duration"
-                          (input)="setDraft('duration', $any($event.target).value)"
-                          maxlength="100"
-                        />
-                      </label>
-                      <label class="field"
-                        ><span>{{ 'level.totalAhzab' | translate }}</span>
-                        <input
-                          type="number"
-                          class="ltr-num"
-                          [value]="draft()!.total_ahzab"
-                          (input)="setDraft('total_ahzab', $any($event.target).value)"
-                          min="1"
-                          max="60"
-                        />
-                      </label>
+                      <div class="field">
+                        <span>{{ 'level.thumnWeek' | translate }}</span>
+                        <span class="ro-value ltr-num" data-testid="level-edit-thumn-week">{{
+                          form().thumn_week_value | thumnDisplay: language.current()
+                        }}</span>
+                      </div>
+                      <div class="field">
+                        <span>{{ 'level.ahzabTerm' | translate }}</span>
+                        <span class="ro-value ltr-num" data-testid="level-edit-ahzab-term">{{
+                          form().ahzab_term
+                        }}</span>
+                        <small class="hint">{{ 'level.goal_hint' | translate }}</small>
+                      </div>
+                      <div class="field">
+                        <span>{{ 'level.ahzabDawra' | translate }}</span>
+                        <span class="ro-value ltr-num">{{ form().ahzab_dawra }}</span>
+                      </div>
+                      <div class="field">
+                        <span>{{ 'level.duration' | translate }}</span>
+                        <span class="ro-value">{{ form().duration }}</span>
+                      </div>
+                      <div class="field">
+                        <span>{{ 'level.totalAhzab' | translate }}</span>
+                        <span class="ro-value ltr-num">{{ form().total_ahzab }}</span>
+                      </div>
                     </div>
                     <div class="cluster">
                       <button
                         type="submit"
                         class="btn btn-primary btn-sm"
                         data-testid="level-edit-save"
-                        [disabled]="draft()!.name_ar.trim() === '' || editSaving()"
+                        [disabled]="saving()"
                         (click)="saveEdit(l.id)"
                       >
-                        @if (editSaving()) {
+                        @if (saving()) {
                           <app-spinner />
                         } @else {
                           {{ 'common.save' | translate }}
@@ -410,14 +393,16 @@
                       <button
                         type="button"
                         class="btn btn-ghost btn-sm"
-                        [disabled]="editSaving()"
+                        [disabled]="saving()"
                         (click)="cancelEdit()"
                       >
                         {{ 'common.cancel' | translate }}
                       </button>
                     </div>
-                    @if (editErrorKey()) {
-                      <div class="banner danger">{{ editErrorKey()! | translate }}</div>
+                    @if (errorKey()) {
+                      <div class="banner danger" data-testid="level-edit-error">
+                        {{ errorKey()! | translate }}
+                      </div>
                     }
                   </form>
                 </td>

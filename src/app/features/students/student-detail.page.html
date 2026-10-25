@@ -29,9 +29,77 @@
           />
         </label>
 
-        @if (isNew() || !linkedUser()) {
+        @if (isNew()) {
+          <div
+            class="account-mode"
+            role="group"
+            [attr.aria-label]="'studentDetail.account_mode' | translate"
+          >
+            <button
+              type="button"
+              class="btn btn-sm"
+              [class.btn-primary]="accountMode() === 'create'"
+              [class.btn-ghost]="accountMode() !== 'create'"
+              (click)="setAccountMode('create')"
+              data-testid="student-account-create"
+            >
+              {{ 'studentDetail.account_create' | translate }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm"
+              [class.btn-primary]="accountMode() === 'link'"
+              [class.btn-ghost]="accountMode() !== 'link'"
+              (click)="setAccountMode('link')"
+              data-testid="student-account-link"
+            >
+              {{ 'studentDetail.account_link' | translate }}
+            </button>
+          </div>
+
+          @if (accountMode() === 'create') {
+            <div class="grid-auto">
+              <label class="field">
+                <span
+                  >{{ 'studentDetail.account_email' | translate }}
+                  <span class="danger">*</span></span
+                >
+                <input
+                  type="email"
+                  formControlName="email"
+                  autocomplete="off"
+                  dir="ltr"
+                  [placeholder]="'studentDetail.account_email' | translate"
+                  data-testid="student-email"
+                />
+              </label>
+              <div class="field">
+                <app-password-field
+                  [control]="form.controls.password"
+                  labelKey="studentDetail.account_password"
+                  [required]="true"
+                  testId="student-password"
+                  autocomplete="new-password"
+                />
+              </div>
+            </div>
+            <p class="muted account-hint">{{ 'studentDetail.account_create_hint' | translate }}</p>
+          } @else {
+            <label class="field">
+              <span>{{ 'studentDetail.account' | translate }} <span class="danger">*</span></span>
+              <app-dropdown
+                [options]="accountOptions()"
+                [value]="num(form.controls.user_id.value)"
+                (valueChange)="onAccountPick($event)"
+                placeholderKey="studentDetail.pick_account"
+                ariaLabelKey="studentDetail.account"
+                testId="student-account"
+              />
+            </label>
+          }
+        } @else if (!linkedUser()) {
           <label class="field">
-            <span>{{ 'studentDetail.account' | translate }} <span class="danger">*</span></span>
+            <span>{{ 'studentDetail.account' | translate }}</span>
             <app-dropdown
               [options]="accountOptions()"
               [value]="num(form.controls.user_id.value)"
@@ -41,6 +109,7 @@
               testId="student-account"
             />
           </label>
+          <p class="muted account-hint">{{ 'studentDetail.account_later' | translate }}</p>
         } @else {
           <div class="field">
             <span>{{ 'studentDetail.account' | translate }}</span>

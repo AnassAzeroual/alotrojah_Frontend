@@ -156,6 +156,7 @@ export type ExamQuestionResource = {
     question_no: number;
     prompt_text: string | null;
     hizb_ref: number | null;
+    thumn_ref: number | null;
     surah_ref: number | null;
     ayah_from: number | null;
     ayah_to: number | null;
@@ -227,12 +228,13 @@ export type GroupResource = {
 export type HonorFlag = 'none' | 'tashji3' | 'intibah';
 
 /**
- * Level
+ * LevelResource
  */
-export type Level = {
+export type LevelResource = {
     id: number;
-    code: string;
+    season_id: number | null;
     center_id: number | null;
+    code: string;
     name_ar: string;
     sessions_per_week: number;
     thumn_per_session_label: string;
@@ -242,6 +244,15 @@ export type Level = {
     ahzab_per_dawra: number;
     duration_label: string;
     total_ahzab: number;
+    ahzab_first_term: number | null;
+    term_goals: Array<{
+        term_id: number;
+        term_number: number;
+        name_ar: string;
+        study_weeks: number;
+        review_weeks: number;
+        ahzab: number;
+    }>;
 };
 
 /**
@@ -600,6 +611,24 @@ export type StoreExamRequest = {
     exam_date?: string | null;
     examiner_id?: number | null;
     examiner_report?: string | null;
+    /**
+     * A live test may be submitted with its questions in the same
+     * request, so exam + results are one transaction (no shell).
+     */
+    questions?: Array<{
+        question_no: number;
+        prompt_text?: string | null;
+        hizb_ref?: number | null;
+        thumn_ref?: number | null;
+        surah_ref?: number | null;
+        ayah_from?: number | null;
+        ayah_to?: number | null;
+        sort_order?: number;
+        model_type?: QuestionModel;
+        max_score: number;
+        score?: number | null;
+        notes?: string | null;
+    }> | null;
 };
 
 /**
@@ -619,7 +648,7 @@ export type StoreGroupRequest = {
  */
 export type StoreLevelRequest = {
     name_ar: string;
-    center_id?: number | null;
+    season_id: number;
     sessions_per_week: number;
     thumn_per_session_label: string;
     thumn_per_session_value: number;
@@ -680,6 +709,7 @@ export type StoreQuestionsBulkRequest = {
         question_no: number;
         prompt_text?: string | null;
         hizb_ref?: number | null;
+        thumn_ref?: number | null;
         surah_ref?: number | null;
         ayah_from?: number | null;
         ayah_to?: number | null;
@@ -726,6 +756,10 @@ export type StoreScoresBulkRequest = {
  * StoreSeasonRequest
  */
 export type StoreSeasonRequest = {
+    /**
+     * Name uniqueness is checked in the controller so the 422 carries
+     * the stable SEASON_EXISTS code (FormRequest bags have none).
+     */
     name: string;
     /**
      * New seasons are always center-owned (legacy NULL rows stay shared).
@@ -745,10 +779,14 @@ export type StoreSeasonRequest = {
  */
 export type StoreStudentRequest = {
     /**
-     * Every pupil rides a login account (owner-directed 2026-10-15):
-     * NULL user_id rows are rejected — pick an unlinked student user.
+     * Either link an existing student account (user_id) or create the
+     * account in the same request (account). Both are validated below.
      */
-    user_id: number;
+    user_id?: number | null;
+    account?: {
+        email?: string;
+        password?: string;
+    };
     full_name: string;
     center_id?: number | null;
     group_id: number;
@@ -797,6 +835,14 @@ export type StudentResource = {
         full_name: string;
         email: string;
     };
+    /**
+     * Season-owned level row (the id alone is meaningless across seasons).
+     */
+    level?: {
+        id: number;
+        code: string;
+        name_ar: string;
+    } | null;
     level_id: number;
     birth_date: string | null;
     enrollment_date: string | null;
@@ -974,7 +1020,6 @@ export type UpdateGroupRequest = {
  */
 export type UpdateLevelRequest = {
     name_ar?: string;
-    center_id?: number | null;
     sessions_per_week?: number;
     thumn_per_session_label?: string;
     thumn_per_session_value?: number;
@@ -1023,6 +1068,10 @@ export type UpdateQuestionRequest = {
  * UpdateSeasonRequest
  */
 export type UpdateSeasonRequest = {
+    /**
+     * Name uniqueness is checked in the controller so the 422 carries
+     * the stable SEASON_EXISTS code (FormRequest bags have none).
+     */
     name?: string;
     start_date?: string;
     end_date?: string | null;
@@ -3823,7 +3872,9 @@ export type ExamsStoreResponses = {
     201: {
         success: boolean;
         message: null;
-        data: ExamResource;
+        data: ExamResource & {
+            [key: string]: unknown;
+        };
     };
 };
 
@@ -4839,7 +4890,7 @@ export type LevelResetData = {
     body?: never;
     path?: never;
     query: {
-        center_id: number;
+        season_id: number;
     };
     url: '/v1/levels/reset';
 };
@@ -4888,6 +4939,7 @@ export type LevelResetResponses = {
         message: string | null;
         data: {
             deleted: number;
+            created: number;
         };
     };
 };
@@ -4927,8 +4979,8 @@ export type LevelsIndexError = LevelsIndexErrors[keyof LevelsIndexErrors];
 export type LevelsIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: Array<Level>;
+        message: string | null;
+        data: Array<LevelResource>;
     };
 };
 
@@ -4980,10 +5032,10 @@ export type LevelsStoreErrors = {
 export type LevelsStoreError = LevelsStoreErrors[keyof LevelsStoreErrors];
 
 export type LevelsStoreResponses = {
-    201: {
+    200: {
         success: boolean;
-        message: null;
-        data: Level | null;
+        message: string | null;
+        data: LevelResource;
     };
 };
 
@@ -5112,8 +5164,8 @@ export type LevelsUpdateError = LevelsUpdateErrors[keyof LevelsUpdateErrors];
 export type LevelsUpdateResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: Level | null;
+        message: string | null;
+        data: LevelResource;
     };
 };
 
@@ -5883,6 +5935,15 @@ export type ReferenceLevelsErrors = {
          */
         message: string;
     };
+    /**
+     * Authorization error
+     */
+    403: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
 };
 
 export type ReferenceLevelsError = ReferenceLevelsErrors[keyof ReferenceLevelsErrors];
@@ -5890,8 +5951,8 @@ export type ReferenceLevelsError = ReferenceLevelsErrors[keyof ReferenceLevelsEr
 export type ReferenceLevelsResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: Array<Level>;
+        message: string | null;
+        data: Array<LevelResource>;
     };
 };
 
@@ -7482,6 +7543,65 @@ export type SeasonsUpdateResponses = {
 
 export type SeasonsUpdateResponse = SeasonsUpdateResponses[keyof SeasonsUpdateResponses];
 
+export type SetupStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/setup/status';
+};
+
+export type SetupStatusErrors = {
+    /**
+     * Unauthenticated
+     */
+    401: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * An error
+     */
+    403: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+};
+
+export type SetupStatusError = SetupStatusErrors[keyof SetupStatusErrors];
+
+export type SetupStatusResponses = {
+    200: {
+        success: boolean;
+        message: null;
+        data: {
+            center: {
+                id: number;
+                name: string;
+            } | null;
+            season: {
+                id: number;
+                name: string;
+                is_current: boolean;
+            } | null;
+            total_steps: number;
+            done_steps: number;
+            current: string | null;
+            steps: Array<{
+                key: string;
+                done: boolean;
+                count: number;
+                target: string;
+            }>;
+        };
+    };
+};
+
+export type SetupStatusResponse = SetupStatusResponses[keyof SetupStatusResponses];
+
 export type StudentUnlinkedAccountsData = {
     body?: never;
     path?: never;
@@ -7521,6 +7641,110 @@ export type StudentUnlinkedAccountsResponses = {
 };
 
 export type StudentUnlinkedAccountsResponse = StudentUnlinkedAccountsResponses[keyof StudentUnlinkedAccountsResponses];
+
+export type StudentExamBriefData = {
+    body?: never;
+    path: {
+        /**
+         * The student ID
+         */
+        student: number;
+    };
+    query?: never;
+    url: '/v1/students/{student}/exam-brief';
+};
+
+export type StudentExamBriefErrors = {
+    /**
+     * Unauthenticated
+     */
+    401: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * Authorization error
+     */
+    403: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * Not found
+     */
+    404: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+};
+
+export type StudentExamBriefError = StudentExamBriefErrors[keyof StudentExamBriefErrors];
+
+export type StudentExamBriefResponses = {
+    200: {
+        success: boolean;
+        message: string | null;
+        data: {
+            student: StudentResource;
+            group: GroupResource | null;
+            season: {
+                id: number;
+                name: string;
+            } | null;
+            summary: {
+                season_thumn: number | null;
+                season_avg_score: number | null;
+                season_avg_sarraj: number | null;
+                season_attendance_pct: number | null;
+                season_overall_avg: number | null;
+                honor_flag: string | null;
+            } | null;
+            memorization: {
+                last: {
+                    id: number;
+                    log_date: string;
+                    log_mode: 'thumn' | 'surah';
+                    thumn_amount: number;
+                    hizb_no: number | null;
+                    thumn_no: number | null;
+                    surah_ref: number | null;
+                    ayah_from: number | null;
+                    ayah_to: number | null;
+                } | null;
+                items: Array<{
+                    id: number;
+                    log_date: string;
+                    log_mode: 'thumn' | 'surah';
+                    thumn_amount: number;
+                    hizb_no: number | null;
+                    thumn_no: number | null;
+                    surah_ref: number | null;
+                    ayah_from: number | null;
+                    ayah_to: number | null;
+                }>;
+                total_thumn: number;
+            };
+            exams: Array<ExamResource>;
+            current: {
+                mode: 'thumn' | 'surah';
+                hizb: number | null;
+                thumn: number | null;
+                surah: number | null;
+                ayah_from: number | null;
+                ayah_to: number | null;
+                source: 'last_exam' | 'last_log' | null;
+            };
+        };
+    };
+};
+
+export type StudentExamBriefResponse = StudentExamBriefResponses[keyof StudentExamBriefResponses];
 
 export type StudentsIndexData = {
     body?: never;
@@ -7633,7 +7857,9 @@ export type StudentsStoreResponses = {
     201: {
         success: boolean;
         message: null;
-        data: StudentResource;
+        data: StudentResource & {
+            [key: string]: unknown;
+        };
     };
 };
 
@@ -7817,6 +8043,130 @@ export type StudentsUpdateResponses = {
 };
 
 export type StudentsUpdateResponse = StudentsUpdateResponses[keyof StudentsUpdateResponses];
+
+export type V1TermBreakdownData = {
+    body?: never;
+    path?: never;
+    query: {
+        student_id: number;
+        term_id: number;
+    };
+    url: '/v1/term-results/breakdown';
+};
+
+export type V1TermBreakdownErrors = {
+    /**
+     * Unauthenticated
+     */
+    401: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * Authorization error
+     */
+    403: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * Validation error
+     */
+    422: {
+        /**
+         * Errors overview.
+         */
+        message: string;
+        /**
+         * A detailed description of each field that failed validation.
+         */
+        errors: {
+            [key: string]: Array<string>;
+        };
+    };
+};
+
+export type V1TermBreakdownError = V1TermBreakdownErrors[keyof V1TermBreakdownErrors];
+
+export type V1TermBreakdownResponses = {
+    200: {
+        success: boolean;
+        message: null;
+        data: {
+            student: {
+                id: number;
+                full_name: string;
+            };
+            term: {
+                id: number;
+                name_ar: string;
+            };
+            hifz: {
+                modules: Array<{
+                    code: string;
+                    name_ar: string;
+                    max_points: number;
+                }>;
+                sessions: number;
+                scored_sessions: number;
+                sum: number;
+                average: number | null;
+                rows: Array<{
+                    session_id: number;
+                    session_number: number;
+                    date: string | null;
+                    status: string;
+                    modules: Array<{
+                        code: string;
+                        name_ar: string;
+                        max_points: number;
+                        score: number | null;
+                    }>;
+                    total: number;
+                    has_score: boolean;
+                }>;
+            };
+            murajaa: {
+                count: number;
+                average: number | null;
+                rows: Array<{
+                    id: number;
+                    week_from: number;
+                    week_to: number;
+                    weeks_covered: number | null;
+                    score: number | null;
+                    reviewed_at: string | null;
+                    hizb_from: number | null;
+                    hizb_to: number | null;
+                }>;
+            };
+            exam: {
+                id: number;
+                exam_date: string | null;
+                overall_avg: number | null;
+                sum: number;
+                max: number;
+                questions: Array<{
+                    question_no: number;
+                    prompt_text: string | null;
+                    model_type: string | null;
+                    max_score: number | null;
+                    score: number | null;
+                }>;
+            } | null;
+            general: {
+                value: number | null;
+                source: string;
+            };
+        };
+    };
+};
+
+export type V1TermBreakdownResponse = V1TermBreakdownResponses[keyof V1TermBreakdownResponses];
 
 export type TermPlansIndexData = {
     body?: never;

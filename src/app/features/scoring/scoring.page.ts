@@ -5,6 +5,7 @@
   inject,
   resource,
   signal,
+  viewChild,
 } from '@angular/core';
 import {
   FormControl,
@@ -35,6 +36,13 @@ interface Draft {
   inTotal: boolean;
 }
 
+type TrailFilter = 'center' | 'scope' | 'status';
+
+interface TrailCrumb {
+  id: TrailFilter;
+  label: string;
+}
+
 @Component({
   selector: 'app-scoring-page',
   standalone: true,
@@ -62,6 +70,10 @@ export class ScoringPage {
   readonly error = signal<{ key: string; params?: Record<string, string | number> } | null>(null);
   readonly drafts = signal<ReadonlyMap<string, Draft>>(new Map());
   readonly showAdd = signal(false);
+
+  private readonly centerPicker = viewChild<DropdownComponent>('centerPicker');
+  private readonly scopePicker = viewChild<DropdownComponent>('scopePicker');
+  private readonly statusPicker = viewChild<DropdownComponent>('statusPicker');
 
   /** Dirty guard: unsent draft edits or a half-filled add form block leave. */
   readonly leave = leaveController();
@@ -101,6 +113,50 @@ export class ScoringPage {
     () => (this.centers.value() ?? []).find((c) => c.id === this.centerScope())?.name ?? null,
   );
 
+  readonly subjectCount = computed(() => (this.modules.value() ?? []).length);
+  readonly activeCount = computed(
+    () => (this.modules.value() ?? []).filter((m) => m.is_active).length,
+  );
+  readonly editedCount = computed(() => this.drafts().size);
+  readonly hasActiveFilters = computed(
+    () =>
+      this.q().trim() !== '' ||
+      (!this.prefs.hideScopePickers() && this.centerScope() !== null) ||
+      this.scope() !== null ||
+      this.status() !== null,
+  );
+
+  /**
+   * The trail only earns its place once every visible picker has a concrete
+   * value. With the scope picker hidden, "center" is the fixed shared scope.
+   */
+  readonly showTrail = computed(() => {
+    const centerReady = this.prefs.hideScopePickers()
+      ? true
+      : this.centerScope() !== null && this.centerName() !== null;
+    return centerReady && this.scope() !== null && this.status() !== null;
+  });
+
+  readonly trailCrumbs = computed<TrailCrumb[]>(() => {
+    this.language.current();
+    const crumbs: TrailCrumb[] = [];
+    if (!this.prefs.hideScopePickers() && this.centerScope() !== null) {
+      crumbs.push({ id: 'center', label: this.centerName() ?? '' });
+    }
+    const scope = this.scope();
+    if (scope !== null) {
+      crumbs.push({ id: 'scope', label: this.i18n.instant(`scopeType.${scope}`) });
+    }
+    const status = this.status();
+    if (status !== null) {
+      crumbs.push({
+        id: 'status',
+        label: this.i18n.instant(status === 'active' ? 'scoring.active' : 'scoring.inactive'),
+      });
+    }
+    return crumbs;
+  });
+
   /** Rows carrying this center's id are overrides; NULL-center rows are inherited defaults. */
   isOverride(centerId: number | null | undefined): boolean {
     return this.activeScope() !== null && centerId === this.activeScope();
@@ -113,6 +169,7 @@ export class ScoringPage {
     const scope = this.activeScope();
     if (scope === null || this.resetBusy()) return;
     this.resetBusy.set(true);
+    this.error.set(null);
     this.scoring.reset(scope).subscribe({
       next: () => {
         this.resetBusy.set(false);
@@ -120,9 +177,10 @@ export class ScoringPage {
         this.drafts.set(new Map());
         this.tick.update((n) => n + 1);
       },
-      error: () => {
+      error: (e) => {
         this.resetBusy.set(false);
         this.armingReset.set(false);
+        this.error.set(this.mapError(e));
       },
     });
   }
@@ -147,6 +205,60 @@ export class ScoringPage {
     this.centerScope.set(dropdownNumber(v));
     this.drafts.set(new Map());
     this.armingReset.set(false);
+  }
+
+  clearFilters(): void {
+    const centerChanges = !this.prefs.hideScopePickers() && this.centerScope() !== null;
+    this.q.set('');
+    this.scope.set(null);
+    this.status.set(null);
+    if (centerChanges) {
+      // Reuses the normal scope-switch cleanup: the old drafts belonged to
+      // that center's override set.
+      this.setCenterScope('');
+    } else {
+      this.centerScope.set(null);
+      this.armingReset.set(false);
+    }
+  }
+
+  isDirtyCode(code: string): boolean {
+    return this.drafts().has(code);
+  }
+
+  effectiveMax(code: string, fallback: number): number {
+    return this.drafts().get(code)?.max ?? fallback;
+  }
+
+  effectiveActive(code: string, fallback: boolean): boolean {
+    return this.drafts().get(code)?.active ?? fallback;
+  }
+
+  effectiveInTotal(code: string, fallback: boolean): boolean {
+    return this.drafts().get(code)?.inTotal ?? fallback;
+  }
+
+  openAdd(): void {
+    this.error.set(null);
+    this.showAdd.set(true);
+  }
+
+  closeAdd(): void {
+    if (this.saving()) return;
+    this.showAdd.set(false);
+    this.error.set(null);
+  }
+
+  /** A crumb re-opens its picker instead of discarding the other selections. */
+  openCrumb(id: TrailFilter, event: Event): void {
+    event.stopPropagation();
+    const picker =
+      id === 'center'
+        ? this.centerPicker()
+        : id === 'scope'
+          ? this.scopePicker()
+          : this.statusPicker();
+    picker?.openMenu();
   }
 
   readonly rows = computed(() => {
@@ -177,6 +289,8 @@ export class ScoringPage {
       ) / 10
     );
   });
+
+  readonly sumPct = computed(() => Math.max(0, Math.min(100, (this.liveSum() / 20) * 100)));
 
   private effMax(
     code: string,

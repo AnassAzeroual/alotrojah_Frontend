@@ -15,11 +15,12 @@ import {
 export class LevelsService {
   private readonly api = inject(ApiClient);
 
-  list(centerId?: number | null): Observable<LevelsIndexResponse['data']> {
-    return this.api.get<LevelsIndexResponse['data']>(
-      '/levels',
-      centerId ? { center_id: centerId } : undefined,
-    );
+  /**
+   * Levels of one season. Every level belongs to a season (there is no shared
+   * seed set); the caller must always name the season.
+   */
+  list(seasonId: number): Observable<LevelsIndexResponse['data']> {
+    return this.api.get<LevelsIndexResponse['data']>('/levels', { season_id: seasonId });
   }
 
   /** Dynamic codes: the server assigns `L{id}`; the payload carries no code. */
@@ -35,8 +36,8 @@ export class LevelsService {
     return this.api.delete<LevelsDestroyResponse['data']>(`/levels/${id}`);
   }
 
-  /** T2: delete one center's override set (all-or-nothing server-side). */
-  reset(centerId: number): Observable<LevelResetResponse['data']> {
-    return this.api.delete<LevelResetResponse['data']>('/levels/reset', { center_id: centerId });
+  /** Restore a season's set from the previous season of its center lane. */
+  reset(seasonId: number): Observable<LevelResetResponse['data']> {
+    return this.api.delete<LevelResetResponse['data']>('/levels/reset', { season_id: seasonId });
   }
 }

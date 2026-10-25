@@ -1,43 +1,376 @@
-<section class="page">
+<section class="page entry-page">
   <div class="page-head anim-rise">
-    <h1>{{ 'entry.title' | translate }}</h1>
+    <div>
+      <h1>{{ 'entry.title' | translate }}</h1>
+      @if (selectedGroup() === null) {
+        <p>{{ 'entry.pick_hint' | translate }}</p>
+      }
+    </div>
   </div>
 
-  <div class="toolbar card anim-rise" style="--i: 1">
-    <label class="field">
-      <span>{{ 'entry.pick_group' | translate }}</span>
-      <app-dropdown
-        [options]="groupOptions()"
-        [value]="txt(selectedGroup())"
-        (valueChange)="onGroup(num($event))"
-        ariaLabelKey="entry.pick_group"
-      />
-    </label>
+  @if (selectedGroup() !== null) {
+    <nav class="trail anim-rise" [attr.aria-label]="'entry.breadcrumb' | translate" style="--i: 1">
+      <button
+        type="button"
+        class="crumb home-crumb"
+        [attr.aria-label]="'nav.groups' | translate"
+        (click)="resetGroup()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+        </svg>
+        <span class="crumb-label home-label">{{ 'nav.groups' | translate }}</span>
+      </button>
 
-    <label class="field">
-      <span>{{ 'entry.pick_week' | translate }}</span>
-      <app-dropdown
-        [options]="weekOptions()"
-        [value]="txt(selectedWeek())"
-        (valueChange)="onWeek(num($event))"
-        ariaLabelKey="entry.pick_week"
-      />
-    </label>
+      <svg
+        class="crumb-chev"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="m9 18 6-6-6-6" />
+      </svg>
 
-    <label class="field">
-      <span>{{ 'entry.pick_session' | translate }}</span>
-      <app-dropdown
-        [options]="sessionOptions()"
-        [value]="txt(selectedSession())"
-        (valueChange)="onSession(num($event))"
-        ariaLabelKey="entry.pick_session"
-      />
-    </label>
-  </div>
+      <button
+        type="button"
+        class="crumb"
+        [class.current]="selectedWeek() === null"
+        [attr.aria-current]="selectedWeek() === null ? 'page' : null"
+        (click)="backToWeeks()"
+      >
+        <span class="crumb-label">{{ selectedGroupData()?.name }}</span>
+      </button>
 
-  @if (ready()) {
+      @if (selectedWeek() !== null) {
+        <svg
+          class="crumb-chev"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <button
+          type="button"
+          class="crumb"
+          [class.current]="selectedSession() === null"
+          [attr.aria-current]="selectedSession() === null ? 'page' : null"
+          (click)="backToSessions()"
+        >
+          <span class="crumb-label">{{ 'common.week' | translate }}</span>
+          <span class="crumb-num">{{
+            selectedWeekData()?.week_number_global ?? selectedWeek()
+          }}</span>
+        </button>
+      }
+
+      @if (selectedSession() !== null) {
+        <svg
+          class="crumb-chev"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <span class="crumb current" aria-current="page">
+          <span class="crumb-label">{{ 'common.session' | translate }}</span>
+          <span class="crumb-num">{{ session()?.session_number_global ?? selectedSession() }}</span>
+        </span>
+      }
+    </nav>
+  }
+
+  @if (selectedGroup() === null) {
+    <section class="picker anim-rise" style="--i: 2">
+      <header class="picker-head">
+        <span class="step-badge">{{ step() }}<small>/ 3</small></span>
+        <div class="picker-copy">
+          <h2>{{ 'entry.pick_group' | translate }}</h2>
+          <p>{{ 'entry.group_hint' | translate }}</p>
+        </div>
+        <span class="count-chip" [attr.aria-label]="'entry.pick_group' | translate">
+          {{ groups().length }}
+        </span>
+      </header>
+
+      <div class="choice-grid group-grid">
+        @for (g of groups(); track g.id) {
+          <button type="button" class="choice group-choice" (click)="onGroup(g.id)">
+            <span class="choice-top">
+              <span class="choice-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+                  <path d="M8 7h8M8 11h6" />
+                </svg>
+              </span>
+              <span class="choice-title">
+                <strong>{{ g.name }}</strong>
+                @if (g.teacher?.full_name) {
+                  <small>{{ g.teacher.full_name }}</small>
+                } @else {
+                  <small class="muted">{{ 'grp.col_teacher' | translate }} —</small>
+                }
+              </span>
+              <span class="choice-go" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </span>
+            </span>
+
+            <span class="choice-stats">
+              <span class="stat">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  aria-hidden="true"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                <span>
+                  <b class="ltr-num">{{ g.students_count ?? 0 }}</b>
+                  {{ 'grp.col_students' | translate }}
+                </span>
+              </span>
+
+              @if (g.fill_pct !== null && g.fill_pct !== undefined) {
+                <span class="stat fill-stat" [attr.title]="'grp.col_fill' | translate">
+                  <span class="fill-track" aria-hidden="true">
+                    <span class="fill-bar" [style.width.%]="g.fill_pct"></span>
+                  </span>
+                  <b class="ltr-num">{{ g.fill_pct }}%</b>
+                </span>
+              }
+            </span>
+
+            @if (scheduleKeys(g.schedule_days).length > 0) {
+              <span class="days">
+                @for (d of scheduleKeys(g.schedule_days); track d) {
+                  <span class="day-chip">{{ 'grp.day.' + d | translate }}</span>
+                }
+              </span>
+            }
+
+            @if (!g.is_active) {
+              <span class="choice-flag">{{ 'grp.inactive' | translate }}</span>
+            }
+          </button>
+        } @empty {
+          <app-empty-state messageKey="entry.no_groups" />
+        }
+      </div>
+    </section>
+  } @else if (selectedWeek() === null) {
+    <section class="picker anim-rise" style="--i: 2">
+      <header class="picker-head">
+        <span class="step-badge">{{ step() }}<small>/ 3</small></span>
+        <div class="picker-copy">
+          <h2>{{ 'entry.pick_week' | translate }}</h2>
+          <p>{{ 'entry.week_hint' | translate }}</p>
+        </div>
+        <span class="count-chip">{{ visibleWeeks().length }}</span>
+      </header>
+
+      @if (!weeks.isLoading() && weekTerms().length > 1) {
+        <div class="term-tabs" role="group" [attr.aria-label]="'entry.term_filter' | translate">
+          <button
+            type="button"
+            class="term-tab"
+            [class.on]="activeWeekTerm() === null"
+            (click)="showAllWeeks()"
+          >
+            {{ 'entry.all_terms' | translate }}
+          </button>
+          @for (term of weekTerms(); track term) {
+            <button
+              type="button"
+              class="term-tab"
+              [class.on]="activeWeekTerm() === term"
+              (click)="selectWeekTerm(term)"
+            >
+              {{ term }}
+            </button>
+          }
+        </div>
+      }
+
+      @if (weeks.isLoading()) {
+        <div class="choice-grid skeleton-grid" aria-hidden="true">
+          @for (n of [1, 2, 3]; track n) {
+            <div class="choice skeleton-choice">
+              <span class="skeleton sk-line sk-40"></span>
+              <span class="skeleton sk-line sk-70"></span>
+              <span class="skeleton sk-line sk-55"></span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="choice-grid week-grid">
+          @for (w of visibleWeeks(); track w.id) {
+            <button type="button" class="choice week-choice" (click)="onWeek(w.id)">
+              <span class="choice-top">
+                <span class="choice-icon calendar-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="5" width="18" height="16" rx="2" />
+                    <path d="M16 3v4M8 3v4M3 11h18" />
+                  </svg>
+                </span>
+                <span class="choice-title">
+                  <small>{{ 'common.week' | translate }}</small>
+                  <strong class="ltr-num">{{ w.week_number_global }}</strong>
+                </span>
+                @if (isCurrentWeek(w)) {
+                  <span class="tag gold">{{ 'entry.current_week' | translate }}</span>
+                }
+              </span>
+
+              <span class="choice-sub">
+                @if (w.term_name) {
+                  {{ w.term_name }}
+                }
+                @if (w.term_name && w.season_name) {
+                  <span class="sub-dot" aria-hidden="true">·</span>
+                }
+                @if (w.season_name) {
+                  {{ w.season_name }}
+                }
+              </span>
+
+              <span class="choice-meta">
+                <span class="meta">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    aria-hidden="true"
+                  >
+                    <path d="M8 2v4M16 2v4M3 10h18" />
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                  </svg>
+                  <span dir="auto">{{ formatRange(w.start_date, w.end_date) }}</span>
+                </span>
+                <span class="tag soft">{{ 'weekType.' + w.week_type | translate }}</span>
+              </span>
+            </button>
+          } @empty {
+            <app-empty-state messageKey="entry.no_weeks" />
+          }
+        </div>
+      }
+    </section>
+  } @else if (selectedSession() === null) {
+    <section class="picker anim-rise" style="--i: 2">
+      <header class="picker-head">
+        <span class="step-badge">{{ step() }}<small>/ 3</small></span>
+        <div class="picker-copy">
+          <h2>{{ 'entry.pick_session' | translate }}</h2>
+          <p>{{ 'entry.session_hint' | translate }}</p>
+        </div>
+        <span class="count-chip">{{ sessionList().length }}</span>
+      </header>
+
+      @if (sessions.isLoading()) {
+        <div class="choice-grid skeleton-grid" aria-hidden="true">
+          @for (n of [1, 2, 3]; track n) {
+            <div class="choice skeleton-choice">
+              <span class="skeleton sk-line sk-40"></span>
+              <span class="skeleton sk-line sk-70"></span>
+              <span class="skeleton sk-line sk-55"></span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="choice-grid session-grid">
+          @for (s of sessionList(); track s.id) {
+            <button type="button" class="choice session-choice" (click)="onSession(s.id)">
+              <span class="choice-top">
+                <span class="choice-icon clock-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v5l3 2" />
+                  </svg>
+                </span>
+                <span class="choice-title">
+                  <small>{{ 'common.session' | translate }}</small>
+                  <strong class="ltr-num">{{ s.session_number_global }}</strong>
+                </span>
+                <span
+                  class="tag"
+                  [class.status-planned]="s.status === 'planned'"
+                  [class.status-done]="s.status === 'done'"
+                  [class.status-cancelled]="s.status === 'cancelled'"
+                >
+                  {{ 'sessionStatus.' + s.status | translate }}
+                </span>
+              </span>
+
+              <span class="choice-sub">{{ 'sessionType.' + s.session_type | translate }}</span>
+
+              <span class="choice-meta">
+                <span class="meta">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    aria-hidden="true"
+                  >
+                    <path d="M8 2v4M16 2v4M3 10h18" />
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                  </svg>
+                  <span dir="auto">{{ formatDate(s.planned_date) }}</span>
+                  @if (isToday(s.planned_date)) {
+                    <span class="tag gold">{{ 'entry.today' | translate }}</span>
+                  }
+                </span>
+                @if (sessionTime(s); as time) {
+                  <span class="meta">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 7v5l3 2" />
+                    </svg>
+                    <span dir="ltr">{{ time }}</span>
+                  </span>
+                }
+              </span>
+            </button>
+          } @empty {
+            <app-empty-state messageKey="entry.no_sessions" />
+          }
+        </div>
+      }
+    </section>
+  } @else {
     @if (existing.isLoading()) {
-      <div class="card anim-fade" aria-hidden="true">
+      <div class="card score-loading anim-fade" aria-hidden="true">
         <div class="skeleton sk-title"></div>
         <div class="skeleton sk-card"></div>
         <div class="skeleton sk-card"></div>
@@ -56,7 +389,5 @@
         (saved)="onSaved()"
       />
     }
-  } @else {
-    <app-empty-state messageKey="entry.pick_hint" />
   }
 </section>

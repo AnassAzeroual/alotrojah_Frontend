@@ -1,43 +1,189 @@
-<section class="page">
-  <div class="page-head anim-rise">
-    <h1 class="with-add">
-      {{ 'scoring.title' | translate }}
-      <button
-        type="button"
-        class="btn btn-primary btn-icon"
-        data-testid="scoring-open-add"
-        [attr.aria-label]="'scoring.add_book' | translate"
-        [attr.title]="'scoring.add_book' | translate"
-        (click)="showAdd.set(true)"
-      >
+<section class="page scoring-page">
+  <div class="page-head scoring-head anim-rise">
+    <div class="head-main">
+      <span class="head-icon" aria-hidden="true">
         <svg
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="2.5"
+          stroke-width="1.8"
           stroke-linecap="round"
-          aria-hidden="true"
+          stroke-linejoin="round"
         >
-          <path d="M12 5v14M5 12h14" />
+          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z" />
+          <path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20" />
+          <path d="m9.5 9 1.7 1.7 3.3-3.4" />
         </svg>
-      </button>
-    </h1>
+      </span>
+      <div class="head-copy">
+        <h1>{{ 'scoring.title' | translate }}</h1>
+        <p>{{ 'scoring.subtitle' | translate }}</p>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-primary add-btn"
+      data-testid="scoring-open-add"
+      [attr.aria-label]="'scoring.add_book' | translate"
+      [attr.title]="'scoring.add_book' | translate"
+      (click)="openAdd()"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      <span class="add-label">{{ 'scoring.add_book' | translate }}</span>
+    </button>
   </div>
 
-  <p class="sum anim-rise" style="--i: 1" [class.bad]="liveSum() !== 20">
-    {{ 'scoring.sum' | translate }}: <strong class="ltr-num">{{ liveSum() }} / 20</strong>
-    @if (liveSum() !== 20) {
-      <small>{{ 'scoring.sum_bad' | translate }}</small>
-    }
-  </p>
+  <div class="overview anim-rise" style="--i: 1">
+    <section class="score-card card" [class.bad]="liveSum() !== 20">
+      <div class="score-ring">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="score-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00b8a9" />
+              <stop offset="100%" stop-color="#8b5cf6" />
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="50" cy="50" r="42" />
+          <circle
+            class="ring-fill"
+            cx="50"
+            cy="50"
+            r="42"
+            pathLength="100"
+            [attr.stroke-dasharray]="sumPct() + ' 100'"
+          />
+        </svg>
+        <span class="ring-text ltr-num">
+          <strong>{{ liveSum() }}</strong>
+          <small>/ 20</small>
+        </span>
+      </div>
 
-  <div class="scope-banner anim-rise" style="--i: 1" data-testid="scoring-scope-banner">
-    @if (activeScope() === null) {
-      <span>{{ 'scoring.scope_shared' | translate }}</span>
-    } @else {
-      <span>{{ 'scoring.scope_center' | translate: { name: centerName() ?? '' } }}</span>
-      @if (armingReset()) {
-        <span class="cluster">
+      <div class="score-copy">
+        <span class="eyebrow">{{ 'scoring.sum' | translate }}</span>
+        <strong class="score-state" role="status" aria-live="polite">
+          {{ (liveSum() === 20 ? 'scoring.sum_ok' : 'scoring.sum_bad') | translate }}
+        </strong>
+      </div>
+    </section>
+
+    <section class="stats-card card" [attr.aria-label]="'scoring.title' | translate">
+      <div class="stat">
+        <span class="stat-ico" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.9"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z" />
+            <path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20" />
+          </svg>
+        </span>
+        <span class="stat-copy">
+          <small>{{ 'scoring.subjects' | translate }}</small>
+          <strong class="ltr-num">{{ modules.isLoading() ? '—' : subjectCount() }}</strong>
+        </span>
+      </div>
+
+      <div class="stat">
+        <span class="stat-ico" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m5 12 4 4L19 6" />
+          </svg>
+        </span>
+        <span class="stat-copy">
+          <small>{{ 'scoring.active' | translate }}</small>
+          <strong class="ltr-num">{{ modules.isLoading() ? '—' : activeCount() }}</strong>
+        </span>
+      </div>
+
+      <div class="stat">
+        <span class="stat-ico" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.9"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 6h16M7 12h10M10 18h4" />
+          </svg>
+        </span>
+        <span class="stat-copy">
+          <small>{{ 'scoring.showing' | translate }}</small>
+          <strong class="ltr-num">{{ modules.isLoading() ? '—' : rows().length }}</strong>
+        </span>
+      </div>
+    </section>
+  </div>
+
+  <div
+    class="scope-banner anim-rise"
+    style="--i: 2"
+    [class.is-center]="activeScope() !== null"
+    data-testid="scoring-scope-banner"
+  >
+    <span class="scope-lead">
+      <span class="scope-ico" aria-hidden="true">
+        @if (activeScope() === null) {
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 3 4 7l8 4 8-4z" />
+            <path d="m4 12 8 4 8-4M4 17l8 4 8-4" />
+          </svg>
+        } @else {
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 21h18M5 21V7l7-4 7 4v14" />
+            <path d="M9 21v-5h6v5M9 9h.01M15 9h.01M9 13h.01M15 13h.01" />
+          </svg>
+        }
+      </span>
+      <span class="scope-text">
+        @if (activeScope() === null) {
+          {{ 'scoring.scope_shared' | translate }}
+        } @else {
+          {{ 'scoring.scope_center' | translate: { name: centerName() ?? '' } }}
+        }
+      </span>
+    </span>
+
+    <span class="scope-actions">
+      @if (activeScope() !== null) {
+        @if (armingReset()) {
           <button
             type="button"
             class="btn btn-danger-solid btn-sm"
@@ -59,229 +205,517 @@
           >
             {{ 'common.cancel' | translate }}
           </button>
-        </span>
-      } @else {
-        <button
-          type="button"
-          class="btn btn-ghost btn-sm"
-          data-testid="scoring-reset"
-          [disabled]="resetBusy()"
-          (click)="armingReset.set(true)"
+        } @else {
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            data-testid="scoring-reset"
+            [disabled]="resetBusy()"
+            (click)="armingReset.set(true)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+            {{ 'scoring.reset' | translate }}
+          </button>
+        }
+      }
+    </span>
+  </div>
+
+  <section class="filters card anim-rise" style="--i: 2" aria-labelledby="scoring-filters-title">
+    <div class="filters-head">
+      <h2 id="scoring-filters-title" class="filters-title">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
         >
-          {{ 'scoring.reset' | translate }}
+          <path d="M4 6h16M7 12h10M10 18h4" />
+        </svg>
+        {{ 'scoring.filters' | translate }}
+      </h2>
+      @if (hasActiveFilters()) {
+        <button type="button" class="clear-filters" (click)="clearFilters()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+          {{ 'scoring.clear_filters' | translate }}
         </button>
       }
-    }
-  </div>
-
-  <div class="toolbar card anim-rise" style="--i: 1">
-    <label class="field search grow">
-      <span class="sr-only">{{ 'list.search' | translate }}</span>
-      <input
-        type="search"
-        data-testid="scoring-search"
-        [placeholder]="'list.search' | translate"
-        [value]="q()"
-        (input)="q.set($any($event.target).value)"
-      />
-    </label>
-    @if (!prefs.hideScopePickers()) {
-      <label class="field">
-        <app-dropdown
-          [options]="centerScopeOptions()"
-          [value]="txt(centerScope() ?? '')"
-          (valueChange)="setCenterScope($event)"
-          ariaLabelKey="dash.center"
-          testId="scoring-center-scope"
-        />
-      </label>
-    }
-    <label class="field">
-      <app-dropdown
-        [options]="scopeOptions"
-        [value]="scope() ?? ''"
-        (valueChange)="scope.set(txt($event) || null)"
-        ariaLabelKey="scoring.scope"
-        testId="scoring-scope"
-      />
-    </label>
-    <label class="field">
-      <app-dropdown
-        [options]="statusOptions()"
-        [value]="status() ?? ''"
-        (valueChange)="status.set(txt($event) || null)"
-        ariaLabelKey="scoring.status"
-        testId="scoring-status"
-      />
-    </label>
-  </div>
-
-  @if (modules.isLoading()) {
-    <div class="stack" aria-hidden="true">
-      <div class="skeleton sk-card"></div>
     </div>
-  } @else if (rows().length === 0) {
-    <app-empty-state />
-  } @else {
-    <form (ngSubmit)="save()" autocomplete="off">
-      <div class="table-responsive">
-        <table class="scoring-table">
-          <thead>
-            <tr>
-              <th>{{ 'scoring.name' | translate }}</th>
-              <th>{{ 'scoring.code' | translate }}</th>
-              <th>{{ 'scoring.max' | translate }}</th>
-              <th>{{ 'scoring.scope' | translate }}</th>
-              <th>{{ 'scoring.active' | translate }}</th>
-              <th>{{ 'scoring.in_total' | translate }}</th>
-              <th class="actions-col"></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (m of rows(); track m.code) {
-              <tr
-                [class.is-override]="isOverride(m.center_id)"
-                [class.is-inherited]="activeScope() !== null && !isOverride(m.center_id)"
-              >
-                <td [attr.data-label]="'scoring.name' | translate">
-                  <strong>{{ m.name_ar }}</strong>
-                  @if (activeScope() !== null) {
-                    @if (isOverride(m.center_id)) {
-                      <span class="src-tag override">{{ 'scoring.override_tag' | translate }}</span>
-                    } @else {
-                      <span class="src-tag inherited">{{
-                        'scoring.inherited_tag' | translate
-                      }}</span>
-                    }
-                  }
-                </td>
-                <td [attr.data-label]="'scoring.code' | translate">
-                  <code class="ltr-num" dir="ltr">{{ m.code }}</code>
-                </td>
-                <td [attr.data-label]="'scoring.max' | translate">
-                  <input
-                    type="number"
-                    class="ltr-num mini"
-                    [value]="m.max_points"
-                    min="0"
-                    max="20"
-                    step="0.5"
-                    [attr.aria-label]="'scoring.max' | translate"
-                    (change)="
-                      edit(
-                        m.code,
-                        { max: +$any($event.target).value },
-                        { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
-                      )
-                    "
-                  />
-                </td>
-                <td [attr.data-label]="'scoring.scope' | translate">
-                  {{ 'scopeType.' + m.scope | translate }}
-                </td>
-                <td [attr.data-label]="'scoring.active' | translate">
-                  <input
-                    type="checkbox"
-                    [checked]="m.is_active"
-                    [attr.aria-label]="'scoring.active' | translate"
-                    (change)="
-                      edit(
-                        m.code,
-                        { active: $any($event.target).checked },
-                        { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
-                      )
-                    "
-                  />
-                </td>
-                <td [attr.data-label]="'scoring.in_total' | translate">
-                  @if (m.scope === 'weekly') {
-                    <input
-                      type="checkbox"
-                      [checked]="m.is_in_weekly_total"
-                      [attr.aria-label]="'scoring.in_total' | translate"
-                      (change)="
-                        edit(
-                          m.code,
-                          { inTotal: $any($event.target).checked },
-                          { max: m.max_points, active: m.is_active, inTotal: m.is_in_weekly_total }
-                        )
-                      "
-                    />
-                  } @else {
-                    <span class="muted">—</span>
-                  }
-                </td>
-                <td class="actions-col" [attr.data-label]="'common.actions' | translate">
-                  @if (armingDeleteId() === m.id) {
-                    <button
-                      type="button"
-                      class="btn btn-danger-solid btn-sm"
-                      [disabled]="busyId() === m.id"
-                      [attr.data-testid]="'confirm-delete-module-' + m.id"
-                      (click)="remove(m.id)"
-                    >
-                      @if (busyId() === m.id) {
-                        <app-spinner />
-                      } @else {
-                        {{ 'scoring.delete_confirm' | translate }}
-                      }
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-ghost btn-sm"
-                      [disabled]="busyId() === m.id"
-                      (click)="disarmDelete()"
-                    >
-                      {{ 'common.cancel' | translate }}
-                    </button>
-                  } @else {
-                    <button
-                      type="button"
-                      class="btn btn-danger-ghost btn-sm"
-                      [attr.data-testid]="'delete-module-' + m.id"
-                      [attr.aria-label]="'common.delete' | translate"
-                      (click)="armDelete(m.id)"
-                    >
-                      {{ 'common.delete' | translate }}
-                    </button>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+
+    <div class="filter-grid" [class.no-center]="prefs.hideScopePickers()">
+      <label class="field filter-search" for="scoring-search">
+        <span class="filter-label">{{ 'scoring.search' | translate }}</span>
+        <span class="search">
+          <input
+            id="scoring-search"
+            type="search"
+            data-testid="scoring-search"
+            [placeholder]="'list.search' | translate"
+            [value]="q()"
+            (input)="q.set($any($event.target).value)"
+          />
+        </span>
+      </label>
+
+      @if (!prefs.hideScopePickers()) {
+        <div class="filter filter-center">
+          <span class="filter-label">{{ 'dash.center' | translate }}</span>
+          <app-dropdown
+            #centerPicker
+            [options]="centerScopeOptions()"
+            [value]="txt(centerScope() ?? '')"
+            (valueChange)="setCenterScope($event)"
+            ariaLabelKey="dash.center"
+            testId="scoring-center-scope"
+          />
+        </div>
+      }
+
+      <div class="filter">
+        <span class="filter-label">{{ 'scoring.scope' | translate }}</span>
+        <app-dropdown
+          #scopePicker
+          [options]="scopeOptions"
+          [value]="scope() ?? ''"
+          (valueChange)="scope.set(txt($event) || null)"
+          ariaLabelKey="scoring.scope"
+          testId="scoring-scope"
+        />
       </div>
-      <button
-        type="submit"
-        class="btn btn-primary btn-block"
-        [class.is-loading]="saving()"
-        [disabled]="saving()"
-        data-testid="scoring-save"
-        (click)="save()"
-      >
-        @if (saving()) {
-          <app-spinner />
-        } @else {
-          {{ 'common.save' | translate }}
-        }
-      </button>
-    </form>
+
+      <div class="filter">
+        <span class="filter-label">{{ 'scoring.status' | translate }}</span>
+        <app-dropdown
+          #statusPicker
+          [options]="statusOptions()"
+          [value]="status() ?? ''"
+          (valueChange)="status.set(txt($event) || null)"
+          ariaLabelKey="scoring.status"
+          testId="scoring-status"
+        />
+      </div>
+    </div>
+  </section>
+
+  @if (showTrail()) {
+    <nav class="trail anim-rise" [attr.aria-label]="'scoring.context' | translate">
+      <span class="trail-root">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 6h16M7 12h10M10 18h4" />
+        </svg>
+        <span class="trail-root-label">{{ 'scoring.title' | translate }}</span>
+      </span>
+
+      @for (crumb of trailCrumbs(); track crumb.id; let last = $last) {
+        <svg
+          class="crumb-separator"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <button
+          type="button"
+          class="crumb"
+          [class.current]="last"
+          [attr.aria-label]="'scoring.change' | translate: { filter: crumb.label }"
+          [attr.title]="'scoring.change' | translate: { filter: crumb.label }"
+          (click)="openCrumb(crumb.id, $event)"
+        >
+          <span class="crumb-label">{{ crumb.label }}</span>
+          <svg
+            class="crumb-chev"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+      }
+    </nav>
   }
 
   @if (error(); as e) {
-    <p class="field-error">{{ e.key | translate: e.params }}</p>
+    @if (!showAdd()) {
+      <div class="banner danger" role="alert">
+        {{ e.key | translate: e.params }}
+      </div>
+    }
   }
 
-  @if (showAdd()) {
-    <div class="modal-backdrop" (click)="showAdd.set(false)">
-      <div
-        class="card modal anim-pop"
-        (click)="$event.stopPropagation()"
-        role="dialog"
-        aria-modal="true"
-      >
-        <form [formGroup]="addForm" (ngSubmit)="addBook()" class="stack" autocomplete="off">
-          <h2>{{ 'scoring.add_book' | translate }}</h2>
+  @if (modules.isLoading()) {
+    <div class="card loading-panel anim-rise" style="--i: 3" aria-hidden="true">
+      <div class="skeleton sk-panel-head"></div>
+      <div class="skeleton sk-panel-row"></div>
+      <div class="skeleton sk-panel-row"></div>
+      <div class="skeleton sk-panel-row"></div>
+    </div>
+  } @else if (rows().length === 0) {
+    <div class="card empty-panel anim-rise" style="--i: 3">
+      <app-empty-state />
+    </div>
+  } @else {
+    <form (ngSubmit)="save()" autocomplete="off" class="panel-form">
+      <section class="card scoring-panel anim-rise" style="--i: 3">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="panel-ico" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 6h16M4 12h16M4 18h10" />
+              </svg>
+            </span>
+            <div class="panel-copy">
+              <h2>{{ 'scoring.subjects' | translate }}</h2>
+              <p>{{ 'list.total' | translate: { count: rows().length } }}</p>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            @if (editedCount() > 0) {
+              <span class="unsaved-chip">
+                <span class="unsaved-dot" aria-hidden="true"></span>
+                {{ 'common.unsaved_title' | translate }}
+              </span>
+            }
+            <button
+              type="submit"
+              class="btn btn-primary save-btn"
+              [class.is-loading]="saving()"
+              [disabled]="saving() || editedCount() === 0"
+              data-testid="scoring-save"
+            >
+              @if (saving()) {
+                <app-spinner />
+              } @else {
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+                  <path d="M17 21v-8H7v8M7 3v5h8" />
+                </svg>
+                {{ 'common.save' | translate }}
+              }
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="scoring-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ 'scoring.name' | translate }}</th>
+                <th scope="col">{{ 'scoring.scope' | translate }}</th>
+                <th scope="col">{{ 'scoring.max' | translate }}</th>
+                <th scope="col">{{ 'scoring.active' | translate }}</th>
+                <th scope="col">{{ 'scoring.in_total' | translate }}</th>
+                <th scope="col" class="actions-col">
+                  <span class="sr-only">{{ 'common.actions' | translate }}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="cards">
+              @for (m of rows(); track m.code) {
+                <tr
+                  [class.is-override]="isOverride(m.center_id)"
+                  [class.is-inherited]="activeScope() !== null && !isOverride(m.center_id)"
+                  [class.is-dirty]="isDirtyCode(m.code)"
+                  [class.is-arming-delete]="armingDeleteId() === m.id"
+                >
+                  <td class="subject-cell" [attr.data-label]="'scoring.name' | translate">
+                    <div class="subject">
+                      <span
+                        class="subject-avatar"
+                        [class.murajaa]="m.scope === 'murajaa'"
+                        aria-hidden="true"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.9"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z" />
+                          <path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20" />
+                        </svg>
+                      </span>
+                      <div class="subject-copy">
+                        <strong [attr.title]="m.name_ar">{{ m.name_ar }}</strong>
+                        <span class="subject-meta">
+                          <code class="subject-code ltr-num" dir="ltr">{{ m.code }}</code>
+                          @if (isDirtyCode(m.code)) {
+                            <span
+                              class="dirty-dot"
+                              [attr.title]="'common.unsaved_title' | translate"
+                            ></span>
+                          }
+                          @if (activeScope() !== null) {
+                            @if (isOverride(m.center_id)) {
+                              <span class="src-tag override">{{
+                                'scoring.override_tag' | translate
+                              }}</span>
+                            } @else {
+                              <span class="src-tag inherited">{{
+                                'scoring.inherited_tag' | translate
+                              }}</span>
+                            }
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="scope-cell edge" [attr.data-label]="'scoring.scope' | translate">
+                    <span class="scope-pill" [class.murajaa]="m.scope === 'murajaa'">
+                      {{ 'scopeType.' + m.scope | translate }}
+                    </span>
+                  </td>
+
+                  <td class="max-cell" [attr.data-label]="'scoring.max' | translate">
+                    <span class="max-control">
+                      <input
+                        type="number"
+                        class="ltr-num"
+                        [value]="effectiveMax(m.code, m.max_points)"
+                        min="0"
+                        max="20"
+                        step="0.5"
+                        [attr.aria-label]="('scoring.max' | translate) + ' — ' + m.name_ar"
+                        (change)="
+                          edit(
+                            m.code,
+                            { max: +$any($event.target).value },
+                            {
+                              max: m.max_points,
+                              active: m.is_active,
+                              inTotal: m.is_in_weekly_total,
+                            }
+                          )
+                        "
+                      />
+                    </span>
+                  </td>
+
+                  <td
+                    class="toggle-cell edge last-row"
+                    [attr.data-label]="'scoring.active' | translate"
+                  >
+                    <label class="switch">
+                      <input
+                        type="checkbox"
+                        [checked]="effectiveActive(m.code, m.is_active)"
+                        [attr.aria-label]="('scoring.active' | translate) + ' — ' + m.name_ar"
+                        (change)="
+                          edit(
+                            m.code,
+                            { active: $any($event.target).checked },
+                            {
+                              max: m.max_points,
+                              active: m.is_active,
+                              inTotal: m.is_in_weekly_total,
+                            }
+                          )
+                        "
+                      />
+                      <span class="switch-track" aria-hidden="true"></span>
+                    </label>
+                  </td>
+
+                  <td
+                    class="toggle-cell last-row"
+                    [attr.data-label]="'scoring.in_total' | translate"
+                  >
+                    @if (m.scope === 'weekly') {
+                      <label class="switch">
+                        <input
+                          type="checkbox"
+                          [checked]="effectiveInTotal(m.code, m.is_in_weekly_total)"
+                          [attr.aria-label]="('scoring.in_total' | translate) + ' — ' + m.name_ar"
+                          (change)="
+                            edit(
+                              m.code,
+                              { inTotal: $any($event.target).checked },
+                              {
+                                max: m.max_points,
+                                active: m.is_active,
+                                inTotal: m.is_in_weekly_total,
+                              }
+                            )
+                          "
+                        />
+                        <span class="switch-track" aria-hidden="true"></span>
+                      </label>
+                    } @else {
+                      <span class="not-applicable" aria-hidden="true">—</span>
+                    }
+                  </td>
+
+                  <td class="actions-cell" [attr.data-label]="'common.actions' | translate">
+                    @if (armingDeleteId() === m.id) {
+                      <span class="delete-confirm">
+                        <button
+                          type="button"
+                          class="btn btn-danger-solid btn-sm"
+                          [disabled]="busyId() === m.id"
+                          [attr.data-testid]="'confirm-delete-module-' + m.id"
+                          (click)="remove(m.id)"
+                        >
+                          @if (busyId() === m.id) {
+                            <app-spinner />
+                          } @else {
+                            {{ 'scoring.delete_confirm' | translate }}
+                          }
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-ghost btn-sm"
+                          [disabled]="busyId() === m.id"
+                          (click)="disarmDelete()"
+                        >
+                          {{ 'common.cancel' | translate }}
+                        </button>
+                      </span>
+                    } @else {
+                      <button
+                        type="button"
+                        class="btn btn-danger-ghost btn-icon"
+                        [attr.data-testid]="'delete-module-' + m.id"
+                        [attr.aria-label]="('common.delete' | translate) + ' — ' + m.name_ar"
+                        [attr.title]="'common.delete' | translate"
+                        (click)="armDelete(m.id)"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.9"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                          <path d="M10 11v5M14 11v5" />
+                        </svg>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </form>
+  }
+</section>
+
+@if (showAdd()) {
+  <div class="modal-backdrop" (click)="closeAdd()">
+    <div
+      class="card modal scoring-modal anim-pop"
+      (click)="$event.stopPropagation()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="scoring-add-title"
+    >
+      <div class="modal-head">
+        <span class="modal-ico" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </span>
+        <div class="modal-copy">
+          <h2 id="scoring-add-title">{{ 'scoring.add_book' | translate }}</h2>
+          <p>{{ 'scoring.add_hint' | translate }}</p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-ghost btn-icon"
+          [attr.aria-label]="'common.cancel' | translate"
+          [disabled]="saving()"
+          (click)="closeAdd()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="addForm" (ngSubmit)="addBook()" class="modal-form" autocomplete="off">
+        @if (error(); as e) {
+          <div class="banner danger" role="alert">{{ e.key | translate: e.params }}</div>
+        }
+
+        <div class="modal-grid">
           <label class="field"
             ><span>{{ 'scoring.code' | translate }}</span>
             <input formControlName="code" dir="ltr" data-testid="scoring-code" />
@@ -292,6 +726,7 @@
               <small class="field-error">{{ 'validation.code_pattern' | translate }}</small>
             }
           </label>
+
           <label class="field"
             ><span>{{ 'scoring.name' | translate }}</span>
             <input formControlName="name_ar" data-testid="scoring-name" />
@@ -299,6 +734,7 @@
               <small class="field-error">{{ 'validation.required' | translate }}</small>
             }
           </label>
+
           <label class="field"
             ><span>{{ 'scoring.max' | translate }}</span
             ><input
@@ -320,8 +756,9 @@
               <small class="field-error">{{ 'validation.max' | translate: { max: 20 } }}</small>
             }
           </label>
-          <label class="field"
-            ><span>{{ 'scoring.scope' | translate }}</span>
+
+          <div class="field">
+            <span>{{ 'scoring.scope' | translate }}</span>
             <app-dropdown
               formControlName="scope"
               [options]="[
@@ -330,27 +767,28 @@
               ]"
               ariaLabelKey="scoring.scope"
             />
-          </label>
-          <div class="cluster">
-            <button
-              type="submit"
-              class="btn btn-primary"
-              data-testid="scoring-add"
-              [class.is-loading]="saving()"
-              [disabled]="saving()"
-            >
-              @if (saving()) {
-                <app-spinner />
-              } @else {
-                {{ 'scoring.add_book' | translate }}
-              }
-            </button>
-            <button type="button" class="btn btn-ghost" (click)="showAdd.set(false)">
-              {{ 'common.cancel' | translate }}
-            </button>
           </div>
-        </form>
-      </div>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            data-testid="scoring-add"
+            [class.is-loading]="saving()"
+            [disabled]="saving()"
+          >
+            @if (saving()) {
+              <app-spinner />
+            } @else {
+              {{ 'scoring.add_book' | translate }}
+            }
+          </button>
+          <button type="button" class="btn btn-ghost" [disabled]="saving()" (click)="closeAdd()">
+            {{ 'common.cancel' | translate }}
+          </button>
+        </div>
+      </form>
     </div>
-  }
-</section>
+  </div>
+}

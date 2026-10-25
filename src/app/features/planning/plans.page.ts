@@ -9,6 +9,7 @@
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { PlanningService } from '../../core/api/planning.service';
 import { leaveController } from '../../core/guards/leave-controller';
 import { ReferenceService } from '../../core/api/reference.service';
@@ -183,7 +184,7 @@ export class PlansPage {
         },
         error: (e) => {
           this.saving.set(false);
-          this.error.set(typeof e?.error?.message === 'string' ? e.error.message : 'error');
+          this.error.set(apiErrorKey(e));
         },
       });
   }

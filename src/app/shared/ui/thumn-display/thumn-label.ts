@@ -28,3 +28,22 @@ export function sessionAmountLabel(unit: number | null): string {
   const head = `${h} ${hizbWord(h)}`;
   return r === 0 ? head : `${head} و ${r} ${thumnWord(r)}`;
 }
+
+/**
+ * Smart weekly amount label — the name the seed rows use, so a level is
+ * named for what a pupil memorises per WEEK, not per session. Quarter-hizb
+ * steps read as fractions (2 ربع · 4 نصف · 6 ثلاثة أرباع · 8 حزب ·
+ * 10 حزب و ربع); anything else stays in thumn (3 أثمان · 3.75 أثمان).
+ * Matches the seed names: L1 نصف · L2 3 أثمان · L3 ربع.
+ * Pure and total — safe for specs.
+ */
+export function weekAmountLabel(week: number | null): string {
+  if (week === null || week <= 0) return '';
+  const h = Math.floor(week / 8);
+  const r = round2(week - h * 8);
+  const fraction = r === 2 ? 'ربع' : r === 4 ? 'نصف' : r === 6 ? 'ثلاثة أرباع' : '';
+  if (fraction !== '') return h === 0 ? fraction : `${h} ${hizbWord(h)} و ${fraction}`;
+  if (r === 0) return h === 0 ? '' : `${h} ${hizbWord(h)}`;
+  const rest = r === 1 ? 'ثمن' : `${r} ${thumnWord(r)}`;
+  return h === 0 ? rest : `${h} ${hizbWord(h)} و ${rest}`;
+}

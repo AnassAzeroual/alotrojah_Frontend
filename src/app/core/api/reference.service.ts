@@ -21,7 +21,13 @@ export class ReferenceService {
     );
   }
 
-  seasons(): Observable<SeasonsIndexResponse['data']> {
-    return this.api.get<SeasonsIndexResponse['data']>('/seasons');
+  seasons(centerId?: number | null, currentOnly = false): Observable<SeasonsIndexResponse['data']> {
+    const params: Record<string, string | number> = {};
+    if (centerId) params['center_id'] = centerId;
+    if (currentOnly) params['current'] = 1;
+    return this.api.get<SeasonsIndexResponse['data']>(
+      '/seasons',
+      Object.keys(params).length ? params : undefined,
+    );
   }
 }

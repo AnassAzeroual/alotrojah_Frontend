@@ -10,7 +10,9 @@
     </div>
 
     <div class="auth-form-side">
-      <h1 class="auth-title" data-testid="auth-title">{{ 'auth.hello_again' | translate }}</h1>
+      <h1 class="auth-title" data-testid="auth-title">
+        <bdi>{{ 'auth.hello_again' | translate }}</bdi>
+      </h1>
       <p class="auth-sub">{{ 'auth.get_started' | translate }}</p>
 
       <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()">

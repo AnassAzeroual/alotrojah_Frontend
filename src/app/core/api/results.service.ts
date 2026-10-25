@@ -8,6 +8,7 @@ import {
   ResultUpsertTermResponse,
   UpsertSeasonResultRequest,
   UpsertTermResultRequest,
+  V1TermBreakdownResponse,
 } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -16,6 +17,13 @@ export class ResultsService {
 
   termResults(params?: QueryParams): Observable<ResultIndexTermsResponse['data']> {
     return this.api.get<ResultIndexTermsResponse['data']>('/term-results', params);
+  }
+
+  termBreakdown(params: {
+    student_id: number;
+    term_id: number;
+  }): Observable<V1TermBreakdownResponse['data']> {
+    return this.api.get<V1TermBreakdownResponse['data']>('/term-results/breakdown', params);
   }
 
   upsertTerm(payload: UpsertTermResultRequest): Observable<ResultUpsertTermResponse['data']> {

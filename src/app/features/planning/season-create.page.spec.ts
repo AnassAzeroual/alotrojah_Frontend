@@ -130,6 +130,31 @@ describe('SeasonCreatePage edit mode (/planning/:id/edit)', () => {
     expect(navigate).toHaveBeenCalledWith(['/planning']);
   });
 
+  it('renders a translated SEASON_EXISTS key instead of the raw API sentence', async () => {
+    await mountEdit();
+
+    page.form.controls.name.setValue('موسم مكرر');
+    fixture.detectChanges();
+    el.querySelector<HTMLButtonElement>('[data-testid="season-save"]')!.click();
+    fixture.detectChanges();
+
+    http
+      .expectOne((r) => r.url.endsWith('/seasons/2') && r.method === 'PUT')
+      .flush(
+        {
+          success: false,
+          message: 'A season with this name already exists.',
+          errors: { code: 'SEASON_EXISTS' },
+        },
+        { status: 422, statusText: 'Unprocessable Entity' },
+      );
+    await settle();
+
+    expect(page.error()).toBe('apiErrors.SEASON_EXISTS');
+    // The no-op loader returns the key, proving the English sentence is gone.
+    expect(el.querySelector('.field-error')!.textContent!.trim()).toBe('apiErrors.SEASON_EXISTS');
+  });
+
   it('keeps the full composer in create mode', async () => {
     fixture = TestBed.createComponent(SeasonCreatePage);
     page = fixture.componentInstance;

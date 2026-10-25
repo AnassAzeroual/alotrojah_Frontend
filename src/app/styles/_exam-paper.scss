@@ -1,0 +1,265 @@
+// Phone layout for the exam paper sheet. Kept global so the component style
+// stays under the per-component budget; selectors are paper-only.
+// Paper-style term/final sheet -------------------------------------------
+
+.paper-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+
+  h2 {
+    margin: 3px 0;
+    font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.82rem;
+  }
+}
+
+.paper-variants {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.paper-model {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+
+  &.active {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+}
+
+.paper-model-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  h3 {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+.variant-pick {
+  padding: 4px 9px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+
+  &.picked {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+  }
+}
+
+.paper-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+
+  // The dropdown is absolutely positioned inside the table; an overflow
+  // container clips it regardless of its z-index. Release clipping only while
+  // a dropdown is open, then lift the whole table above the following rows.
+  &:has(.dd.open) {
+    position: relative;
+    z-index: 30;
+    overflow: visible;
+  }
+}
+
+.paper-table {
+  width: 100%;
+  min-width: 540px;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 7px 8px;
+    border: 1px solid var(--color-border);
+    text-align: start;
+    vertical-align: middle;
+    font-size: 0.76rem;
+  }
+
+  th {
+    background: var(--color-surface-2);
+    color: var(--color-muted);
+    font-size: 0.67rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  input {
+    width: 100%;
+    min-width: 44px;
+    padding: 5px 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 7px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 0.78rem;
+  }
+
+  app-dropdown {
+    min-width: 120px;
+  }
+}
+
+.paper-no {
+  width: 42px;
+  color: var(--color-muted);
+  font-weight: 800;
+  text-align: center !important;
+}
+
+.paper-ayah {
+  min-width: 180px;
+}
+
+.paper-ref {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+
+  app-dropdown {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.paper-ayah-input {
+  flex: 0 0 58px;
+  width: 58px;
+}
+
+.paper-score {
+  width: 88px;
+
+  input {
+    display: inline-block;
+    width: 42px;
+  }
+
+  span {
+    margin-inline-start: 3px;
+    color: var(--color-muted);
+    font-size: 0.7rem;
+  }
+}
+
+.paper-total {
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+
+  td {
+    font-weight: 800;
+  }
+}
+
+.paper-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 700px) {
+  .paper-head {
+    flex-direction: column;
+  }
+
+  .paper-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .paper-table thead {
+    display: none;
+  }
+
+  .paper-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .paper-table tr {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 11px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-2);
+  }
+
+  .paper-table td {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    width: 100%;
+    padding: 5px 0;
+    border: 0;
+  }
+
+  .paper-table td::before {
+    content: attr(data-label);
+    color: var(--color-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: end;
+  }
+
+  .paper-table td.paper-no,
+  .paper-table .paper-ayah,
+  .paper-table .paper-score {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .paper-table td.paper-no {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .paper-table td.paper-no::before {
+    font-size: 0.86rem;
+    font-weight: 800;
+  }
+
+  .paper-ref {
+    width: 100%;
+  }
+
+  .paper-score input {
+    width: 100%;
+    max-width: 120px;
+  }
+
+  .paper-table td[data-label='']::before {
+    display: none;
+  }
+}

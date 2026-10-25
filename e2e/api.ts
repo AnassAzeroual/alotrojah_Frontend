@@ -73,6 +73,28 @@ export async function firstSessionDate(request: APIRequestContext): Promise<stri
   return first.slice(0, 10);
 }
 
+/** The section (group) that owns a pupil, resolved at runtime (the entry page
+ *  picker must not be driven by grid position — the shared verify DB grows). */
+export async function studentSection(
+  request: APIRequestContext,
+  fullName: string,
+  email = 'admin@example.org',
+): Promise<{ id: number; name: string }> {
+  const token = await apiToken(request, email);
+  const r = await request.get(`${API}/students?q=${encodeURIComponent(fullName)}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+  });
+  if (!r.ok()) throw new Error(`student lookup failed: ${r.status()}`);
+  const rows = (await r.json()).data.data as Array<{
+    id: number;
+    full_name: string;
+    group?: { id: number; name: string } | null;
+  }>;
+  const hit = rows.find((s) => s.full_name === fullName);
+  if (!hit?.group) throw new Error(`no section owns ${fullName}`);
+  return hit.group;
+}
+
 /** Fill + verify, retrying across external form-state wipes (dev-server HMR
  *  swaps the form mid-test under full-suite load — observed 4× at one login
  *  step, green in isolation). Bounded: persistent breakage still fails. */

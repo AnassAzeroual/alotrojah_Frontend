@@ -27,6 +27,7 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "allowedCommonJsDependencies": ["flatpickr"],
             "assets": [
               {
                 "glob": "**/*",
@@ -50,12 +51,12 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
+                  "maximumWarning": "520kB",
                   "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "13kB",
+                  "maximumWarning": "16kB",
                   "maximumError": "18kB"
                 }
               ],
@@ -87,12 +88,12 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
+                  "maximumWarning": "520kB",
                   "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "13kB",
+                  "maximumWarning": "16kB",
                   "maximumError": "18kB"
                 }
               ],
