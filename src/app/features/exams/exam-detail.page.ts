@@ -1,4 +1,4 @@
-﻿import {
+import {
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -16,7 +16,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { ExamsService } from '../../core/api/exams.service';
@@ -69,6 +69,7 @@ export class ExamDetailPage implements OnDestroy {
   private readonly planning = inject(PlanningService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly tick = signal(0);
   readonly saving = signal(false);
 
@@ -193,6 +194,11 @@ export class ExamDetailPage implements OnDestroy {
   });
 
   constructor() {
+    const portion = this.route.snapshot.queryParamMap.get('portion');
+    if (portion) {
+      this.addForm.patchValue({ prompt_text: portion, max_score: 20 });
+      this.addForm.markAsPristine();
+    }
     effect(() => {
       const e = this.exam.value();
       if (e && !this.editInit) {

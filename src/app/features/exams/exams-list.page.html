@@ -1,0 +1,980 @@
+<section class="page exam-builder">
+  <div class="page-head anim-rise">
+    <div>
+      <h1>{{ 'exam.title' | translate }}</h1>
+      <p class="muted">
+        {{ (isStudent() ? 'exam.my_exams_hint' : 'exam.builder_hint') | translate }}
+      </p>
+    </div>
+    @if (canCreate()) {
+      <a class="btn btn-ghost" routerLink="/exams/weekly" data-testid="exams-weekly">
+        {{ 'exam.weekly_title' | translate }}
+      </a>
+    }
+  </div>
+
+  @if (canCreate() && groupId() === null) {
+    <section class="picker anim-rise" style="--i: 1" data-testid="exam-group-picker">
+      <header class="picker-head">
+        <span class="step-badge">1<small>/2</small></span>
+        <div class="picker-copy">
+          <h2>{{ 'exam.pick_group' | translate }}</h2>
+          <p>{{ 'exam.pick_group_hint' | translate }}</p>
+        </div>
+        <span class="count-chip ltr-num">{{ groups().length }}</span>
+      </header>
+      @if (groups().length === 0) {
+        <app-empty-state [messageKey]="'exam.no_groups'" />
+      } @else {
+        <div class="choice-grid group-grid">
+          @for (g of groups(); track g.id) {
+            <button
+              type="button"
+              class="choice group-choice"
+              (click)="pickGroup(g.id)"
+              [attr.data-testid]="'exam-group-card-' + g.id"
+            >
+              <span class="choice-top">
+                <span class="choice-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+                  </svg>
+                </span>
+                <span class="choice-title">
+                  <strong>{{ g.name }}</strong>
+                  <small>{{ g.teacher?.full_name ?? ('grp.col_teacher' | translate) }}</small>
+                </span>
+                <span class="choice-go" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </span>
+              </span>
+              <span class="choice-stats">
+                @if (g.schedule_days) {
+                  <span class="stat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <rect x="3" y="5" width="18" height="16" rx="2" />
+                      <path d="M16 3v4M8 3v4M3 11h18" />
+                    </svg>
+                    {{ g.schedule_days }}
+                  </span>
+                }
+                @if (g.students_count !== undefined) {
+                  <span class="stat">{{ g.students_count }} {{ 'nav.students' | translate }}</span>
+                }
+              </span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+  } @else if (canCreate() && studentId() === null) {
+    <nav class="trail anim-rise" [attr.aria-label]="'exam.pick_pupil' | translate" style="--i: 1">
+      <button type="button" class="crumb" (click)="backToGroups()">
+        <span class="crumb-label">{{ 'nav.groups' | translate }}</span>
+      </button>
+      <svg
+        class="crumb-chev"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="m9 18 6-6-6-6" />
+      </svg>
+      <span class="crumb current" aria-current="page">{{ groupName() }}</span>
+    </nav>
+    <section class="picker anim-rise" style="--i: 2" data-testid="exam-pupil-picker">
+      <header class="picker-head">
+        <span class="step-badge">2<small>/2</small></span>
+        <div class="picker-copy">
+          <h2>{{ 'exam.pick_pupil' | translate }}</h2>
+          <p>{{ 'exam.pick_pupil_hint' | translate }}</p>
+        </div>
+        <span class="count-chip ltr-num">{{ pupils().length }}</span>
+      </header>
+      @if (pupils().length === 0) {
+        <app-empty-state [messageKey]="'exam.no_pupils'" />
+      } @else {
+        <div class="choice-grid pupil-grid">
+          @for (s of pupils(); track s.id) {
+            <button
+              type="button"
+              class="choice pupil-choice"
+              (click)="pickPupil(s.id)"
+              [attr.data-testid]="'exam-pupil-card-' + s.id"
+            >
+              <span class="choice-top">
+                <span class="choice-avatar" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span>
+                <span class="choice-title">
+                  <strong>{{ s.full_name }}</strong>
+                  <small>
+                    {{ s.level?.name_ar ?? ('exam.no_level' | translate) }}
+                    · {{ 'mode.' + s.memorization_mode | translate }}
+                  </small>
+                </span>
+                <span class="choice-go" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </span>
+              </span>
+              <span class="choice-stats">
+                <span class="stat">{{ 'studentStatus.' + s.status | translate }}</span>
+                @if (s.start_hizb !== null) {
+                  <span class="stat ltr-num"
+                    >{{ 'grp.start_hizb' | translate }} {{ s.start_hizb }}</span
+                  >
+                }
+              </span>
+            </button>
+          }
+        </div>
+      }
+    </section>
+  } @else if (studentId() === null) {
+    <app-empty-state [messageKey]="'exam.pick_student_first'" />
+  } @else {
+    @if (canCreate()) {
+      <nav class="trail anim-rise" [attr.aria-label]="'exam.pick_pupil' | translate" style="--i: 1">
+        <button type="button" class="crumb" (click)="backToGroups()">
+          <span class="crumb-label">{{ 'nav.groups' | translate }}</span>
+        </button>
+        <svg
+          class="crumb-chev"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <button type="button" class="crumb" (click)="backToPupils()">
+          <span class="crumb-label">{{ groupName() }}</span>
+        </button>
+        <svg
+          class="crumb-chev"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <span class="crumb current" aria-current="page">{{ pupilName() }}</span>
+      </nav>
+    }
+    @if (brief.isLoading()) {
+      <div class="builder-grid" aria-hidden="true">
+        <div class="skeleton sk-card hero-skeleton"></div>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+      </div>
+    } @else if (brief.value()) {
+      <article class="student-hero anim-rise" style="--i: 1" data-testid="exam-student-card">
+        <div class="hero-main">
+          <span class="avatar-xl" aria-hidden="true">{{
+            (student()?.full_name ?? '?').slice(0, 1)
+          }}</span>
+          <div class="hero-copy">
+            <div class="hero-title">
+              <h2>{{ student()?.full_name }}</h2>
+              <span class="mode-pill" [class.is-surah]="!isThumn()">
+                {{ 'mode.' + mode() | translate }}
+              </span>
+            </div>
+            <p class="muted">
+              {{ group()?.name ?? '—' }}
+              @if (group()?.teacher?.full_name) {
+                <span class="dot" aria-hidden="true"></span>
+                {{ group()!.teacher!.full_name }}
+              }
+            </p>
+            <div class="hero-tags">
+              <span class="soft-tag">{{
+                student()?.level?.name_ar ?? ('exam.no_level' | translate)
+              }}</span>
+              <span class="soft-tag">{{ 'studentStatus.' + student()!.status | translate }}</span>
+              @if (student()?.start_hizb !== null) {
+                <span class="soft-tag ltr-num">
+                  {{ 'grp.start_hizb' | translate }} {{ student()!.start_hizb }}
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span class="stat-label">{{ 'results.average' | translate }}</span>
+            <span class="stat-value ltr-num">{{ summary()?.season_avg_score ?? '—' }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">{{ 'results.attendance' | translate }}</span>
+            <span class="stat-value ltr-num">
+              {{
+                summary()?.season_attendance_pct !== null &&
+                summary()?.season_attendance_pct !== undefined
+                  ? summary()!.season_attendance_pct + '%'
+                  : '—'
+              }}
+            </span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">{{ 'exam.total_memorized' | translate }}</span>
+            <span class="stat-value ltr-num">{{ memorization()?.total_thumn ?? 0 }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">{{ 'exam.previous_exams' | translate }}</span>
+            <span class="stat-value ltr-num">{{ exams().length }}</span>
+          </div>
+        </div>
+      </article>
+
+      <div class="builder-grid" [class.student-view]="isStudent()">
+        <div class="history-col">
+          <section class="card memory-card anim-rise" style="--i: 2" data-testid="exam-last-memory">
+            <div class="section-head">
+              <h2>{{ 'exam.last_memorization' | translate }}</h2>
+              <span class="section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+                  <path d="M8 7h8M8 11h5" />
+                </svg>
+              </span>
+            </div>
+            @if (memorization()?.last; as last) {
+              <div class="memory-highlight">
+                <div>
+                  <strong class="memory-portion">{{ logPortion(last) }}</strong>
+                  <p class="muted">
+                    {{ last.log_date }} · {{ 'mode.' + last.log_mode | translate }}
+                  </p>
+                </div>
+                <span class="memory-amount ltr-num">{{ last.thumn_amount }}</span>
+              </div>
+            } @else {
+              <p class="muted">{{ 'exam.no_memorization' | translate }}</p>
+            }
+          </section>
+
+          <section class="card anim-rise" style="--i: 3" data-testid="exam-memory-history">
+            <div class="section-head">
+              <h2>{{ 'exam.all_memorization' | translate }}</h2>
+              <span class="count-chip ltr-num">{{ memorization()?.items?.length ?? 0 }}</span>
+            </div>
+            @if ((memorization()?.items?.length ?? 0) === 0) {
+              <p class="muted">{{ 'exam.no_memorization' | translate }}</p>
+            } @else {
+              <ol class="timeline">
+                @for (log of memorization()!.items; track log.id) {
+                  <li class="timeline-item">
+                    <span
+                      class="timeline-dot"
+                      [class.is-surah]="log.log_mode === 'surah'"
+                      aria-hidden="true"
+                    ></span>
+                    <div class="timeline-copy">
+                      <strong>{{ logPortion(log) }}</strong>
+                      <small class="muted"
+                        >{{ log.log_date }} · {{ 'mode.' + log.log_mode | translate }}</small
+                      >
+                    </div>
+                    <span class="timeline-value ltr-num">{{ log.thumn_amount }}</span>
+                  </li>
+                }
+              </ol>
+            }
+          </section>
+
+          <section class="card anim-rise" style="--i: 4" data-testid="exam-history">
+            <div class="section-head">
+              <h2>{{ 'exam.previous_exams' | translate }}</h2>
+              <span class="count-chip ltr-num">{{ exams().length }}</span>
+            </div>
+            @if (exams().length === 0) {
+              <p class="muted">{{ 'exam.no_exams' | translate }}</p>
+            } @else {
+              <div class="exam-history">
+                @for (e of exams(); track e.id) {
+                  <a class="history-row" [routerLink]="['/exams', e.id]">
+                    <span class="history-type">{{ 'examType.' + e.exam_type | translate }}</span>
+                    <span class="history-meta">
+                      <span class="muted">{{ e.exam_date ?? '—' }}</span>
+                      @if (e.questions?.length) {
+                        <span class="muted"> · {{ questionPortion(e.questions![0]) }}</span>
+                      }
+                    </span>
+                    <strong class="history-score ltr-num">{{ e.overall_avg ?? '—' }}/20</strong>
+                  </a>
+                }
+              </div>
+            }
+          </section>
+        </div>
+
+        @if (canCreate()) {
+          <aside class="create-col">
+            <section
+              class="card portion-card anim-rise"
+              style="--i: 2"
+              data-testid="exam-current-portion"
+            >
+              <div class="section-head">
+                <h2>{{ 'exam.current_portion' | translate }}</h2>
+                <span class="mode-pill" [class.is-surah]="!isThumn()">{{
+                  'mode.' + mode() | translate
+                }}</span>
+              </div>
+              <p class="muted source-hint">{{ sourceKey() | translate }}</p>
+
+              @if (isThumn()) {
+                <div class="portion-grid">
+                  <label class="field">
+                    <span>{{ 'exam.hizb' | translate }}</span>
+                    <input
+                      type="number"
+                      class="ltr-num"
+                      min="1"
+                      max="60"
+                      step="0.5"
+                      [value]="hizb() ?? ''"
+                      (input)="hizb.set(num($any($event.target).value))"
+                      data-testid="exam-hizb"
+                    />
+                  </label>
+                  <label class="field">
+                    <span>{{ 'exam.thumn' | translate }}</span>
+                    <input
+                      type="number"
+                      class="ltr-num"
+                      min="1"
+                      max="8"
+                      step="1"
+                      [value]="thumn() ?? ''"
+                      (input)="thumn.set(num($any($event.target).value))"
+                      data-testid="exam-thumn"
+                    />
+                  </label>
+                </div>
+              } @else {
+                <label class="field">
+                  <span>{{ 'exam.surah' | translate }}</span>
+                  <app-dropdown
+                    [options]="surahOptions()"
+                    [value]="surah() ?? ''"
+                    (valueChange)="pickSurah($event)"
+                    placeholderKey="exam.surah"
+                    ariaLabelKey="exam.surah"
+                    testId="exam-surah"
+                  />
+                </label>
+                <div class="portion-grid">
+                  <label class="field">
+                    <span>{{ 'exam.ayah_from' | translate }}</span>
+                    <input
+                      type="number"
+                      class="ltr-num"
+                      min="1"
+                      [max]="surahMax() ?? 999"
+                      [value]="ayahFrom() ?? ''"
+                      (input)="ayahFrom.set(num($any($event.target).value))"
+                      data-testid="exam-ayah-from"
+                    />
+                  </label>
+                  <label class="field">
+                    <span>{{ 'exam.ayah_to' | translate }}</span>
+                    <input
+                      type="number"
+                      class="ltr-num"
+                      min="1"
+                      [max]="surahMax() ?? 999"
+                      [value]="ayahTo() ?? ''"
+                      (input)="ayahTo.set(num($any($event.target).value))"
+                      data-testid="exam-ayah-to"
+                    />
+                  </label>
+                </div>
+              }
+              <div class="portion-preview">
+                <span>{{ 'exam.test_portion' | translate }}</span>
+                <strong>{{ portionLabel() }}</strong>
+              </div>
+            </section>
+
+            <section class="card type-card anim-rise" style="--i: 3" data-testid="exam-type">
+              <div class="section-head">
+                <h2>{{ 'exam.type' | translate }}</h2>
+              </div>
+              <div class="test-grid">
+                @for (t of typeCards; track t.key) {
+                  <button
+                    type="button"
+                    class="test-option"
+                    [class.selected]="selectedType() === t.key"
+                    [attr.data-tone]="t.tone"
+                    (click)="selectType(t.key)"
+                    [attr.data-testid]="'exam-test-' + t.key"
+                  >
+                    <span class="test-icon" aria-hidden="true">
+                      @switch (t.key) {
+                        @case ('hizb_completion') {
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                          >
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                            <path
+                              d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"
+                            />
+                            <path d="m9 9 2 2 4-4" />
+                          </svg>
+                        }
+                        @case ('term_batch') {
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                          >
+                            <rect x="3" y="4" width="18" height="16" rx="2" />
+                            <path d="M7 8h10M7 12h10M7 16h6" />
+                          </svg>
+                        }
+                        @case ('weekly') {
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                          >
+                            <rect x="3" y="5" width="18" height="16" rx="2" />
+                            <path d="M16 3v4M8 3v4M3 11h18" />
+                          </svg>
+                        }
+                        @default {
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                          >
+                            <path d="M12 2 15 8l7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" />
+                          </svg>
+                        }
+                      }
+                    </span>
+                    <span class="test-copy">
+                      <strong>{{ t.titleKey | translate }}</strong>
+                      <small>{{ t.descKey | translate }}</small>
+                    </span>
+                    <span class="test-check" aria-hidden="true">
+                      @if (selectedType() === t.key) {
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.6"
+                        >
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                      }
+                    </span>
+                  </button>
+                }
+              </div>
+
+              @if (isTermType()) {
+                <label class="field term-field">
+                  <span>{{ 'planning.pick_term' | translate }} <span class="danger">*</span></span>
+                  <app-dropdown
+                    [options]="termOptions()"
+                    [value]="termId() ?? ''"
+                    (valueChange)="termId.set(num($event))"
+                    placeholderKey="planning.pick_term"
+                    ariaLabelKey="planning.pick_term"
+                    testId="exam-term"
+                  />
+                </label>
+              }
+
+              <label class="field term-field">
+                <span>{{ 'exam.date' | translate }}</span>
+                <app-date-picker
+                  [value]="examDate()"
+                  (valueChange)="examDate.set($event ?? '')"
+                  testId="exam-date"
+                  ariaLabelKey="exam.date"
+                />
+              </label>
+
+              @if (!live()) {
+                <button
+                  type="button"
+                  class="btn btn-primary btn-block create-btn"
+                  data-testid="exam-submit"
+                  [disabled]="saving() || blockers().length > 0"
+                  (click)="startTest()"
+                >
+                  {{ 'exam.start_test' | translate }}
+                </button>
+              }
+              @if (errorKey()) {
+                <p class="field-error">{{ errorKey()! | translate }}</p>
+              }
+              @if (blockers().length > 0) {
+                <p class="muted blockers" data-testid="exam-blockers">
+                  @for (b of blockers(); track b) {
+                    <span>{{ b | translate }}</span>
+                    @if (!$last) {
+                      <br />
+                    }
+                  }
+                </p>
+              }
+            </section>
+          </aside>
+        }
+      </div>
+
+      @if (live()) {
+        @if (isPaper()) {
+          <section
+            class="card live-sheet paper-sheet anim-rise print-sheet"
+            id="exam-live"
+            data-testid="exam-live"
+          >
+            <header class="paper-head">
+              <div>
+                <span class="live-eyebrow">{{ 'exam.paper_title' | translate }}</span>
+                <h2>{{ student()?.full_name }}</h2>
+                <p class="muted">
+                  {{ examDate() }} · {{ 'examType.' + selectedType() | translate }}
+                </p>
+              </div>
+              <div class="paper-head-actions no-print">
+                <button type="button" class="btn btn-ghost btn-sm" (click)="printSheet()">
+                  {{ 'exam.print' | translate }}
+                </button>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="closeLive()">
+                  {{ 'common.cancel' | translate }}
+                </button>
+              </div>
+            </header>
+
+            <div class="paper-variants">
+              <section
+                class="paper-model"
+                [class.active]="activeVariant() === 'model1'"
+                data-testid="paper-model1"
+              >
+                <header class="paper-model-head">
+                  <h3>{{ 'exam.model1' | translate }}</h3>
+                  <button
+                    type="button"
+                    class="variant-pick no-print"
+                    [class.picked]="activeVariant() === 'model1'"
+                    (click)="selectVariant('model1')"
+                  >
+                    {{
+                      (activeVariant() === 'model1' ? 'exam.selected_variant' : 'exam.save_variant')
+                        | translate
+                    }}
+                  </button>
+                </header>
+
+                <div class="paper-table-wrap">
+                  <table class="paper-table">
+                    <thead>
+                      <tr>
+                        <th>{{ 'exam.q_no' | translate }}</th>
+                        <th>{{ 'exam.read_from' | translate }}</th>
+                        <th>{{ 'exam.evaluation' | translate }} /20</th>
+                        <th>{{ 'grp.notes' | translate }}</th>
+                        <th class="no-print"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of paperModel1(); track row.key; let i = $index) {
+                        <tr>
+                          <td class="paper-no ltr-num" [attr.data-label]="'exam.q_no' | translate">
+                            {{ i + 1 }}
+                          </td>
+                          <td class="paper-ayah" [attr.data-label]="'exam.read_from' | translate">
+                            <div class="paper-ref">
+                              <app-dropdown
+                                [options]="surahOptions()"
+                                [value]="row.surah ?? ''"
+                                (valueChange)="setPaper('model1', row.key, 'surah', $event)"
+                                placeholderKey="exam.surah"
+                                ariaLabelKey="exam.surah"
+                                [testId]="'paper-m1-surah-' + i"
+                              />
+                              <input
+                                type="number"
+                                class="ltr-num paper-ayah-input"
+                                min="1"
+                                [max]="surahMaxFor(row.surah) ?? 286"
+                                [value]="row.ayah_from ?? ''"
+                                (input)="
+                                  setPaper(
+                                    'model1',
+                                    row.key,
+                                    'ayah_from',
+                                    $any($event.target).value
+                                  )
+                                "
+                                [attr.aria-label]="'exam.ayah_from' | translate"
+                                [attr.data-testid]="'paper-m1-ayah-' + i"
+                                placeholder="1"
+                              />
+                            </div>
+                          </td>
+                          <td
+                            class="paper-score"
+                            [attr.data-label]="('exam.evaluation' | translate) + ' /20'"
+                          >
+                            <input
+                              type="number"
+                              class="ltr-num"
+                              min="0"
+                              [max]="row.weight"
+                              step="0.25"
+                              [value]="row.score ?? ''"
+                              (input)="
+                                setPaper('model1', row.key, 'score', $any($event.target).value)
+                              "
+                              [attr.data-testid]="'paper-m1-score-' + i"
+                            />
+                            <span>/{{ row.weight }}</span>
+                          </td>
+                          <td [attr.data-label]="'grp.notes' | translate">
+                            <input
+                              type="text"
+                              [value]="row.notes"
+                              (input)="
+                                setPaper('model1', row.key, 'notes', $any($event.target).value)
+                              "
+                              [attr.data-testid]="'paper-m1-notes-' + i"
+                            />
+                          </td>
+                          <td class="no-print paper-row-actions" data-label="">
+                            @if (paperModel1().length > 1) {
+                              <button
+                                type="button"
+                                class="btn btn-danger-ghost btn-sm"
+                                (click)="removePaperRow(row.key)"
+                                [attr.aria-label]="'common.delete' | translate"
+                              >
+                                ×
+                              </button>
+                            }
+                          </td>
+                        </tr>
+                      }
+                      <tr class="paper-total">
+                        <td colspan="2">{{ 'exam.exam_average' | translate }}</td>
+                        <td class="ltr-num">{{ paper1Total() }} / 20</td>
+                        <td></td>
+                        <td class="no-print"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm no-print" (click)="addPaperRow()">
+                  + {{ 'exam.add_question' | translate }}
+                </button>
+              </section>
+
+              <section
+                class="paper-model"
+                [class.active]="activeVariant() === 'model2'"
+                data-testid="paper-model2"
+              >
+                <header class="paper-model-head">
+                  <h3>{{ 'exam.model2' | translate }}</h3>
+                  <button
+                    type="button"
+                    class="variant-pick no-print"
+                    [class.picked]="activeVariant() === 'model2'"
+                    (click)="selectVariant('model2')"
+                  >
+                    {{
+                      (activeVariant() === 'model2' ? 'exam.selected_variant' : 'exam.save_variant')
+                        | translate
+                    }}
+                  </button>
+                </header>
+
+                @if (paperModel2(); as row) {
+                  <div class="paper-table-wrap">
+                    <table class="paper-table">
+                      <thead>
+                        <tr>
+                          <th>{{ 'exam.full_recitation' | translate }}</th>
+                          <th>{{ 'exam.from_ayah' | translate }}</th>
+                          <th>{{ 'exam.to_ayah' | translate }}</th>
+                          <th>{{ 'exam.evaluation' | translate }} /20</th>
+                          <th>{{ 'grp.notes' | translate }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td
+                            class="paper-no"
+                            [attr.data-label]="'exam.full_recitation' | translate"
+                          >
+                            {{ 'exam.full_recitation' | translate }}
+                          </td>
+                          <td class="paper-ayah" [attr.data-label]="'exam.from_ayah' | translate">
+                            <div class="paper-ref">
+                              <app-dropdown
+                                [options]="surahOptions()"
+                                [value]="row.surah ?? ''"
+                                (valueChange)="setPaper('model2', row.key, 'surah', $event)"
+                                placeholderKey="exam.surah"
+                                ariaLabelKey="exam.surah"
+                                testId="paper-m2-surah"
+                              />
+                              <input
+                                type="number"
+                                class="ltr-num paper-ayah-input"
+                                min="1"
+                                [max]="surahMaxFor(row.surah) ?? 286"
+                                [value]="row.ayah_from ?? ''"
+                                (input)="
+                                  setPaper(
+                                    'model2',
+                                    row.key,
+                                    'ayah_from',
+                                    $any($event.target).value
+                                  )
+                                "
+                                [attr.aria-label]="'exam.ayah_from' | translate"
+                                data-testid="paper-m2-ayah-from"
+                                placeholder="1"
+                              />
+                            </div>
+                          </td>
+                          <td class="paper-ayah" [attr.data-label]="'exam.to_ayah' | translate">
+                            <div class="paper-ref">
+                              <input
+                                type="number"
+                                class="ltr-num paper-ayah-input"
+                                min="1"
+                                [max]="surahMaxFor(row.surah) ?? 286"
+                                [value]="row.ayah_to ?? ''"
+                                (input)="
+                                  setPaper('model2', row.key, 'ayah_to', $any($event.target).value)
+                                "
+                                [attr.aria-label]="'exam.ayah_to' | translate"
+                                data-testid="paper-m2-ayah-to"
+                                placeholder="—"
+                              />
+                            </div>
+                          </td>
+                          <td
+                            class="paper-score"
+                            [attr.data-label]="('exam.evaluation' | translate) + ' /20'"
+                          >
+                            <input
+                              type="number"
+                              class="ltr-num"
+                              min="0"
+                              [max]="row.weight"
+                              step="0.25"
+                              [value]="row.score ?? ''"
+                              (input)="
+                                setPaper('model2', row.key, 'score', $any($event.target).value)
+                              "
+                              data-testid="paper-m2-score"
+                            />
+                            <span>/{{ row.weight }}</span>
+                          </td>
+                          <td [attr.data-label]="'grp.notes' | translate">
+                            <input
+                              type="text"
+                              [value]="row.notes"
+                              (input)="
+                                setPaper('model2', row.key, 'notes', $any($event.target).value)
+                              "
+                              data-testid="paper-m2-notes"
+                            />
+                          </td>
+                        </tr>
+                        <tr class="paper-total">
+                          <td colspan="3">{{ 'exam.exam_average' | translate }}</td>
+                          <td class="ltr-num">{{ paper2Total() }} / 20</td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </section>
+            </div>
+
+            <footer class="paper-foot">
+              <p class="muted no-print">{{ 'exam.save_variant_hint' | translate }}</p>
+              <button
+                type="button"
+                class="btn btn-primary btn-block no-print"
+                data-testid="exam-live-finish"
+                [disabled]="saving() || !activeValid()"
+                (click)="finishLive()"
+              >
+                @if (saving()) {
+                  <app-spinner />
+                } @else {
+                  {{ 'exam.save_selected' | translate }}
+                }
+              </button>
+            </footer>
+          </section>
+        } @else {
+          <section class="card live-sheet anim-rise" id="exam-live" data-testid="exam-live">
+            <div class="live-head">
+              <div>
+                <span class="live-eyebrow">{{ 'exam.live_title' | translate }}</span>
+                <h2>{{ 'examType.' + selectedType() | translate }}</h2>
+                <p class="muted">
+                  {{ student()?.full_name }} · {{ examDate() }} ·
+                  {{ 'mode.' + mode() | translate }}
+                </p>
+              </div>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="closeLive()">
+                {{ 'common.cancel' | translate }}
+              </button>
+            </div>
+            <p class="muted live-hint">{{ 'exam.live_hint' | translate }}</p>
+
+            <div class="live-rows">
+              @for (q of liveQuestions(); track q.key; let i = $index) {
+                <article class="live-row" [attr.data-testid]="'live-row-' + i">
+                  <div class="live-row-top">
+                    <span class="live-no ltr-num">{{ i + 1 }}</span>
+                    <label class="field live-qno">
+                      <span>{{ 'exam.q_no' | translate }}</span>
+                      <input
+                        type="number"
+                        class="ltr-num"
+                        min="1"
+                        max="100"
+                        [value]="q.question_no"
+                        (input)="setLive(q.key, 'question_no', $any($event.target).value)"
+                        [attr.data-testid]="'live-q-no-' + i"
+                      />
+                    </label>
+                    @if (liveQuestions().length > 1) {
+                      <button
+                        type="button"
+                        class="btn btn-danger-ghost btn-sm live-remove"
+                        (click)="removeLiveQuestion(q.key)"
+                        [attr.aria-label]="'common.delete' | translate"
+                      >
+                        {{ 'common.delete' | translate }}
+                      </button>
+                    }
+                  </div>
+
+                  <label class="field">
+                    <span>{{ 'exam.prompt' | translate }}</span>
+                    <input
+                      type="text"
+                      [value]="q.prompt_text"
+                      (input)="setLive(q.key, 'prompt_text', $any($event.target).value)"
+                      [attr.data-testid]="'live-q-prompt-' + i"
+                    />
+                  </label>
+
+                  <div class="live-scores">
+                    <label class="field">
+                      <span>{{ 'exam.weight' | translate }}</span>
+                      <input
+                        type="number"
+                        class="ltr-num"
+                        min="0.01"
+                        max="20"
+                        step="0.25"
+                        [value]="q.max_score ?? ''"
+                        (input)="setLive(q.key, 'max_score', $any($event.target).value)"
+                        [attr.data-testid]="'live-q-weight-' + i"
+                      />
+                    </label>
+                    <label class="field">
+                      <span>{{ 'exam.score' | translate }}</span>
+                      <input
+                        type="number"
+                        class="ltr-num"
+                        min="0"
+                        [max]="q.max_score ?? 20"
+                        step="0.25"
+                        [value]="q.score ?? ''"
+                        (input)="setLive(q.key, 'score', $any($event.target).value)"
+                        [attr.data-testid]="'live-q-score-' + i"
+                      />
+                    </label>
+                  </div>
+
+                  <label class="field">
+                    <span>{{ 'grp.notes' | translate }}</span>
+                    <input
+                      type="text"
+                      [value]="q.notes"
+                      (input)="setLive(q.key, 'notes', $any($event.target).value)"
+                      [attr.data-testid]="'live-q-notes-' + i"
+                    />
+                  </label>
+                </article>
+              }
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-ghost add-live"
+              data-testid="live-add-question"
+              (click)="addLiveQuestion()"
+            >
+              + {{ 'exam.add_question' | translate }}
+            </button>
+
+            <footer class="live-foot">
+              <div class="live-totals">
+                <span [class.bad]="weightsTotal() !== 20" data-testid="live-weights-total">{{
+                  'exam.weights' | translate: { total: weightsTotal() }
+                }}</span>
+                <span>{{ 'exam.score_total' | translate: { total: scoresTotal() } }}</span>
+              </div>
+              @if (!liveValid()) {
+                <p class="muted live-need">{{ 'exam.live_need' | translate }}</p>
+              }
+              <button
+                type="button"
+                class="btn btn-primary btn-block"
+                data-testid="exam-live-finish"
+                [disabled]="saving() || !liveValid()"
+                (click)="finishLive()"
+              >
+                @if (saving()) {
+                  <app-spinner />
+                } @else {
+                  {{ 'exam.finish_test' | translate }}
+                }
+              </button>
+            </footer>
+          </section>
+        }
+      }
+    } @else {
+      <app-empty-state />
+    }
+  }
+</section>

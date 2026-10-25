@@ -30,4 +30,43 @@
     padding: 4px 6px;
     font-size: 12px;
   }
+
+  // Paper exam sheet: print only the sheet, both model variants side by side.
+  body:has(.paper-sheet) .page-head,
+  body:has(.paper-sheet) .picker,
+  body:has(.paper-sheet) .trail,
+  body:has(.paper-sheet) .student-hero,
+  body:has(.paper-sheet) .builder-grid {
+    display: none !important;
+  }
+
+  .paper-sheet {
+    display: block;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .paper-variants {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .paper-model {
+    border: 1px solid #000;
+    background: #fff;
+    break-inside: avoid;
+  }
+
+  .paper-table {
+    min-width: 0;
+
+    th,
+    td,
+    input {
+      border-color: #000;
+      color: #000;
+      background: #fff;
+    }
+  }
 }

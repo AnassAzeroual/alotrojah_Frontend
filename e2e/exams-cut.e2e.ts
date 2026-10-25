@@ -14,37 +14,38 @@ test.describe.serial('Exam question cap (roadmap S23 / F4 silent dead queue butt
     expect(students.length).toBeGreaterThan(0);
     const studentName = students[0];
 
-    // bare exam: term + date
+    // bare exam: /exams is the builder; default term_batch + auto first term
     await page.getByTestId('nav-exams').click();
     await expect(page).toHaveURL(/\/exams$/);
-    await page.getByTestId('exams-new').click();
-    await expect(page).toHaveURL(/\/exams\/new$/);
-    const studentPick = page.getByTestId('exam-student');
-    await studentPick.click();
-    await page.getByRole('option', { name: studentName }).click();
-    await page.getByTestId('exam-term').click();
-    await page.locator('.dd.open [role="option"]').nth(1).click();
+    await page.locator('[data-testid^="exam-group-card-"]').first().click();
+    await expect(page.getByTestId('exam-pupil-picker')).toBeVisible();
+    await page.locator('[data-testid^="exam-pupil-card-"]').first().click();
+    await expect(page.getByTestId('exam-student-card')).toBeVisible();
     await page.getByTestId('exam-date').fill('06/10/2026');
+    // Generic live sheet (paper models cover term/final; weekly keeps weights).
+    await page.getByTestId('exam-test-weekly').click();
     await page.getByTestId('exam-submit').click();
+    await expect(page.getByTestId('exam-live')).toBeVisible();
+
+    // A score above its weight blocks Finish & save.
+    await page.getByTestId('live-q-prompt-0').fill('Question 1');
+    await page.getByTestId('live-q-weight-0').fill('15');
+    await page.getByTestId('live-q-score-0').fill('18');
+    await expect(page.getByTestId('exam-live-finish')).toBeDisabled();
+
+    // Legal score + a second question completing the 20-point weight.
+    await page.getByTestId('live-q-score-0').fill('14');
+    await page.getByTestId('live-add-question').click();
+    await page.getByTestId('live-q-prompt-1').fill('Question 2');
+    await page.getByTestId('live-q-weight-1').fill('5');
+    await page.getByTestId('live-q-score-1').fill('5');
+    await expect(page.getByTestId('exam-live-finish')).toBeEnabled();
+    await page.getByTestId('exam-live-finish').click();
     await expect(page).toHaveURL(/\/exams\/\d+$/);
     const examId = page.url().match(/\/exams\/(\d+)$/)?.[1];
     expect(examId).toBeTruthy();
 
-    // F4: score 18 on a max-15 question → addQuestion() returns silently:
-    // nothing queued, no banner, no message; the form just stays as-is.
-    await page.getByTestId('exam-q-no').fill('1');
-    await page.getByTestId('exam-q-max').fill('15');
-    await page.getByTestId('exam-q-score').fill('18');
-    await page.getByTestId('exam-queue').click();
-    await expect(page.locator('.draft-list li')).toHaveCount(0);
-    await expect(page.locator('.banner.danger, .field-error, .req-error')).toHaveCount(0);
-
-    // a legal score queues fine — the button itself is not broken
-    await page.getByTestId('exam-q-score').fill('14');
-    await page.getByTestId('exam-queue').click();
-    await expect(page.locator('.draft-list li')).toHaveCount(1);
-
-    // cleanup: delete the exam (draft never saved — cascades anyway)
+    // cleanup: delete the finished exam (questions cascade)
     await page.getByTestId('delete-exam').click();
     await page.getByTestId('confirm-delete-exam').click();
     await expect(page).toHaveURL(/\/exams$/);

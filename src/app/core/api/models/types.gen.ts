@@ -156,6 +156,7 @@ export type ExamQuestionResource = {
     question_no: number;
     prompt_text: string | null;
     hizb_ref: number | null;
+    thumn_ref: number | null;
     surah_ref: number | null;
     ayah_from: number | null;
     ayah_to: number | null;
@@ -610,6 +611,24 @@ export type StoreExamRequest = {
     exam_date?: string | null;
     examiner_id?: number | null;
     examiner_report?: string | null;
+    /**
+     * A live test may be submitted with its questions in the same
+     * request, so exam + results are one transaction (no shell).
+     */
+    questions?: Array<{
+        question_no: number;
+        prompt_text?: string | null;
+        hizb_ref?: number | null;
+        thumn_ref?: number | null;
+        surah_ref?: number | null;
+        ayah_from?: number | null;
+        ayah_to?: number | null;
+        sort_order?: number;
+        model_type?: QuestionModel;
+        max_score: number;
+        score?: number | null;
+        notes?: string | null;
+    }> | null;
 };
 
 /**
@@ -690,6 +709,7 @@ export type StoreQuestionsBulkRequest = {
         question_no: number;
         prompt_text?: string | null;
         hizb_ref?: number | null;
+        thumn_ref?: number | null;
         surah_ref?: number | null;
         ayah_from?: number | null;
         ayah_to?: number | null;
@@ -3852,7 +3872,9 @@ export type ExamsStoreResponses = {
     201: {
         success: boolean;
         message: null;
-        data: ExamResource;
+        data: ExamResource & {
+            [key: string]: unknown;
+        };
     };
 };
 
@@ -7619,6 +7641,110 @@ export type StudentUnlinkedAccountsResponses = {
 };
 
 export type StudentUnlinkedAccountsResponse = StudentUnlinkedAccountsResponses[keyof StudentUnlinkedAccountsResponses];
+
+export type StudentExamBriefData = {
+    body?: never;
+    path: {
+        /**
+         * The student ID
+         */
+        student: number;
+    };
+    query?: never;
+    url: '/v1/students/{student}/exam-brief';
+};
+
+export type StudentExamBriefErrors = {
+    /**
+     * Unauthenticated
+     */
+    401: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * Authorization error
+     */
+    403: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * Not found
+     */
+    404: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+};
+
+export type StudentExamBriefError = StudentExamBriefErrors[keyof StudentExamBriefErrors];
+
+export type StudentExamBriefResponses = {
+    200: {
+        success: boolean;
+        message: string | null;
+        data: {
+            student: StudentResource;
+            group: GroupResource | null;
+            season: {
+                id: number;
+                name: string;
+            } | null;
+            summary: {
+                season_thumn: number | null;
+                season_avg_score: number | null;
+                season_avg_sarraj: number | null;
+                season_attendance_pct: number | null;
+                season_overall_avg: number | null;
+                honor_flag: string | null;
+            } | null;
+            memorization: {
+                last: {
+                    id: number;
+                    log_date: string;
+                    log_mode: 'thumn' | 'surah';
+                    thumn_amount: number;
+                    hizb_no: number | null;
+                    thumn_no: number | null;
+                    surah_ref: number | null;
+                    ayah_from: number | null;
+                    ayah_to: number | null;
+                } | null;
+                items: Array<{
+                    id: number;
+                    log_date: string;
+                    log_mode: 'thumn' | 'surah';
+                    thumn_amount: number;
+                    hizb_no: number | null;
+                    thumn_no: number | null;
+                    surah_ref: number | null;
+                    ayah_from: number | null;
+                    ayah_to: number | null;
+                }>;
+                total_thumn: number;
+            };
+            exams: Array<ExamResource>;
+            current: {
+                mode: 'thumn' | 'surah';
+                hizb: number | null;
+                thumn: number | null;
+                surah: number | null;
+                ayah_from: number | null;
+                ayah_to: number | null;
+                source: 'last_exam' | 'last_log' | null;
+            };
+        };
+    };
+};
+
+export type StudentExamBriefResponse = StudentExamBriefResponses[keyof StudentExamBriefResponses];
 
 export type StudentsIndexData = {
     body?: never;

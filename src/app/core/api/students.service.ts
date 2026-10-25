@@ -3,6 +3,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
 import {
   StoreStudentRequest,
+  StudentExamBriefResponse,
   StudentResource,
   StudentsIndexResponse,
   StudentUnlinkedAccountsResponse,
@@ -35,6 +36,11 @@ export class StudentsService {
 
   get(id: number): Observable<StudentResource> {
     return this.api.get<StudentResource>(`/students/${id}`);
+  }
+
+  /** Student-first exam builder: profile + stats + memorization + exams. */
+  examBrief(id: number): Observable<StudentExamBriefResponse['data']> {
+    return this.api.get<StudentExamBriefResponse['data']>(`/students/${id}/exam-brief`);
   }
 
   create(payload: StoreStudentRequest): Observable<StudentResource> {

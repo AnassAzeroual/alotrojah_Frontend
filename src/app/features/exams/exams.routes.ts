@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { roleGuard } from '../../core/auth/role.guard';
 import { dirtyGuard } from '../../core/guards/dirty.guard';
 
@@ -14,11 +14,10 @@ export const EXAMS_ROUTES: Routes = [
     data: { roles: [...VIEW] },
   },
   {
+    // The builder now lives on /exams; keep old bookmarks working.
     path: 'new',
-    loadComponent: () => import('./exam-new.page').then((m) => m.ExamNewPage),
-    canActivate: [roleGuard],
-    canDeactivate: [dirtyGuard],
-    data: { roles: [...STAFF] },
+    redirectTo: '',
+    pathMatch: 'full',
   },
   {
     path: 'weekly',
