@@ -94,7 +94,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
     path: '/exams',
     key: 'nav.exams',
     icon: 'file',
-    roles: ['admin', 'supervisor', 'teacher', 'student'],
+    // Students have no exam-start workflow; the page is staff-only.
+    roles: ['admin', 'supervisor', 'teacher'],
     testId: 'nav-exams',
   },
   {

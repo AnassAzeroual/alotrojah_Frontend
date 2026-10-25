@@ -14,6 +14,12 @@ describe('apiErrorKey', () => {
     expect(apiErrorKey(httpError(422, { errors: { code: ['NEED_REPLACER'] } }))).toBe(
       'apiErrors.NEED_REPLACER',
     );
+    expect(apiErrorKey(httpError(422, { errors: { code: 'SEASON_EXISTS' } }))).toBe(
+      'apiErrors.SEASON_EXISTS',
+    );
+    expect(apiErrorKey(httpError(422, { errors: { code: 'LEVEL_SOURCE_MISSING' } }))).toBe(
+      'apiErrors.LEVEL_SOURCE_MISSING',
+    );
   });
 
   it('maps field-token bags to auth keys', () => {

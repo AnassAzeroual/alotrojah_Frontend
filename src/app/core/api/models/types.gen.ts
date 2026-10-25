@@ -227,12 +227,13 @@ export type GroupResource = {
 export type HonorFlag = 'none' | 'tashji3' | 'intibah';
 
 /**
- * Level
+ * LevelResource
  */
-export type Level = {
+export type LevelResource = {
     id: number;
-    code: string;
+    season_id: number | null;
     center_id: number | null;
+    code: string;
     name_ar: string;
     sessions_per_week: number;
     thumn_per_session_label: string;
@@ -242,6 +243,15 @@ export type Level = {
     ahzab_per_dawra: number;
     duration_label: string;
     total_ahzab: number;
+    ahzab_first_term: number | null;
+    term_goals: Array<{
+        term_id: number;
+        term_number: number;
+        name_ar: string;
+        study_weeks: number;
+        review_weeks: number;
+        ahzab: number;
+    }>;
 };
 
 /**
@@ -619,7 +629,7 @@ export type StoreGroupRequest = {
  */
 export type StoreLevelRequest = {
     name_ar: string;
-    center_id?: number | null;
+    season_id: number;
     sessions_per_week: number;
     thumn_per_session_label: string;
     thumn_per_session_value: number;
@@ -726,6 +736,10 @@ export type StoreScoresBulkRequest = {
  * StoreSeasonRequest
  */
 export type StoreSeasonRequest = {
+    /**
+     * Name uniqueness is checked in the controller so the 422 carries
+     * the stable SEASON_EXISTS code (FormRequest bags have none).
+     */
     name: string;
     /**
      * New seasons are always center-owned (legacy NULL rows stay shared).
@@ -745,10 +759,14 @@ export type StoreSeasonRequest = {
  */
 export type StoreStudentRequest = {
     /**
-     * Every pupil rides a login account (owner-directed 2026-10-15):
-     * NULL user_id rows are rejected — pick an unlinked student user.
+     * Either link an existing student account (user_id) or create the
+     * account in the same request (account). Both are validated below.
      */
-    user_id: number;
+    user_id?: number | null;
+    account?: {
+        email?: string;
+        password?: string;
+    };
     full_name: string;
     center_id?: number | null;
     group_id: number;
@@ -797,6 +815,14 @@ export type StudentResource = {
         full_name: string;
         email: string;
     };
+    /**
+     * Season-owned level row (the id alone is meaningless across seasons).
+     */
+    level?: {
+        id: number;
+        code: string;
+        name_ar: string;
+    } | null;
     level_id: number;
     birth_date: string | null;
     enrollment_date: string | null;
@@ -974,7 +1000,6 @@ export type UpdateGroupRequest = {
  */
 export type UpdateLevelRequest = {
     name_ar?: string;
-    center_id?: number | null;
     sessions_per_week?: number;
     thumn_per_session_label?: string;
     thumn_per_session_value?: number;
@@ -1023,6 +1048,10 @@ export type UpdateQuestionRequest = {
  * UpdateSeasonRequest
  */
 export type UpdateSeasonRequest = {
+    /**
+     * Name uniqueness is checked in the controller so the 422 carries
+     * the stable SEASON_EXISTS code (FormRequest bags have none).
+     */
     name?: string;
     start_date?: string;
     end_date?: string | null;
@@ -4839,7 +4868,7 @@ export type LevelResetData = {
     body?: never;
     path?: never;
     query: {
-        center_id: number;
+        season_id: number;
     };
     url: '/v1/levels/reset';
 };
@@ -4888,6 +4917,7 @@ export type LevelResetResponses = {
         message: string | null;
         data: {
             deleted: number;
+            created: number;
         };
     };
 };
@@ -4927,8 +4957,8 @@ export type LevelsIndexError = LevelsIndexErrors[keyof LevelsIndexErrors];
 export type LevelsIndexResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: Array<Level>;
+        message: string | null;
+        data: Array<LevelResource>;
     };
 };
 
@@ -4980,10 +5010,10 @@ export type LevelsStoreErrors = {
 export type LevelsStoreError = LevelsStoreErrors[keyof LevelsStoreErrors];
 
 export type LevelsStoreResponses = {
-    201: {
+    200: {
         success: boolean;
-        message: null;
-        data: Level | null;
+        message: string | null;
+        data: LevelResource;
     };
 };
 
@@ -5112,8 +5142,8 @@ export type LevelsUpdateError = LevelsUpdateErrors[keyof LevelsUpdateErrors];
 export type LevelsUpdateResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: Level | null;
+        message: string | null;
+        data: LevelResource;
     };
 };
 
@@ -5883,6 +5913,15 @@ export type ReferenceLevelsErrors = {
          */
         message: string;
     };
+    /**
+     * Authorization error
+     */
+    403: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
 };
 
 export type ReferenceLevelsError = ReferenceLevelsErrors[keyof ReferenceLevelsErrors];
@@ -5890,8 +5929,8 @@ export type ReferenceLevelsError = ReferenceLevelsErrors[keyof ReferenceLevelsEr
 export type ReferenceLevelsResponses = {
     200: {
         success: boolean;
-        message: null;
-        data: Array<Level>;
+        message: string | null;
+        data: Array<LevelResource>;
     };
 };
 
@@ -7482,6 +7521,65 @@ export type SeasonsUpdateResponses = {
 
 export type SeasonsUpdateResponse = SeasonsUpdateResponses[keyof SeasonsUpdateResponses];
 
+export type SetupStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/setup/status';
+};
+
+export type SetupStatusErrors = {
+    /**
+     * Unauthenticated
+     */
+    401: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * An error
+     */
+    403: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+};
+
+export type SetupStatusError = SetupStatusErrors[keyof SetupStatusErrors];
+
+export type SetupStatusResponses = {
+    200: {
+        success: boolean;
+        message: null;
+        data: {
+            center: {
+                id: number;
+                name: string;
+            } | null;
+            season: {
+                id: number;
+                name: string;
+                is_current: boolean;
+            } | null;
+            total_steps: number;
+            done_steps: number;
+            current: string | null;
+            steps: Array<{
+                key: string;
+                done: boolean;
+                count: number;
+                target: string;
+            }>;
+        };
+    };
+};
+
+export type SetupStatusResponse = SetupStatusResponses[keyof SetupStatusResponses];
+
 export type StudentUnlinkedAccountsData = {
     body?: never;
     path?: never;
@@ -7633,7 +7731,9 @@ export type StudentsStoreResponses = {
     201: {
         success: boolean;
         message: null;
-        data: StudentResource;
+        data: StudentResource & {
+            [key: string]: unknown;
+        };
     };
 };
 

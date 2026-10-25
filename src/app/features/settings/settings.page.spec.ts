@@ -89,6 +89,11 @@ describe('SettingsPage tabs', () => {
             setAppearanceCenterId: (id: number | null): void => {
               prefCenter.set(id);
             },
+            setupGuideEnabled: signal(true),
+            setupGuideSeen: signal(false),
+            setSetupGuideEnabled: (): void => undefined,
+            markSetupGuideSeen: (): void => undefined,
+            resetSetupGuide: (): void => undefined,
           },
         },
       ],

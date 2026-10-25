@@ -428,7 +428,60 @@ describe('StudentDetailPage account link', () => {
     expect(el.querySelector('[data-testid="student-account"]')).toBeNull();
   });
 
-  it('picks an account in create mode, prefills the name and posts user_id', async () => {
+  it('creates the account with the pupil by default and posts the account object', async () => {
+    fixture = TestBed.createComponent(StudentDetailPage);
+    fixture.componentRef.setInput('id', 'new');
+    page = fixture.componentInstance;
+    expect(page.isNew()).toBe(true);
+    expect(page.accountMode()).toBe('create');
+    el = fixture.nativeElement;
+    fixture.detectChanges();
+    await new Promise<void>((r) => setTimeout(r, 0));
+    fixture.detectChanges();
+    flushUrl('/seasons', { data: [] });
+    flushUrl('/centers', { data: [{ id: 1, name: 'c1' }] });
+    flushUrl('/reference/levels', []);
+    // Create mode never asks for linkable accounts.
+    expect(
+      http.match((r) => r.url.endsWith('/students/unlinked-accounts') && r.method === 'GET').length,
+    ).toBe(0);
+    await new Promise<void>((r) => setTimeout(r, 0));
+    fixture.detectChanges();
+    flushUrl('/groups', GROUPS.data);
+    flushUrl('/reference/levels', LEVELS);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const set = (testId: string, value: string): void => {
+      const input = el.querySelector<HTMLInputElement>(`[data-testid="${testId}"]`)!;
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    };
+    set('student-name', 'New Pupil');
+    set('student-email', 'new.pupil@example.org');
+    set('student-password', 'secret123');
+
+    openList('student-group');
+    pickText('حلقة النور');
+    openList('student-level');
+    pickText('المستوى الأول');
+    fixture.detectChanges();
+
+    el.querySelector<HTMLFormElement>('form')!.dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+
+    const req = http.expectOne((r) => r.url.endsWith('/students') && r.method === 'POST');
+    expect(req.request.body.user_id).toBeUndefined();
+    expect(req.request.body.account).toEqual({
+      email: 'new.pupil@example.org',
+      password: 'secret123',
+    });
+    expect(req.request.body.full_name).toBe('New Pupil');
+    expect(req.request.body.center_id).toBe(1);
+    req.flush({ success: true, message: null, data: { id: 12 } });
+  });
+
+  it('links an existing account when the mode is switched, prefills the name and posts user_id', async () => {
     fixture = TestBed.createComponent(StudentDetailPage);
     fixture.componentRef.setInput('id', 'new');
     page = fixture.componentInstance;
@@ -440,18 +493,23 @@ describe('StudentDetailPage account link', () => {
     flushUrl('/seasons', { data: [] });
     flushUrl('/centers', { data: [{ id: 1, name: 'c1' }] });
     flushUrl('/reference/levels', []);
-    // Admin with no center yet browses all centers' accounts, then re-narrows.
-    const globalReq = http.expectOne(
-      (r) => r.url.endsWith('/students/unlinked-accounts') && r.method === 'GET',
-    );
-    expect(globalReq.request.params.get('center_id')).toBeNull();
-    globalReq.flush({ success: true, message: null, data: ACCOUNTS });
     await new Promise<void>((r) => setTimeout(r, 0));
     fixture.detectChanges();
     // Single-center auto-select refires the center-dependent feeds.
     flushUrl('/groups', GROUPS.data);
     flushUrl('/reference/levels', LEVELS);
-    flushUrl('/students/unlinked-accounts', ACCOUNTS);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    el.querySelector<HTMLButtonElement>('[data-testid="student-account-link"]')!.click();
+    fixture.detectChanges();
+    await new Promise<void>((r) => setTimeout(r, 0));
+    fixture.detectChanges();
+    const accountsReq = http.expectOne(
+      (r) => r.url.endsWith('/students/unlinked-accounts') && r.method === 'GET',
+    );
+    expect(accountsReq.request.params.get('center_id')).toBe('1');
+    accountsReq.flush({ success: true, message: null, data: ACCOUNTS });
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -478,6 +536,7 @@ describe('StudentDetailPage account link', () => {
 
     const req = http.expectOne((r) => r.url.endsWith('/students') && r.method === 'POST');
     expect(req.request.body.user_id).toBe(9);
+    expect(req.request.body.account).toBeUndefined();
     expect(req.request.body.full_name).toBe('Karim Pupil');
     expect(req.request.body.start_hizb).toBe(2.5);
     expect(req.request.body.center_id).toBe(1);

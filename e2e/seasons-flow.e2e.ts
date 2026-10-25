@@ -1,10 +1,19 @@
 import { expect, test } from '@playwright/test';
+import { apiToken } from './api';
 
 test.describe.serial('Seasons management', () => {
   const stamp = Date.now();
   const seasonName = `E2E Season ${stamp}`;
 
-  test('admin creates a season and deletes it again', async ({ page }) => {
+  test('admin creates a season and deletes it again', async ({ page, request }) => {
+    // A taken name answers 422 SEASON_EXISTS: the form must show the Arabic
+    // message, never the backend's raw English validation sentence.
+    const token = await apiToken(request);
+    const list = await request.get('http://127.0.0.1:8000/api/v1/seasons', {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    });
+    const takenName = (await list.json()).data.data[0].name as string;
+
     await page.goto('/login');
     await page.getByTestId('auth-email').fill('admin@example.org');
     await page.getByTestId('auth-password').fill('password123');
@@ -17,15 +26,25 @@ test.describe.serial('Seasons management', () => {
     await expect(page).toHaveURL(/\/planning\/new$/);
 
     await page.getByTestId('seasons-template').click();
-    await page.getByTestId('season-name').fill(seasonName);
+    await page.getByTestId('season-name').fill(takenName);
     await page.getByTestId('season-start').fill('01/09/2026');
     await page.getByTestId('season-center').click();
     await page.getByRole('option', { name: 'مركز النور القرآني' }).click();
+    const duplicate = page.waitForResponse(
+      (r) => r.url().includes('/seasons') && r.request().method() === 'POST',
+    );
+    await page.getByTestId('season-save').click();
+    expect((await duplicate).status()).toBe(422);
+    await expect(page.locator('.field-error')).toHaveText('يوجد موسم بهذا الاسم مسبقًا');
+    // The global error dialog owns the viewport until dismissed.
+    await page.getByTestId('dialog-confirm').click();
+
+    await page.getByTestId('season-name').fill(seasonName);
     const created = page.waitForResponse(
       (r) => r.url().includes('/seasons') && r.request().method() === 'POST',
     );
     await page.getByTestId('season-save').click();
-    await created;
+    expect((await created).status()).toBe(201);
     await expect(page).toHaveURL(/\/planning$/);
 
     // fact-free season deletes cleanly (self-cleaning: no dev residue)

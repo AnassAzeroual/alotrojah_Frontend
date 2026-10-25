@@ -30,12 +30,18 @@ export default defineConfig({
     // assertions are stale-cache-sensitive). Key literal must stay in sync
     // with E2E_CACHE_BYPASS_KEY in src/app/core/api/api-client.ts — the config
     // can't import it (Angular deps).
+    // Also suppresses the first-run setup guide auto-open: it is a real
+    // first-login modal and would otherwise cover every admin flow on the
+    // shared verify DB (whose setup is intentionally incomplete).
     storageState: {
       cookies: [],
       origins: [
         {
           origin: 'http://127.0.0.1:4201',
-          localStorage: [{ name: 'alotrojah_e2e_no_http_cache', value: '1' }],
+          localStorage: [
+            { name: 'alotrojah_e2e_no_http_cache', value: '1' },
+            { name: 'alotrojah_e2e_no_setup_guide', value: '1' },
+          ],
         },
       ],
     },

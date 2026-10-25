@@ -51,7 +51,20 @@
   font-size: var(--text-xs);
 }
 
-// T1: persistent scope banner — shared defaults vs per-center overrides.
+// Read-only derived values (name, label, thumn/week, duration, totals) are
+// plain text, not controls: no border, background or focus ring, so nothing
+// looks clickable. Height matches a 48px input to keep grid rows aligned.
+.field .ro-value {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+// T1: persistent scope banner — the shared seed set vs one season's set.
 .scope-banner {
   display: flex;
   flex-wrap: wrap;
@@ -63,15 +76,6 @@
   border: 1px solid var(--color-border-strong);
   background: var(--color-bg-soft);
   font-size: var(--text-sm);
-}
-
-// T1: override rows highlighted, inherited rows muted.
-.levels-table tbody tr.is-override td {
-  background: color-mix(in srgb, var(--green-600) 7%, transparent);
-}
-
-.levels-table tbody tr.is-inherited td {
-  color: var(--color-text-muted);
 }
 
 .src-tag {
@@ -90,6 +94,51 @@
   &.inherited {
     color: var(--color-text-muted);
   }
+}
+
+// The exact term goal, with its per-term breakdown one click away.
+.goal-value {
+  font-weight: var(--font-weight-semibold);
+}
+
+.goal-toggle {
+  margin-inline-start: var(--space-2);
+}
+
+.goal-row td {
+  background: var(--color-bg-soft);
+}
+
+.goal-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.goal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+
+  .goal-chip-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+
+  strong {
+    color: var(--color-primary-dark);
+  }
+}
+
+.hint {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
 }
 
 .btn-ghost {

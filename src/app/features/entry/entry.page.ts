@@ -13,7 +13,7 @@ import { firstValueFrom, forkJoin, from, map } from 'rxjs';
 import { CalendarService } from '../../core/api/calendar.service';
 import { EntryService } from '../../core/api/entry.service';
 import { GroupsService } from '../../core/api/groups.service';
-import { LevelsService } from '../../core/api/levels.service';
+import { ReferenceService } from '../../core/api/reference.service';
 import {
   AttendanceResource,
   ScoreBySessionResponse,
@@ -43,7 +43,7 @@ export class EntryPage {
   private readonly entry = inject(EntryService);
   private readonly auth = inject(AuthService);
   private readonly language = inject(LanguageService);
-  private readonly levelsSvc = inject(LevelsService);
+  private readonly ref = inject(ReferenceService);
 
   /**
    * Every section the user may enter for — not just the first API page. The
@@ -68,7 +68,18 @@ export class EntryPage {
       );
     },
   });
-  readonly levels = toSignal(this.levelsSvc.list(), { initialValue: [] });
+  /** Center whose season owns the levels: the picked group's, else the user's. */
+  readonly pickedCenterId = computed(() => {
+    const g = this.selectedGroup();
+    const fromGroup =
+      g === null ? null : (this.groups().find((x) => x.id === g)?.center_id ?? null);
+    return fromGroup ?? this.auth.currentUser()?.center_id ?? null;
+  });
+
+  readonly levels = resource({
+    params: () => ({ c: this.pickedCenterId() }),
+    loader: ({ params }) => firstValueFrom(this.ref.levels(params.c)),
+  });
 
   readonly selectedGroup = signal<number | null>(null);
   readonly selectedWeek = signal<number | null>(null);
@@ -196,7 +207,9 @@ export class EntryPage {
   readonly defaultMemorization = (studentId: number): number | null => {
     const st = this.students.value()?.find((s) => s.id === studentId);
     if (!st?.level_id) return null;
-    return this.levels().find((l) => l.id === st.level_id)?.thumn_per_session_value ?? null;
+    return (
+      (this.levels.value() ?? []).find((l) => l.id === st.level_id)?.thumn_per_session_value ?? null
+    );
   };
 
   onGroup(id: number): void {

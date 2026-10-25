@@ -12,6 +12,7 @@ import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } fr
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { SeasonsService } from '../../core/api/seasons.service';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -229,7 +230,7 @@ export class SeasonCreatePage {
         },
         error: (e) => {
           this.saving.set(false);
-          this.error.set(e?.error?.message ?? 'error');
+          this.error.set(apiErrorKey(e));
         },
       });
   }
@@ -257,7 +258,7 @@ export class SeasonCreatePage {
         },
         error: (e) => {
           this.saving.set(false);
-          this.error.set(e?.error?.message ?? 'error');
+          this.error.set(apiErrorKey(e));
         },
       });
   }

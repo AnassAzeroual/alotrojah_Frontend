@@ -2,21 +2,23 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   resource,
   signal,
 } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, map } from 'rxjs';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
 import { LanguageService } from '../../core/i18n/language.service';
 import { ThumnDisplayPipe } from '../../shared/ui/thumn-display/thumn-display.pipe';
-import { sessionAmountLabel } from '../../shared/ui/thumn-display/thumn-label';
+import { sessionAmountLabel, weekAmountLabel } from '../../shared/ui/thumn-display/thumn-label';
 import { leaveController } from '../../core/guards/leave-controller';
 import { CentersService } from '../../core/api/centers.service';
 import { LevelsService } from '../../core/api/levels.service';
-import { Level } from '../../core/api/models';
+import { ReferenceService } from '../../core/api/reference.service';
+import { LevelResource, SeasonResource, StoreLevelRequest } from '../../core/api/models';
 import {
   DropdownComponent,
   DropdownValue,
@@ -26,36 +28,47 @@ import {
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
-interface LevelDraft {
-  name_ar: string;
+/** The only two hand inputs; every other value on both forms is derived. */
+type LevelInput = 'sessions_per_week' | 'thumn_session_value';
+
+/** Full form state: the two inputs plus the read-only values they drive. */
+interface LevelForm {
   sessions_per_week: number | null;
-  thumn_session_label: string;
   thumn_session_value: number | null;
+  name_ar: string;
+  thumn_session_label: string;
   thumn_week_value: number | null;
   ahzab_term: number | null;
   ahzab_dawra: number | null;
   duration: string;
-  total_ahzab: number | null;
+  total_ahzab: number;
 }
 
-const BLANK_DRAFT: LevelDraft = {
-  name_ar: '',
+/** Owner-locked total ahzab on a new level. */
+const TOTAL_AHZAB = 60;
+
+/** Standard term length when the season calendar is unknown. */
+const DEFAULT_STUDY_WEEKS = 6;
+
+const BLANK_FORM: LevelForm = {
   sessions_per_week: 3,
-  thumn_session_label: '',
   thumn_session_value: null,
+  name_ar: '',
+  thumn_session_label: '',
   thumn_week_value: null,
   ahzab_term: null,
   ahzab_dawra: null,
   duration: '',
-  total_ahzab: 60,
+  total_ahzab: TOTAL_AHZAB,
 };
 
 /** Seed wording lives in sessionAmountLabel; the name derives from it. */
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
-/** Shared auto-calc engine (create preview + reactive edit). */
+/** Everything the two inputs produce (create preview + reactive edit). */
 interface AutoFields {
   label: string;
+  name: string;
   week: number;
   term: number;
   dawra: number;
@@ -66,27 +79,66 @@ interface AutoFields {
 const unitInRange = (unit: number | null): unit is number =>
   unit !== null && unit >= 1 && unit <= 480;
 
-const autoFields = (sessions: number | null, unit: number | null): AutoFields | null => {
+/**
+ * The term goal counts STUDY weeks only (murajaa/review weeks carry no new
+ * hifz), so the season's first-term length is the divisor — not a hardcoded 6.
+ */
+const autoFields = (
+  sessions: number | null,
+  unit: number | null,
+  studyWeeks: number,
+): AutoFields | null => {
   // Out-of-range input yields no preview (never garbage) and blocks the save.
-  if (sessions === null || !unitInRange(unit)) return null;
+  if (sessions === null || sessions < 1 || !unitInRange(unit)) return null;
   const week = round2(sessions * unit);
-  const term = round2((week / 8) * 6);
+  const term = round2((week / 8) * studyWeeks);
   const dawra = round2(term * 5);
-  const years = week > 0 ? Math.max(1, Math.round(16 / week)) : 0;
+  const years = Math.max(1, Math.round(16 / week));
+  const label = sessionAmountLabel(unit);
+  // The name is the WEEKLY amount (seeds: 3 × 1 → "3 أثمان في الأسبوع");
+  // the label stays per session, which is what one lesson covers.
+  const weekName = weekAmountLabel(week);
   return {
-    label: sessionAmountLabel(unit),
+    label,
+    name: weekName === '' ? '' : `${weekName} في الأسبوع`,
     week,
     term,
     dawra,
-    duration: years === 0 ? '' : years === 1 ? 'سنة واحدة' : `${years} سنوات`,
+    duration: years === 1 ? 'سنة واحدة' : `${years} سنوات`,
   };
 };
 
-const draftOf = (l: Level): LevelDraft => ({
-  name_ar: l.name_ar,
+/** Recompute the read-only fields; an invalid pair blanks them (never stale). */
+const withDerived = (f: LevelForm, studyWeeks: number): LevelForm => {
+  const auto = autoFields(f.sessions_per_week, f.thumn_session_value, studyWeeks);
+  if (auto === null) {
+    return {
+      ...f,
+      name_ar: '',
+      thumn_session_label: '',
+      thumn_week_value: null,
+      ahzab_term: null,
+      ahzab_dawra: null,
+      duration: '',
+    };
+  }
+  return {
+    ...f,
+    name_ar: auto.name,
+    thumn_session_label: auto.label,
+    thumn_week_value: auto.week,
+    ahzab_term: auto.term,
+    ahzab_dawra: auto.dawra,
+    duration: auto.duration,
+  };
+};
+
+/** Seed rows keep their hand-tuned values until an input actually changes. */
+const formOf = (l: LevelResource): LevelForm => ({
   sessions_per_week: l.sessions_per_week,
-  thumn_session_label: l.thumn_per_session_label,
   thumn_session_value: Number(l.thumn_per_session_value),
+  name_ar: l.name_ar,
+  thumn_session_label: l.thumn_per_session_label,
   thumn_week_value: Number(l.thumn_per_week_value),
   ahzab_term: Number(l.ahzab_per_term),
   ahzab_dawra: Number(l.ahzab_per_dawra),
@@ -94,12 +146,19 @@ const draftOf = (l: Level): LevelDraft => ({
   total_ahzab: l.total_ahzab,
 });
 
+/** Empty or non-numeric text → null; otherwise a finite number. */
+const toNumber = (raw: string): number | null => {
+  const text = raw.trim();
+  if (text === '') return null;
+  const n = Number(text);
+  return Number.isFinite(n) ? n : null;
+};
+
 @Component({
   selector: 'app-levels-page',
   standalone: true,
   imports: [
     FormsModule,
-    ReactiveFormsModule,
     TranslatePipe,
     ThumnDisplayPipe,
     DropdownComponent,
@@ -113,48 +172,108 @@ const draftOf = (l: Level): LevelDraft => ({
 export class LevelsPage {
   private readonly levelsSvc = inject(LevelsService);
   private readonly centersSvc = inject(CentersService);
+  private readonly ref = inject(ReferenceService);
   protected readonly prefs = inject(AdminPrefsService);
   protected readonly language = inject(LanguageService);
 
   protected readonly txt = dropdownText;
-  protected readonly num = dropdownNumber;
 
   private readonly tick = signal(0);
-  /** NULL = shared default set; a center id edits that center's overrides. */
+  /** Every level belongs to a center's season; null = nothing picked yet. */
   readonly centerScope = signal<number | null>(null);
-
-  /** T3 kill-switch: hidden pickers force shared-defaults editing. */
-  readonly activeScope = computed(() =>
-    this.prefs.hideScopePickers() ? null : this.centerScope(),
-  );
+  /** The season whose level set is shown (and edited). */
+  readonly seasonId = signal<number | null>(null);
 
   readonly centers = resource({
-    loader: () => firstValueFrom(this.centersSvc.list().pipe(map((p) => p.data))),
+    // Every center must be reachable: the list endpoint paginates at 20.
+    loader: () => firstValueFrom(this.centersSvc.listAll()),
   });
 
-  readonly centerScopeOptions = computed(() => [
-    { value: '', labelKey: 'list.all' },
-    ...(this.centers.value() ?? []).map((c) => ({ value: String(c.id), label: c.name })),
-  ]);
+  readonly centerScopeOptions = computed(() =>
+    (this.centers.value() ?? []).map((c) => ({ value: String(c.id), label: c.name })),
+  );
 
-  /** T1: persistent scope banner — shared defaults vs overrides for <center>. */
   readonly centerName = computed(
     () => (this.centers.value() ?? []).find((c) => c.id === this.centerScope())?.name ?? null,
   );
 
-  /** Rows carrying this center's id are overrides; NULL-center rows are inherited defaults. */
-  isOverride(centerId: number | null | undefined): boolean {
-    return this.activeScope() !== null && centerId === this.activeScope();
+  /** The picked center's lane: its own seasons plus the legacy shared one. */
+  readonly seasons = resource({
+    params: () => ({ c: this.centerScope() }),
+    loader: ({ params }) =>
+      params.c === null
+        ? Promise.resolve([] as SeasonResource[])
+        : firstValueFrom(this.ref.seasons(params.c).pipe(map((p) => p.data ?? []))),
+  });
+
+  readonly seasonOptions = computed(() =>
+    (this.seasons.value() ?? []).map((s) => ({ value: String(s.id), label: s.name })),
+  );
+
+  readonly selectedSeason = computed(
+    () => (this.seasons.value() ?? []).find((s) => s.id === this.seasonId()) ?? null,
+  );
+
+  readonly seasonName = computed(() => this.selectedSeason()?.name ?? null);
+
+  /** Legacy shared lane (center_id NULL): one set serving every center. */
+  readonly seasonIsShared = computed(() => this.selectedSeason()?.center_id === null);
+
+  /** A center with no season at all owns no levels yet. */
+  readonly noSeason = computed(
+    () =>
+      this.centerScope() !== null &&
+      this.seasons.hasValue() &&
+      (this.seasons.value() ?? []).length === 0,
+  );
+
+  /** Nothing can be created before the first center exists. */
+  readonly noCenter = computed(
+    () => this.centers.hasValue() && (this.centers.value() ?? []).length === 0,
+  );
+
+  constructor() {
+    // Pick the lane's current season (else its latest, else the shared one)
+    // whenever the center changes or its season list arrives.
+    effect(() => {
+      const centerId = this.centerScope();
+      if (centerId === null) {
+        if (this.seasonId() !== null) this.seasonId.set(null);
+        return;
+      }
+      if (!this.seasons.hasValue()) return;
+      const rows = this.seasons.value() ?? [];
+      const selected = this.seasonId();
+      if (selected !== null && rows.some((s) => s.id === selected)) return;
+      const pick =
+        rows.find((s) => s.is_current && s.center_id === centerId) ??
+        rows.find((s) => s.center_id === centerId) ??
+        rows.find((s) => s.is_current && s.center_id === null) ??
+        rows[0] ??
+        null;
+      this.seasonId.set(pick?.id ?? null);
+    });
+
+    // Levels are never global: pick the admin's preferred center (else the
+    // first) as soon as the center list arrives. The season effect above then
+    // picks that center's current (else latest) season.
+    effect(() => {
+      if (this.centerScope() !== null) return;
+      const rows = this.centers.value() ?? [];
+      if (rows.length === 0) return;
+      const preferred = this.prefs.appearanceCenterId();
+      this.centerScope.set((rows.find((c) => c.id === preferred) ?? rows[0]).id);
+    });
   }
 
   readonly armingReset = signal(false);
   readonly resetBusy = signal(false);
 
   resetScope(): void {
-    const scope = this.activeScope();
-    if (scope === null || this.resetBusy()) return;
+    const season = this.seasonId();
+    if (season === null || this.resetBusy()) return;
     this.resetBusy.set(true);
-    this.levelsSvc.reset(scope).subscribe({
+    this.levelsSvc.reset(season).subscribe({
       next: () => {
         this.resetBusy.set(false);
         this.armingReset.set(false);
@@ -168,261 +287,204 @@ export class LevelsPage {
   }
 
   readonly levels = resource({
-    params: () => ({ t: this.tick(), c: this.activeScope() }),
-    loader: ({ params }) => firstValueFrom(this.levelsSvc.list(params.c)),
+    params: () => ({ t: this.tick(), c: this.centerScope(), s: this.seasonId() }),
+    loader: ({ params }) => {
+      // No center/season = nothing to show: there is no global level set.
+      if (params.c === null || params.s === null) return Promise.resolve([]);
+      return firstValueFrom(this.levelsSvc.list(params.s));
+    },
+  });
+
+  /** First-term length of the picked season, for the form's goal preview. */
+  readonly studyWeeks = computed(() => {
+    const goals = (this.levels.value() ?? []).flatMap((l) => l.term_goals);
+    return goals[0]?.study_weeks ?? DEFAULT_STUDY_WEEKS;
   });
 
   readonly editingId = signal<number | null>(null);
-  readonly draft = signal<LevelDraft | null>(null);
-  private readonly editSeed = signal<LevelDraft | null>(null);
-
   readonly creating = signal(false);
-  readonly createDraft = signal<LevelDraft>({ ...BLANK_DRAFT });
-  readonly createSaving = signal(false);
-  readonly createErrorKey = signal<string | null>(null);
+
+  /** One form state for both modes: create seeds blanks, edit seeds the row. */
+  readonly form = signal<LevelForm>({ ...BLANK_FORM });
+  private readonly editSeed = signal<LevelForm | null>(null);
+
+  readonly saving = signal(false);
+  readonly errorKey = signal<string | null>(null);
 
   /** Dirty guard: an edited-but-unsaved row OR a touched create form blocks leave. */
   readonly leave = leaveController();
   isDirty(): boolean {
-    if (this.creating()) return JSON.stringify(this.createDraft()) !== JSON.stringify(BLANK_DRAFT);
+    if (this.creating()) return JSON.stringify(this.form()) !== JSON.stringify(BLANK_FORM);
     if (this.editingId() === null) return false;
     const seed = this.editSeed();
-    const d = this.draft();
-    if (!seed || !d) return true;
-    return JSON.stringify(d) !== JSON.stringify(seed);
+    return seed === null || JSON.stringify(this.form()) !== JSON.stringify(seed);
   }
-  readonly editSaving = signal(false);
-  readonly editErrorKey = signal<string | null>(null);
 
   readonly armingDeleteId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
+  readonly openGoalsId = signal<number | null>(null);
+
+  /** The headline goal: the first term's exact value (stored value for seeds). */
+  goalHeadline(l: LevelResource): number {
+    return l.ahzab_first_term ?? l.ahzab_per_term;
+  }
+
+  toggleGoals(id: number): void {
+    this.openGoalsId.set(this.openGoalsId() === id ? null : id);
+  }
 
   setCenterScope(v: DropdownValue): void {
-    this.centerScope.set(dropdownNumber(v));
+    const id = dropdownNumber(v);
+    if (id === this.centerScope()) return;
+    this.centerScope.set(id);
+    this.seasonId.set(null);
+    this.clearTransient();
+  }
+
+  setSeason(v: DropdownValue): void {
+    const id = dropdownNumber(v);
+    if (id === this.seasonId()) return;
+    this.seasonId.set(id);
+    this.clearTransient();
+  }
+
+  /** Switching scope abandons any open form/confirmation. */
+  private clearTransient(): void {
     this.editingId.set(null);
     this.armingDeleteId.set(null);
     this.armingReset.set(false);
+    this.openGoalsId.set(null);
     this.creating.set(false);
+    this.resetForm();
   }
 
-  startEdit(l: Level): void {
+  /** Clear the shared form state (create and edit never coexist). */
+  private resetForm(): void {
+    this.form.set({ ...BLANK_FORM });
+    this.editSeed.set(null);
+    this.errorKey.set(null);
+  }
+
+  startEdit(l: LevelResource): void {
+    if (this.seasonId() === null) return;
     this.armingDeleteId.set(null);
     this.creating.set(false);
     this.editingId.set(l.id);
-    this.draft.set(draftOf(l));
-    this.editSeed.set(draftOf(l));
-    this.editErrorKey.set(null);
-  }
-
-  setDraft(field: keyof LevelDraft, value: string): void {
-    const d = this.draft();
-    if (!d) return;
-    const numeric: (keyof LevelDraft)[] = [
-      'sessions_per_week',
-      'thumn_session_value',
-      'thumn_week_value',
-      'ahzab_term',
-      'ahzab_dawra',
-      'total_ahzab',
-    ];
-    const next = {
-      ...d,
-      [field]: numeric.includes(field) ? (value.trim() === '' ? null : Number(value)) : value,
-    } as LevelDraft;
-    // Reactive edit, identical to create: touching days or the unit recomputes
-    // the dependents AND the derived name through the same engine.
-    if (field === 'sessions_per_week' || field === 'thumn_session_value') {
-      const auto = autoFields(next.sessions_per_week, next.thumn_session_value);
-      if (auto !== null) {
-        next.thumn_session_label = auto.label;
-        next.thumn_week_value = auto.week;
-        next.ahzab_term = auto.term;
-        next.ahzab_dawra = auto.dawra;
-        next.duration = auto.duration;
-        next.name_ar = `${auto.label} في الأسبوع`;
-      }
-    }
-    this.draft.set(next);
+    const seed = formOf(l);
+    this.form.set(seed);
+    this.editSeed.set(seed);
+    this.errorKey.set(null);
   }
 
   cancelEdit(): void {
     this.editingId.set(null);
-    this.draft.set(null);
-    this.editSeed.set(null);
-    this.editErrorKey.set(null);
+    this.resetForm();
   }
 
   startCreate(): void {
+    if (this.seasonId() === null) return;
     this.editingId.set(null);
     this.armingDeleteId.set(null);
-    this.createDraft.set({ ...BLANK_DRAFT });
-    this.createErrorKey.set(null);
     this.creating.set(true);
+    this.resetForm();
   }
 
   cancelCreate(): void {
     this.creating.set(false);
-    this.createDraft.set({ ...BLANK_DRAFT });
-    this.createErrorKey.set(null);
+    this.resetForm();
   }
 
-  setCreateDraft(field: keyof LevelDraft, value: string): void {
-    const numeric: (keyof LevelDraft)[] = [
-      'sessions_per_week',
-      'thumn_session_value',
-      'thumn_week_value',
-      'ahzab_term',
-      'ahzab_dawra',
-      'total_ahzab',
-    ];
-    this.createDraft.update((d) => ({
-      ...d,
-      [field]: numeric.includes(field) ? (value.trim() === '' ? null : Number(value)) : value,
-    }));
+  /** The only writable fields: every other value recomputes from these two. */
+  setInput(field: LevelInput, value: string): void {
+    this.form.update((f) => withDerived({ ...f, [field]: toNumber(value) }, this.studyWeeks()));
   }
 
   /** Auto-calculation: the two hand inputs are days + per-session unit.
-   * thumn/week is exact (days × unit); total is the constant 60. The rest are
-   * documented baselines, refinable any time through the edit form:
-   * ahzab/term assumes a standard 6-week term, dawra 5 such terms, duration
-   * ≈30 study weeks a year. Seed rows (L1–L3) predate this and stay manual. */
-  readonly autoThumnWeek = computed(() => {
-    const d = this.createDraft();
-    return autoFields(d.sessions_per_week, d.thumn_session_value)?.week ?? null;
-  });
-  readonly autoLabel = computed(() => {
-    const d = this.createDraft();
-    return autoFields(d.sessions_per_week, d.thumn_session_value)?.label ?? '';
-  });
-  /** Level name derives from the amount label: "<label> في الأسبوع". */
-  readonly autoName = computed(() => {
-    const unit = this.createDraft().thumn_session_value;
-    if (!unitInRange(unit)) return '';
-    const label = sessionAmountLabel(unit);
-    return label === '' ? '' : `${label} في الأسبوع`;
-  });
-  readonly autoAhzabTerm = computed(() => {
-    const d = this.createDraft();
-    return autoFields(d.sessions_per_week, d.thumn_session_value)?.term ?? null;
-  });
-  readonly autoAhzabDawra = computed(() => {
-    const d = this.createDraft();
-    return autoFields(d.sessions_per_week, d.thumn_session_value)?.dawra ?? null;
-  });
-  readonly autoDuration = computed(() => {
-    const d = this.createDraft();
-    return autoFields(d.sessions_per_week, d.thumn_session_value)?.duration ?? '';
-  });
+   * thumn/week is exact (days × unit); total is the constant 60. The term goal
+   * is study weeks × days × unit ÷ 8 (review weeks excluded), using the picked
+   * season's first-term length; dawra assumes 5 such terms, duration ≈30 study
+   * weeks a year. Existing rows keep their stored values until one of the two
+   * inputs changes. */
+  readonly createValid = computed(
+    () =>
+      autoFields(
+        this.form().sessions_per_week,
+        this.form().thumn_session_value,
+        this.studyWeeks(),
+      ) !== null,
+  );
 
-  /** Only days + unit are hand inputs; name derives from the amount label. */
-  readonly createValid = computed(() => {
-    const d = this.createDraft();
-    return (
-      d.sessions_per_week !== null &&
-      d.thumn_session_value !== null &&
-      this.autoName().trim() !== '' &&
-      this.autoThumnWeek() !== null &&
-      this.autoLabel().trim() !== '' &&
-      this.autoAhzabTerm() !== null &&
-      this.autoAhzabDawra() !== null &&
-      this.autoDuration().trim() !== '' &&
-      d.total_ahzab !== null
-    );
-  });
+  /** One payload for both modes, so create and edit can never drift apart. */
+  private payload(f: LevelForm): StoreLevelRequest {
+    return {
+      name_ar: f.name_ar.trim(),
+      season_id: this.seasonId()!,
+      sessions_per_week: f.sessions_per_week!,
+      thumn_per_session_label: f.thumn_session_label.trim(),
+      thumn_per_session_value: f.thumn_session_value!,
+      thumn_per_week_value: f.thumn_week_value!,
+      ahzab_per_term: f.ahzab_term!,
+      ahzab_per_dawra: f.ahzab_dawra!,
+      duration_label: f.duration.trim(),
+      total_ahzab: f.total_ahzab,
+    };
+  }
 
   saveCreate(): void {
-    const d = this.createDraft();
-    const name = this.autoName().trim();
-    const week = this.autoThumnWeek();
-    const term = this.autoAhzabTerm();
-    const dawra = this.autoAhzabDawra();
-    const label = this.autoLabel().trim();
-    const duration = this.autoDuration().trim();
-    if (!this.createValid() || this.createSaving()) return;
-    // Instant identical-twin check against the loaded scope (the server
+    if (this.seasonId() === null || !this.createValid() || this.saving()) return;
+    const payload = this.payload(this.form());
+    // Instant identical-twin check against the loaded season (the server
     // re-checks race-safely and answers the same LEVEL_EXISTS banner).
-    const sameScope = (this.levels.value() ?? []).filter(
-      (l) => (l.center_id ?? null) === this.activeScope(),
-    );
-    const twin = sameScope.some(
+    const twin = (this.levels.value() ?? []).some(
       (l) =>
-        l.sessions_per_week === d.sessions_per_week &&
-        Number(l.thumn_per_session_value) === d.thumn_session_value &&
-        Number(l.thumn_per_week_value) === week &&
-        Number(l.ahzab_per_term) === term &&
-        Number(l.ahzab_per_dawra) === dawra &&
-        l.total_ahzab === d.total_ahzab,
+        l.sessions_per_week === payload.sessions_per_week &&
+        Number(l.thumn_per_session_value) === payload.thumn_per_session_value &&
+        Number(l.thumn_per_week_value) === payload.thumn_per_week_value &&
+        Number(l.ahzab_per_term) === payload.ahzab_per_term &&
+        Number(l.ahzab_per_dawra) === payload.ahzab_per_dawra &&
+        l.total_ahzab === payload.total_ahzab,
     );
     if (twin) {
-      this.createErrorKey.set('apiErrors.LEVEL_EXISTS');
+      this.errorKey.set('apiErrors.LEVEL_EXISTS');
       return;
     }
-    this.createSaving.set(true);
-    this.createErrorKey.set(null);
-    this.levelsSvc
-      .create({
-        name_ar: name,
-        center_id: this.activeScope(),
-        sessions_per_week: d.sessions_per_week!,
-        thumn_per_session_label: label,
-        thumn_per_session_value: d.thumn_session_value!,
-        thumn_per_week_value: week!,
-        ahzab_per_term: term!,
-        ahzab_per_dawra: dawra!,
-        duration_label: duration,
-        total_ahzab: d.total_ahzab!,
-      })
-      .subscribe({
-        next: () => {
-          this.createSaving.set(false);
-          this.creating.set(false);
-          this.createDraft.set({ ...BLANK_DRAFT });
-          this.tick.update((n) => n + 1);
-        },
-        error: () => {
-          this.createSaving.set(false);
-        },
-      });
+    this.saving.set(true);
+    this.errorKey.set(null);
+    this.levelsSvc.create(payload).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.creating.set(false);
+        this.resetForm();
+        this.tick.update((n) => n + 1);
+      },
+      error: () => this.saving.set(false),
+    });
   }
 
   saveEdit(id: number): void {
-    const d = this.draft();
-    if (!d || d.name_ar.trim() === '' || this.editSaving()) return;
-    const u = d.thumn_session_value;
-    if (u !== null && !unitInRange(u)) {
-      this.editErrorKey.set('level.range');
+    if (this.seasonId() === null || this.saving()) return;
+    const f = this.form();
+    // The button stays live so an invalid/empty pair gets the range banner
+    // instead of a dead control with no explanation.
+    if (autoFields(f.sessions_per_week, f.thumn_session_value, this.studyWeeks()) === null) {
+      this.errorKey.set('level.range');
       return;
     }
-    this.editSaving.set(true);
-    this.editErrorKey.set(null);
-    this.levelsSvc
-      .update(id, {
-        name_ar: d.name_ar.trim(),
-        sessions_per_week: d.sessions_per_week ?? undefined,
-        thumn_per_session_label: d.thumn_session_label.trim() || undefined,
-        thumn_per_session_value: d.thumn_session_value ?? undefined,
-        thumn_per_week_value: d.thumn_week_value ?? undefined,
-        ahzab_per_term: d.ahzab_term ?? undefined,
-        ahzab_per_dawra: d.ahzab_dawra ?? undefined,
-        duration_label: d.duration.trim() || undefined,
-        total_ahzab: d.total_ahzab ?? undefined,
-        center_id: this.activeScope(),
-      })
-      .subscribe({
-        next: () => {
-          this.editSaving.set(false);
-          this.editingId.set(null);
-          this.draft.set(null);
-          this.editSeed.set(null);
-          this.tick.update((n) => n + 1);
-        },
-        error: () => {
-          this.editSaving.set(false);
-        },
-      });
+    this.saving.set(true);
+    this.errorKey.set(null);
+    this.levelsSvc.update(id, this.payload(f)).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.editingId.set(null);
+        this.resetForm();
+        this.tick.update((n) => n + 1);
+      },
+      error: () => this.saving.set(false),
+    });
   }
 
   armDelete(id: number): void {
+    if (this.seasonId() === null) return;
     this.editingId.set(null);
     this.armingDeleteId.set(id);
   }
@@ -432,7 +494,7 @@ export class LevelsPage {
   }
 
   remove(id: number): void {
-    if (this.busyId() !== null) return;
+    if (this.seasonId() === null || this.busyId() !== null) return;
     this.busyId.set(id);
     this.levelsSvc.remove(id).subscribe({
       next: () => {

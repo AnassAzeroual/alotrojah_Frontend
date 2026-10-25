@@ -8,6 +8,9 @@ interface PrefsShape {
   showCalDebug?: boolean;
   /** Center whose appearance the admin is currently editing/previewing. */
   appearanceCenterId?: number | null;
+  /** First-run setup guide: show automatically until it is completed/seen. */
+  setupGuideEnabled?: boolean;
+  setupGuideSeen?: boolean;
 }
 
 const keyFor = (userId: number | null): string => `alotrojah_prefs.${userId ?? 'anon'}`;
@@ -31,6 +34,10 @@ export class AdminPrefsService {
   readonly showCalDebug = signal(true);
   /** Center whose appearance is edited and previewed (admin-only selection). */
   readonly appearanceCenterId = signal<number | null>(null);
+  /** Auto-open the setup guide once for a first-time admin (admin-only). */
+  readonly setupGuideEnabled = signal(true);
+  /** The guide already auto-opened for this account (per user, per browser). */
+  readonly setupGuideSeen = signal(false);
 
   private readonly userId = computed(() => this.auth.currentUser()?.id ?? null);
 
@@ -65,6 +72,23 @@ export class AdminPrefsService {
     this.save();
   }
 
+  setSetupGuideEnabled(v: boolean): void {
+    this.setupGuideEnabled.set(v);
+    this.save();
+  }
+
+  markSetupGuideSeen(): void {
+    if (this.setupGuideSeen()) return;
+    this.setupGuideSeen.set(true);
+    this.save();
+  }
+
+  /** Settings "show the guide again": the next admin session auto-opens it. */
+  resetSetupGuide(): void {
+    this.setupGuideSeen.set(false);
+    this.save();
+  }
+
   private load(userId: number | null): void {
     let raw: PrefsShape = {};
     try {
@@ -78,6 +102,8 @@ export class AdminPrefsService {
     this.appearanceCenterId.set(
       typeof raw.appearanceCenterId === 'number' ? raw.appearanceCenterId : null,
     );
+    this.setupGuideEnabled.set(raw.setupGuideEnabled ?? true);
+    this.setupGuideSeen.set(raw.setupGuideSeen ?? false);
   }
 
   private save(): void {
@@ -89,6 +115,8 @@ export class AdminPrefsService {
         showCenterId: this.showCenterId(),
         showCalDebug: this.showCalDebug(),
         appearanceCenterId: this.appearanceCenterId(),
+        setupGuideEnabled: this.setupGuideEnabled(),
+        setupGuideSeen: this.setupGuideSeen(),
       }),
     );
   }

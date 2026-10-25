@@ -1,0 +1,126 @@
+@if (guide.open()) {
+  <div class="guide-scrim" (click)="guide.hide()" aria-hidden="true"></div>
+  <aside
+    class="guide-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="setup-guide-title"
+    data-testid="setup-guide"
+  >
+    <header class="guide-head">
+      <div class="guide-eyebrow">
+        <span class="guide-spark" aria-hidden="true"></span>
+        {{ 'setup.eyebrow' | translate }}
+      </div>
+      <h2 id="setup-guide-title">{{ 'setup.title' | translate }}</h2>
+      <p class="guide-sub">
+        @if (guide.status()?.center; as center) {
+          <span>{{ center.name }}</span>
+        }
+        @if (guide.status()?.season; as season) {
+          <span class="dot" aria-hidden="true"></span>
+          <span>{{ season.name }}</span>
+        }
+      </p>
+      <button
+        type="button"
+        class="guide-close"
+        (click)="guide.hide()"
+        data-testid="setup-guide-close"
+        [attr.aria-label]="'common.close' | translate"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="guide-progress" role="group" [attr.aria-label]="'setup.progress' | translate">
+      <div class="guide-progress-track">
+        <span class="guide-progress-fill" [style.width.%]="guide.progress()"></span>
+      </div>
+      <span class="guide-progress-text ltr-num">
+        {{ guide.doneSteps() }} / {{ guide.totalSteps() }}
+      </span>
+    </div>
+
+    <div class="guide-steps">
+      @if (guide.loading() && guide.steps().length === 0) {
+        @for (i of [1, 2, 3]; track i) {
+          <div class="guide-step is-loading">
+            <span class="guide-num skeleton"></span>
+            <span class="guide-copy"><span class="skeleton sk-line"></span></span>
+          </div>
+        }
+      } @else if (guide.failed()) {
+        <div class="guide-error" role="alert">
+          <p>{{ 'setup.error' | translate }}</p>
+          <button type="button" class="btn btn-ghost btn-sm" (click)="guide.load()">
+            {{ 'common.retry' | translate }}
+          </button>
+        </div>
+      } @else {
+        <ol class="guide-list">
+          @for (step of guide.steps(); track step.key; let i = $index) {
+            <li
+              class="guide-step"
+              [class.is-done]="step.done"
+              [class.is-current]="!step.done && guide.current() === step.key"
+              [attr.data-testid]="'setup-step-' + step.key"
+            >
+              <span class="guide-num" aria-hidden="true">
+                @if (step.done) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                } @else {
+                  {{ i + 1 }}
+                }
+              </span>
+              <div class="guide-copy">
+                <div class="guide-step-title">
+                  <strong>{{ titleKey(step) | translate }}</strong>
+                  @if (step.done && step.count > 0) {
+                    <span class="guide-count ltr-num">{{ step.count }}</span>
+                  }
+                  @if (!step.done && guide.current() === step.key) {
+                    <span class="guide-now">{{ 'setup.next' | translate }}</span>
+                  }
+                </div>
+                <p>{{ descKey(step) | translate }}</p>
+                @if (!step.done) {
+                  <a
+                    class="btn btn-primary btn-sm guide-go"
+                    [routerLink]="step.target"
+                    [attr.data-testid]="'setup-go-' + step.key"
+                    (click)="guide.hide()"
+                  >
+                    {{ 'setup.go' | translate }}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </a>
+                }
+              </div>
+            </li>
+          }
+        </ol>
+      }
+    </div>
+
+    <footer class="guide-foot">
+      <label class="guide-auto">
+        <input
+          type="checkbox"
+          [checked]="prefs.setupGuideEnabled()"
+          (change)="toggleAuto($event)"
+          data-testid="setup-guide-auto"
+        />
+        <span>{{ 'setup.auto' | translate }}</span>
+      </label>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="guide.hide()">
+        {{ 'setup.later' | translate }}
+      </button>
+    </footer>
+  </aside>
+}

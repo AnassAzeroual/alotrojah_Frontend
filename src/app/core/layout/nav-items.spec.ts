@@ -47,4 +47,12 @@ describe('resolveActiveNav', () => {
     expect(active('/planning/')).toBe('/planning');
     expect(active('/results/term#top')).toBe('/results/term');
   });
+
+  it('keeps the exams item out of the student menu', () => {
+    const exams = NAV_ITEMS.find((i) => i.path === '/exams')!;
+    expect(exams.roles).toEqual(['admin', 'supervisor', 'teacher']);
+    expect(NAV_ITEMS.filter((i) => i.roles.includes('student')).map((i) => i.path)).not.toContain(
+      '/exams',
+    );
+  });
 });

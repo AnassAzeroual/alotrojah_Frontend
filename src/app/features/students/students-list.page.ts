@@ -11,6 +11,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, from } from 'rxjs';
 import { GroupsService } from '../../core/api/groups.service';
+import { StudentResource } from '../../core/api/models';
 import { ReferenceService } from '../../core/api/reference.service';
 import { StudentsService } from '../../core/api/students.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -71,7 +72,15 @@ export class StudentsListPage {
   ]);
 
   readonly groups = toSignal(from(this.groupsSvc.listAll()), { initialValue: [] });
-  readonly levels = toSignal(this.ref.levels(), { initialValue: [] });
+  /**
+   * Level options/filter values: the viewer's center resolves to its current
+   * season set (a pupil's `level_id` is a season row); an admin with no center
+   * gets the shared code set. The API filters by level CODE, so either value
+   * works across seasons.
+   */
+  readonly levels = toSignal(this.ref.levels(this.auth.currentUser()?.center_id ?? null), {
+    initialValue: [],
+  });
 
   private readonly levelNames = computed(
     () => new Map(this.levels().map((l) => [l.id, l.name_ar])),
@@ -118,8 +127,10 @@ export class StudentsListPage {
     this.page.set(1);
   }
 
-  protected levelLabel(id: number | null): string {
-    return (id === null ? undefined : this.levelNames().get(id)) ?? '—';
+  protected levelLabel(s: StudentResource): string {
+    // The embedded level is the season row the pupil actually sits on; the
+    // map is a fallback for older payloads that only carry `level_id`.
+    return s.level?.name_ar ?? this.levelNames().get(s.level_id) ?? '—';
   }
 
   protected open(id: number): void {

@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import {
@@ -7,7 +8,22 @@ import {
   provideTranslateService,
   TranslateNoOpLoader,
 } from '@ngx-translate/core';
+import { AuthLoginResponse } from '../../core/api/models';
+import { AuthService } from '../../core/auth/auth.service';
 import { EntryPage } from './entry.page';
+
+/**
+ * The signed-in teacher already knows their center, so the level feed is
+ * center-scoped from boot — no unpicked-then-refetch flash in these specs.
+ */
+const TEACHER: AuthLoginResponse['data']['user'] = {
+  id: 2,
+  full_name: 'Teacher',
+  role: 'teacher',
+  center_id: 11,
+  center_name: 'Center 11',
+  teacher_type: 'both',
+};
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 const shift = (days: number): string => {
@@ -99,6 +115,13 @@ describe('EntryPage card flow', () => {
       });
   };
 
+  /** Drain the center-scoped level refetch a cross-center group pick triggers. */
+  const flushLevels = (levels: unknown[] = []): void => {
+    http
+      .match((r) => r.url.includes('/levels') && r.method === 'GET')
+      .forEach((req) => req.flush({ success: true, message: null, data: levels }));
+  };
+
   const flushStudents = (students: unknown[] = []): void => {
     http
       .match((r) => r.url.includes('/students') && r.method === 'GET')
@@ -161,6 +184,13 @@ describe('EntryPage card flow', () => {
         provideTranslateService({
           loader: provideTranslateLoader(() => new TranslateNoOpLoader()),
         }),
+        {
+          provide: AuthService,
+          useFactory: () => ({
+            currentUser: signal<AuthLoginResponse['data']['user']>(TEACHER),
+            role: signal<AuthLoginResponse['data']['user']['role']>('teacher'),
+          }),
+        },
       ],
     }).compileComponents();
     http = TestBed.inject(HttpTestingController);
@@ -233,6 +263,7 @@ describe('EntryPage card flow', () => {
     page.onGroup(6);
     await cycle();
     flushWeeks([WEEK_7]);
+    flushLevels();
     flushStudents();
     await cycle();
 

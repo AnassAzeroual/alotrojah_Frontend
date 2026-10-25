@@ -731,3 +731,41 @@
     display: none;
   }
 }
+
+// Setup-guide launcher: a subtle pulse while the checklist still has a step.
+.guide-btn {
+  position: relative;
+
+  &.has-work {
+    color: var(--color-primary);
+    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+  }
+}
+
+.guide-dot {
+  position: absolute;
+  inset-block-start: 6px;
+  inset-inline-end: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-surface);
+  animation: guide-dot-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes guide-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-dot {
+    animation: none;
+  }
+}

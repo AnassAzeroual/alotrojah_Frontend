@@ -36,10 +36,14 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { apiErrorKey } from '../../core/api/api-errors';
+import { PasswordFieldComponent } from '../../shared/ui/password-field/password-field.component';
 
 interface StudentForm {
   full_name: FormControl<string>;
   user_id: FormControl<number | null>;
+  email: FormControl<string>;
+  password: FormControl<string>;
   center_id: FormControl<number | null>;
   group_id: FormControl<number | null>;
   level_id: FormControl<number | null>;
@@ -64,6 +68,7 @@ interface StudentForm {
     FormsModule,
     ReactiveFormsModule,
     RouterLink,
+    PasswordFieldComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './student-detail.page.html',
@@ -197,7 +202,11 @@ export class StudentDetailPage {
   // Form State
   readonly form = new FormGroup<StudentForm>({
     full_name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    user_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
+    // Required only in "link existing" mode; the create-account mode sends
+    // the `account` object instead. Validators are applied by the effect below.
+    user_id: new FormControl<number | null>(null),
+    email: new FormControl('', { nonNullable: true }),
+    password: new FormControl('', { nonNullable: true }),
     center_id: new FormControl<number | null>(null),
     group_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
     level_id: new FormControl<number | null>(null, { validators: [Validators.required] }),
@@ -217,6 +226,20 @@ export class StudentDetailPage {
   });
 
   readonly formCenterId = toSignal(this.form.controls.center_id.valueChanges);
+
+  /** New-pupil account source: create one now (default) or link an existing one. */
+  readonly accountMode = signal<'create' | 'link'>('create');
+
+  protected setAccountMode(mode: 'create' | 'link'): void {
+    if (!this.isNew() || mode === this.accountMode()) return;
+    this.accountMode.set(mode);
+    if (mode === 'create') {
+      this.form.controls.user_id.setValue(null);
+    } else {
+      this.form.controls.email.setValue('');
+      this.form.controls.password.setValue('');
+    }
+  }
 
   readonly canAssign = computed(() => {
     const role = this.auth.role();
@@ -260,7 +283,9 @@ export class StudentDetailPage {
         this.form.controls.center_id.value ??
         this.auth.currentUser()?.center_id ??
         null,
-      open: this.isFormOpen(),
+      // Create-account mode never needs the linkable-account feed.
+      open:
+        this.isFormOpen() && (this.isNew() ? this.accountMode() === 'link' : !this.linkedUser()),
       // Admins browse all centers until one is picked (picking an account
       // then auto-sets it); everyone else is nailed to their own center.
       global: this.showCenterAdmin(),
@@ -322,6 +347,24 @@ export class StudentDetailPage {
     this.student.isLoading() || this.season.isLoading() || this.summary.isLoading();
 
   constructor() {
+    // Account source validators follow the mode; only the visible controls are
+    // required (otherwise a hidden email/password would block edit mode).
+    effect(() => {
+      const create = this.isNew() && this.accountMode() === 'create';
+      const link = this.isNew() && this.accountMode() === 'link';
+      this.form.controls.email.setValidators(
+        create ? [Validators.required, Validators.email, Validators.maxLength(150)] : [],
+      );
+      this.form.controls.password.setValidators(
+        create ? [Validators.required, Validators.minLength(8), Validators.maxLength(72)] : [],
+      );
+      this.form.controls.user_id.setValidators(link ? [Validators.required] : []);
+      this.form.controls.email.updateValueAndValidity({ emitEvent: false });
+      this.form.controls.password.updateValueAndValidity({ emitEvent: false });
+      this.form.controls.user_id.updateValueAndValidity({ emitEvent: false });
+      this.form.updateValueAndValidity({ emitEvent: false });
+    });
+
     // §2.1: on a single-center deployment the only center is pre-selected so
     // the group dropdown loads and the pupil can never be born center-less.
     effect(() => {
@@ -374,7 +417,9 @@ export class StudentDetailPage {
     this.assignSaving.set(true);
     this.assignFailed.set(null);
 
-    const v = this.form.getRawValue();
+    const raw = this.form.getRawValue();
+    const { email, password, ...v } = raw;
+    const createAccount = this.isNew() && this.accountMode() === 'create';
     const role = this.auth.role();
     // Teacher creates: force auth center
     if (this.isNew() && (role === 'teacher' || role === 'student')) {
@@ -388,6 +433,7 @@ export class StudentDetailPage {
         v.center_id = Number(opts[0].value);
       } else {
         this.assignFailed.set('validation.required');
+        this.assignSaving.set(false);
         return;
       }
     }
@@ -395,7 +441,10 @@ export class StudentDetailPage {
     const req$ = this.isNew()
       ? this.studentsSvc.create({
           ...v,
-          user_id: v.user_id!,
+          // One of the two account sources: create it in the same request, or
+          // link the selected existing account.
+          user_id: createAccount ? undefined : (v.user_id ?? undefined),
+          ...(createAccount ? { account: { email: email.trim(), password } } : {}),
           group_id: v.group_id!,
           level_id: v.level_id!,
         })
@@ -417,7 +466,10 @@ export class StudentDetailPage {
           this.tick.update((n) => n + 1);
         }
       },
-      error: () => this.assignSaving.set(false),
+      error: (err: unknown) => {
+        this.assignSaving.set(false);
+        this.assignFailed.set(apiErrorKey(err));
+      },
     });
   }
 

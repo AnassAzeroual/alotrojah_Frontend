@@ -6,6 +6,7 @@ import { CenterResource } from '../../core/api/models';
 import { CentersService } from '../../core/api/centers.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { AdminPrefsService } from '../../core/settings/admin-prefs.service';
+import { SetupGuideService } from '../../core/settings/setup-guide.service';
 import {
   AppearanceKind,
   AppearanceService,
@@ -51,6 +52,7 @@ export class SettingsPage {
   readonly prefs = inject(AdminPrefsService);
   readonly appearance = inject(AppearanceService);
   readonly auth = inject(AuthService);
+  private readonly guide = inject(SetupGuideService);
   private readonly centersSvc = inject(CentersService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -66,6 +68,16 @@ export class SettingsPage {
     () => this.saving() || this.busy() !== null || this.appearance.dirty(),
   );
   readonly centerReady = computed(() => this.appearance.hasCenter());
+
+  protected openGuide(): void {
+    this.guide.show();
+  }
+
+  /** Re-arm the one-time auto-open and show the checklist right now. */
+  protected resetGuide(): void {
+    this.prefs.resetSetupGuide();
+    this.guide.show();
+  }
 
   readonly backgroundTypes: readonly BackgroundType[] = ['none', 'color', 'image', 'gradient'];
   readonly gradientTypes: readonly GradientType[] = ['linear', 'radial', 'conic'];

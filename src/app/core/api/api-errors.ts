@@ -8,6 +8,7 @@ import { HttpErrorResponse } from '@angular/common/http';
  */
 export const API_ERROR_CODES = [
   'CROSS_CENTER',
+  'ACCOUNT_CENTER_REQUIRED',
   'ADMIN_ONLY',
   'OWN_STUDENTS',
   'NEED_REPLACER',
@@ -20,9 +21,11 @@ export const API_ERROR_CODES = [
   'WEIGHTS_FOREIGN',
   'SCORE_OVER_MAX',
   'SEASON_HAS_FACTS',
+  'SEASON_EXISTS',
   'MODULE_HAS_SCORES',
   'LEVEL_IN_USE',
   'LEVEL_EXISTS',
+  'LEVEL_SOURCE_MISSING',
   'TERM_REQUIRED',
   'SPAN_INVALID',
   'RANGE_INVALID',

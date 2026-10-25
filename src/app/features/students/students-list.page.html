@@ -109,7 +109,7 @@
                 </span>
               </td>
               <td [attr.data-label]="'list.group' | translate">{{ s.group?.name ?? '—' }}</td>
-              <td [attr.data-label]="'list.level' | translate">{{ levelLabel(s.level_id) }}</td>
+              <td [attr.data-label]="'list.level' | translate">{{ levelLabel(s) }}</td>
               <td [attr.data-label]="'list.status' | translate">
                 @if (s.status === 'active') {
                   <span class="pill ok">{{ 'studentStatus.active' | translate }}</span>

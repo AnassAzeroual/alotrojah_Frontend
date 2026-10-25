@@ -289,6 +289,7 @@ test.describe.serial('Bootstrap from empty DB (first-use chain)', () => {
       'nav-centers',
       'nav-levels',
       'nav-scoring',
+      'nav-exams',
       'nav-reports',
       'nav-delegate',
       'nav-notifications',

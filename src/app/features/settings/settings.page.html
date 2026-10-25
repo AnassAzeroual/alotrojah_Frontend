@@ -74,6 +74,43 @@
           </span>
         </label>
       </div>
+
+      @if (isAdmin()) {
+        <div class="card stack anim-rise" style="--i: 3" data-testid="settings-guide">
+          <h2>{{ 'settings.guide_section' | translate }}</h2>
+          <p class="muted">{{ 'settings.guide_hint' | translate }}</p>
+          <div class="cluster">
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-testid="settings-guide-open"
+              (click)="openGuide()"
+            >
+              {{ 'settings.guide_open' | translate }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              data-testid="settings-guide-reset"
+              (click)="resetGuide()"
+            >
+              {{ 'settings.guide_reset' | translate }}
+            </button>
+          </div>
+          <label class="check">
+            <input
+              type="checkbox"
+              data-testid="settings-guide-auto"
+              [checked]="prefs.setupGuideEnabled()"
+              (click)="prefs.setSetupGuideEnabled(!prefs.setupGuideEnabled())"
+            />
+            <span>
+              {{ 'settings.guide_auto' | translate }}
+              <small>{{ 'settings.guide_auto_hint' | translate }}</small>
+            </span>
+          </label>
+        </div>
+      }
     </div>
   } @else {
     <div

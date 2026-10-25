@@ -21,11 +21,20 @@ import { AppearanceService } from '../settings/appearance.service';
 import { ThemeService } from '../theme/theme.service';
 import { APP_VERSION_SHORT } from '../version';
 import { NAV_ITEMS, resolveActiveNav } from './nav-items';
+import { SetupGuideService } from '../settings/setup-guide.service';
+import { SetupGuideComponent } from './setup-guide/setup-guide.component';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, LanguageSwitcherComponent],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    TranslatePipe,
+    LanguageSwitcherComponent,
+    SetupGuideComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
@@ -40,6 +49,7 @@ export class ShellComponent {
   readonly version = APP_VERSION_SHORT;
   readonly prefs = inject(AdminPrefsService);
   readonly appearance = inject(AppearanceService);
+  readonly guide = inject(SetupGuideService);
   readonly collapsed = signal(false);
   readonly mobileOpen = signal(false);
   private readonly menuBtn = viewChild<ElementRef<HTMLButtonElement>>('menuBtn');
@@ -185,6 +195,8 @@ export class ShellComponent {
 
   constructor() {
     this.appearance.load();
+    // First-run checklist: one auto-open per account while setup is incomplete.
+    if (this.user()?.role === 'admin') this.guide.maybeAutoOpen();
     // Tablet (768–1023): start with the rail — an expanded 268px sidebar
     // leaves the topbar ~500px, which the date chips + identity cannot fit.
     if (window.matchMedia?.('(min-width: 768px) and (max-width: 1023px)')?.matches) {
@@ -234,6 +246,10 @@ export class ShellComponent {
   }
 
   onEscape(): void {
+    if (this.guide.open()) {
+      this.guide.hide();
+      return;
+    }
     this.closeMobileToMenu();
   }
 
