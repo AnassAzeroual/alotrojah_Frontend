@@ -504,6 +504,14 @@
   padding: 0;
   overflow: hidden;
   border-radius: 24px;
+
+  // The honor dropdown is absolutely positioned inside the card; the rounded
+  // card's overflow clip would hide its options. Release only while open.
+  &:has(.dd.open) {
+    position: relative;
+    z-index: 40;
+    overflow: visible;
+  }
 }
 
 .detail-head {
@@ -710,6 +718,44 @@
   }
 }
 
+.score-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.audit-target {
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.audit-cta {
+  flex: none;
+  color: var(--color-primary);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+.score-tile .audit-cta,
+.average-panel .audit-cta {
+  margin-top: 5px;
+}
+
 .score-input {
   display: flex;
   align-items: baseline;
@@ -907,11 +953,9 @@
   padding: 16px;
   border: 1px solid color-mix(in srgb, var(--green-500) 20%, transparent);
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--green-500) 14%, var(--color-surface)),
-    color-mix(in srgb, var(--green-500) 4%, var(--color-surface))
-  );
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--green-500) 14%, var(--color-surface)),
+      color-mix(in srgb, var(--green-500) 4%, var(--color-surface)));
 }
 
 .average-label {
@@ -959,7 +1003,7 @@
   border-radius: 15px;
   background: var(--color-surface);
 
-  > span {
+  >span {
     color: var(--color-muted);
     font-size: 10px;
     font-weight: 700;
@@ -987,7 +1031,7 @@
   border-radius: 15px;
   background: var(--color-surface-2);
 
-  > span {
+  >span {
     display: block;
     color: var(--color-muted);
     font-size: 10px;
@@ -1034,6 +1078,7 @@
 }
 
 :host-context([data-theme='dark']) {
+
   .student-avatar,
   .selected-check,
   .pick-prompt-icon {
@@ -1106,5 +1151,68 @@
   .save-btn {
     flex: 1 1 100%;
     width: 100%;
+  }
+}
+
+app-term-breakdown-panel {
+  display: block;
+  min-width: 0;
+}
+
+// Explicit grid areas: the form spans the left; the board is the top-right
+// card and the proof fills the wide zone below the board.
+.workspace.has-audit {
+  grid-template-areas:
+    'form'
+    'board'
+    'proof';
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.workspace.has-audit>.detail-panel {
+  grid-area: form;
+}
+
+.workspace.has-audit>app-term-breakdown-panel {
+  grid-area: proof;
+}
+
+.workspace.has-audit>.student-board {
+  display: block;
+  grid-area: board;
+}
+
+@media (min-width: 900px) {
+  .workspace.has-audit {
+    grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      'form board'
+      'form proof';
+  }
+
+  .workspace.has-audit>.student-board {
+    align-self: start;
+    justify-self: end;
+    width: min(100%, 300px);
+  }
+
+  .workspace.has-audit .detail-card.card {
+    position: sticky;
+    top: 14px;
+  }
+}
+
+// RTL: keep form-left / board-right / proof-below without flipping the areas.
+@media (min-width: 900px) {
+  :host-context([dir='rtl']) .workspace.has-audit {
+    direction: ltr;
+
+    >.detail-panel,
+    >app-term-breakdown-panel,
+    >.student-board {
+      direction: rtl;
+      width: stretch;
+    }
   }
 }

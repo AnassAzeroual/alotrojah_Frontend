@@ -8044,6 +8044,130 @@ export type StudentsUpdateResponses = {
 
 export type StudentsUpdateResponse = StudentsUpdateResponses[keyof StudentsUpdateResponses];
 
+export type V1TermBreakdownData = {
+    body?: never;
+    path?: never;
+    query: {
+        student_id: number;
+        term_id: number;
+    };
+    url: '/v1/term-results/breakdown';
+};
+
+export type V1TermBreakdownErrors = {
+    /**
+     * Unauthenticated
+     */
+    401: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * Authorization error
+     */
+    403: {
+        /**
+         * Error overview.
+         */
+        message: string;
+    };
+    /**
+     * Validation error
+     */
+    422: {
+        /**
+         * Errors overview.
+         */
+        message: string;
+        /**
+         * A detailed description of each field that failed validation.
+         */
+        errors: {
+            [key: string]: Array<string>;
+        };
+    };
+};
+
+export type V1TermBreakdownError = V1TermBreakdownErrors[keyof V1TermBreakdownErrors];
+
+export type V1TermBreakdownResponses = {
+    200: {
+        success: boolean;
+        message: null;
+        data: {
+            student: {
+                id: number;
+                full_name: string;
+            };
+            term: {
+                id: number;
+                name_ar: string;
+            };
+            hifz: {
+                modules: Array<{
+                    code: string;
+                    name_ar: string;
+                    max_points: number;
+                }>;
+                sessions: number;
+                scored_sessions: number;
+                sum: number;
+                average: number | null;
+                rows: Array<{
+                    session_id: number;
+                    session_number: number;
+                    date: string | null;
+                    status: string;
+                    modules: Array<{
+                        code: string;
+                        name_ar: string;
+                        max_points: number;
+                        score: number | null;
+                    }>;
+                    total: number;
+                    has_score: boolean;
+                }>;
+            };
+            murajaa: {
+                count: number;
+                average: number | null;
+                rows: Array<{
+                    id: number;
+                    week_from: number;
+                    week_to: number;
+                    weeks_covered: number | null;
+                    score: number | null;
+                    reviewed_at: string | null;
+                    hizb_from: number | null;
+                    hizb_to: number | null;
+                }>;
+            };
+            exam: {
+                id: number;
+                exam_date: string | null;
+                overall_avg: number | null;
+                sum: number;
+                max: number;
+                questions: Array<{
+                    question_no: number;
+                    prompt_text: string | null;
+                    model_type: string | null;
+                    max_score: number | null;
+                    score: number | null;
+                }>;
+            } | null;
+            general: {
+                value: number | null;
+                source: string;
+            };
+        };
+    };
+};
+
+export type V1TermBreakdownResponse = V1TermBreakdownResponses[keyof V1TermBreakdownResponses];
+
 export type TermPlansIndexData = {
     body?: never;
     path?: never;

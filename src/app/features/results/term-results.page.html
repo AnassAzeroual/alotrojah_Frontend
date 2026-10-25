@@ -143,20 +143,36 @@
         </header>
 
         <div class="result-overview">
-          <div class="average-panel">
+          <div
+            class="average-panel audit-target"
+            role="button"
+            tabindex="0"
+            [attr.aria-label]="'result.audit_open' | translate"
+            (click)="openBreakdown('general')"
+            (keydown.enter)="openBreakdown('general')"
+          >
             <span class="average-label">{{ 'result.general_avg' | translate }}</span>
             <span class="average-value">
               <strong class="ltr-num">{{ result.general_avg ?? '—' }}</strong>
               <small>/ 20</small>
             </span>
+            <span class="audit-cta">{{ 'result.audit_open' | translate }}</span>
           </div>
 
           <div class="score-tiles">
             @for (field of detailScoreFields; track field) {
-              <div class="score-tile">
+              <div
+                class="score-tile audit-target"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="'result.audit_open' | translate"
+                (click)="openBreakdown(metricForScore(field))"
+                (keydown.enter)="openBreakdown(metricForScore(field))"
+              >
                 <span>{{ 'result.' + field | translate }}</span>
                 <strong class="ltr-num">{{ result[field] ?? '—' }}</strong>
                 <small>/ 20</small>
+                <span class="audit-cta">{{ 'result.audit_open' | translate }}</span>
               </div>
             }
           </div>
@@ -205,7 +221,11 @@
       </section>
     }
   } @else {
-    <div class="workspace" [class.has-selection]="!!student">
+    <div
+      class="workspace"
+      [class.has-selection]="!!student"
+      [class.has-audit]="selectedBreakdown() !== null"
+    >
       <section class="student-board card anim-rise" style="--i: 1">
         <header class="board-head">
           <div class="board-copy">
@@ -497,10 +517,20 @@
 
                 <div class="score-grid">
                   @for (field of scoreFields; track field) {
-                    <div class="score-field">
-                      <label [for]="'result-score-' + field">{{
-                        'result.' + field | translate
-                      }}</label>
+                    <div
+                      class="score-field audit-target"
+                      role="button"
+                      tabindex="0"
+                      [attr.aria-label]="'result.audit_open' | translate"
+                      (click)="openBreakdown(metricForScore(field))"
+                      (keydown.enter)="openBreakdown(metricForScore(field))"
+                    >
+                      <div class="score-field-head">
+                        <label [for]="'result-score-' + field">{{
+                          'result.' + field | translate
+                        }}</label>
+                        <span class="audit-cta">{{ 'result.audit_open' | translate }}</span>
+                      </div>
                       <span class="score-input">
                         <input
                           [id]="'result-score-' + field"
@@ -512,6 +542,7 @@
                           min="0"
                           max="20"
                           step="0.5"
+                          (click)="$event.stopPropagation()"
                         />
                         <span class="score-out" aria-hidden="true">/ 20</span>
                       </span>
@@ -634,6 +665,26 @@
           </section>
         }
       </aside>
+
+      @if (selectedBreakdown(); as metric) {
+        <app-term-breakdown-panel
+          [metric]="metric"
+          [data]="breakdown.value() ?? null"
+          [loading]="breakdown.isLoading()"
+          (closed)="closeBreakdown()"
+        />
+      }
     </div>
+  }
+
+  @if (isStudent()) {
+    @if (selectedBreakdown(); as metric) {
+      <app-term-breakdown-panel
+        [metric]="metric"
+        [data]="breakdown.value() ?? null"
+        [loading]="breakdown.isLoading()"
+        (closed)="closeBreakdown()"
+      />
+    }
   }
 </section>

@@ -1,0 +1,306 @@
+@let d = data();
+<section class="card audit-panel anim-rise" data-testid="term-audit-panel">
+  <header class="audit-head">
+    <span class="audit-icon" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+      </svg>
+    </span>
+    <div class="audit-title">
+      <span class="audit-kicker">{{ 'result.audit_kicker' | translate }}</span>
+      <h2>
+        @switch (metric()) {
+          @case ('hifz') {
+            {{ 'result.audit_hifz' | translate }}
+          }
+          @case ('murajaa') {
+            {{ 'result.audit_murajaa' | translate }}
+          }
+          @case ('exam') {
+            {{ 'result.audit_exam' | translate }}
+          }
+          @default {
+            {{ 'result.audit_general' | translate }}
+          }
+        }
+      </h2>
+      @if (d) {
+        <p>{{ d.student.full_name }} · {{ d.term.name_ar }}</p>
+      }
+    </div>
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm audit-close"
+      data-testid="term-audit-close"
+      (click)="closed.emit()"
+    >
+      {{ 'common.close' | translate }}
+    </button>
+  </header>
+
+  @if (loading()) {
+    <div class="audit-loading" aria-hidden="true">
+      <div class="skeleton sk-field"></div>
+      <div class="skeleton sk-panel"></div>
+    </div>
+  } @else if (d) {
+    @switch (metric()) {
+      @case ('hifz') {
+        <div class="audit-summary">
+          <div class="summary-score-card">
+            <span class="summary-label">{{ 'result.audit_average' | translate }}</span>
+            <div class="summary-score">
+              <strong class="ltr-num">{{ d.hifz.average ?? '—' }}</strong>
+              <span>/ 20</span>
+            </div>
+            <span class="summary-caption">{{ 'result.hifz_total' | translate }}</span>
+          </div>
+          <div class="summary-stats">
+            <div class="summary-stat">
+              <span>{{ 'result.audit_sum' | translate }}</span>
+              <strong class="ltr-num">{{ d.hifz.sum }}</strong>
+            </div>
+            <div class="summary-stat">
+              <span>{{ 'result.audit_sessions' | translate }}</span>
+              <strong class="ltr-num">{{ d.hifz.sessions }}</strong>
+            </div>
+            <div class="summary-stat">
+              <span>{{ 'result.audit_entered' | translate }}</span>
+              <strong class="ltr-num">{{ d.hifz.scored_sessions }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="audit-scroll">
+          <table class="audit-table audit-table-hifz">
+            <thead>
+              <tr>
+                <th>{{ 'result.audit_session' | translate }}</th>
+                <th>{{ 'result.audit_date' | translate }}</th>
+                @for (m of d.hifz.modules; track m.code) {
+                  <th>{{ m.name_ar }}</th>
+                }
+                <th>{{ 'result.audit_total' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of d.hifz.rows; track row.session_id) {
+                <tr [class.is-missing]="!row.has_score">
+                  <td class="ltr-num session-no">{{ row.session_number }}</td>
+                  <td class="ltr-num audit-date">{{ row.date ?? '—' }}</td>
+                  @for (m of row.modules; track m.code) {
+                    <td class="ltr-num">
+                      @if (m.score !== null) {
+                        {{ m.score }}
+                      } @else {
+                        <span class="audit-missing">—</span>
+                      }
+                    </td>
+                  }
+                  <td class="ltr-num total-cell">
+                    <span class="total-value">{{ row.total }}</span>
+                    <span class="mini-bar" aria-hidden="true">
+                      <span [style.width.%]="(row.total / 20) * 100"></span>
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="audit-receipt">
+          <span class="receipt-formula">
+            <span class="receipt-label">{{ 'result.audit_sum' | translate }}</span>
+            <bdi dir="ltr">
+              <strong class="ltr-num">{{ d.hifz.sum }}</strong>
+              ÷
+              <strong class="ltr-num">{{ d.hifz.sessions }}</strong>
+              =
+              <strong class="ltr-num receipt-result">{{ d.hifz.average ?? '—' }}</strong>
+            </bdi>
+            <small>/ 20</small>
+          </span>
+          <small>{{ 'result.audit_missing_zero' | translate }}</small>
+        </footer>
+      }
+
+      @case ('murajaa') {
+        <div class="audit-summary">
+          <div class="summary-score-card">
+            <span class="summary-label">{{ 'result.audit_average' | translate }}</span>
+            <div class="summary-score">
+              <strong class="ltr-num">{{ d.murajaa.average ?? '—' }}</strong>
+              <span>/ 20</span>
+            </div>
+            <span class="summary-caption">{{ 'result.murajaa_total' | translate }}</span>
+          </div>
+          <div class="summary-stats">
+            <div class="summary-stat">
+              <span>{{ 'result.audit_reviews' | translate }}</span>
+              <strong class="ltr-num">{{ d.murajaa.count }}</strong>
+            </div>
+          </div>
+        </div>
+
+        @if (d.murajaa.rows.length === 0) {
+          <p class="audit-empty">{{ 'result.audit_no_murajaa' | translate }}</p>
+        } @else {
+          <div class="audit-scroll">
+            <table class="audit-table audit-table-murajaa">
+              <thead>
+                <tr>
+                  <th>{{ 'result.audit_week' | translate }}</th>
+                  <th>{{ 'result.audit_review_date' | translate }}</th>
+                  <th>{{ 'result.audit_score' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of d.murajaa.rows; track row.id) {
+                  <tr>
+                    <td class="ltr-num">{{ row.week_from }}–{{ row.week_to }}</td>
+                    <td class="ltr-num">{{ row.reviewed_at ?? '—' }}</td>
+                    <td class="ltr-num total-cell">
+                      <span class="total-value">{{ row.score ?? '—' }}</span>
+                      <span class="mini-bar" aria-hidden="true">
+                        <span [style.width.%]="((row.score ?? 0) / 20) * 100"></span>
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <footer class="audit-receipt">
+            <span class="receipt-formula">
+              <span class="receipt-label">{{ 'result.audit_average' | translate }}</span>
+              <bdi dir="ltr">
+                <strong class="ltr-num receipt-result">{{ d.murajaa.average ?? '—' }}</strong>
+              </bdi>
+              <small>/ 20</small>
+            </span>
+            <small>{{ d.murajaa.count }} {{ 'result.audit_reviews' | translate }}</small>
+          </footer>
+        }
+      }
+
+      @case ('exam') {
+        @if (d.exam === null) {
+          <p class="audit-empty">{{ 'result.audit_no_exam' | translate }}</p>
+        } @else {
+          <div class="audit-summary">
+            <div class="summary-score-card is-exam">
+              <span class="summary-label">{{ 'result.exam_score' | translate }}</span>
+              <div class="summary-score">
+                <strong class="ltr-num">{{ d.exam.overall_avg ?? '—' }}</strong>
+                <span>/ 20</span>
+              </div>
+              <span class="summary-caption">
+                {{ d.exam.questions.length }} {{ 'result.audit_questions' | translate }}
+              </span>
+            </div>
+            <div class="summary-stats">
+              <div class="summary-stat">
+                <span>{{ 'result.audit_sum' | translate }}</span>
+                <strong class="ltr-num">{{ d.exam.sum }}</strong>
+              </div>
+              <div class="summary-stat">
+                <span>{{ 'result.audit_max' | translate }}</span>
+                <strong class="ltr-num">{{ d.exam.max }}</strong>
+              </div>
+              <div class="summary-stat">
+                <span>{{ 'result.audit_date' | translate }}</span>
+                <strong class="ltr-num">{{ d.exam.exam_date ?? '—' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <ol class="question-proof">
+            @for (q of d.exam.questions; track q.question_no) {
+              <li class="proof-question">
+                <span class="proof-no ltr-num">{{ q.question_no }}</span>
+                <div class="proof-copy">
+                  <p>{{ q.prompt_text || '—' }}</p>
+                  <span class="proof-bar" aria-hidden="true">
+                    <span [style.width.%]="((q.score ?? 0) / (q.max_score || 1)) * 100"></span>
+                  </span>
+                </div>
+                <span class="proof-max ltr-num">
+                  <small>{{ 'result.audit_max' | translate }}</small>
+                  {{ q.max_score ?? '—' }}
+                </span>
+                <span class="proof-score ltr-num">
+                  <small>{{ 'result.audit_score' | translate }}</small>
+                  {{ q.score ?? '—' }}
+                </span>
+              </li>
+            }
+          </ol>
+
+          <footer class="audit-receipt">
+            <span class="receipt-formula">
+              <span class="receipt-label">{{ 'result.audit_sum' | translate }}</span>
+              <bdi dir="ltr">
+                <strong class="ltr-num">{{ d.exam.sum }}</strong>
+                /
+                <strong class="ltr-num">{{ d.exam.max }}</strong>
+                =
+                <strong class="ltr-num receipt-result">{{ d.exam.overall_avg ?? '—' }}</strong>
+              </bdi>
+              <small>/ 20</small>
+            </span>
+            <small>{{ d.exam.exam_date ?? '' }}</small>
+          </footer>
+        }
+      }
+
+      @default {
+        <div class="general-proof">
+          <div class="general-value">
+            <div>
+              <span>{{ 'result.audit_official_value' | translate }}</span>
+              <small>{{ 'result.general_avg' | translate }}</small>
+            </div>
+            <div class="general-score">
+              <strong class="ltr-num">{{ d.general.value ?? '—' }}</strong>
+              <span>/ 20</span>
+            </div>
+          </div>
+          <div class="general-components">
+            <div class="proof-row">
+              <span>{{ 'result.hifz_total' | translate }}</span>
+              <strong class="ltr-num">{{ d.hifz.average ?? '—' }}</strong>
+              <small>/ 20</small>
+            </div>
+            <div class="proof-row">
+              <span>{{ 'result.murajaa_total' | translate }}</span>
+              <strong class="ltr-num">{{ d.murajaa.average ?? '—' }}</strong>
+              <small>/ 20</small>
+            </div>
+            <div class="proof-row">
+              <span>{{ 'result.exam_score' | translate }}</span>
+              <strong class="ltr-num">{{ d.exam?.overall_avg ?? '—' }}</strong>
+              <small>/ 20</small>
+            </div>
+          </div>
+          <p class="general-note">
+            @if (d.general.source === 'term_exam') {
+              {{ 'result.audit_general_exam_source' | translate }}
+            } @else if (d.general.source === 'official') {
+              {{ 'result.audit_general_official' | translate }}
+            } @else {
+              {{ 'result.audit_general_none' | translate }}
+            }
+          </p>
+        </div>
+      }
+    }
+  }
+</section>

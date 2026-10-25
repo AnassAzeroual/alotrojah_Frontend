@@ -3,25 +3,62 @@
     <div class="skeleton sk-title"></div>
     <div class="skeleton sk-card"></div>
   </div>
-} @else if (!exam.value()) {
-  <app-empty-state />
-} @else {
-  <section class="page">
-    <section class="card hero anim-rise">
-      <div>
-        <h1>
-          {{ exam.value()!.student_name }} ·
-          {{ 'examType.' + exam.value()!.exam_type | translate }}
-        </h1>
-        <p class="cluster">
-          {{ 'exam.average' | translate }}:
-          <strong class="ltr-num"
-            >{{ exam.value()!.overall_avg ?? '—' }}{{ 'common.of20' | translate }}</strong
-          >
-        </p>
+} @else if (exam.value(); as e) {
+  <section class="page exam-detail">
+    <section class="card hero result-hero anim-rise">
+      <div class="hero-identity">
+        <span class="avatar-xl" aria-hidden="true">{{ studentInitial() }}</span>
+        <div class="hero-copy">
+          <span class="eyebrow">{{ 'exam.result' | translate }}</span>
+          <h1>{{ e.student_name }}</h1>
+          <div class="hero-chips">
+            <span class="chip">{{ 'examType.' + e.exam_type | translate }}</span>
+            @if (e.exam_date) {
+              <span class="chip ltr-num">{{ e.exam_date }}</span>
+            }
+            <span class="chip ltr-num">{{ answeredCount() }} / {{ questions().length }}</span>
+          </div>
+        </div>
       </div>
-      @if (canDelete()) {
-        <div class="cluster">
+
+      <div
+        class="score-ring"
+        [class.is-full]="scorePercent() >= 100"
+        [class.is-low]="score() !== null && scorePercent() < 50"
+        role="img"
+        [attr.aria-label]="('exam.average' | translate) + ' ' + (score() ?? '—') + ' / 20'"
+      >
+        <svg class="score-svg" viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="scoreGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" class="score-grad-from" />
+              <stop offset="100%" class="score-grad-to" />
+            </linearGradient>
+          </defs>
+          <circle class="score-track" cx="60" cy="60" r="50" pathLength="100" />
+          <circle
+            class="score-progress"
+            cx="60"
+            cy="60"
+            r="50"
+            pathLength="100"
+            stroke-dasharray="100"
+            [attr.stroke-dashoffset]="100 - scorePercent()"
+          />
+        </svg>
+        <div class="score-center">
+          <strong class="ltr-num" dir="ltr">
+            <span class="score-main">{{ e.overall_avg ?? '—' }}</span>
+            <span class="score-den">{{ 'common.of20' | translate }}</span>
+          </strong>
+          <span class="score-count ltr-num" dir="ltr"
+            >{{ answeredCount() }} / {{ questions().length }}</span
+          >
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        @if (canDelete()) {
           @if (armingDelete()) {
             <button
               type="button"
@@ -55,239 +92,61 @@
               {{ 'common.delete' | translate }}
             </button>
           }
-        </div>
-      }
-    </section>
-
-    @if (canEdit()) {
-      <section class="card anim-rise" style="--i: 1">
-        <h2>{{ 'exam.edit' | translate }}</h2>
-        <div class="grid" style="--cols: 3">
-          <label class="field"
-            ><span>{{ 'exam.date' | translate }}</span>
-            <app-date-picker
-              class="ltr-num"
-              testId="exam-date"
-              ariaLabelKey="exam.date"
-              [value]="editDate()"
-              (valueChange)="editDate.set($any($event))"
-            />
-          </label>
-          <label class="field"
-            ><span>{{ 'exam.type' | translate }}</span>
-            <app-dropdown
-              [options]="examTypeOptions"
-              [value]="editType()"
-              (valueChange)="editType.set($any($event))"
-              ariaLabelKey="exam.type"
-              testId="exam-type"
-            />
-          </label>
-          @if (editType() !== 'final_season' && editType() !== 'weekly') {
-            <label class="field"
-              ><span>{{ 'planning.pick_term' | translate }}</span>
-              <app-dropdown
-                [options]="termOptions()"
-                [value]="editTerm() ?? ''"
-                (valueChange)="editTerm.set(num($event))"
-                ariaLabelKey="planning.pick_term"
-                testId="exam-term"
-              />
-            </label>
-          }
-        </div>
-        <button
-          type="button"
-          class="btn btn-primary"
-          [class.is-loading]="editSaving()"
-          [disabled]="!canSaveEdit()"
-          data-testid="save-exam-edit"
-          (click)="submitEdit()"
-        >
-          @if (editSaving()) {
-            <app-spinner />
-          } @else {
-            {{ 'common.save' | translate }}
-          }
-        </button>
-      </section>
-    }
-
-    <section class="card anim-rise" style="--i: 1">
-      <h2>{{ 'exam.questions' | translate }}</h2>
-      <p class="muted ltr-num">
-        {{
-          'exam.weights' | translate: { total: reweighting() ? reweightTotal() : weightsTotal() }
-        }}
-      </p>
-      @if (canEdit()) {
-        <div class="cluster">
-          @if (reweighting()) {
-            <button
-              type="button"
-              class="btn btn-primary btn-sm"
-              [disabled]="reweightSaving() || !reweightValid()"
-              (click)="submitReweight()"
-            >
-              @if (reweightSaving()) {
-                <app-spinner />
-              } @else {
-                {{ 'common.save' | translate }}
-              }
-            </button>
-            <button
-              type="button"
-              class="btn btn-ghost btn-sm"
-              [disabled]="reweightSaving()"
-              (click)="cancelReweight()"
-            >
-              {{ 'common.cancel' | translate }}
-            </button>
-          } @else {
-            <button type="button" class="btn btn-ghost btn-sm" (click)="startReweight()">
-              {{ 'exam.reweight' | translate }}
-            </button>
-          }
-        </div>
-        @if (reweightErrorKey()) {
-          <div class="banner danger">{{ reweightErrorKey()! | translate }}</div>
         }
-      }
-      @for (q of exam.value()!.questions ?? []; track q.id) {
-        <div class="line anim-rise" [style.--i]="$index + 2">
-          <span
-            ><strong class="ltr-num">{{ q.question_no }}.</strong> {{ q.prompt_text ?? '—' }}
-            <small class="muted ltr-num">({{ q.max_score }}/20)</small></span
-          >
-          <div class="cluster">
-            @if (reweighting() && canEdit()) {
-              <input
-                type="number"
-                class="ltr-num"
-                [value]="weights()[q.id] ?? ''"
-                (input)="setWeight(q.id, $any($event.target).value)"
-                (keydown.enter)="submitReweight()"
-                min="0.01"
-                max="20"
-                step="0.01"
-                [attr.aria-label]="'exam.weight' | translate"
-              />
-            } @else {
-              <app-score-input
-                [max]="q.max_score ?? 20"
-                [value]="scoreEdits()[q.id] ?? q.score"
-                (valueChange)="setScore(q.id, $event)"
-                (blurred)="flushScore(q.id)"
-              />
-            }
-            @if (canEdit()) {
-              <button
-                type="button"
-                class="btn btn-danger-ghost"
-                [attr.aria-label]="'common.delete' | translate"
-                (click)="deleteQuestion(q.id)"
+      </div>
+    </section>
+
+    <section class="card questions-card anim-rise" style="--i: 1">
+      <header class="section-head">
+        <div>
+          <h2>{{ 'exam.questions' | translate }}</h2>
+          <p class="muted">
+            {{ 'exam.weights' | translate: { total: weightsTotal() } }}
+            · {{ answeredCount() }} / {{ questions().length }}
+          </p>
+        </div>
+      </header>
+
+      @if (questions().length === 0) {
+        <app-empty-state [messageKey]="'exam.no_questions'" />
+      } @else {
+        <div class="question-list">
+          @for (q of questions(); track q.id) {
+            <article class="line question-card anim-rise" [style.--i]="$index + 2">
+              <span class="q-no ltr-num">{{ q.question_no }}</span>
+              <div class="q-copy">
+                <div class="q-title">
+                  <span>{{ q.prompt_text || ('exam.portion_empty' | translate) }}</span>
+                  @if (q.model_type === 'model1') {
+                    <span class="q-model">{{ 'exam.model1' | translate }}</span>
+                  } @else if (q.model_type === 'model2_full') {
+                    <span class="q-model">{{ 'exam.model2' | translate }}</span>
+                  }
+                </div>
+                <div class="q-meta">
+                  <span class="ltr-num">{{ q.max_score ?? 0 }} / 20</span>
+                  @if (q.notes) {
+                    <span>{{ q.notes }}</span>
+                  }
+                </div>
+              </div>
+
+              <div
+                class="q-score"
+                [class.is-full]="q.score !== null && q.score >= (q.max_score ?? 0)"
+                [class.is-zero]="q.score === 0"
+                [attr.aria-label]="(q.score ?? '—') + ' / ' + (q.max_score ?? 0)"
               >
-                {{ 'common.delete' | translate }}
-              </button>
-            }
-          </div>
+                <span class="score-num ltr-num">{{ q.score ?? '—' }}</span>
+                <span class="score-bar" aria-hidden="true"></span>
+                <span class="score-den ltr-num">{{ q.max_score ?? 0 }}</span>
+              </div>
+            </article>
+          }
         </div>
       }
     </section>
-
-    <form
-      class="card anim-rise"
-      style="--i: 2"
-      [formGroup]="addForm"
-      (ngSubmit)="addQuestion()"
-      autocomplete="off"
-    >
-      <h2>{{ 'exam.add_question' | translate }}</h2>
-      <label class="field"
-        ><span>{{ 'exam.q_no' | translate }}</span>
-        <input
-          type="number"
-          class="ltr-num"
-          formControlName="question_no"
-          data-testid="exam-q-no"
-          min="1"
-        />
-      </label>
-      <label class="field"
-        ><span>{{ 'exam.prompt' | translate }}</span
-        ><input formControlName="prompt_text" data-testid="exam-q-prompt"
-      /></label>
-      <label class="field"
-        ><span>{{ 'exam.weight' | translate }} <span class="danger">*</span></span>
-        <input
-          type="number"
-          class="ltr-num"
-          formControlName="max_score"
-          data-testid="exam-q-max"
-          min="0.01"
-          max="20"
-          step="0.01"
-        />
-      </label>
-      <label class="field"
-        ><span>{{ 'common.score' | translate }}</span>
-        <input
-          type="number"
-          class="ltr-num"
-          formControlName="score"
-          data-testid="exam-q-score"
-          min="0"
-          max="20"
-        />
-      </label>
-      <button
-        type="submit"
-        class="btn btn-ghost btn-block"
-        data-testid="exam-queue"
-        [disabled]="addForm.invalid"
-      >
-        + {{ 'exam.add_question' | translate }}
-      </button>
-      @if (draft().length > 0) {
-        <ul class="draft-list">
-          @for (r of draft(); track r.key) {
-            <li>
-              <span class="ltr-num"
-                >{{ r.question_no }}. ({{ r.max_score }}/20){{
-                  r.score !== null ? ' = ' + r.score : ''
-                }}</span
-              >
-              <button
-                type="button"
-                class="btn btn-ghost btn-sm"
-                [attr.data-testid]="'exam-draft-rm-' + r.key"
-                [attr.aria-label]="'common.delete' | translate"
-                (click)="removeDraft(r.key)"
-              >
-                ×
-              </button>
-            </li>
-          }
-        </ul>
-        <p class="muted ltr-num">{{ 'exam.weights' | translate: { total: draftTotal() } }}</p>
-        <button
-          type="button"
-          class="btn btn-primary btn-block"
-          data-testid="exam-draft-save"
-          [class.is-loading]="saving()"
-          [disabled]="draftTotal() !== 20 || saving()"
-          (click)="saveDraft()"
-        >
-          @if (saving()) {
-            <app-spinner />
-          } @else {
-            {{ 'common.save' | translate }}
-          }
-        </button>
-      }
-      @if (addErrorKey()) {
-        <div class="banner danger">{{ addErrorKey()! | translate }}</div>
-      }
-    </form>
   </section>
+} @else {
+  <app-empty-state />
 }

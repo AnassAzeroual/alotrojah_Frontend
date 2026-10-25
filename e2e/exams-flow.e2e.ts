@@ -47,21 +47,11 @@ test.describe.serial('Exams management', () => {
     await expect(page).toHaveURL(/\/exams\/\d+$/);
     const examId = page.url().match(/\/exams\/(\d+)$/)?.[1];
     expect(examId).toBeTruthy();
-    await expect(page.locator('.line .score-input')).toHaveCount(3);
+    await expect(page.locator('.line')).toHaveCount(3);
     await expect(page.locator('section.hero strong')).toHaveText('20/ 20');
     await page.reload();
-    await expect(page.locator('.line .score-input').nth(0)).toHaveValue('7');
-    await expect(heroAvg).toHaveText('20/ 20');
-
-    // date edit persists after reload
-    await page.getByTestId('exam-date').fill('07/10/2026');
-    const patched = page.waitForResponse(
-      (r) => r.url().includes(`/exams/${examId}`) && r.request().method() === 'PATCH',
-    );
-    await page.getByTestId('save-exam-edit').click();
-    await patched;
-    await page.reload();
-    await expect(page.getByTestId('exam-date')).toHaveValue('07/10/2026');
+    await expect(page.locator('.line')).toHaveCount(3);
+    await expect(page.locator('section.hero strong')).toHaveText('20/ 20');
 
     // delete: questions cascade, exam leaves the list
     await page.getByTestId('delete-exam').click();

@@ -39,8 +39,65 @@ const OWN_STUDENT = {
   start_hizb: 1,
 };
 
+const BREAKDOWN = {
+  student: { id: 5, full_name: 'أحمد طالب' },
+  term: { id: 3, name_ar: 'الفصل الأول' },
+  hifz: {
+    modules: [{ code: 'hifz', name_ar: 'الحفظ', max_points: 14 }],
+    sessions: 1,
+    scored_sessions: 1,
+    sum: 17.5,
+    average: 17.5,
+    rows: [
+      {
+        session_id: 1,
+        session_number: 1,
+        date: '2026-10-01',
+        status: 'done',
+        modules: [{ code: 'hifz', name_ar: 'الحفظ', max_points: 14, score: 17.5 }],
+        total: 17.5,
+        has_score: true,
+      },
+    ],
+  },
+  murajaa: {
+    count: 1,
+    average: 15,
+    rows: [
+      {
+        id: 1,
+        week_from: 1,
+        week_to: 1,
+        weeks_covered: 1,
+        score: 15,
+        reviewed_at: '2026-10-01',
+        hizb_from: 1,
+        hizb_to: 1,
+      },
+    ],
+  },
+  exam: {
+    id: 1,
+    exam_date: '2026-10-01',
+    overall_avg: 18,
+    sum: 18,
+    max: 20,
+    questions: [
+      {
+        question_no: 1,
+        prompt_text: 'Question',
+        model_type: 'single',
+        max_score: 20,
+        score: 18,
+      },
+    ],
+  },
+  general: { value: 16.8, source: 'official' },
+};
+
 const resultsStub = {
   termResults: () => of({ data: [OWN_RESULT], meta: { last_page: 1 } }),
+  termBreakdown: () => of(BREAKDOWN),
   upsertTerm: (p: unknown) => of({ data: OWN_RESULT, ...(p as object) }),
 };
 
@@ -94,6 +151,23 @@ describe('TermResultsPage', () => {
   };
 
   afterEach(() => TestBed.resetTestingModule());
+
+  it('opens a calculation proof when a score box is clicked', async () => {
+    const fixture = setup(studentAuth);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+
+    const tile = el.querySelector<HTMLElement>('.score-tile');
+    expect(tile).toBeTruthy();
+    tile!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(el.querySelector('[data-testid="term-audit-panel"]')).toBeTruthy();
+    expect(el.textContent).toContain('17.5');
+  });
 
   it('auto-targets the pupil own result, read-only', async () => {
     const fixture = setup(studentAuth);

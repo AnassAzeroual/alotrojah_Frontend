@@ -30,7 +30,6 @@ export const EXAMS_ROUTES: Routes = [
     path: ':id',
     loadComponent: () => import('./exam-detail.page').then((m) => m.ExamDetailPage),
     canActivate: [roleGuard],
-    canDeactivate: [dirtyGuard],
     data: { roles: [...VIEW] },
   },
 ];

@@ -1,4 +1,4 @@
-﻿import {
+import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -15,7 +15,12 @@ import { firstValueFrom } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
 import { ReferenceService } from '../../core/api/reference.service';
 import { ResultsService } from '../../core/api/results.service';
-import { HonorFlag, StudentResource, TermResultResource } from '../../core/api/models';
+import {
+  HonorFlag,
+  StudentResource,
+  TermResultResource,
+  V1TermBreakdownResponse,
+} from '../../core/api/models';
 import { leaveController } from '../../core/guards/leave-controller';
 import { StudentsService } from '../../core/api/students.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -26,6 +31,7 @@ import {
 } from '../../shared/ui/dropdown/dropdown.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge/status-badge.component';
+import { BreakdownMetric, TermBreakdownPanelComponent } from './term-breakdown-panel.component';
 
 const SCORE_FIELDS = ['hifz_total', 'murajaa_total', 'exam_score', 'general_avg'] as const;
 const DETAIL_SCORE_FIELDS = ['hifz_total', 'murajaa_total', 'exam_score'] as const;
@@ -42,6 +48,7 @@ type SaveState = 'idle' | 'saved' | 'error';
     DropdownComponent,
     SpinnerComponent,
     StatusBadgeComponent,
+    TermBreakdownPanelComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './term-results.page.html',
@@ -60,6 +67,7 @@ export class TermResultsPage {
 
   readonly pickedStudent = signal<number | null>(null);
   readonly pickedTerm = signal<number | null>(null);
+  readonly selectedBreakdown = signal<BreakdownMetric | null>(null);
   readonly saving = signal(false);
   readonly saveState = signal<SaveState>('idle');
   private readonly tick = signal(0);
@@ -142,6 +150,24 @@ export class TermResultsPage {
     params: () => ({ t: this.pickedTerm(), tick: this.tick() }),
     loader: ({ params }) =>
       params.t === null ? Promise.resolve([]) : this.loadAllTermResults(params.t),
+  });
+
+  /** Loaded once per pupil/term when a proof box is opened. */
+  readonly breakdown = resource({
+    params: () => ({
+      student: this.selectedStudent()?.id ?? null,
+      term: this.pickedTerm(),
+      open: this.selectedBreakdown() !== null,
+    }),
+    loader: ({ params }): Promise<V1TermBreakdownResponse['data'] | null> =>
+      !params.open || params.student === null || params.term === null
+        ? Promise.resolve(null)
+        : firstValueFrom(
+            this.resultsSvc.termBreakdown({
+              student_id: params.student,
+              term_id: params.term,
+            }),
+          ),
   });
 
   private readonly resultByStudent = computed(
@@ -240,6 +266,21 @@ export class TermResultsPage {
     });
   }
 
+  protected openBreakdown(metric: BreakdownMetric): void {
+    this.selectedBreakdown.update((current) => (current === metric ? null : metric));
+  }
+
+  protected closeBreakdown(): void {
+    this.selectedBreakdown.set(null);
+  }
+
+  protected metricForScore(field: string): BreakdownMetric {
+    if (field === 'general_avg') return 'general';
+    if (field === 'exam_score') return 'exam';
+    if (field === 'murajaa_total') return 'murajaa';
+    return 'hifz';
+  }
+
   protected levelName(id: number | null | undefined): string {
     if (id === null || id === undefined) return '';
     return this.levelNames().get(id) ?? '';
@@ -326,6 +367,7 @@ export class TermResultsPage {
   }
 
   private resetDraft(): void {
+    this.selectedBreakdown.set(null);
     this.form.reset({
       hifz_total: null,
       murajaa_total: null,
