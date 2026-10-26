@@ -104,6 +104,7 @@
   display: flex;
   align-items: baseline;
   gap: 3px;
+  direction: ltr;
 
   strong {
     color: var(--color-text);
@@ -452,6 +453,7 @@
   display: flex;
   align-items: baseline;
   gap: 3px;
+  direction: ltr;
 
   strong {
     font-size: 1.8rem;

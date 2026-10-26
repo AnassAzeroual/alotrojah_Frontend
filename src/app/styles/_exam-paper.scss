@@ -156,6 +156,7 @@
 
 .paper-score {
   width: 88px;
+  direction: ltr;
 
   input {
     display: inline-block;
@@ -257,6 +258,11 @@
   .paper-score input {
     width: 100%;
     max-width: 120px;
+  }
+
+  // Phone cards stack the value above the denominator; keep the cell RTL.
+  .paper-table .paper-score {
+    direction: rtl;
   }
 
   .paper-table td[data-label='']::before {

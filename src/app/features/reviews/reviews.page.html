@@ -34,7 +34,7 @@
       @for (c of cycles.value() ?? []; track c.id) {
         <div class="line anim-rise" [style.--i]="$index + 3">
           <span class="ltr-num">W{{ c.week_from }}–W{{ c.week_to }} ({{ c.weeks_covered }})</span>
-          <strong class="ltr-num">{{ c.score }}{{ 'common.of20' | translate }}</strong>
+          <strong class="ltr-num">{{ c.score }} {{ 'common.of20' | translate }}</strong>
           <button
             type="button"
             class="btn btn-danger-ghost"
@@ -54,8 +54,8 @@
       @for (l of logs.value() ?? []; track l.id) {
         <div class="line anim-rise" [style.--i]="$index + 4">
           <span class="ltr-num"
-            >{{ l.hizb_from ?? '—' }}–{{ l.hizb_to ?? '—' }} · {{ l.murajaa_score ?? '—'
-            }}{{ 'common.of20' | translate }}</span
+            >{{ l.hizb_from ?? '—' }}–{{ l.hizb_to ?? '—' }} · {{ l.murajaa_score ?? '—' }}
+            {{ 'common.of20' | translate }}</span
           >
           @if (canManage()) {
             <button

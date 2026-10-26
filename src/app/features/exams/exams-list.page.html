@@ -597,7 +597,7 @@
                       <tr>
                         <th>{{ 'exam.q_no' | translate }}</th>
                         <th>{{ 'exam.read_from' | translate }}</th>
-                        <th>{{ 'exam.evaluation' | translate }} /20</th>
+                        <th>{{ 'exam.evaluation' | translate }} <span class="ltr-num">/20</span></th>
                         <th>{{ 'grp.notes' | translate }}</th>
                         <th class="no-print"></th>
                       </tr>
@@ -654,7 +654,7 @@
                               "
                               [attr.data-testid]="'paper-m1-score-' + i"
                             />
-                            <span>/{{ row.weight }}</span>
+                            <span class="ltr-num">/{{ row.weight }}</span>
                           </td>
                           <td [attr.data-label]="'grp.notes' | translate">
                             <input
@@ -722,7 +722,7 @@
                           <th>{{ 'exam.full_recitation' | translate }}</th>
                           <th>{{ 'exam.from_ayah' | translate }}</th>
                           <th>{{ 'exam.to_ayah' | translate }}</th>
-                          <th>{{ 'exam.evaluation' | translate }} /20</th>
+                          <th>{{ 'exam.evaluation' | translate }} <span class="ltr-num">/20</span></th>
                           <th>{{ 'grp.notes' | translate }}</th>
                         </tr>
                       </thead>
@@ -797,7 +797,7 @@
                               "
                               data-testid="paper-m2-score"
                             />
-                            <span>/{{ row.weight }}</span>
+                            <span class="ltr-num">/{{ row.weight }}</span>
                           </td>
                           <td [attr.data-label]="'grp.notes' | translate">
                             <input

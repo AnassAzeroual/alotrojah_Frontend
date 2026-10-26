@@ -102,7 +102,7 @@
           <h2>{{ 'exam.questions' | translate }}</h2>
           <p class="muted">
             {{ 'exam.weights' | translate: { total: weightsTotal() } }}
-            · {{ answeredCount() }} / {{ questions().length }}
+            · <span class="ltr-num">{{ answeredCount() }} / {{ questions().length }}</span>
           </p>
         </div>
       </header>

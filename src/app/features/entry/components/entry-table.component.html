@@ -16,7 +16,7 @@
         @if (showMemorization()) {
           <span class="ecell" role="columnheader">{{ 'entry.memorized_label' | translate }}</span>
         }
-        <span class="ecell num" role="columnheader">/ 20</span>
+        <span class="ecell num ltr-num" role="columnheader">/ 20</span>
         <span class="ecell goal" role="columnheader">{{ 'entry.goal' | translate }}</span>
       </div>
 
@@ -81,7 +81,7 @@
 
           <span class="ecell num" role="cell" [attr.data-label]="'entry.total' | translate">
             <strong class="total ltr-num"
-              >{{ totalFor(st) ?? '—' }}{{ 'common.of20' | translate }}</strong
+              >{{ totalFor(st) ?? '—' }} {{ 'common.of20' | translate }}</strong
             >
           </span>
 

@@ -7,7 +7,7 @@ import { TranslatePipe } from '@ngx-translate/core';
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <label class="score">
+    <label class="score" dir="ltr">
       <input
         class="score-input"
         type="number"
@@ -21,7 +21,7 @@ import { TranslatePipe } from '@ngx-translate/core';
         (input)="onInput($event)"
         (blur)="onBlur()"
       />
-      <span class="muted">/ {{ max() }}</span>
+      <span class="muted ltr-num">/ {{ max() }}</span>
     </label>
   `,
   styles: [
