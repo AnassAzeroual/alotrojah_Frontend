@@ -234,12 +234,12 @@ app-session-range-picker {
   border: 1px solid var(--color-exam-border);
 }
 
-.cal-event.ss-done,
-.cal-event.ss-cancelled {
+.cal-event.ss-done {
   opacity: 0.55;
 }
 
 .cal-event.ss-cancelled {
+  opacity: 0.55;
   text-decoration: line-through;
 }
 

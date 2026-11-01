@@ -3,8 +3,8 @@ import { StorageService as NgCryptoStorage } from 'ng-cryptostore';
 import { STORAGE_SECRET } from './storage-secret';
 
 /**
- * At-rest encryption for browser storage, backed by ng-cryptostore (crypto-js
- * AES-128-CBC with the shared STORAGE_SECRET passphrase) on sessionStorage.
+ * At-rest encryption for browser storage, backed by ng-cryptostore (AES-CBC
+ * with the shared STORAGE_SECRET passphrase) on sessionStorage.
  * The API mirrors the `localStorage`-style calls it replaces so existing call
  * sites keep their `JSON.parse` / string semantics — the vault stores the same
  * string a plain `setItem` would have.

@@ -14,12 +14,30 @@
     "auto": "Afficher le guide automatiquement",
     "error": "Impossible de charger la progression.",
     "steps": {
-      "centers": { "title": "Centres", "desc": "Créez le premier centre de l'association." },
-      "season": { "title": "Saison", "desc": "Créez la saison et ses trimestres, puis activez-la." },
-      "levels": { "title": "Niveaux", "desc": "Ajoutez les niveaux de cette saison : séances, rythme et objectifs." },
-      "teachers": { "title": "Enseignants", "desc": "Ajoutez au moins un compte enseignant pour le centre." },
-      "groups": { "title": "Groupes", "desc": "Créez un groupe, son enseignant et ses jours." },
-      "pupils": { "title": "Élèves", "desc": "Inscrivez le premier élève et placez-le dans un niveau." }
+      "centers": {
+        "title": "Centres",
+        "desc": "Créez le premier centre de l'association."
+      },
+      "season": {
+        "title": "Saison",
+        "desc": "Créez la saison et ses trimestres, puis activez-la."
+      },
+      "levels": {
+        "title": "Niveaux",
+        "desc": "Ajoutez les niveaux de cette saison : séances, rythme et objectifs."
+      },
+      "teachers": {
+        "title": "Enseignants",
+        "desc": "Ajoutez au moins un compte enseignant pour le centre."
+      },
+      "groups": {
+        "title": "Groupes",
+        "desc": "Créez un groupe, son enseignant et ses jours."
+      },
+      "pupils": {
+        "title": "Élèves",
+        "desc": "Inscrivez le premier élève et placez-le dans un niveau."
+      }
     }
   },
   "cal": {
@@ -65,7 +83,6 @@
     "email": "E-mail",
     "password": "Mot de passe",
     "logout": "Déconnexion",
-    "invalid": "Identifiants invalides",
     "language": "Langue",
     "show_password": "Afficher le mot de passe",
     "hide_password": "Masquer le mot de passe",
@@ -278,7 +295,6 @@
     "chart_dist": "Répartition des notes des élèves",
     "students_axis": "Élèves",
     "capacity_axis": "Capacité",
-    "table_title": "Toutes les sections",
     "col_name": "Section",
     "col_teacher": "Enseignant",
     "col_students": "Élèves",
@@ -295,7 +311,6 @@
     "inactive": "Inactif",
     "expand": "Afficher les détails",
     "collapse": "Masquer les détails",
-    "open": "Ouvrir la section",
     "create": "Ajouter une section",
     "edit": "Modifier la section",
     "schedule": "Horaires",
@@ -316,7 +331,6 @@
     "search_ph": "Rechercher une section ou un enseignant",
     "all_status": "Statut : Tous",
     "week": "S",
-    "empty_students": "Aucun élève dans cette section pour le moment",
     "day": {
       "Mon": "Lun",
       "Tue": "Mar",
@@ -329,14 +343,9 @@
   },
   "exam": {
     "title": "Examens",
-    "new": "Nouvel examen",
     "result": "Résultat de l'examen",
-    "details": "Détails",
     "no_questions": "Aucune question pour l'instant.",
-    "add_question_hint": "Ajoutez une ou plusieurs questions ; le total des poids doit être 20.",
-    "edit": "Modifier l'examen",
     "delete_confirm": "Confirmer la suppression",
-    "filter_type": "Type",
     "type": "Type",
     "date": "Date",
     "average": "Moyenne",
@@ -346,7 +355,6 @@
     "prompt": "Énoncé",
     "weight": "Poids",
     "weights": "Total des poids : {{total}} / 20",
-    "reweight": "Rééquilibrer les poids",
     "need_student": "Choisissez un élève ci-dessus pour enregistrer l'examen",
     "need_term": "Choisissez un trimestre pour enregistrer l'examen",
     "weekly_title": "Examen hebdomadaire",
@@ -367,8 +375,6 @@
     "previous_exams": "Examens précédents",
     "no_exams": "Aucun examen précédent.",
     "current_portion": "Passage à tester",
-    "source_last_exam": "Prérempli depuis le dernier examen — modifiable.",
-    "source_last_log": "Prérempli depuis la dernière mémorisation — modifiable.",
     "source_manual": "Aucun passage précédent ; saisissez le passage à tester.",
     "hizb": "Hizb",
     "thumn": "Thoumn",
@@ -385,7 +391,6 @@
     "type_term_hint": "Mémorisation du trimestre",
     "type_weekly_hint": "Passage de la semaine",
     "type_final_hint": "Révision de fin de saison",
-    "create_test": "Créer l'examen",
     "start_test": "Commencer l'examen",
     "live_title": "Examen en cours",
     "live_hint": "Ajoutez une ligne par question. Le total des poids doit être exactement 20.",
@@ -407,11 +412,9 @@
     "save_variant": "Enregistrer ce modèle",
     "save_variant_hint": "Les deux modèles s'impriment ; seul le modèle sélectionné est enregistré.",
     "save_selected": "Enregistrer le modèle sélectionné",
-    "need_portion": "Saisissez le passage à tester",
     "need_season": "Aucune saison active pour cet élève"
   },
   "weeklyExam": {
-    "group": "Section",
     "portion": "Passage mémorisé",
     "hizb": "Hizb",
     "thumn": "Thoumn",
@@ -541,27 +544,16 @@
     "totalStudents": "Total",
     "avgScore": "Score moyen",
     "avgSarraj": "Moyenne Sarraj",
-    "activeGroups": "Sections actives",
-    "quranSessions": "Sessions",
     "commitRate": "Assiduite",
     "myFinal": "Moyenne finale",
     "noPupil": "Aucun dossier d'élève n'est encore lié à ce compte — demandez à votre superviseur.",
-    "thisMonth": "ce mois",
     "studentName": "Nom",
-    "currentSurah": "Sourate",
-    "progress": "Progres",
     "status": "Statut",
-    "lastExam": "Dernier examen",
-    "resultsOf": "sur",
     "monthlyEval": "Mensuelle",
     "last6": "6 mois",
     "pickStudent": "Choisissez un eleve pour voir sa progression hebdomadaire",
     "distribution": "Repartition",
-    "excellent": "Excellent",
-    "good": "Bien",
-    "support": "Soutien",
     "today": "Aujourd'hui",
-    "level": "Niveau",
     "center": "Centre"
   },
   "center": {
@@ -598,7 +590,6 @@
     "no_season": "Ce centre n'a pas encore de saison — créez une saison pour obtenir ses niveaux.",
     "no_center": "Aucun centre pour l'instant — créez un centre, puis ses saisons et niveaux.",
     "no_levels": "Aucun niveau dans cette saison — ajoutez le premier.",
-    "term": "Trimestre",
     "study_weeks": "semaines d'étude",
     "review_weeks": "semaines de révision",
     "goal_breakdown": "Détail",
@@ -858,10 +849,7 @@
     "today": "Aujourd'hui",
     "breadcrumb": "Fil de sélection",
     "attendance": "Présence",
-    "save_attendance": "Enregistrer la présence",
-    "scores": "Notes",
     "total": "Total",
-    "save_scores": "Enregistrer les notes",
     "save_failed": "Enregistrement impossible — vérifiez les champs surlignés",
     "over_max": "Dépasse la limite ({{max}})",
     "separate_note": "Sarraj : total séparé /20, hors total hebdomadaire",
@@ -894,9 +882,6 @@
     "no_candidate": "Aucun enseignant libre compatible — créez d'abord un compte enseignant.",
     "role_filter": "Filtrer par rôle",
     "name": "Nom complet",
-    "email": "Email",
-    "password": "Mot de passe",
-    "phone": "Téléphone",
     "role": "Rôle",
     "teacher_type": "Type d'enseignement",
     "center": "Centre",

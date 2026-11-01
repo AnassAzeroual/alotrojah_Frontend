@@ -31,6 +31,36 @@ describe('ApiClient', () => {
     req.flush({ success: true, message: null, data: { a: 1 } });
   });
 
+  it('normalizes flat Backendv2PHP pagination into meta', () => {
+    client
+      .get<{ data: Array<{ id: number }>; meta?: { total: number; last_page: number } }>('/page')
+      .subscribe((v) => {
+        expect(v.meta).toEqual({
+          current_page: 1,
+          per_page: 1,
+          total: 7,
+          last_page: 7,
+          from: 1,
+          to: 1,
+        });
+      });
+    http
+      .expectOne((r) => r.url.endsWith('/page'))
+      .flush({
+        success: true,
+        message: null,
+        data: {
+          data: [{ id: 1 }],
+          current_page: 1,
+          per_page: 1,
+          total: 7,
+          last_page: 7,
+          from: 1,
+          to: 1,
+        },
+      });
+  });
+
   it('serializes query params as strings', () => {
     client.get('/y', { a: 1, b: 'x', c: true }).subscribe();
     const req = http.expectOne(

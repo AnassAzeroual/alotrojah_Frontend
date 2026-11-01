@@ -187,11 +187,6 @@ export class GroupDetailPage {
     void this.router.navigate(['/groups']);
   }
 
-  private instant(key: string): string {
-    this.language.current();
-    return this.i18n.instant(key);
-  }
-
   protected scheduleKeys(days: string): Weekday[] {
     return days
       .split(',')
