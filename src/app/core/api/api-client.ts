@@ -24,6 +24,27 @@ interface CacheEntry {
   data$: Observable<unknown>;
 }
 
+/** Laravel returns pagination under `meta`; Backendv2PHP returns it flat. */
+function normalizePagination<T>(value: T): T {
+  if (value === null || typeof value !== 'object') return value;
+  const record = value as Record<string, unknown>;
+  const rows = record['data'];
+  if (!Array.isArray(rows) || 'meta' in record) return value;
+  if (!('current_page' in record) && !('total' in record)) return value;
+
+  return {
+    ...record,
+    meta: {
+      current_page: record['current_page'] ?? 1,
+      per_page: record['per_page'] ?? rows.length,
+      total: record['total'] ?? 0,
+      last_page: record['last_page'] ?? 1,
+      from: record['from'] ?? null,
+      to: record['to'] ?? null,
+    },
+  } as unknown as T;
+}
+
 function cacheKey(path: string, params?: QueryParams): string {
   if (!params) return path;
   const qs = Object.entries(params)
@@ -117,7 +138,7 @@ export class ApiClient {
   private rawGet<T>(path: string, params?: QueryParams): Observable<T> {
     return this.http
       .get<Envelope<T>>(`${this.base}${path}`, { params: this.toHttpParams(params) })
-      .pipe(map((r) => r.data));
+      .pipe(map((r) => normalizePagination(r.data)));
   }
 
   private toHttpParams(params?: QueryParams): HttpParams | undefined {

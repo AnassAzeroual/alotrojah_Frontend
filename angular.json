@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
@@ -62,6 +62,16 @@
               ],
               "outputHashing": "all"
             },
+            "production-debug": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all",
+              "sourceMap": true
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -107,6 +117,9 @@
           "configurations": {
             "production": {
               "buildTarget": "alotrojah:build:production"
+            },
+            "production-debug": {
+              "buildTarget": "alotrojah:build:production-debug"
             },
             "development": {
               "buildTarget": "alotrojah:build:development"
