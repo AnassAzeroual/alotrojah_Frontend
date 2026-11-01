@@ -14,12 +14,30 @@
     "auto": "Show the guide automatically",
     "error": "Could not load setup progress.",
     "steps": {
-      "centers": { "title": "Centers", "desc": "Create the association's first center." },
-      "season": { "title": "Season", "desc": "Create the season and its terms, then activate it." },
-      "levels": { "title": "Levels", "desc": "Add this season's levels: sessions, memorization pace and goals." },
-      "teachers": { "title": "Teachers", "desc": "Add at least one teacher account for the center." },
-      "groups": { "title": "Groups", "desc": "Create a group, assign its teacher and meeting days." },
-      "pupils": { "title": "Pupils", "desc": "Enroll the first pupil and place them in a level." }
+      "centers": {
+        "title": "Centers",
+        "desc": "Create the association's first center."
+      },
+      "season": {
+        "title": "Season",
+        "desc": "Create the season and its terms, then activate it."
+      },
+      "levels": {
+        "title": "Levels",
+        "desc": "Add this season's levels: sessions, memorization pace and goals."
+      },
+      "teachers": {
+        "title": "Teachers",
+        "desc": "Add at least one teacher account for the center."
+      },
+      "groups": {
+        "title": "Groups",
+        "desc": "Create a group, assign its teacher and meeting days."
+      },
+      "pupils": {
+        "title": "Pupils",
+        "desc": "Enroll the first pupil and place them in a level."
+      }
     }
   },
   "cal": {
@@ -65,7 +83,6 @@
     "email": "Email",
     "password": "Password",
     "logout": "Sign out",
-    "invalid": "Invalid credentials",
     "language": "Language",
     "show_password": "Show password",
     "hide_password": "Hide password",
@@ -278,7 +295,6 @@
     "chart_dist": "Student score distribution",
     "students_axis": "Students",
     "capacity_axis": "Capacity",
-    "table_title": "All sections",
     "col_name": "Section",
     "col_teacher": "Teacher",
     "col_students": "Students",
@@ -295,7 +311,6 @@
     "inactive": "Inactive",
     "expand": "Show details",
     "collapse": "Hide details",
-    "open": "Open section",
     "create": "Add section",
     "edit": "Edit section",
     "schedule": "Schedule",
@@ -316,7 +331,6 @@
     "search_ph": "Search section or teacher",
     "all_status": "Status: All",
     "week": "W",
-    "empty_students": "No students in this section yet",
     "day": {
       "Mon": "Mon",
       "Tue": "Tue",
@@ -329,14 +343,9 @@
   },
   "exam": {
     "title": "Exams",
-    "new": "New exam",
     "result": "Exam result",
-    "details": "Details",
     "no_questions": "No questions yet.",
-    "add_question_hint": "Add one or more questions; weights must total 20.",
-    "edit": "Edit exam",
     "delete_confirm": "Confirm delete",
-    "filter_type": "Type",
     "type": "Type",
     "date": "Date",
     "average": "Average",
@@ -346,7 +355,6 @@
     "prompt": "Prompt",
     "weight": "Weight",
     "weights": "Weights total: {{total}} / 20",
-    "reweight": "Rebalance weights",
     "need_student": "Choose a student above to save the exam",
     "need_term": "Choose a term to save the exam",
     "weekly_title": "Weekly exam",
@@ -367,8 +375,6 @@
     "previous_exams": "Previous exams",
     "no_exams": "No previous exams.",
     "current_portion": "Current test portion",
-    "source_last_exam": "Prefilled from the last exam — edit if needed.",
-    "source_last_log": "Prefilled from the last memorization — edit if needed.",
     "source_manual": "No previous portion; enter the test portion.",
     "hizb": "Hizb",
     "thumn": "Thumn",
@@ -385,7 +391,6 @@
     "type_term_hint": "This term's memorization",
     "type_weekly_hint": "This week's portion",
     "type_final_hint": "End-of-season review",
-    "create_test": "Create test",
     "start_test": "Start test",
     "live_title": "Live test",
     "live_hint": "Add one row per question. Weights must total exactly 20.",
@@ -407,11 +412,9 @@
     "save_variant": "Save this model",
     "save_variant_hint": "Both models print; only the selected model is saved.",
     "save_selected": "Save selected model",
-    "need_portion": "Enter the current test portion",
     "need_season": "No active season for this pupil"
   },
   "weeklyExam": {
-    "group": "Section",
     "portion": "Memorized portion",
     "hizb": "Hizb",
     "thumn": "Thumn",
@@ -541,27 +544,16 @@
     "totalStudents": "Total students",
     "avgScore": "Avg score",
     "avgSarraj": "Sarraj avg",
-    "activeGroups": "Active sections",
-    "quranSessions": "Quran sessions",
     "commitRate": "Commit rate",
     "myFinal": "My final average",
     "noPupil": "No pupil record is linked to this account yet — ask your supervisor to link it.",
-    "thisMonth": "this month",
     "studentName": "Student",
-    "currentSurah": "Surah",
-    "progress": "Progress",
     "status": "Status",
-    "lastExam": "Last exam",
-    "resultsOf": "of",
     "monthlyEval": "Monthly memorization",
     "last6": "Last 6 months",
     "pickStudent": "Pick a student from the table to see weekly progress",
     "distribution": "Distribution",
-    "excellent": "Excellent",
-    "good": "Good",
-    "support": "Needs support",
     "today": "Today",
-    "level": "Level",
     "center": "Center"
   },
   "center": {
@@ -598,7 +590,6 @@
     "no_season": "This center has no season yet — create a season to get its levels.",
     "no_center": "No center yet — create a center first, then its seasons and levels.",
     "no_levels": "No levels in this season yet — add the first one.",
-    "term": "Term",
     "study_weeks": "study weeks",
     "review_weeks": "review weeks",
     "goal_breakdown": "Breakdown",
@@ -858,10 +849,7 @@
     "today": "Today",
     "breadcrumb": "Selection path",
     "attendance": "Attendance",
-    "save_attendance": "Save attendance",
-    "scores": "Scores",
     "total": "Total",
-    "save_scores": "Save scores",
     "save_failed": "Could not save scores — check the highlighted fields",
     "over_max": "Over the limit ({{max}})",
     "separate_note": "Sarraj is a separate /20 total, outside the weekly total",
@@ -894,9 +882,6 @@
     "no_candidate": "No matching free teacher — create a teacher account first.",
     "role_filter": "Filter by role",
     "name": "Full name",
-    "email": "Email",
-    "password": "Password",
-    "phone": "Phone",
     "role": "Role",
     "teacher_type": "Teacher type",
     "center": "Center",
