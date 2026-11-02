@@ -261,6 +261,18 @@ export class SettingsPage {
       return;
     }
 
+    // Global admins upload for one center at a time. If the saved/fallback
+    // center has not resolved yet, bind the first loaded center now instead of
+    // sending a center-less upload (which the API rejects).
+    if (this.isAdmin() && this.appearance.centerId() === null) {
+      const fallback = this.centers()[0]?.id;
+      if (fallback == null) {
+        this.error.set(this.centersLoading() ? 'settings.center_loading' : 'settings.no_centers');
+        return;
+      }
+      this.appearance.setCenter(fallback);
+    }
+
     this.error.set(null);
     this.busy.set(kind);
     this.appearance.upload(kind, file).subscribe({
