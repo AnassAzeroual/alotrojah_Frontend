@@ -21,6 +21,19 @@ jobs:
       - run: npm run test
       - run: npm run build
 
+      - name: Guard production API URL
+        run: |
+          set -euo pipefail
+          if grep -R -q -E '127\.0\.0\.1:8001|localhost:8000' dist/alotrojah/browser --include='*.js'; then
+            echo 'LOCAL API URL LEAKED INTO PRODUCTION BUILD' >&2
+            exit 1
+          fi
+          if ! grep -R -q 'api\.alotrojah\.ma' dist/alotrojah/browser --include='*.js'; then
+            echo 'PRODUCTION API URL MISSING FROM BUILD' >&2
+            exit 1
+          fi
+          echo 'PRODUCTION API URL OK'
+
   deploy:
     needs: test
     runs-on: ubuntu-24.04
@@ -62,6 +75,12 @@ jobs:
             echo "$f -> $code"
             test "$code" = "200"
           done
-          grep -q 'api.alotrojah.ma' /tmp/bundles/*.js
-          if grep -q 'localhost:8000' /tmp/bundles/*.js; then echo 'DEV URL LEAKED INTO PROD'; exit 1; fi
+          if ! grep -q 'api.alotrojah.ma' /tmp/bundles/*.js; then
+            echo 'PRODUCTION API URL MISSING FROM DEPLOYED BUNDLES' >&2
+            exit 1
+          fi
+          if grep -q -E 'localhost:8000|127\.0\.0\.1:8001' /tmp/bundles/*.js; then
+            echo 'LOCAL API URL LEAKED INTO PROD' >&2
+            exit 1
+          fi
           echo 'PROD VERIFIED'
