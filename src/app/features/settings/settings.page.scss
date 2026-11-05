@@ -741,8 +741,10 @@
 // the admin saves, while the shell previews every edit live.
 .appearance-savebar {
   position: sticky;
-  bottom: var(--space-3);
-  z-index: 1;
+  top: calc(var(--topbar-h, 61px) + env(safe-area-inset-top, 0px) + var(--space-2));
+  z-index: 2;
+  margin-block-end: var(--space-3);
+  box-shadow: var(--shadow-2);
   display: flex;
   flex-wrap: wrap;
   align-items: center;

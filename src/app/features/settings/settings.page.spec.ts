@@ -221,6 +221,7 @@ describe('SettingsPage tabs', () => {
 
     expect(service.orbEnabled()).toBe(false);
     expect(service.dirty()).toBe(true);
+    expect(el.querySelector('[data-testid="appearance-savebar"]')).not.toBeNull();
     expect(
       (el.querySelector('[data-testid="appearance-orb-primary"]') as HTMLInputElement).disabled,
     ).toBe(true);

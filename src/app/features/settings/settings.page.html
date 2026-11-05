@@ -158,6 +158,41 @@
       }
 
       @if (centerReady()) {
+        @if (appearance.dirty() || saving() || saved() === 'options') {
+          <div
+            class="appearance-savebar"
+            [class.ok]="!appearance.dirty() && !saving()"
+            data-testid="appearance-savebar"
+          >
+            @if (saving()) {
+              <strong class="savebar-msg" role="status">{{ 'settings.saving' | translate }}</strong>
+            } @else if (!appearance.dirty() && saved() === 'options') {
+              <strong class="savebar-msg" role="status">{{ 'settings.saved' | translate }}</strong>
+            } @else {
+              <strong class="savebar-msg">{{ 'settings.unsaved' | translate }}</strong>
+              <span class="savebar-spacer"></span>
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="saving()"
+                (click)="discard()"
+                data-testid="appearance-discard"
+              >
+                {{ 'settings.discard' | translate }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                [disabled]="saving() || busy() !== null"
+                (click)="save()"
+                data-testid="appearance-save"
+              >
+                {{ 'settings.save' | translate }}
+              </button>
+            }
+          </div>
+        }
+
         <div class="work">
           <div class="appearance-controls-col">
             <div class="card stack anim-rise" style="--i: 2">
@@ -1074,45 +1109,6 @@
             <small class="muted">{{ 'settings.image_help' | translate }}</small>
             @if (error()) {
               <p class="appearance-error" role="alert">{{ error()! | translate }}</p>
-            }
-
-            @if (appearance.dirty() || saving() || saved() === 'options') {
-              <div
-                class="appearance-savebar"
-                [class.ok]="!appearance.dirty() && !saving()"
-                data-testid="appearance-savebar"
-              >
-                @if (saving()) {
-                  <strong class="savebar-msg" role="status">{{
-                    'settings.saving' | translate
-                  }}</strong>
-                } @else if (!appearance.dirty() && saved() === 'options') {
-                  <strong class="savebar-msg" role="status">{{
-                    'settings.saved' | translate
-                  }}</strong>
-                } @else {
-                  <strong class="savebar-msg">{{ 'settings.unsaved' | translate }}</strong>
-                  <span class="savebar-spacer"></span>
-                  <button
-                    type="button"
-                    class="btn btn-ghost"
-                    [disabled]="saving()"
-                    (click)="discard()"
-                    data-testid="appearance-discard"
-                  >
-                    {{ 'settings.discard' | translate }}
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-primary"
-                    [disabled]="saving() || busy() !== null"
-                    (click)="save()"
-                    data-testid="appearance-save"
-                  >
-                    {{ 'settings.save' | translate }}
-                  </button>
-                }
-              </div>
             }
           </div>
           <div class="pv-col">
