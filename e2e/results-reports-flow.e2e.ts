@@ -106,13 +106,13 @@ test.describe.serial('Term results & reports (roadmap S25, S26, S27)', () => {
     await expect(seasonSheet).toBeVisible();
     await expect(seasonSheet).toContainText('T1');
 
-    // dashboard: KPIs + rows aggregated across every center
+    // dashboard: six KPIs and charts, no duplicated students table
     await page.getByTestId('nav-dashboard').click();
     await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:4201\/$/);
-    await page.getByRole('button', { name: 'المركز' }).click();
-    await page.getByRole('option', { name: 'المركز: الكل', exact: true }).click();
-    await expect(page.locator('.kpi')).toHaveCount(4);
-    const rows = page.locator('tbody tr');
-    await expect.poll(async () => rows.count(), { timeout: 15000 }).toBeGreaterThanOrEqual(5);
+    await expect(page.locator('.kpi')).toHaveCount(6);
+    await expect(page.locator('app-chart canvas').first()).toBeVisible({ timeout: 15_000 });
+    await expect
+      .poll(async () => page.locator('app-chart').count(), { timeout: 15_000 })
+      .toBeGreaterThanOrEqual(5);
   });
 });

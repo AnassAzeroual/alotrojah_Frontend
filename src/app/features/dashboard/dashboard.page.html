@@ -1,228 +1,392 @@
 <section class="dash">
-  <div class="dash-head">
-    <div>
-      <h1>{{ 'dash.studentsTitle' | translate }}</h1>
+  <header class="hero">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="hero-copy">
+      <span class="eyebrow">{{ 'role.' + (role() ?? 'admin') | translate }}</span>
+      <h1>
+        {{ 'dash.welcome' | translate }}
+        @if (greeting()) {
+          <span class="hero-name">{{ greeting() }}</span>
+        }
+      </h1>
       <p>{{ 'dash.subtitle' | translate }}</p>
+      @if (overview.value()?.scope?.season; as season) {
+        <div class="chips">
+          <span class="chip chip-season">{{ season.name }}</span>
+          @if (!isStudent()) {
+            <span class="chip">{{ scopeLabel() }}</span>
+          }
+        </div>
+      }
     </div>
-  </div>
-
-  <div class="filters card" [class.no-center]="isStudent()">
-    <div class="f-search">
-      <input
-        type="search"
-        [value]="search()"
-        (change)="setSearch($any($event.target).value)"
-        [placeholder]="'list.search' | translate"
-        [attr.aria-label]="'list.search' | translate"
-      />
-    </div>
-    <div class="f-field">
-      <app-dropdown
-        [options]="statusOptions()"
-        [value]="filterStatus()"
-        (valueChange)="setStatus(txt($event))"
-        ariaLabelKey="list.status"
-      />
-    </div>
-    <div class="f-field">
-      <app-dropdown
-        [options]="levelOptions()"
-        [value]="filterLevel()"
-        (valueChange)="setLevel(txt($event))"
-        ariaLabelKey="list.level"
-      />
-    </div>
-    @if (!isStudent()) {
-      <div class="f-field f-center">
+    @if (!isStudent() && overview.value()?.scope?.can_filter_center) {
+      <div class="hero-filter">
+        <span class="filter-label">{{ 'dash.center' | translate }}</span>
         <app-dropdown
           [options]="centerOptions()"
-          [value]="txt(pickedCenter())"
-          (valueChange)="pickCenter(num($event))"
+          [value]="centerId() === null ? '' : centerId()!.toString()"
+          (valueChange)="setCenter($any($event))"
           ariaLabelKey="dash.center"
         />
       </div>
     }
-  </div>
+  </header>
 
   @if (isStudent()) {
-    @if (!me.isLoading() && !me.value()) {
+    @if (me.isLoading()) {
+      <div class="skeleton-grid" aria-hidden="true">
+        <div class="skeleton tall"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    } @else if (!me.value()) {
       <app-empty-state messageKey="dash.noPupil" />
     } @else {
+      <div class="student-banner card">
+        <div class="student-avatar" aria-hidden="true">
+          {{ (meKpis().student?.full_name ?? '?').slice(0, 1) }}
+        </div>
+        <div class="student-id">
+          <span class="eyebrow">{{ 'dash.myJourney' | translate }}</span>
+          <h2>{{ meKpis().student?.full_name }}</h2>
+          <p>
+            {{ meKpis().student?.group?.name ?? '—' }}
+            <span class="dot">·</span>
+            {{ 'dash.studentSince' | translate }}
+          </p>
+        </div>
+        <div class="student-stamp">
+          <small>{{ 'dash.attendance' | translate }}</small>
+          <strong class="ltr-num">
+            {{ meKpis().attendance === null ? '—' : meKpis().attendance + '%' }}
+          </strong>
+        </div>
+      </div>
+
       <div class="kpis">
-        <div class="kpi card anim">
-          <span class="kpi-ico" aria-hidden="true">◎</span>
-          <div class="kpi-txt">
+        <article class="kpi card">
+          <span class="kpi-icon teal">◉</span>
+          <div>
             <small>{{ 'dash.avgScore' | translate }}</small>
             <strong class="ltr-num">{{ meKpis().avgScore ?? '—' }}</strong>
           </div>
-        </div>
-        <div class="kpi card anim" style="--d: 60ms">
-          <span class="kpi-ico" aria-hidden="true">▣</span>
-          <div class="kpi-txt">
+        </article>
+        <article class="kpi card">
+          <span class="kpi-icon violet">◈</span>
+          <div>
             <small>{{ 'dash.avgSarraj' | translate }}</small>
             <strong class="ltr-num">{{ meKpis().avgSarraj ?? '—' }}</strong>
           </div>
-        </div>
-        <div class="kpi card anim" style="--d: 120ms">
-          <span class="kpi-ico" aria-hidden="true">%</span>
-          <div class="kpi-txt">
+        </article>
+        <article class="kpi card">
+          <span class="kpi-icon amber">％</span>
+          <div>
             <small>{{ 'dash.commitRate' | translate }}</small>
             <strong class="ltr-num">{{
-              meKpis().rate === null ? '—' : meKpis().rate + '%'
+              meKpis().attendance === null ? '—' : meKpis().attendance + '%'
             }}</strong>
           </div>
-        </div>
-        <div class="kpi card anim" style="--d: 180ms">
-          <span class="kpi-ico" aria-hidden="true">★</span>
-          <div class="kpi-txt">
+        </article>
+        <article class="kpi card">
+          <span class="kpi-icon blue">★</span>
+          <div>
             <small>{{ 'dash.myFinal' | translate }}</small>
             <strong class="ltr-num">{{ meKpis().final ?? '—' }}</strong>
           </div>
-        </div>
+        </article>
+      </div>
+
+      <div class="chart-grid">
+        <article class="panel card span-2">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.weeklyProgress' | translate }}</h2>
+              <p>{{ 'dash.weeklyProgressHint' | translate }}</p>
+            </div>
+            <span class="panel-tag">{{ 'dash.thumn' | translate }}</span>
+          </div>
+          @if ((studentTrend().labels?.length ?? 0) > 0) {
+            <app-chart type="line" [data]="studentTrend()" label="student-weekly" />
+          } @else {
+            <app-empty-state />
+          }
+        </article>
+        <article class="panel card">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.attendance' | translate }}</h2>
+              <p>{{ 'dash.thisSeason' | translate }}</p>
+            </div>
+          </div>
+          @if (meKpis().attendance !== null) {
+            <app-chart
+              type="doughnut"
+              [data]="studentAttendance()"
+              [options]="doughnutOptions"
+              label="student-attendance"
+            />
+          } @else {
+            <app-empty-state />
+          }
+        </article>
       </div>
     }
   } @else {
-    <div class="kpis">
-      <div class="kpi card anim">
-        <span class="kpi-ico" aria-hidden="true">◉</span>
-        <div class="kpi-txt">
-          <small>{{ 'dash.totalStudents' | translate }}</small>
-          <strong class="ltr-num">{{ kpis().students ?? '—' }}</strong>
-        </div>
+    @if (overview.isLoading()) {
+      <div class="skeleton-grid" aria-hidden="true">
+        <div class="skeleton kpi-line"></div>
+        <div class="skeleton kpi-line"></div>
+        <div class="skeleton kpi-line"></div>
+        <div class="skeleton tall"></div>
       </div>
-      <div class="kpi card anim" style="--d: 60ms">
-        <span class="kpi-ico" aria-hidden="true">◎</span>
-        <div class="kpi-txt">
-          <small>{{ 'dash.avgScore' | translate }}</small>
-          <strong class="ltr-num">{{ kpis().avgScore ?? '—' }}</strong>
-        </div>
+    } @else if (!overview.value()) {
+      <app-empty-state messageKey="dash.noOverview" />
+    } @else if (kpis(); as k) {
+      <div class="kpis">
+        <article class="kpi card">
+          <span class="kpi-icon teal">◉</span>
+          <div>
+            <small>{{ 'dash.activeStudents' | translate }}</small>
+            <strong class="ltr-num">{{ k.active_students }}</strong>
+            <em>{{ k.students }} {{ 'dash.total' | translate }}</em>
+          </div>
+        </article>
+        <article class="kpi card">
+          <span class="kpi-icon violet">▦</span>
+          <div>
+            <small>{{ 'dash.groups' | translate }}</small>
+            <strong class="ltr-num">{{ k.groups }}</strong>
+            <em>{{ k.teachers }} {{ 'dash.teachers' | translate }}</em>
+          </div>
+        </article>
+        <article class="kpi card">
+          <span class="kpi-icon amber">％</span>
+          <div>
+            <small>{{ 'dash.attendance' | translate }}</small>
+            <strong class="ltr-num"
+              >{{ k.attendance_pct ?? '—' }}
+              @if (k.attendance_pct !== null) {
+                <span>%</span>
+              }
+            </strong>
+            <em>{{ 'dash.seasonRate' | translate }}</em>
+          </div>
+        </article>
+        <article class="kpi card">
+          <span class="kpi-icon blue">◈</span>
+          <div>
+            <small>{{ 'dash.avgScore' | translate }}</small>
+            <strong class="ltr-num">{{ k.avg_score ?? '—' }}</strong>
+            <em>{{ 'dash.outOf20' | translate }}</em>
+          </div>
+        </article>
+        <article class="kpi card">
+          <span class="kpi-icon green">✦</span>
+          <div>
+            <small>{{ 'dash.totalAhzab' | translate }}</small>
+            <strong class="ltr-num">{{ k.total_ahzab }}</strong>
+            <em>{{ 'dash.memorized' | translate }}</em>
+          </div>
+        </article>
+        <article class="kpi card">
+          <span class="kpi-icon rose">◇</span>
+          <div>
+            <small>{{ 'dash.honors' | translate }}</small>
+            <strong class="ltr-num">{{ k.honors.tashji3 }}</strong>
+            <em>{{ k.honors.intibah }} {{ 'honor.intibah' | translate }}</em>
+          </div>
+        </article>
       </div>
-      <div class="kpi card anim" style="--d: 120ms">
-        <span class="kpi-ico" aria-hidden="true">▣</span>
-        <div class="kpi-txt">
-          <small>{{ 'dash.avgSarraj' | translate }}</small>
-          <strong class="ltr-num">{{ kpis().avgSarraj ?? '—' }}</strong>
-        </div>
-      </div>
-      <div class="kpi card ring-card anim" style="--d: 180ms">
-        <div class="kpi-txt">
-          <small>{{ 'dash.commitRate' | translate }}</small>
-          <strong class="ltr-num">{{ kpis().rate === null ? '—' : kpis().rate + '%' }}</strong>
-        </div>
-        <svg
-          class="ring"
-          viewBox="0 0 84 84"
-          role="img"
-          [attr.aria-label]="kpis().rate === null ? '—' : kpis().rate + '%'"
-        >
-          <circle cx="42" cy="42" r="34" class="track" />
-          <circle cx="42" cy="42" r="34" class="val" [attr.stroke-dasharray]="ringDash()" />
-          <defs>
-            <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#00b8a9" />
-              <stop offset="1" stop-color="#8b5cf6" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-    </div>
-  }
 
-  <div class="panel card">
-    @if (rows().length > 0 || students.isLoading()) {
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>{{ 'dash.studentName' | translate }}</th>
-              <th>{{ 'list.group' | translate }}</th>
-              <th>{{ 'list.mode' | translate }}</th>
-              <th>{{ 'dash.status' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (s of rows(); track s.id) {
-              <tr
-                class="anim"
-                [style.--d]="$index * 50 + 'ms'"
-                [class.on]="pickedStudent() === s.id"
-                tabindex="0"
-                (click)="pickedStudent.set(s.id)"
-                (keydown.enter)="pickedStudent.set(s.id)"
-              >
-                <td [attr.data-label]="'dash.studentName' | translate">
-                  <span class="stud"
-                    ><span class="ava" aria-hidden="true">{{ s.full_name.slice(0, 1) }}</span
-                    ><span class="stud-name" [attr.title]="s.full_name">{{
-                      s.full_name
-                    }}</span></span
-                  >
-                </td>
-                <td class="mut" [attr.data-label]="'list.group' | translate">
-                  {{ s.group?.name ?? '—' }}
-                </td>
-                <td class="mut" [attr.data-label]="'list.mode' | translate">
-                  {{ 'mode.' + s.memorization_mode | translate }}
-                </td>
-                <td [attr.data-label]="'dash.status' | translate">
-                  @if (s.status === 'active') {
-                    <span class="pill ok">{{ 'studentStatus.active' | translate }}</span>
-                  } @else {
-                    <span class="pill warn">{{ 'studentStatus.' + s.status | translate }}</span>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      @if (total() > 20) {
-        <app-paginator [page]="page()" [total]="total()" (pageChange)="page.set($event)" />
-      }
-    } @else {
-      <app-empty-state />
-    }
-  </div>
-
-  <div class="charts">
-    <div class="card chart-card">
-      <div class="chart-head">
-        <h2>{{ 'dash.monthlyEval' | translate }}</h2>
-        <small>{{ 'dash.last6' | translate }}</small>
-      </div>
-      @if (pickedStudent() === null && !isStudent()) {
-        <p class="pick-hint">{{ 'dash.pickStudent' | translate }}</p>
-      } @else if (
-        isStudent()
-          ? (studentChart().labels ?? []).length === 0
-          : (weekly.value() ?? []).length === 0
-      ) {
-        <app-empty-state />
-      } @else {
-        <app-chart
-          type="line"
-          [data]="isStudent() ? studentChart() : monthlyChart()"
-          label="monthly"
-        />
-      }
-    </div>
-    <div class="card chart-card sm">
-      <div class="chart-head">
-        <h2>{{ 'dash.distribution' | translate }}</h2>
-      </div>
-      @if (distLegend().length > 0) {
-        <app-chart type="doughnut" [data]="distChart()" label="dist" />
-        <ul class="legend">
-          @for (l of distLegend(); track l.status) {
-            <li>
-              <i [style.background]="l.color"></i>{{ 'attendance.' + l.status | translate }}
-              {{ l.pct }}%
-            </li>
+      <div class="chart-grid">
+        <article class="panel card span-2">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.weeklyPerformance' | translate }}</h2>
+              <p>{{ 'dash.weeklyPerformanceHint' | translate }}</p>
+            </div>
+            <div class="legend-inline">
+              <span class="dot teal"></span>{{ 'dash.score' | translate }}
+              <span class="dot violet"></span>{{ 'dash.attendance' | translate }}
+            </div>
+          </div>
+          @if ((weeklyChart().labels?.length ?? 0) > 0) {
+            <app-chart
+              type="line"
+              [data]="weeklyChart()"
+              [options]="weeklyOptions"
+              label="weekly-performance"
+            />
+          } @else {
+            <app-empty-state />
           }
-        </ul>
-      } @else {
-        <app-empty-state />
-      }
-    </div>
-  </div>
+        </article>
+
+        <article class="panel card">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.attendanceMix' | translate }}</h2>
+              <p>{{ 'dash.allRecords' | translate }}</p>
+            </div>
+          </div>
+          @if ((attendanceChart().labels?.length ?? 0) > 0) {
+            <app-chart
+              type="doughnut"
+              [data]="attendanceChart()"
+              [options]="doughnutOptions"
+              label="attendance-mix"
+            />
+          } @else {
+            <app-empty-state />
+          }
+        </article>
+
+        <article class="panel card">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.scoreBands' | translate }}</h2>
+              <p>{{ 'dash.seasonAverages' | translate }}</p>
+            </div>
+          </div>
+          @if ((scoreChart().labels?.length ?? 0) > 0) {
+            <app-chart
+              type="bar"
+              [data]="scoreChart()"
+              [options]="scoreOptions"
+              label="score-bands"
+            />
+          } @else {
+            <app-empty-state />
+          }
+        </article>
+
+        <article class="panel card">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.honorMix' | translate }}</h2>
+              <p>{{ 'dash.endOfSeason' | translate }}</p>
+            </div>
+          </div>
+          @if (
+            (kpis()?.honors?.tashji3 ?? 0) +
+              (kpis()?.honors?.intibah ?? 0) +
+              (kpis()?.honors?.none ?? 0) >
+            0
+          ) {
+            <app-chart
+              type="doughnut"
+              [data]="honorChart()"
+              [options]="doughnutOptions"
+              label="honor-mix"
+            />
+          } @else {
+            <app-empty-state />
+          }
+        </article>
+
+        <article class="panel card">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.groupPerformance' | translate }}</h2>
+              <p>{{ 'dash.averageByGroup' | translate }}</p>
+            </div>
+          </div>
+          @if ((groupChart().labels?.length ?? 0) > 0) {
+            <app-chart
+              type="bar"
+              [data]="groupChart()"
+              [options]="compactBarOptions"
+              label="group-performance"
+            />
+          } @else {
+            <app-empty-state />
+          }
+        </article>
+
+        @if (centers().length > 1) {
+          <article class="panel card">
+            <div class="panel-head">
+              <div>
+                <h2>{{ 'dash.centerComparison' | translate }}</h2>
+                <p>{{ 'dash.averageByCenter' | translate }}</p>
+              </div>
+            </div>
+            <app-chart
+              type="bar"
+              [data]="centerChart()"
+              [options]="barOptions"
+              label="center-comparison"
+            />
+          </article>
+        }
+
+        <article class="panel card">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.levelMix' | translate }}</h2>
+              <p>{{ 'dash.studentsByLevel' | translate }}</p>
+            </div>
+          </div>
+          @if ((levelChart().labels?.length ?? 0) > 0) {
+            <app-chart
+              type="doughnut"
+              [data]="levelChart()"
+              [options]="doughnutOptions"
+              label="level-mix"
+            />
+          } @else {
+            <app-empty-state />
+          }
+        </article>
+
+        <article class="panel card">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.genderMix' | translate }}</h2>
+              <p>{{ 'dash.studentsByGender' | translate }}</p>
+            </div>
+          </div>
+          @if ((genderChart().labels?.length ?? 0) > 0) {
+            <app-chart
+              type="doughnut"
+              [data]="genderChart()"
+              [options]="doughnutOptions"
+              label="gender-mix"
+            />
+          } @else {
+            <app-empty-state />
+          }
+        </article>
+
+        <article class="panel card top-panel span-3">
+          <div class="panel-head">
+            <div>
+              <h2>{{ 'dash.topStudents' | translate }}</h2>
+              <p>{{ 'dash.leaderboard' | translate }}</p>
+            </div>
+            <span class="panel-tag">{{ 'dash.top5' | translate }}</span>
+          </div>
+          @if (topStudents().length > 0) {
+            <ol class="leaderboard">
+              @for (student of topStudents(); track student.id; let i = $index) {
+                <li>
+                  <span class="rank" [class.podium]="i < 3">{{ i + 1 }}</span>
+                  <span class="avatar">{{ student.full_name.slice(0, 1) }}</span>
+                  <span class="who"
+                    ><strong>{{ student.full_name }}</strong
+                    ><small>{{ student.group_name ?? '—' }}</small></span
+                  >
+                  <span class="score ltr-num"
+                    >{{ student.avg_score ?? '—' }}<small>/20</small></span
+                  >
+                </li>
+              }
+            </ol>
+          } @else {
+            <app-empty-state />
+          }
+        </article>
+      </div>
+    }
+  }
 </section>
