@@ -167,8 +167,8 @@ export class ShellComponent {
     params: () => ({ admin: this.user()?.role === 'admin', t: this.regTick() }),
     loader: async ({ params }) => {
       if (!params.admin) return 0;
-      const p = await firstValueFrom(this.regSvc.list({ per_page: 1 }));
-      return p.meta.total;
+      const p = await firstValueFrom(this.regSvc.pendingCount());
+      return p.count;
     },
   });
 

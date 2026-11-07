@@ -16,6 +16,11 @@ export class RegistrationRequestsService {
     return this.api.get<RegistrationRequestIndexResponse['data']>('/registration-requests', params);
   }
 
+  /** Header badge only; does not fetch registration rows. */
+  pendingCount(): Observable<{ count: number }> {
+    return this.api.get<{ count: number }>('/registration-requests/count');
+  }
+
   /**
    * Copies the request into users (+ students when student) and removes it.
    * groupId places teacher/student accounts in the selected section; levelId
