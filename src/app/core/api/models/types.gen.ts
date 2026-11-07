@@ -357,7 +357,7 @@ export type RegisterRequest = {
     email: string;
     password: string;
     /**
-     * §2.8 follow-up: the waiting room can only ever mint teacher/student
+     * Â§2.8 follow-up: the waiting room can only ever mint teacher/student
      * accounts (accept() rejects anything else), so the public form
      * must not promise supervisor/board roles that can never be approved.
      */
@@ -569,7 +569,7 @@ export type SessionType = 'memorization' | 'revision' | 'exam';
 export type StoreAnnouncementRequest = {
     audience: Audience;
     /**
-     * §D: only my_students announcements need a section — center/global
+     * Â§D: only my_students announcements need a section â€” center/global
      * posts (all/teachers/manager) are group-less.
      */
     group_id?: number | null;
@@ -743,7 +743,7 @@ export type StoreScoresBulkRequest = {
         score: number;
     }>;
     /**
-     * §B: optional per-student memorized amount for this session
+     * Â§B: optional per-student memorized amount for this session
      * (upserted into memorization_logs; blank amount = remove the log).
      */
     memorizations?: Array<{
@@ -811,7 +811,7 @@ export type StoreUserRequest = {
     role: Role;
     phone?: string | null;
     /**
-     * §2.8: every role except admin belongs to exactly one center — a
+     * Â§2.8: every role except admin belongs to exactly one center â€” a
      * center-less supervisor/teacher/board/student account is inert.
      */
     center_id?: number | null;
@@ -1084,7 +1084,7 @@ export type UpdateSeasonRequest = {
 export type UpdateSessionRequest = {
     planned_date?: string;
     /**
-     * Full 24h day (views render 0→23): clocks cap at 23:59 — no rollover.
+     * Full 24h day (views render 0â†’23): clocks cap at 23:59 â€” no rollover.
      */
     start_time?: string;
     end_time?: string;
@@ -1098,7 +1098,7 @@ export type UpdateSessionRequest = {
 export type UpdateStudentRequest = {
     /**
      * Linking an account later (grandfathered NULL rows); explicit
-     * null is refused by the non-nullable rules — unlinking is not a thing.
+     * null is refused by the non-nullable rules â€” unlinking is not a thing.
      */
     user_id?: number;
     full_name?: string;
@@ -1274,7 +1274,7 @@ export type Weekday = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
  * WeeklyBatchRequest
  *
  * `rows.*.scores` is keyed by scoring-module code (a map), but the `scores.*`
- * rule makes Scramble infer a numeric list — so the wildcard child is hidden
+ * rule makes Scramble infer a numeric list â€” so the wildcard child is hidden
  * from the docs and the map type is declared explicitly. Runtime rules are
  * unchanged; this only corrects the generated OpenAPI/TS shape.
  */
@@ -2125,6 +2125,7 @@ export type AuthLoginResponses = {
                 center_id: number | null;
                 center_name: string | null;
                 teacher_type: 'hifz' | 'murajaa' | 'both' | null;
+                pending_registrations?: number | null;
             };
         };
     };
@@ -2202,6 +2203,7 @@ export type AuthMeResponses = {
             center_id: number | null;
             center_name: string | null;
             teacher_type: 'hifz' | 'murajaa' | 'both' | null;
+            pending_registrations?: number | null;
         };
     };
 };
@@ -2244,6 +2246,7 @@ export type AuthRefreshResponses = {
                 center_id: number | null;
                 center_name: string | null;
                 teacher_type: 'hifz' | 'murajaa' | 'both' | null;
+                pending_registrations?: number | null;
             };
         };
     };
@@ -8629,7 +8632,7 @@ export type UsersDestroyErrors = {
     };
     422: {
         success: boolean;
-        message: 'This teacher owns groups or history — choose a replacer.';
+        message: 'This teacher owns groups or history â€” choose a replacer.';
         errors: {
             code: string;
         };

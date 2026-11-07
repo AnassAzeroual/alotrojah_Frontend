@@ -1,4 +1,4 @@
-﻿import {
+import {
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -187,8 +187,13 @@ export class DashboardPage {
       l: this.filterLevel(),
       c: this.pickedCenter(),
       p: this.page(),
+      ready: !this.isAdmin() || this.centerTouched() || this.pickedCenter() !== null,
     }),
-    loader: ({ params }): Promise<StudentsIndexResponse['data']> => {
+    loader: ({ params }): Promise<StudentsIndexResponse['data'] | null> => {
+      // The admin's first center is auto-selected after /centers arrives.
+      // Waiting for it avoids a duplicate students request with no center_id.
+      if (!params.ready) return Promise.resolve(null);
+
       const query: Record<string, string | number> = { page: params.p };
       if (params.q.trim() !== '') query['q'] = params.q.trim();
       if (params.s !== '') query['status'] = params.s;

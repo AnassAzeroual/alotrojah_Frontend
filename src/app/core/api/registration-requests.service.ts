@@ -1,5 +1,5 @@
-import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { inject, Injectable, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { ApiClient, QueryParams } from './api-client';
 import {
   RegistrationRequestAcceptResponse,
@@ -12,8 +12,18 @@ import {
 export class RegistrationRequestsService {
   private readonly api = inject(ApiClient);
 
+  /** Last count seen by the waiting-room page; the shell reads this instead of polling. */
+  private readonly pending = signal<number | null>(null);
+  readonly pendingTotal = this.pending.asReadonly();
+
   list(params?: QueryParams): Observable<RegistrationRequestIndexResponse['data']> {
-    return this.api.get<RegistrationRequestIndexResponse['data']>('/registration-requests', params);
+    return this.api
+      .get<RegistrationRequestIndexResponse['data']>('/registration-requests', params)
+      .pipe(tap((page) => this.pending.set(page.meta.total)));
+  }
+
+  resetPendingCount(): void {
+    this.pending.set(null);
   }
 
   /** Header badge only; does not fetch registration rows. */

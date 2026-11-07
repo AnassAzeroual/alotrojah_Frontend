@@ -3,15 +3,15 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   ElementRef,
   inject,
-  resource,
   signal,
   viewChild,
 } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { filter, firstValueFrom } from 'rxjs';
+import { filter } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { RegistrationRequestsService } from '../api/registration-requests.service';
 import { LanguageService } from '../i18n/language.service';
@@ -152,7 +152,6 @@ export class ShellComponent {
 
   private readonly regSvc = inject(RegistrationRequestsService);
   private readonly router = inject(Router);
-  private readonly regTick = signal(0);
 
   /** Current URL, kept in sync by the NavigationEnd subscription below. */
   private readonly currentUrl = signal(this.router.url);
@@ -163,18 +162,15 @@ export class ShellComponent {
   );
 
   /** Pending waiting-room count for the header bell badge (admin only). */
-  readonly pendingRegistrations = resource({
-    params: () => ({ admin: this.user()?.role === 'admin', t: this.regTick() }),
-    loader: async ({ params }) => {
-      if (!params.admin) return 0;
-      const p = await firstValueFrom(this.regSvc.pendingCount());
-      return p.count;
-    },
+  readonly pendingRegistrations = computed(() => {
+    if (this.user()?.role !== 'admin') return 0;
+
+    return this.regSvc.pendingTotal() ?? this.user()?.pending_registrations ?? 0;
   });
 
   /** Bell click: land on the waiting room when something is actually waiting. */
   openRegistrations(): void {
-    if ((this.pendingRegistrations.value() ?? 0) > 0) {
+    if (this.pendingRegistrations() > 0) {
       void this.router.navigate(['/registrations']);
     }
   }
@@ -195,6 +191,11 @@ export class ShellComponent {
 
   constructor() {
     this.appearance.load();
+    // A new session must not inherit the previous account's waiting-room count.
+    effect(() => {
+      void this.user()?.id;
+      this.regSvc.resetPendingCount();
+    });
     // First-run checklist: one auto-open per account while setup is incomplete.
     if (this.user()?.role === 'admin') this.guide.maybeAutoOpen();
     // Tablet (768–1023): start with the rail — an expanded 268px sidebar
@@ -209,7 +210,6 @@ export class ShellComponent {
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe((e) => {
         this.currentUrl.set(e.urlAfterRedirects);
-        this.regTick.update((n) => n + 1);
       });
     destroy.onDestroy(() => nav.unsubscribe());
   }
