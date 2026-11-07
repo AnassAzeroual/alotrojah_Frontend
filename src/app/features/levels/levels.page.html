@@ -1,29 +1,32 @@
-<section class="page">
+<section class="page levels-page">
   <div class="page-head anim-rise">
-    <h1 class="with-add">
-      {{ 'level.title' | translate }}
-      @if (seasonId() !== null) {
-        <button
-          type="button"
-          class="btn btn-primary btn-icon"
-          data-testid="level-new"
-          [attr.aria-label]="'level.new' | translate"
-          [attr.title]="'level.new' | translate"
-          (click)="startCreate()"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            aria-hidden="true"
+    <div>
+      <span class="eyebrow">{{ 'nav.levels' | translate }}</span>
+      <h1 class="with-add">
+        {{ 'level.title' | translate }}
+        @if (seasonId() !== null) {
+          <button
+            type="button"
+            class="btn btn-primary btn-icon add-level"
+            data-testid="level-new"
+            [attr.aria-label]="'level.new' | translate"
+            [attr.title]="'level.new' | translate"
+            (click)="startCreate()"
           >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </button>
-      }
-    </h1>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+        }
+      </h1>
+    </div>
   </div>
 
   @if (!prefs.hideScopePickers()) {
@@ -109,337 +112,381 @@
     </div>
   } @else if (noSeason()) {
     <app-empty-state messageKey="level.no_season" />
-  } @else if ((levels.value() ?? []).length === 0 && !creating()) {
-    <app-empty-state messageKey="level.no_levels" />
   } @else {
-    <div class="table-responsive">
-      <table class="levels-table">
-        <thead>
-          <tr>
-            <th>{{ 'level.code' | translate }}</th>
-            <th>{{ 'level.name' | translate }}</th>
-            <th class="ltr-num">{{ 'level.sessions' | translate }}</th>
-            <th class="ltr-num">{{ 'level.thumnSession' | translate }}</th>
-            <th class="ltr-num">{{ 'level.thumnWeek' | translate }}</th>
-            <th class="ltr-num">{{ 'level.ahzabTerm' | translate }}</th>
-            <th class="actions-col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (creating()) {
-            <tr class="edit-row">
-              <td>
-                <code class="ltr-num" dir="ltr">…</code>
-              </td>
-              <td colspan="6">
-                <form (ngSubmit)="saveCreate()" autocomplete="off" data-testid="level-create-form">
-                  @if (errorKey()) {
-                    <div class="banner danger" data-testid="level-create-error">
-                      {{ errorKey()! | translate }}
-                    </div>
-                  }
-                  <div class="grid-auto">
-                    <div class="field">
-                      <span>{{ 'level.name' | translate }} *</span>
-                      <span class="ro-value" data-testid="level-new-name">{{
-                        form().name_ar
-                      }}</span>
-                    </div>
-                    <label class="field"
-                      ><span>{{ 'level.sessions' | translate }}</span>
-                      <input
-                        type="number"
-                        class="ltr-num"
-                        data-testid="level-new-sessions"
-                        [value]="form().sessions_per_week"
-                        (input)="setInput('sessions_per_week', $any($event.target).value)"
-                        min="1"
-                        max="7"
-                      />
-                    </label>
-                    <div class="field">
-                      <span>{{ 'level.thumnSessionLabel' | translate }}</span>
-                      <span class="ro-value" data-testid="level-new-thumn-label">{{
-                        form().thumn_session_label
-                      }}</span>
-                    </div>
-                    <label class="field"
-                      ><span>{{ 'level.thumnSession' | translate }}</span>
-                      <input
-                        type="number"
-                        class="ltr-num"
-                        data-testid="level-new-thumn-session"
-                        [value]="form().thumn_session_value"
-                        (input)="setInput('thumn_session_value', $any($event.target).value)"
-                        min="1"
-                        max="480"
-                        step="1"
-                      />
-                    </label>
-                    <div class="field">
-                      <span>{{ 'level.thumnWeek' | translate }}</span>
-                      <span class="ro-value ltr-num" data-testid="level-new-thumn-week">{{
-                        form().thumn_week_value | thumnDisplay: language.current()
-                      }}</span>
-                    </div>
-                    <div class="field">
-                      <span>{{ 'level.ahzabTerm' | translate }}</span>
-                      <span class="ro-value ltr-num" data-testid="level-new-ahzab-term">{{
-                        form().ahzab_term
-                      }}</span>
-                      <small class="hint">{{ 'level.goal_hint' | translate }}</small>
-                    </div>
-                    <div class="field">
-                      <span>{{ 'level.ahzabDawra' | translate }}</span>
-                      <span class="ro-value ltr-num" data-testid="level-new-ahzab-dawra">{{
-                        form().ahzab_dawra
-                      }}</span>
-                    </div>
-                    <div class="field">
-                      <span>{{ 'level.duration' | translate }}</span>
-                      <span class="ro-value" data-testid="level-new-duration">{{
-                        form().duration
-                      }}</span>
-                    </div>
-                    <div class="field">
-                      <span>{{ 'level.totalAhzab' | translate }}</span>
-                      <span class="ro-value ltr-num" data-testid="level-new-total-ahzab">{{
-                        form().total_ahzab
-                      }}</span>
-                    </div>
-                  </div>
-                  <div class="cluster">
-                    <button
-                      type="submit"
-                      class="btn btn-primary btn-sm"
-                      data-testid="level-create-save"
-                      [disabled]="!createValid() || saving()"
-                      (click)="saveCreate()"
-                    >
-                      @if (saving()) {
-                        <app-spinner />
-                      } @else {
-                        {{ 'common.save' | translate }}
-                      }
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-ghost btn-sm"
-                      [disabled]="saving()"
-                      (click)="cancelCreate()"
-                    >
-                      {{ 'common.cancel' | translate }}
-                    </button>
-                  </div>
-                </form>
-              </td>
-            </tr>
-          }
-          @for (l of levels.value() ?? []; track l.id) {
-            <tr>
-              <td [attr.data-label]="'level.code' | translate">
-                <code class="ltr-num" dir="ltr">{{ l.code }}</code>
-              </td>
-              <td [attr.data-label]="'level.name' | translate">
-                <strong>{{ l.name_ar }}</strong>
-              </td>
-              <td class="ltr-num" [attr.data-label]="'level.sessions' | translate">
-                {{ l.sessions_per_week }}
-              </td>
-              <td class="ltr-num" [attr.data-label]="'level.thumnSession' | translate">
-                {{ l.thumn_per_session_value }}
-              </td>
-              <td class="ltr-num" [attr.data-label]="'level.thumnWeek' | translate">
-                {{ l.thumn_per_week_value | thumnDisplay: language.current() }}
-              </td>
-              <td class="ltr-num" [attr.data-label]="'level.ahzabTerm' | translate">
-                <span class="goal-value" [attr.data-testid]="'level-goal-' + l.id">{{
-                  goalHeadline(l)
-                }}</span>
-                @if (l.term_goals.length > 0) {
-                  <button
-                    type="button"
-                    class="btn btn-ghost btn-sm goal-toggle"
-                    [attr.data-testid]="'level-goal-toggle-' + l.id"
-                    [attr.aria-expanded]="openGoalsId() === l.id"
-                    [attr.title]="'level.goal_breakdown' | translate"
-                    (click)="toggleGoals(l.id)"
-                  >
-                    {{ 'level.goal_breakdown' | translate }}
-                  </button>
+    @if (creating() || editingId() !== null) {
+      <section class="level-editor card anim-rise" data-testid="level-editor-panel">
+        <header class="editor-top">
+          <div class="editor-title">
+            <span class="eyebrow">{{
+              (creating() ? 'level.new' : 'level.editing') | translate
+            }}</span>
+            <h2>
+              {{
+                form().name_ar ||
+                  (creating() ? ('level.new' | translate) : (editorLevel()?.name_ar ?? '—'))
+              }}
+            </h2>
+            <p>{{ 'level.editor_hint' | translate }}</p>
+          </div>
+          <div class="editor-context">
+            <span class="code-pill ltr-num" dir="ltr">{{
+              creating() ? '…' : (editorLevel()?.code ?? '—')
+            }}</span>
+            <span class="season-pill">{{ seasonName() }}</span>
+            <button
+              type="button"
+              class="editor-close"
+              (click)="cancelCurrent()"
+              [attr.aria-label]="'common.close' | translate"
+              [attr.title]="'common.close' | translate"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <form
+          class="editor-form"
+          [attr.data-testid]="creating() ? 'level-create-form' : 'level-edit-form'"
+          (ngSubmit)="saveCurrent()"
+          autocomplete="off"
+        >
+          <div class="editor-grid">
+            <div class="editor-inputs">
+              <div class="section-label">
+                <span>{{ 'level.plan' | translate }}</span>
+                <small>{{ 'level.sessions' | translate }}</small>
+              </div>
+
+              <div class="week-strip" aria-hidden="true">
+                @for (day of sessionDots(); track day) {
+                  <span class="day-dot"></span>
                 }
-              </td>
-              <td class="actions-col" [attr.data-label]="'common.actions' | translate">
-                <button
-                  type="button"
-                  class="btn btn-ghost btn-sm"
-                  [attr.data-testid]="'edit-level-' + l.id"
-                  [attr.aria-label]="'center.edit' | translate"
-                  (click)="startEdit(l)"
+                @for (day of [1, 2, 3, 4, 5, 6, 7].slice(sessionDots().length); track day) {
+                  <span class="day-dot off"></span>
+                }
+              </div>
+
+              <div class="inputs-grid">
+                <label class="control" [class.invalid]="sessionsInvalid()">
+                  <span>{{ 'level.sessions' | translate }}</span>
+                  <input
+                    type="number"
+                    class="ltr-num"
+                    [attr.data-testid]="creating() ? 'level-new-sessions' : 'level-edit-sessions'"
+                    [attr.aria-invalid]="sessionsInvalid()"
+                    [value]="form().sessions_per_week"
+                    (input)="setInput('sessions_per_week', $any($event.target).value)"
+                    min="1"
+                    max="7"
+                  />
+                  @if (sessionsInvalid()) {
+                    <small class="field-error" data-testid="level-sessions-error">{{
+                      'level.sessions_range' | translate
+                    }}</small>
+                  } @else {
+                    <small>1–7</small>
+                  }
+                </label>
+                <label class="control" [class.invalid]="unitInvalid()">
+                  <span>{{ 'level.thumnSession' | translate }}</span>
+                  <input
+                    type="number"
+                    class="ltr-num"
+                    [attr.data-testid]="
+                      creating() ? 'level-new-thumn-session' : 'level-edit-thumn-session'
+                    "
+                    [attr.aria-invalid]="unitInvalid()"
+                    [value]="form().thumn_session_value"
+                    (input)="setInput('thumn_session_value', $any($event.target).value)"
+                    min="1"
+                    max="480"
+                    step="0.25"
+                  />
+                  @if (unitInvalid()) {
+                    <small class="field-error" data-testid="level-unit-error">{{
+                      'level.range' | translate
+                    }}</small>
+                  } @else {
+                    <small>1–480</small>
+                  }
+                </label>
+              </div>
+
+              @if (paceInvalid()) {
+                <div class="pace-error" data-testid="level-pace-error" role="alert">
+                  <strong>{{
+                    'level.pace_error' | translate: { ahzab: paceDawra(), max: paceMaxWeek() }
+                  }}</strong>
+                </div>
+              }
+
+              <div class="derived-grid">
+                <div class="derived">
+                  <span>{{ 'level.name' | translate }}</span>
+                  <strong [attr.data-testid]="creating() ? 'level-new-name' : 'level-edit-name'">{{
+                    form().name_ar
+                  }}</strong>
+                </div>
+                <div class="derived">
+                  <span>{{ 'level.thumnSessionLabel' | translate }}</span>
+                  <strong
+                    class="ltr-num"
+                    [attr.data-testid]="
+                      creating() ? 'level-new-thumn-label' : 'level-edit-thumn-label'
+                    "
+                    >{{ form().thumn_session_label }}</strong
+                  >
+                </div>
+                <div class="derived">
+                  <span>{{ 'level.thumnWeek' | translate }}</span>
+                  <strong
+                    class="ltr-num"
+                    [attr.data-testid]="
+                      creating() ? 'level-new-thumn-week' : 'level-edit-thumn-week'
+                    "
+                    >{{ form().thumn_week_value | thumnDisplay: language.current() }}</strong
+                  >
+                </div>
+                <div class="derived">
+                  <span>{{ 'level.ahzabTerm' | translate }}</span>
+                  <strong
+                    class="ltr-num"
+                    [attr.data-testid]="
+                      creating() ? 'level-new-ahzab-term' : 'level-edit-ahzab-term'
+                    "
+                    >{{ form().ahzab_term ?? '—' }}</strong
+                  >
+                </div>
+              </div>
+            </div>
+
+            <aside class="projection">
+              <div class="projection-head">
+                <span class="section-label">{{ 'level.projection' | translate }}</span>
+                <span class="season-pill"
+                  >{{ studyWeeks() }} {{ 'level.study_weeks' | translate }}</span
                 >
-                  {{ 'center.edit' | translate }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-danger-ghost btn-sm"
-                  [attr.data-testid]="'delete-level-' + l.id"
-                  [attr.aria-label]="'common.delete' | translate"
-                  (click)="armDelete(l.id)"
-                >
-                  {{ 'common.delete' | translate }}
-                </button>
-              </td>
-            </tr>
-            @if (openGoalsId() === l.id && l.term_goals.length > 0) {
-              <tr class="goal-row">
-                <td colspan="7">
-                  <div class="goal-terms" [attr.data-testid]="'level-goal-terms-' + l.id">
-                    @for (g of l.term_goals; track g.term_id) {
-                      <span class="goal-chip">
-                        <span class="goal-chip-name">{{ g.name_ar }}</span>
-                        <span>{{ g.study_weeks }} {{ 'level.study_weeks' | translate }}</span>
-                        @if (g.review_weeks > 0) {
-                          <span>{{ g.review_weeks }} {{ 'level.review_weeks' | translate }}</span>
-                        }
-                        <strong class="ltr-num">{{ g.ahzab }}</strong>
-                      </span>
-                    }
-                  </div>
-                </td>
-              </tr>
+              </div>
+              <div class="projection-grid">
+                <div>
+                  <small>{{ 'level.ahzabDawra' | translate }}</small>
+                  <strong
+                    class="ltr-num"
+                    [attr.data-testid]="
+                      creating() ? 'level-new-ahzab-dawra' : 'level-edit-ahzab-dawra'
+                    "
+                    >{{ form().ahzab_dawra ?? '—' }}</strong
+                  >
+                </div>
+                <div>
+                  <small>{{ 'level.duration' | translate }}</small>
+                  <strong
+                    [attr.data-testid]="creating() ? 'level-new-duration' : 'level-edit-duration'"
+                    >{{ form().duration || '—' }}</strong
+                  >
+                </div>
+                <div>
+                  <small>{{ 'level.totalAhzab' | translate }}</small>
+                  <strong
+                    class="ltr-num"
+                    [attr.data-testid]="
+                      creating() ? 'level-new-total-ahzab' : 'level-edit-total-ahzab'
+                    "
+                    >{{ form().total_ahzab ?? '—' }}</strong
+                  >
+                </div>
+              </div>
+              <p class="goal-hint">{{ 'level.goal_hint' | translate }}</p>
+            </aside>
+          </div>
+
+          @if (errorKey()) {
+            <div
+              class="pace-error form-error"
+              role="alert"
+              [attr.data-testid]="creating() ? 'level-create-error' : 'level-edit-error'"
+            >
+              <strong>{{ errorKey()! | translate }}</strong>
+            </div>
+          }
+
+          <footer class="editor-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [attr.data-testid]="creating() ? 'level-create-save' : 'level-edit-save'"
+              [disabled]="creating() ? !createValid() || saving() : saving()"
+            >
+              @if (saving()) {
+                <app-spinner />
+              } @else {
+                {{ 'common.save' | translate }}
+              }
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [disabled]="saving()"
+              (click)="cancelCurrent()"
+            >
+              {{ 'common.cancel' | translate }}
+            </button>
+          </footer>
+        </form>
+      </section>
+    }
+
+    @if (armingLevel(); as doomed) {
+      <section
+        class="delete-confirm card anim-rise"
+        [attr.data-testid]="'delete-level-panel-' + doomed.id"
+      >
+        <span class="warn-mark" aria-hidden="true">!</span>
+        <div class="delete-copy">
+          <strong>{{ 'level.delete_confirm_title' | translate: { code: doomed.code } }}</strong>
+          <p>{{ doomed.name_ar }}</p>
+        </div>
+        <div class="cluster">
+          <button
+            type="button"
+            class="btn btn-danger-solid btn-sm"
+            [disabled]="busyId() === doomed.id"
+            [attr.data-testid]="'confirm-delete-level-' + doomed.id"
+            (click)="remove(doomed.id)"
+          >
+            @if (busyId() === doomed.id) {
+              <app-spinner />
+            } @else {
+              {{ 'scoring.delete_confirm' | translate }}
             }
-            @if (editingId() === l.id) {
-              <tr class="edit-row">
-                <td colspan="7">
-                  <form (ngSubmit)="saveEdit(l.id)" autocomplete="off">
-                    <div class="grid-auto">
-                      <div class="field">
-                        <span>{{ 'level.name' | translate }} *</span>
-                        <span class="ro-value" data-testid="level-edit-name">{{
-                          form().name_ar
-                        }}</span>
-                      </div>
-                      <label class="field"
-                        ><span>{{ 'level.sessions' | translate }}</span>
-                        <input
-                          type="number"
-                          class="ltr-num"
-                          data-testid="level-edit-sessions"
-                          [value]="form().sessions_per_week"
-                          (input)="setInput('sessions_per_week', $any($event.target).value)"
-                          min="1"
-                          max="7"
-                        />
-                      </label>
-                      <div class="field">
-                        <span>{{ 'level.thumnSessionLabel' | translate }}</span>
-                        <span class="ro-value" data-testid="level-edit-thumn-label">{{
-                          form().thumn_session_label
-                        }}</span>
-                      </div>
-                      <label class="field"
-                        ><span>{{ 'level.thumnSession' | translate }}</span>
-                        <input
-                          type="number"
-                          class="ltr-num"
-                          data-testid="level-edit-thumn-session"
-                          [value]="form().thumn_session_value"
-                          (input)="setInput('thumn_session_value', $any($event.target).value)"
-                          min="1"
-                          max="480"
-                          step="1"
-                        />
-                      </label>
-                      <div class="field">
-                        <span>{{ 'level.thumnWeek' | translate }}</span>
-                        <span class="ro-value ltr-num" data-testid="level-edit-thumn-week">{{
-                          form().thumn_week_value | thumnDisplay: language.current()
-                        }}</span>
-                      </div>
-                      <div class="field">
-                        <span>{{ 'level.ahzabTerm' | translate }}</span>
-                        <span class="ro-value ltr-num" data-testid="level-edit-ahzab-term">{{
-                          form().ahzab_term
-                        }}</span>
-                        <small class="hint">{{ 'level.goal_hint' | translate }}</small>
-                      </div>
-                      <div class="field">
-                        <span>{{ 'level.ahzabDawra' | translate }}</span>
-                        <span class="ro-value ltr-num">{{ form().ahzab_dawra }}</span>
-                      </div>
-                      <div class="field">
-                        <span>{{ 'level.duration' | translate }}</span>
-                        <span class="ro-value">{{ form().duration }}</span>
-                      </div>
-                      <div class="field">
-                        <span>{{ 'level.totalAhzab' | translate }}</span>
-                        <span class="ro-value ltr-num">{{ form().total_ahzab }}</span>
-                      </div>
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [disabled]="busyId() === doomed.id"
+            (click)="disarmDelete()"
+          >
+            {{ 'common.cancel' | translate }}
+          </button>
+        </div>
+      </section>
+    }
+
+    @if ((levels.value() ?? []).length === 0 && !creating()) {
+      <app-empty-state messageKey="level.no_levels" />
+    } @else if ((levels.value() ?? []).length > 0) {
+      <div class="levels-panel card anim-rise">
+        <div class="levels-head">
+          <div>
+            <h2>{{ 'level.title' | translate }}</h2>
+            <p>{{ seasonName() }} · {{ centerName() }}</p>
+          </div>
+          <span class="count-pill"
+            >{{ (levels.value() ?? []).length }} {{ 'level.title' | translate }}</span
+          >
+        </div>
+        <div class="table-responsive">
+          <table class="levels-table">
+            <thead>
+              <tr>
+                <th>{{ 'level.code' | translate }}</th>
+                <th>{{ 'level.name' | translate }}</th>
+                <th class="ltr-num">{{ 'level.sessions' | translate }}</th>
+                <th class="ltr-num">{{ 'level.thumnSession' | translate }}</th>
+                <th class="ltr-num">{{ 'level.thumnWeek' | translate }}</th>
+                <th class="ltr-num">{{ 'level.ahzabTerm' | translate }}</th>
+                <th class="actions-col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of levels.value() ?? []; track l.id) {
+                <tr class="level-row">
+                  <td [attr.data-label]="'level.code' | translate">
+                    <span class="level-code ltr-num" dir="ltr">{{ l.code }}</span>
+                  </td>
+                  <td [attr.data-label]="'level.name' | translate">
+                    <div class="level-identity">
+                      <strong>{{ l.name_ar }}</strong>
+                      <small>{{ l.sessions_per_week }} {{ 'level.sessions' | translate }}</small>
                     </div>
-                    <div class="cluster">
-                      <button
-                        type="submit"
-                        class="btn btn-primary btn-sm"
-                        data-testid="level-edit-save"
-                        [disabled]="saving()"
-                        (click)="saveEdit(l.id)"
-                      >
-                        @if (saving()) {
-                          <app-spinner />
-                        } @else {
-                          {{ 'common.save' | translate }}
-                        }
-                      </button>
+                  </td>
+                  <td class="ltr-num" [attr.data-label]="'level.sessions' | translate">
+                    <span class="metric">{{ l.sessions_per_week }}</span>
+                  </td>
+                  <td class="ltr-num" [attr.data-label]="'level.thumnSession' | translate">
+                    <span class="metric">{{ l.thumn_per_session_value }}</span>
+                  </td>
+                  <td class="ltr-num" [attr.data-label]="'level.thumnWeek' | translate">
+                    <span class="metric">{{
+                      l.thumn_per_week_value | thumnDisplay: language.current()
+                    }}</span>
+                  </td>
+                  <td class="ltr-num" [attr.data-label]="'level.ahzabTerm' | translate">
+                    <span class="goal-value" [attr.data-testid]="'level-goal-' + l.id">{{
+                      goalHeadline(l)
+                    }}</span>
+                    @if (l.term_goals.length > 0) {
                       <button
                         type="button"
-                        class="btn btn-ghost btn-sm"
-                        [disabled]="saving()"
-                        (click)="cancelEdit()"
+                        class="btn btn-ghost btn-sm goal-toggle"
+                        [attr.data-testid]="'level-goal-toggle-' + l.id"
+                        [attr.aria-expanded]="openGoalsId() === l.id"
+                        [attr.title]="'level.goal_breakdown' | translate"
+                        (click)="toggleGoals(l.id)"
                       >
-                        {{ 'common.cancel' | translate }}
+                        {{ 'level.goal_breakdown' | translate }}
                       </button>
-                    </div>
-                    @if (errorKey()) {
-                      <div class="banner danger" data-testid="level-edit-error">
-                        {{ errorKey()! | translate }}
-                      </div>
                     }
-                  </form>
-                </td>
-              </tr>
-            }
-            @if (armingDeleteId() === l.id) {
-              <tr class="edit-row">
-                <td colspan="7">
-                  <div class="cluster">
+                  </td>
+                  <td class="actions-col" [attr.data-label]="'common.actions' | translate">
                     <button
                       type="button"
-                      class="btn btn-danger-solid btn-sm"
-                      [disabled]="busyId() === l.id"
-                      [attr.data-testid]="'confirm-delete-level-' + l.id"
-                      (click)="remove(l.id)"
+                      class="btn btn-ghost btn-sm row-action"
+                      [attr.data-testid]="'edit-level-' + l.id"
+                      [attr.aria-label]="'center.edit' | translate"
+                      (click)="startEdit(l)"
                     >
-                      @if (busyId() === l.id) {
-                        <app-spinner />
-                      } @else {
-                        {{ 'scoring.delete_confirm' | translate }}
-                      }
+                      {{ 'center.edit' | translate }}
                     </button>
                     <button
                       type="button"
-                      class="btn btn-ghost btn-sm"
-                      [disabled]="busyId() === l.id"
-                      (click)="disarmDelete()"
+                      class="btn btn-danger-ghost btn-sm row-action"
+                      [attr.data-testid]="'delete-level-' + l.id"
+                      [attr.aria-label]="'common.delete' | translate"
+                      (click)="armDelete(l.id)"
                     >
-                      {{ 'common.cancel' | translate }}
+                      {{ 'common.delete' | translate }}
                     </button>
-                  </div>
-                </td>
-              </tr>
-            }
-          }
-        </tbody>
-      </table>
-    </div>
+                  </td>
+                </tr>
+                @if (openGoalsId() === l.id && l.term_goals.length > 0) {
+                  <tr class="goal-row">
+                    <td colspan="7">
+                      <div class="goal-terms" [attr.data-testid]="'level-goal-terms-' + l.id">
+                        @for (g of l.term_goals; track g.term_id) {
+                          <span class="goal-chip">
+                            <span class="goal-chip-name">{{ g.name_ar }}</span>
+                            <span>{{ g.study_weeks }} {{ 'level.study_weeks' | translate }}</span>
+                            @if (g.review_weeks > 0) {
+                              <span
+                                >{{ g.review_weeks }} {{ 'level.review_weeks' | translate }}</span
+                              >
+                            }
+                            <strong class="ltr-num">{{ g.ahzab }}</strong>
+                          </span>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
   }
 </section>

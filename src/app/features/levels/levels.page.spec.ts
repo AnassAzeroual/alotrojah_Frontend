@@ -274,26 +274,68 @@ describe('LevelsPage', () => {
     );
   });
 
-  it('renders a singular duration label at the fastest in-range pace', async () => {
+  it('rejects sessions above 7 and shows the range error', async () => {
     await boot();
 
     fillNew();
     const sessions = el.querySelector<HTMLInputElement>('[data-testid="level-new-sessions"]')!;
-    sessions.value = '7';
+    sessions.value = '100';
+    sessions.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(page.createValid()).toBe(false);
+    expect(el.querySelector('[data-testid="level-sessions-error"]')!.textContent).toContain(
+      'level.sessions_range',
+    );
+    expect(el.querySelector('[data-testid="level-new-name"]')!.textContent).toBe('');
+    expect(el.querySelector<HTMLButtonElement>('[data-testid="level-create-save"]')!.disabled).toBe(
+      true,
+    );
+  });
+
+  it('rejects a pace whose cycle exceeds the Quran 60 ahzab', async () => {
+    await boot();
+
+    fillNew();
+    const sessions = el.querySelector<HTMLInputElement>('[data-testid="level-new-sessions"]')!;
+    sessions.value = '2';
+    sessions.dispatchEvent(new Event('input'));
+    const unit = el.querySelector<HTMLInputElement>('[data-testid="level-new-thumn-session"]')!;
+    unit.value = '400';
+    unit.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(page.paceInvalid()).toBe(true);
+    expect(page.paceDawra()).toBe(3000);
+    expect(el.querySelector('[data-testid="level-pace-error"]')!.textContent).toContain(
+      'level.pace_error',
+    );
+    expect(el.querySelector('[data-testid="level-new-name"]')!.textContent).toBe('');
+    expect(el.querySelector<HTMLButtonElement>('[data-testid="level-create-save"]')!.disabled).toBe(
+      true,
+    );
+  });
+
+  it('renders a singular duration label at the fastest valid Quran pace', async () => {
+    await boot();
+
+    fillNew();
+    const sessions = el.querySelector<HTMLInputElement>('[data-testid="level-new-sessions"]')!;
+    sessions.value = '2';
     sessions.dispatchEvent(new Event('input'));
     const unit = el.querySelector<HTMLInputElement>('[data-testid="level-new-thumn-session"]')!;
     unit.value = '8';
     unit.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    // 7 × 8 = 56 thumn/week → max(1, round(16/56)) = 1 year.
+    // 2 × 8 = 16 thumn/week → one 60-hizb cycle in one year.
     expect(el.querySelector('[data-testid="level-new-duration"]')!.textContent).toBe('سنة واحدة');
     expect(el.querySelector<HTMLButtonElement>('[data-testid="level-create-save"]')!.disabled).toBe(
       false,
     );
   });
 
-  it('blocks an identical twin before saving and shows the top banner', async () => {
+  it('blocks an identical twin and clears the inline error on edit', async () => {
     const twin: LevelResource = {
       ...LEVEL,
       id: 9,
@@ -309,6 +351,14 @@ describe('LevelsPage', () => {
 
     expect(page.errorKey()).toBe('apiErrors.LEVEL_EXISTS');
     expect(el.querySelector('[data-testid="level-create-error"]')).toBeTruthy();
+
+    const unit = el.querySelector<HTMLInputElement>('[data-testid="level-new-thumn-session"]')!;
+    unit.value = '2';
+    unit.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(page.errorKey()).toBeNull();
+    expect(el.querySelector('[data-testid="level-create-error"]')).toBeNull();
   });
 
   it('shows the first-term goal and expands the per-term breakdown', async () => {

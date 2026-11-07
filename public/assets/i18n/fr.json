@@ -642,7 +642,14 @@
     "reset": "Réinitialiser",
     "reset_confirm": "Confirmer",
     "new": "Nouveau niveau",
-    "range": "La quantité doit être comprise entre 1 et 480 (en thoumns)"
+    "range": "La quantité doit être comprise entre 1 et 480 (en thoumns)",
+    "editing": "Modification du niveau",
+    "plan": "Plan hebdomadaire",
+    "projection": "Projection de la saison",
+    "editor_hint": "Ajustez les séances et la mémorisation ; les chiffres de la saison se mettent à jour automatiquement.",
+    "delete_confirm_title": "Supprimer le niveau {{code}} ?",
+    "sessions_range": "Les séances doivent être comprises entre 1 et 7.",
+    "pace_error": "Ce rythme couvrirait {{ahzab}} hizb par cycle. Le maximum pour cette saison est {{max}} thumn/semaine — le Coran compte 60 hizb."
   },
   "sessionStatus": {
     "planned": "Planifiée",

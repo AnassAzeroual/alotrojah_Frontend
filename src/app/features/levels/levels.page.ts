@@ -15,6 +15,7 @@ import { LanguageService } from '../../core/i18n/language.service';
 import { ThumnDisplayPipe } from '../../shared/ui/thumn-display/thumn-display.pipe';
 import { sessionAmountLabel, weekAmountLabel } from '../../shared/ui/thumn-display/thumn-label';
 import { leaveController } from '../../core/guards/leave-controller';
+import { apiErrorKey } from '../../core/api/api-errors';
 import { CentersService } from '../../core/api/centers.service';
 import { LevelsService } from '../../core/api/levels.service';
 import { ReferenceService } from '../../core/api/reference.service';
@@ -76,8 +77,22 @@ interface AutoFields {
 }
 
 /** Owner-locked bounds (2026-10-15): 1 thumn floor, full-Quran 480 ceiling. */
+const QURAN_AHZAB = 60;
+const QURAN_THUMN = QURAN_AHZAB * 8;
+
+// Legacy levels include 1.5 thumn/session: keep quarter-thumn steps valid.
 const unitInRange = (unit: number | null): unit is number =>
-  unit !== null && unit >= 1 && unit <= 480;
+  unit !== null &&
+  Number.isFinite(unit) &&
+  unit >= 1 &&
+  unit <= QURAN_THUMN &&
+  Math.abs(unit * 4 - Math.round(unit * 4)) < 1e-9;
+
+const sessionsInRange = (sessions: number | null): sessions is number =>
+  sessions !== null && Number.isInteger(sessions) && sessions >= 1 && sessions <= 7;
+
+const cycleOf = (sessions: number, unit: number, studyWeeks: number): number =>
+  round2(((sessions * unit) / 8) * studyWeeks * 5);
 
 /**
  * The term goal counts STUDY weeks only (murajaa/review weeks carry no new
@@ -89,11 +104,14 @@ const autoFields = (
   studyWeeks: number,
 ): AutoFields | null => {
   // Out-of-range input yields no preview (never garbage) and blocks the save.
-  if (sessions === null || sessions < 1 || !unitInRange(unit)) return null;
+  if (!sessionsInRange(sessions) || !unitInRange(unit)) return null;
   const week = round2(sessions * unit);
   const term = round2((week / 8) * studyWeeks);
-  const dawra = round2(term * 5);
-  const years = Math.max(1, Math.round(16 / week));
+  const dawra = cycleOf(sessions, unit, studyWeeks);
+  // A level cycle is one pass through the Quran: 60 ahzab / 480 thumn.
+  // Without this, 2 × 400 thumn would produce a 3,000-hizb "cycle".
+  if (dawra > QURAN_AHZAB + 0.01) return null;
+  const years = Math.max(1, Math.round(QURAN_AHZAB / dawra));
   const label = sessionAmountLabel(unit);
   // The name is the WEEKLY amount (seeds: 3 × 1 → "3 أثمان في الأسبوع");
   // the label stays per session, which is what one lesson covers.
@@ -324,9 +342,44 @@ export class LevelsPage {
   readonly busyId = signal<number | null>(null);
   readonly openGoalsId = signal<number | null>(null);
 
+  readonly editorLevel = computed(() => {
+    const id = this.editingId();
+    return id === null ? null : ((this.levels.value() ?? []).find((l) => l.id === id) ?? null);
+  });
+
+  readonly armingLevel = computed(() => {
+    const id = this.armingDeleteId();
+    return id === null ? null : ((this.levels.value() ?? []).find((l) => l.id === id) ?? null);
+  });
+
+  /** Weekday dots for the editor's weekly-plan strip (1–7). */
+  readonly sessionDots = computed(() =>
+    Array.from(
+      { length: Math.max(0, Math.min(7, this.form().sessions_per_week ?? 0)) },
+      (_, i) => i,
+    ),
+  );
+
   /** The headline goal: the first term's exact value (stored value for seeds). */
   goalHeadline(l: LevelResource): number {
     return l.ahzab_first_term ?? l.ahzab_per_term;
+  }
+
+  saveCurrent(): void {
+    if (this.creating()) {
+      this.saveCreate();
+      return;
+    }
+    const id = this.editingId();
+    if (id !== null) this.saveEdit(id);
+  }
+
+  cancelCurrent(): void {
+    if (this.creating()) {
+      this.cancelCreate();
+      return;
+    }
+    this.cancelEdit();
   }
 
   toggleGoals(id: number): void {
@@ -396,6 +449,9 @@ export class LevelsPage {
 
   /** The only writable fields: every other value recomputes from these two. */
   setInput(field: LevelInput, value: string): void {
+    // Any edit invalidates the previous duplicate/server error; the derived
+    // pace validator then decides whether a new error belongs on screen.
+    this.errorKey.set(null);
     this.form.update((f) => withDerived({ ...f, [field]: toNumber(value) }, this.studyWeeks()));
   }
 
@@ -413,6 +469,28 @@ export class LevelsPage {
         this.studyWeeks(),
       ) !== null,
   );
+
+  readonly sessionsInvalid = computed(() => {
+    const value = this.form().sessions_per_week;
+    return value !== null && !sessionsInRange(value);
+  });
+
+  readonly unitInvalid = computed(() => {
+    const value = this.form().thumn_session_value;
+    return value !== null && !unitInRange(value);
+  });
+
+  readonly paceDawra = computed(() => {
+    const sessions = this.form().sessions_per_week;
+    const unit = this.form().thumn_session_value;
+    if (!sessionsInRange(sessions) || !unitInRange(unit)) return null;
+    return cycleOf(sessions, unit, this.studyWeeks());
+  });
+
+  readonly paceInvalid = computed(() => (this.paceDawra() ?? 0) > QURAN_AHZAB + 0.01);
+
+  /** Weekly ceiling that would complete exactly one 60-hizb cycle in the season. */
+  readonly paceMaxWeek = computed(() => round2(QURAN_THUMN / (5 * Math.max(1, this.studyWeeks()))));
 
   /** One payload for both modes, so create and edit can never drift apart. */
   private payload(f: LevelForm): StoreLevelRequest {
@@ -457,7 +535,10 @@ export class LevelsPage {
         this.resetForm();
         this.tick.update((n) => n + 1);
       },
-      error: () => this.saving.set(false),
+      error: (err: unknown) => {
+        this.saving.set(false);
+        this.errorKey.set(apiErrorKey(err));
+      },
     });
   }
 
@@ -479,7 +560,10 @@ export class LevelsPage {
         this.resetForm();
         this.tick.update((n) => n + 1);
       },
-      error: () => this.saving.set(false),
+      error: (err: unknown) => {
+        this.saving.set(false);
+        this.errorKey.set(apiErrorKey(err));
+      },
     });
   }
 

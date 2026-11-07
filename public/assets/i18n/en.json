@@ -642,7 +642,14 @@
     "reset": "Reset to defaults",
     "reset_confirm": "Confirm reset",
     "new": "New level",
-    "range": "The amount must be between 1 and 480 (in thumns)"
+    "range": "The amount must be between 1 and 480 (in thumns)",
+    "editing": "Editing level",
+    "plan": "Weekly plan",
+    "projection": "Season projection",
+    "editor_hint": "Adjust the weekly sessions and memorization; the season figures update automatically.",
+    "delete_confirm_title": "Delete level {{code}}?",
+    "sessions_range": "Sessions must be between 1 and 7.",
+    "pace_error": "This pace would cover {{ahzab}} ahzab per cycle. Maximum for this season is {{max}} thumn/week — the Quran has 60 ahzab."
   },
   "sessionStatus": {
     "planned": "Planned",
