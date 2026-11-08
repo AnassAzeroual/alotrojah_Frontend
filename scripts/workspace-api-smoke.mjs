@@ -68,6 +68,34 @@ ok(
   JSON.stringify(supervisorSeasons.body.data),
 );
 
+const tempEmail = `delete.test.${Date.now()}@demo.local`;
+const createdSupervisor = await call('/users', admin, {
+  method: 'POST',
+  body: JSON.stringify({
+    full_name: 'Delete Test Supervisor',
+    email: tempEmail,
+    password: 'Passw0rd!',
+    role: 'supervisor',
+    center_id: 1,
+  }),
+});
+const createdSupervisorId = createdSupervisor.body.data?.id;
+ok(
+  'admin can create a supervisor',
+  createdSupervisor.status === 201 && createdSupervisorId,
+  `HTTP ${createdSupervisor.status}`,
+);
+if (createdSupervisorId) {
+  const deletedSupervisor = await call(`/users/${createdSupervisorId}`, admin, {
+    method: 'DELETE',
+  });
+  ok(
+    'admin can delete a supervisor',
+    deletedSupervisor.status === 200,
+    `HTTP ${deletedSupervisor.status}`,
+  );
+}
+
 const workspace = await call('/sessions/1/workspace', admin);
 ok('workspace loads', workspace.status === 200, `HTTP ${workspace.status}`);
 ok('workspace has students', (workspace.body.data?.students?.length ?? 0) > 0);

@@ -80,8 +80,6 @@
 }
 
 .app-dialog-panel {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  // Geometry is owned by the CDK global position strategy. Do not add
+  // top/left/transform here — RTL pages made the manual centering drift.
 }
