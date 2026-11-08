@@ -53,7 +53,35 @@ Chain before pushing: `format → typecheck → test → build`.
 - E2E (`e2e/*.e2e.ts`, read-only on seeded dev DB): guest redirect, login → students → charts → logout.
 - Backend must run for e2e (`npm run e2e` starts it via `webServer` config).
 
-## Deploy notes (F13 will detail)
+## Deploy notes
 
-`npm run build` → upload `dist/alotrojah/browser/` to `https://alotrojah.ma/`
-(static host; `base-href /`; SPA fallback to `index.html` required server-side).
+`npm run build` → package `dist/alotrojah/browser/` → upload the archive and a
+one-shot extractor over FTPS → trigger extraction. The workflow follows the
+backend deployment shape.
+
+```bash
+npm run build
+php deploy_script/Build-Zip.php
+# upload deploy_script/frontend.zip and a token-stamped deploy_script/deploy.php
+# then request /deploy.php?action=extract with X-Deploy-Token
+```
+
+The extractor:
+
+- backs up the current `public_html` to `~/.frontend-backups` (five kept)
+- replaces the release while preserving `.well-known/`, `cgi-bin/`,
+  `.user.ini`, `php.ini`, and `.ftpquota`
+- extracts `frontend.zip` into `public_html`
+- removes the zip and self-deletes
+
+Required deployment secrets: `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD`,
+`DEPLOY_TOKEN`. Optional: `FRONTEND_DEPLOY_URL` if the trigger host differs from
+`https://alotrojah.ma/deploy.php?action=extract`.
+
+The host must allow PHP to write `public_html` and its parent directory (for
+backups and the deploy lock). SPA fallback to `index.html` remains in
+`public/.htaccess`, which is included in the archive.
+
+If the trigger is intercepted by Imunify360/Cloudflare, whitelist the deploy
+path or the GitHub runner egress at the origin, or set `FRONTEND_DEPLOY_URL` to
+an allowlisted trigger host.

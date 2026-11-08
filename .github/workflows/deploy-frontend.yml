@@ -48,16 +48,108 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      - name: FTP deploy to public_html/
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - uses: shivammathur/setup-php@v2
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          local-dir: dist/alotrojah/browser/
-          server-dir: public_html/
-          dangerous-clean-slate: false
+          php-version: '8.3'
+          extensions: zip
+          coverage: none
+
+      - name: Build frontend.zip
+        run: |
+          php deploy_script/Build-Zip.php
+          test -f deploy_script/frontend.zip
+          ls -lh deploy_script/frontend.zip
+
+      - name: Stamp extractor with deploy token
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DEPLOY_TOKEN:-}" ]; then
+            echo "DEPLOY_TOKEN secret is required." >&2
+            exit 1
+          fi
+          sed "s/__DEPLOY_TOKEN__/${DEPLOY_TOKEN}/" deploy_script/deploy.php > deploy_script/deploy.stamped.php
+          if grep -q '__DEPLOY_TOKEN__' deploy_script/deploy.stamped.php; then
+            echo "token stamp failed" >&2
+            exit 1
+          fi
+
+      - name: Install lftp (FTPS client)
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Upload zip + extractor via FTPS
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          printf 'machine %s login %s password %s\n' "$FTP_HOST" "$FTP_USER" "$FTP_PASS" > ~/.netrc
+          chmod 600 ~/.netrc
+          lftp -e "
+            set ftp:ssl-force true;
+            set ssl:verify-certificate no;
+            set net:max-retries 5;
+            set net:timeout 30;
+            set net:reconnect-interval-base 5;
+            open $FTP_HOST;
+            put deploy_script/frontend.zip -o public_html/frontend.zip;
+            put deploy_script/deploy.stamped.php -o public_html/deploy.php;
+            bye"
+          rm -f ~/.netrc deploy_script/deploy.stamped.php
+
+      - name: Trigger server-side extract
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          DEPLOY_URL: ${{ secrets.FRONTEND_DEPLOY_URL }}
+        run: |
+          set -euo pipefail
+          URL="${DEPLOY_URL:-https://alotrojah.ma/deploy.php?action=extract}"
+          case "$URL" in
+            *\?*) SEP='&' ;;
+            *) SEP='?' ;;
+          esac
+          URL="${URL}${SEP}cb=${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}-$(date +%s)"
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+
+          HTTP=$(curl -sS --max-time 590 -o deploy.log -w '%{http_code}' \
+            -A "$UA" \
+            -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' \
+            -H 'Accept-Language: en-US,en;q=0.9' \
+            -H 'Cache-Control: no-cache' \
+            -H 'Pragma: no-cache' \
+            -H 'Sec-Fetch-Site: none' \
+            -H 'Sec-Fetch-Mode: navigate' \
+            -H 'Sec-Fetch-User: ?1' \
+            -H 'Sec-Fetch-Dest: document' \
+            -H 'Upgrade-Insecure-Requests: 1' \
+            -H 'sec-ch-ua: "Chromium";v="126", "Google Chrome";v="126", "Not-A.Brand";v="99"' \
+            -H 'sec-ch-ua-mobile: ?0' \
+            -H 'sec-ch-ua-platform: "Windows"' \
+            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" \
+            "$URL")
+          echo "deploy HTTP ${HTTP}"
+          head -c 1200 deploy.log; echo
+
+          if grep -qi 'Please wait while your request is being verified\|imunify-bot-check' deploy.log; then
+            echo 'Imunify360/Cloudflare bot verification intercepted the deploy request.' >&2
+            echo 'Whitelist the deploy path (or GitHub runner egress) at the origin/WAF, or set FRONTEND_DEPLOY_URL to an allowlisted trigger.' >&2
+            exit 1
+          fi
+          if [ "$HTTP" != "200" ]; then
+            echo "Deploy trigger returned HTTP ${HTTP}." >&2
+            exit 1
+          fi
+          grep -q '"ok":true' deploy.log
+
+      - name: Keep deploy log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-deploy-log
+          path: deploy.log
+          if-no-files-found: ignore
 
       - name: Verify production
         env:
