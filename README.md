@@ -75,7 +75,11 @@ The extractor:
 - removes the zip and self-deletes
 
 Required deployment secrets: `FTP_HOST`, `FTP_USERNAME`, `FTP_PASSWORD`,
-`DEPLOY_TOKEN`. Optional: `FRONTEND_DEPLOY_URL` if the trigger host differs from
+`FRONTEND_DEPLOY_TOKEN` (or the legacy fallback `DEPLOY_TOKEN`). The frontend
+token is independent of the backend token; it only authenticates the frontend
+extractor. GitHub never reveals an existing secret value, so create a fresh
+random value for this repository if you do not already have one. Optional:
+`FRONTEND_DEPLOY_URL` if the trigger host differs from
 `https://alotrojah.ma/deploy.php?action=extract`.
 
 The host must allow PHP to write `public_html` and its parent directory (for
