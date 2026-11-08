@@ -6,10 +6,11 @@ import { AdminPrefsService } from './admin-prefs.service';
 export type SetupStep = SetupStatusResponse['data']['steps'][number];
 
 /**
- * Admin first-run setup guide. One backend request returns the ordered
- * checklist (center → season → levels → teacher → group → pupils); the shell
- * opens the panel automatically once per account while the checklist is
- * incomplete, and the header button / Settings can reopen it at any time.
+ * First-run setup guide for admins and center supervisors. One backend
+ * request returns the ordered checklist (center → season → levels → teacher →
+ * group → pupils); the shell opens the panel automatically once per account
+ * while the checklist is incomplete, and the header button / Settings can
+ * reopen it at any time. Supervisors are scoped to their own center.
  */
 @Injectable({ providedIn: 'root' })
 export class SetupGuideService {

@@ -281,7 +281,7 @@
         </div>
       </div>
       <div class="top-end">
-        @if (user()?.role === 'admin') {
+        @if (user()?.role === 'admin' || user()?.role === 'supervisor') {
           <button
             type="button"
             class="icon-btn guide-btn"

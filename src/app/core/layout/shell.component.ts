@@ -197,7 +197,8 @@ export class ShellComponent {
       this.regSvc.resetPendingCount();
     });
     // First-run checklist: one auto-open per account while setup is incomplete.
-    if (this.user()?.role === 'admin') this.guide.maybeAutoOpen();
+    const setupRole = this.user()?.role;
+    if (setupRole === 'admin' || setupRole === 'supervisor') this.guide.maybeAutoOpen();
     // Tablet (768–1023): start with the rail — an expanded 268px sidebar
     // leaves the topbar ~500px, which the date chips + identity cannot fit.
     if (window.matchMedia?.('(min-width: 768px) and (max-width: 1023px)')?.matches) {

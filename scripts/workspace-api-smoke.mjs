@@ -48,6 +48,25 @@ const hifz = await login('teacher.nour.hifz@demo.alotrojah.ma');
 const murajaa = await login('teacher.nour.murajaa@demo.alotrojah.ma');
 const student = await login('student.nour.01@demo.alotrojah.ma');
 const otherStudent = await login('student.nour.02@demo.alotrojah.ma');
+const supervisor = await login('supervisor.nour@demo.alotrojah.ma');
+
+const supervisorSetup = await call('/setup/status', supervisor);
+ok(
+  'supervisor can load setup status',
+  supervisorSetup.status === 200,
+  `HTTP ${supervisorSetup.status}`,
+);
+ok(
+  'empty center starts at the season step',
+  supervisorSetup.body.data?.current === 'season' && supervisorSetup.body.data?.season === null,
+  JSON.stringify(supervisorSetup.body.data),
+);
+const supervisorSeasons = await call('/seasons', supervisor);
+ok(
+  'supervisor does not inherit global seasons',
+  supervisorSeasons.body.data?.total === 0,
+  JSON.stringify(supervisorSeasons.body.data),
+);
 
 const workspace = await call('/sessions/1/workspace', admin);
 ok('workspace loads', workspace.status === 200, `HTTP ${workspace.status}`);
@@ -223,7 +242,11 @@ const unknownWeek = await call('/groups/1/sessions', admin, {
   method: 'POST',
   body: JSON.stringify({ week_id: 999999, session_type: 'revision' }),
 });
-ok('extra session rejects an unknown week', unknownWeek.status === 422, `HTTP ${unknownWeek.status}`);
+ok(
+  'extra session rejects an unknown week',
+  unknownWeek.status === 422,
+  `HTTP ${unknownWeek.status}`,
+);
 
 const wrongCoTeacher = await call('/groups/1', admin, {
   method: 'PUT',
