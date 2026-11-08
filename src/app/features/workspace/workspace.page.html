@@ -177,9 +177,6 @@
                     <span class="note-count">{{ noteCount(student) }}</span>
                   }
                 </button>
-                <span class="saved-hint" [class.visible]="saved()">{{
-                  'workspace.saved' | translate
-                }}</span>
               </footer>
             </article>
           } @empty {
@@ -192,9 +189,13 @@
         }
 
         <div class="save-bar">
-          <span class="dirty-label" [class.visible]="dirty()">{{
-            'workspace.unsaved' | translate
-          }}</span>
+          @if (saved()) {
+            <span class="saved-label">{{ 'workspace.saved' | translate }}</span>
+          } @else {
+            <span class="dirty-label" [class.visible]="dirty()">{{
+              'workspace.unsaved' | translate
+            }}</span>
+          }
           <button
             type="button"
             class="btn btn-primary"

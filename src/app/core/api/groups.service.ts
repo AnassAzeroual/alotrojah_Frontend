@@ -10,6 +10,11 @@ import {
   UpdateGroupRequest,
 } from './models';
 
+/** The API adds the Murajaa co-teacher fields on top of the generated contract. */
+export type GroupWritePayload = (StoreGroupRequest | UpdateGroupRequest) & {
+  murajaa_teacher_id?: number | null;
+};
+
 @Injectable({ providedIn: 'root' })
 export class GroupsService {
   private readonly api = inject(ApiClient);
@@ -40,7 +45,7 @@ export class GroupsService {
   }
 
   /** Create a group (admin picks any center; the server scopes supervisors). */
-  create(payload: StoreGroupRequest): Observable<GroupResource> {
+  create(payload: GroupWritePayload): Observable<GroupResource> {
     return this.api.post<GroupResource>('/groups', payload);
   }
 
@@ -50,7 +55,7 @@ export class GroupsService {
   }
 
   /** Partial update (name/teacher/capacity/schedule/is_active). */
-  update(id: number, payload: UpdateGroupRequest): Observable<GroupResource> {
+  update(id: number, payload: GroupWritePayload): Observable<GroupResource> {
     return this.api.put<GroupResource>(`/groups/${id}`, payload);
   }
 }

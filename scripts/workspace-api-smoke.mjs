@@ -88,6 +88,33 @@ ok(
   `HTTP ${forbiddenAttendance.status}`,
 );
 
+const foreignGroupDetail = await call('/groups/5/detail', hifz);
+ok(
+  'teacher cannot read another group detail',
+  foreignGroupDetail.status === 403,
+  `HTTP ${foreignGroupDetail.status}`,
+);
+
+const outsideAttendance = await call('/sessions/1/workspace', hifz, {
+  method: 'PUT',
+  body: JSON.stringify({ attendance: [{ student_id: 9, status: 'present' }] }),
+});
+ok(
+  'attendance rejects students outside the group',
+  outsideAttendance.status === 422,
+  `HTTP ${outsideAttendance.status}`,
+);
+
+const invalidAttendance = await call('/sessions/1/workspace', hifz, {
+  method: 'PUT',
+  body: JSON.stringify({ attendance: [{ student_id: studentId, status: 'not-a-status' }] }),
+});
+ok(
+  'invalid attendance status rejected',
+  invalidAttendance.status === 422,
+  `HTTP ${invalidAttendance.status}`,
+);
+
 const timeline = await call('/students/1/timeline?season_id=1', admin);
 ok('timeline loads', timeline.status === 200, `HTTP ${timeline.status}`);
 ok('timeline has terms', (timeline.body.data?.terms?.length ?? 0) === 3);
@@ -126,6 +153,86 @@ ok(
   'invalid extra session rejected',
   invalidSession.status === 422,
   `HTTP ${invalidSession.status}`,
+);
+
+const cancelledScore = await call('/sessions/57/workspace', admin, {
+  method: 'PUT',
+  body: JSON.stringify({
+    scores: [{ student_id: studentId, module_id: workspace.body.data.modules[0].id, score: 10 }],
+  }),
+});
+ok(
+  'cancelled session rejects writes',
+  cancelledScore.status === 422,
+  `HTTP ${cancelledScore.status}`,
+);
+
+const outsideBulkScore = await call('/scores/bulk', admin, {
+  method: 'POST',
+  body: JSON.stringify({
+    session_id: 1,
+    records: [{ student_id: 9, module_code: 'hifz', score: 10 }],
+  }),
+});
+ok(
+  'old bulk scoring rejects students outside the group',
+  outsideBulkScore.status === 422,
+  `HTTP ${outsideBulkScore.status}`,
+);
+
+const outsideBulkAttendance = await call('/attendance/bulk', admin, {
+  method: 'POST',
+  body: JSON.stringify({
+    session_id: 1,
+    records: [{ student_id: 9, status: 'present' }],
+  }),
+});
+ok(
+  'old bulk attendance rejects students outside the group',
+  outsideBulkAttendance.status === 422,
+  `HTTP ${outsideBulkAttendance.status}`,
+);
+
+const cancelledBulkScore = await call('/scores/bulk', admin, {
+  method: 'POST',
+  body: JSON.stringify({
+    session_id: 57,
+    records: [{ student_id: studentId, module_code: 'hifz', score: 10 }],
+  }),
+});
+ok(
+  'old bulk scoring rejects cancelled sessions',
+  cancelledBulkScore.status === 422,
+  `HTTP ${cancelledBulkScore.status}`,
+);
+
+const cancelledBulkAttendance = await call('/attendance/bulk', admin, {
+  method: 'POST',
+  body: JSON.stringify({
+    session_id: 57,
+    records: [{ student_id: studentId, status: 'present' }],
+  }),
+});
+ok(
+  'old bulk attendance rejects cancelled sessions',
+  cancelledBulkAttendance.status === 422,
+  `HTTP ${cancelledBulkAttendance.status}`,
+);
+
+const unknownWeek = await call('/groups/1/sessions', admin, {
+  method: 'POST',
+  body: JSON.stringify({ week_id: 999999, session_type: 'revision' }),
+});
+ok('extra session rejects an unknown week', unknownWeek.status === 422, `HTTP ${unknownWeek.status}`);
+
+const wrongCoTeacher = await call('/groups/1', admin, {
+  method: 'PUT',
+  body: JSON.stringify({ teacher_id: 4, murajaa_teacher_id: 4 }),
+});
+ok(
+  'Murajaa assignment validates teacher type',
+  wrongCoTeacher.status === 422,
+  `HTTP ${wrongCoTeacher.status}`,
 );
 
 const legacyReviews = await call('/murajaa-reviews', admin);

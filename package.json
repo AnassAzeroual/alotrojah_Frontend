@@ -34,7 +34,9 @@
     "shots": "node scripts/shots.mjs",
     "perf:load": "node scripts/load-test.mjs",
     "perf:test": "node --test scripts/load-test.test.mjs",
-    "api:sync": "node scripts/sync-api.mjs"
+    "api:sync": "node scripts/sync-api.mjs",
+    "api:prune": "node scripts/prune-api-types.mjs",
+    "test:api-prune": "node --test scripts/prune-api-types.test.mjs"
   },
   "engines": {
     "node": "^24"

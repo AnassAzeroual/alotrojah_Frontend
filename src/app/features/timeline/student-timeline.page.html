@@ -19,6 +19,13 @@
       <div class="skeleton"></div>
       <div class="skeleton"></div>
     </div>
+  } @else if (loadError()) {
+    <div class="timeline-error card" role="alert">
+      <p>{{ 'common.error' | translate }}</p>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="retry()">
+        {{ 'common.retry' | translate }}
+      </button>
+    </div>
   } @else if (!data()) {
     <app-empty-state messageKey="timeline.no_timeline" />
   } @else if (data(); as d) {

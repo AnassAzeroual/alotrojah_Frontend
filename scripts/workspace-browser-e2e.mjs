@@ -38,6 +38,13 @@ ok('workspace has student rows', (await page.locator('.student-row').count()) > 
 ok('workspace has score fields', (await page.locator('.module-field').count()) >= 5);
 ok('workspace has save action', (await page.locator('.save-bar button').count()) === 1);
 
+const firstScore = page.locator('.module-field input').first();
+const scoreValue = await firstScore.inputValue();
+await firstScore.fill(scoreValue);
+await page.locator('.save-bar button').click();
+await page.waitForTimeout(900);
+ok('successful save shows confirmation', (await page.locator('.saved-label').count()) === 1);
+
 await page.locator('.notes-btn').first().click();
 await page.waitForTimeout(350);
 ok('note drawer opens', (await page.locator('.note-drawer').count()) === 1);
@@ -56,6 +63,13 @@ ok('timeline hero renders', (await page.locator('.timeline-hero').count()) === 1
 ok('timeline roadmap renders terms', (await page.locator('.term-block').count()) > 0);
 ok('timeline opens one week', (await page.locator('.session-card').count()) > 0);
 
+await page.goto(`${BASE}/students/999999/timeline`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(700);
+ok(
+  'timeline shows load error instead of no-data',
+  (await page.locator('.timeline-error').count()) === 1,
+);
+
 await page.goto(`${BASE}/reviews`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(400);
 ok('old /reviews redirects to /entry', /\/entry$/.test(page.url()), page.url());
@@ -72,7 +86,12 @@ await page.screenshot({
   path: 'C:\\Users\\devtips\\Documents\\AlOtrojah\\workspace-browser-e2e.png',
   fullPage: true,
 });
-ok('no browser console errors', consoleErrors.length === 0, consoleErrors.slice(0, 2).join(' | '));
+const unexpectedErrors = consoleErrors.filter((line) => !line.includes('status of 404'));
+ok(
+  'no unexpected browser console errors',
+  unexpectedErrors.length === 0,
+  unexpectedErrors.slice(0, 2).join(' | '),
+);
 
 await browser.close();
 console.log(

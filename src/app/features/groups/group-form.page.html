@@ -62,7 +62,7 @@
           <span>{{ 'grp.murajaa_teacher' | translate }}</span>
           <app-dropdown
             [value]="murajaaTeacherId() ?? ''"
-            [options]="teacherOptions()"
+            [options]="murajaaTeacherOptions()"
             (valueChange)="murajaaTeacherId.set(num($event))"
             placeholderKey="grp.murajaa_teacher"
             ariaLabelKey="grp.murajaa_teacher"

@@ -365,15 +365,11 @@
   font-weight: 800;
 }
 
-.saved-hint {
+.saved-label {
+  margin-inline-end: auto;
   color: #067a52;
   font-size: var(--text-xs);
-  opacity: 0;
-  transition: opacity 150ms ease;
-
-  &.visible {
-    opacity: 1;
-  }
+  font-weight: 600;
 }
 
 .save-bar {

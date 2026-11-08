@@ -37,13 +37,27 @@ export class StudentTimelinePage {
     return Number.isNaN(n) ? null : n;
   });
 
+  readonly loadError = signal(false);
   readonly timeline = resource({
     params: () => ({ id: this.studentId() }),
     loader: ({ params }): Promise<StudentTimeline | null> => {
-      if (params.id === null) return Promise.resolve(null);
+      if (params.id === null) {
+        this.loadError.set(false);
+        return Promise.resolve(null);
+      }
+      this.loadError.set(false);
       const id = params.id;
-      return new Promise((resolve, reject) =>
-        this.timelineSvc.get(id).subscribe({ next: resolve, error: reject }),
+      return new Promise((resolve) =>
+        this.timelineSvc.get(id).subscribe({
+          next: (value) => {
+            this.loadError.set(false);
+            resolve(value);
+          },
+          error: () => {
+            this.loadError.set(true);
+            resolve(null);
+          },
+        }),
       );
     },
   });
@@ -143,6 +157,10 @@ export class StudentTimelinePage {
 
   toggleWeek(weekId: number): void {
     this.openWeek.set(this.openWeek() === weekId ? null : weekId);
+  }
+
+  protected retry(): void {
+    this.timeline.reload();
   }
 
   protected print(): void {

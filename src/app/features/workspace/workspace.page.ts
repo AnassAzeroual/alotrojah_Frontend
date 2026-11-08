@@ -127,12 +127,6 @@ export class WorkspacePage {
     })),
   );
 
-  readonly currentSession = computed(
-    () =>
-      (this.sessions.value() ?? []).find((session) => session.id === this.selectedSession()) ??
-      null,
-  );
-
   readonly canEditAny = computed(() => {
     const p = this.workspace.value()?.permissions;
     return !!p && (p.attendance || p.hifz || p.murajaa);
@@ -204,7 +198,6 @@ export class WorkspacePage {
     this.noteDrafts.set(notes);
     this.attendanceDraft.set(attendance);
     this.dirty.set(false);
-    this.saved.set(false);
     this.errorKey.set(null);
   });
 
@@ -215,6 +208,7 @@ export class WorkspacePage {
     this.selectedWeek.set(null);
     this.selectedSession.set(null);
     this.dirty.set(false);
+    this.saved.set(false);
   }
 
   setWeek(value: DropdownValue): void {
@@ -223,11 +217,13 @@ export class WorkspacePage {
     this.selectedWeek.set(id);
     this.selectedSession.set(null);
     this.dirty.set(false);
+    this.saved.set(false);
   }
 
   setSession(value: DropdownValue): void {
     this.selectedSession.set(dropdownNumber(value));
     this.dirty.set(false);
+    this.saved.set(false);
     this.errorKey.set(null);
   }
 

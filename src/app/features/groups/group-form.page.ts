@@ -15,7 +15,7 @@ import { firstValueFrom } from 'rxjs';
 import { CentersService } from '../../core/api/centers.service';
 import { GroupsService } from '../../core/api/groups.service';
 import { UsersService } from '../../core/api/users.service';
-import { Weekday } from '../../core/api/models';
+import { GroupDetailResponse, Weekday } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { leaveController } from '../../core/guards/leave-controller';
 import {
@@ -26,6 +26,11 @@ import {
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 
 const WEEKDAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+
+type GroupDetailWithCoTeacher = GroupDetailResponse['data']['group'] & {
+  murajaa_teacher_id?: number | null;
+  murajaa_teacher_name?: string | null;
+};
 
 /** Loaded-state snapshot for the edit-mode dirty comparison. */
 interface GroupEditSeed {
@@ -153,7 +158,7 @@ export class GroupFormPage {
   constructor() {
     effect(() => {
       const id = this.editId();
-      const g = this.detailRes.value()?.group;
+      const g = this.detailRes.value()?.group as GroupDetailWithCoTeacher | undefined;
       if (id === null || !g || this.seededFor() === id) return;
       this.name.set(g.name);
       this.centerId.set(g.center_id);
@@ -191,6 +196,22 @@ export class GroupFormPage {
       label: u.full_name,
     })),
   );
+
+  protected readonly murajaaTeacherOptions = computed<DropdownOption[]>(() => {
+    const all = this.teachersRes.value() ?? [];
+    const options = all
+      .filter((u) => u.teacher_type === 'murajaa' || u.teacher_type === 'both')
+      .map((u) => ({
+        value: u.id,
+        label: u.full_name,
+      }));
+    const selected = this.murajaaTeacherId();
+    if (selected !== null && !options.some((option) => option.value === selected)) {
+      const legacy = all.find((u) => u.id === selected);
+      if (legacy) options.push({ value: legacy.id, label: legacy.full_name });
+    }
+    return options;
+  });
 
   protected onCenterChange(v: number | null): void {
     // Teachers are center-scoped, so switching centers invalidates the pick.
