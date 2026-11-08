@@ -13,6 +13,8 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { PlanningService } from '../../core/api/planning.service';
+import { SeasonsService } from '../../core/api/seasons.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { leaveController } from '../../core/guards/leave-controller';
 import { DatePickerComponent } from '../../shared/ui/date-picker/date-picker.component';
 import {
@@ -45,12 +47,29 @@ export class TermDetailPage {
   readonly id = input.required<number, string>({ transform: (v: string) => Number(v) });
 
   private readonly planning = inject(PlanningService);
+  private readonly seasonsSvc = inject(SeasonsService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly tick = signal(0);
 
   protected readonly term = resource({
     params: () => ({ id: this.id(), t: this.tick() }),
     loader: ({ params }) => firstValueFrom(this.planning.termDetail(params.id)),
+  });
+
+  private readonly season = resource({
+    params: () => ({ id: this.term.value()?.season_id ?? null }),
+    loader: ({ params }) =>
+      params.id === null ? Promise.resolve(null) : firstValueFrom(this.seasonsSvc.get(params.id)),
+  });
+
+  /** Shared seasons are admin-owned; supervisors edit only their center's terms. */
+  protected readonly canManage = computed(() => {
+    const role = this.auth.role();
+    if (role === 'admin') return true;
+    if (role !== 'supervisor') return false;
+    const centerId = this.auth.currentUser()?.center_id;
+    return centerId != null && this.season.value()?.center_id === centerId;
   });
 
   /** Sibling terms of the same season — the terms list this page was missing. */

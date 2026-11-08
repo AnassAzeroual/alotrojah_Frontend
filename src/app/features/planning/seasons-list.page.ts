@@ -72,7 +72,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
               </small>
               <small class="muted ltr-num">{{ s.total_weeks }} / {{ s.total_sessions }}</small>
               <div class="cluster">
-                @if (!s.is_current) {
+                @if (!s.is_current && canManageSeason(s)) {
                   <button type="button" class="btn btn-ghost" (click)="activate(s.id)">
                     {{ 'planning.activate' | translate }}
                   </button>
@@ -82,7 +82,7 @@ import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
                     'planning.terms' | translate
                   }}</a>
                 }
-                @if (canManage()) {
+                @if (canManage() && canManageSeason(s)) {
                   @if (renamingId() === s.id) {
                     <input
                       type="text"
@@ -187,6 +187,11 @@ export class SeasonsListPage {
   readonly canDelete = computed(() => this.auth.role() === 'admin');
   /** Rename follows the manage ability (admin/supervisor, center-laned server-side). */
   readonly canManage = computed(() => ['admin', 'supervisor'].includes(this.auth.role() ?? ''));
+  /** Shared seasons are admin-owned; supervisors may only manage their center's rows. */
+  canManageSeason(season: { center_id: number | null }): boolean {
+    if (this.auth.role() === 'admin') return true;
+    return season.center_id !== null && season.center_id === this.auth.currentUser()?.center_id;
+  }
   readonly armingDeleteId = signal<number | null>(null);
   readonly busyId = signal<number | null>(null);
   readonly renamingId = signal<number | null>(null);

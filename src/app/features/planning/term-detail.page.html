@@ -9,7 +9,7 @@
 } @else {
   <section class="page">
     <div class="page-head anim-rise term-head">
-      @if (renaming()) {
+      @if (renaming() && canManage()) {
         <form class="cluster" (ngSubmit)="submitRename()" autocomplete="off">
           <input
             type="text"
@@ -43,15 +43,17 @@
       } @else {
         <h1>
           {{ term.value()!.name_ar }}
-          <button
-            type="button"
-            class="btn btn-ghost btn-sm"
-            data-testid="term-rename"
-            [attr.aria-label]="'planning.rename_term' | translate"
-            (click)="startRename()"
-          >
-            {{ 'planning.rename_term' | translate }}
-          </button>
+          @if (canManage()) {
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              data-testid="term-rename"
+              [attr.aria-label]="'planning.rename_term' | translate"
+              (click)="startRename()"
+            >
+              {{ 'planning.rename_term' | translate }}
+            </button>
+          }
           <a
             class="btn btn-ghost btn-sm"
             [routerLink]="['/planning/calendar']"
@@ -96,7 +98,7 @@
             <button
               type="button"
               [class.on]="w.week_type === 'study'"
-              [disabled]="w.week_type === 'study'"
+              [disabled]="!canManage() || w.week_type === 'study'"
               (click)="setWeekType(w.id, 'study')"
             >
               {{ 'weekType.study' | translate }}
@@ -104,7 +106,7 @@
             <button
               type="button"
               [class.on]="w.week_type === 'review'"
-              [disabled]="w.week_type === 'review'"
+              [disabled]="!canManage() || w.week_type === 'review'"
               (click)="setWeekType(w.id, 'review')"
             >
               {{ 'weekType.review' | translate }}
@@ -117,17 +119,20 @@
               <app-dropdown
                 [options]="sessionTypeOptions"
                 [value]="s.session_type"
+                [disabled]="!canManage()"
                 (valueChange)="setSession(s.id, { session_type: txt($event) })"
                 ariaLabelKey="sessionType.memorization"
               />
               <app-dropdown
                 [options]="sessionStatusOptions"
                 [value]="s.status"
+                [disabled]="!canManage()"
                 (valueChange)="setSession(s.id, { status: txt($event) })"
                 ariaLabelKey="sessionStatus.planned"
               />
               <app-date-picker
                 [value]="s.planned_date ?? null"
+                [disabled]="!canManage()"
                 (valueChange)="setSession(s.id, { planned_date: $any($event) })"
                 ariaLabelKey="planning.planned_date"
               />

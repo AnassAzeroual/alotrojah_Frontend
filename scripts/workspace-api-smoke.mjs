@@ -57,14 +57,14 @@ ok(
   `HTTP ${supervisorSetup.status}`,
 );
 ok(
-  'empty center starts at the season step',
-  supervisorSetup.body.data?.current === 'season' && supervisorSetup.body.data?.season === null,
+  'setup recognizes the existing shared season',
+  supervisorSetup.body.data?.season !== null && supervisorSetup.body.data?.current !== 'season',
   JSON.stringify(supervisorSetup.body.data),
 );
 const supervisorSeasons = await call('/seasons', supervisor);
 ok(
-  'supervisor does not inherit global seasons',
-  supervisorSeasons.body.data?.total === 0,
+  'supervisor sees the shared season used by setup',
+  (supervisorSeasons.body.data?.total ?? 0) > 0,
   JSON.stringify(supervisorSeasons.body.data),
 );
 

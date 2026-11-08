@@ -151,11 +151,14 @@ export class SeasonsCalendarPage {
   protected readonly weekStartsOn = 1;
   /** Manual re-render trigger: an unhandled drag snaps back to the data. */
   protected readonly refresh = new Subject<void>();
-  /** Session moves (week drag, date edits) stay manager-only; everyone else is read-only. */
-  protected readonly canManage = computed(() => {
-    const r = this.auth.role();
-    return r === 'admin' || r === 'supervisor';
-  });
+  /** Session moves stay manager-only; shared seasons are admin-owned. */
+  protected canManage(): boolean {
+    const role = this.auth.role();
+    if (role === 'admin') return true;
+    if (role !== 'supervisor') return false;
+    const season = (this.seasonsRes.value()?.data ?? []).find((s) => s.id === this.pickedSeason());
+    return season?.center_id != null && season.center_id === this.auth.currentUser()?.center_id;
+  }
   /** §D: the events-JSON debug panel is admin-only (mirrors internal state). */
   protected readonly isAdmin = computed(() => this.auth.role() === 'admin');
   /** Week view: managers may move a session and resize either edge. */
