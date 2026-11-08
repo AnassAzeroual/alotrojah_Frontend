@@ -59,6 +59,18 @@
         </label>
 
         <label class="field">
+          <span>{{ 'grp.murajaa_teacher' | translate }}</span>
+          <app-dropdown
+            [value]="murajaaTeacherId() ?? ''"
+            [options]="teacherOptions()"
+            (valueChange)="murajaaTeacherId.set(num($event))"
+            placeholderKey="grp.murajaa_teacher"
+            ariaLabelKey="grp.murajaa_teacher"
+            testId="group-murajaa-teacher"
+          />
+        </label>
+
+        <label class="field">
           <span>{{ 'grp.col_capacity' | translate }}</span>
           <input
             type="number"

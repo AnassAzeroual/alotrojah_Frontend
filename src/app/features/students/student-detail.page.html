@@ -266,6 +266,13 @@
           </svg>
         </button>
         <span class="muted">{{ 'nav.students' | translate }}</span>
+        <a
+          class="btn btn-ghost"
+          [routerLink]="['/students', studentVal()!.id, 'timeline']"
+          data-testid="student-timeline-link"
+        >
+          {{ 'timeline.open' | translate }}
+        </a>
         <button type="button" class="btn btn-ghost" (click)="startEdit()">
           {{ 'students.edit' | translate }}
         </button>

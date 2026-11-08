@@ -1,0 +1,373 @@
+<section class="page workspace-page">
+  <div class="page-head anim-rise">
+    <div>
+      <span class="eyebrow">{{ 'nav.entry' | translate }}</span>
+      <h1>{{ 'workspace.title' | translate }}</h1>
+      <p>{{ 'workspace.subtitle' | translate }}</p>
+    </div>
+  </div>
+
+  @if ((groups.value() ?? []).length === 0) {
+    <app-empty-state messageKey="workspace.no_group" />
+  } @else {
+    <div class="workspace-picker card anim-rise">
+      <label class="picker-field">
+        <span>{{ 'workspace.pick_group' | translate }}</span>
+        <app-dropdown
+          [options]="groupOptions()"
+          [value]="selectedGroup() === null ? '' : selectedGroup()!.toString()"
+          (valueChange)="setGroup($event)"
+          ariaLabelKey="workspace.pick_group"
+          testId="workspace-group"
+        />
+      </label>
+      <label class="picker-field">
+        <span>{{ 'workspace.pick_week' | translate }}</span>
+        <app-dropdown
+          [options]="weekOptions()"
+          [value]="selectedWeek() === null ? '' : selectedWeek()!.toString()"
+          [disabled]="selectedGroup() === null"
+          (valueChange)="setWeek($event)"
+          ariaLabelKey="workspace.pick_week"
+          testId="workspace-week"
+        />
+      </label>
+      <label class="picker-field">
+        <span>{{ 'workspace.pick_session' | translate }}</span>
+        <app-dropdown
+          [options]="sessionOptions()"
+          [value]="selectedSession() === null ? '' : selectedSession()!.toString()"
+          [disabled]="selectedWeek() === null"
+          (valueChange)="setSession($event)"
+          ariaLabelKey="workspace.pick_session"
+          testId="workspace-session"
+        />
+      </label>
+      @if (selectedWeek() !== null) {
+        <button type="button" class="btn btn-ghost add-session" (click)="openAdd()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          {{ 'workspace.add_session' | translate }}
+        </button>
+      }
+    </div>
+
+    @if (workspace.isLoading()) {
+      <div class="loading-strip" aria-hidden="true">
+        <div class="skeleton"></div>
+      </div>
+    } @else if (workspace.error()) {
+      <div class="banner danger" role="alert">{{ 'common.error' | translate }}</div>
+    } @else if (workspace.value(); as ws) {
+      <div class="session-strip">
+        <div class="session-main">
+          <span class="session-badge">{{ 'workspace.session' | translate }}</span>
+          <strong>{{ ws.group.name }}</strong>
+          <span class="dot">·</span>
+          <span class="ltr-num">{{ ws.session.planned_date ?? '—' }}</span>
+          <span class="dot">·</span>
+          <span class="type-pill">{{
+            'timeline.type_' + ws.session.session_type | translate
+          }}</span>
+        </div>
+        <div class="session-meta">
+          <span class="ltr-num"
+            >{{ ws.session.start_time ?? '' }}–{{ ws.session.end_time ?? '' }}</span
+          >
+          <span class="count-chip"
+            >{{ ws.students.length }} {{ 'workspace.students' | translate }}</span
+          >
+          <span class="count-chip"
+            >{{ ws.modules.length }} {{ 'workspace.modules' | translate }}</span
+          >
+        </div>
+      </div>
+
+      @if (!ws.permissions.attendance || !ws.permissions.hifz || !ws.permissions.murajaa) {
+        <div class="permission-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+          <span>
+            @if (!ws.permissions.hifz) {
+              {{ 'workspace.locked_hifz' | translate }}
+            }
+            @if (!ws.permissions.murajaa) {
+              {{ 'workspace.locked_murajaa' | translate }}
+            }
+            @if (!ws.permissions.attendance && !ws.permissions.hifz && !ws.permissions.murajaa) {
+              {{ 'workspace.readonly' | translate }}
+            }
+          </span>
+        </div>
+      }
+
+      <form class="workspace-form" (ngSubmit)="save()">
+        <div class="student-list">
+          @for (student of ws.students; track student.id) {
+            <article class="student-row card">
+              <header class="student-head">
+                <span class="student-avatar" aria-hidden="true">{{
+                  student.full_name.slice(0, 1)
+                }}</span>
+                <div class="student-copy">
+                  <strong>{{ student.full_name }}</strong>
+                  <small class="ltr-num">{{ student.status }}</small>
+                </div>
+                <div class="student-attendance">
+                  <span>{{ 'workspace.attendance' | translate }}</span>
+                  <app-dropdown
+                    [options]="attendanceOptions"
+                    [value]="attendanceValue(student)"
+                    [disabled]="!ws.permissions.attendance"
+                    (valueChange)="setAttendance(student, $event)"
+                    ariaLabelKey="workspace.attendance"
+                  />
+                </div>
+                <a
+                  class="timeline-link"
+                  [routerLink]="['/students', student.id, 'timeline']"
+                  [attr.title]="'workspace.timeline' | translate"
+                >
+                  {{ 'workspace.timeline' | translate }}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </a>
+              </header>
+
+              <div class="module-grid">
+                @for (module of ws.modules; track module.id) {
+                  <label class="module-field" [class.locked]="!canEdit(module)">
+                    <span class="module-label">{{ module.name_ar }}</span>
+                    <span class="module-input">
+                      <input
+                        type="number"
+                        class="ltr-num"
+                        min="0"
+                        [max]="module.max_points"
+                        step="0.5"
+                        [value]="scoreValue(student, module)"
+                        [disabled]="!canEdit(module)"
+                        [attr.aria-label]="module.name_ar"
+                        (input)="setScore(student, module, $any($event.target).value)"
+                      />
+                      <small>/{{ module.max_points }}</small>
+                    </span>
+                    @if (scoreError(student, module)) {
+                      <small class="field-error">{{ 'workspace.invalid_score' | translate }}</small>
+                    }
+                  </label>
+                }
+              </div>
+
+              <footer class="student-foot">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm notes-btn"
+                  (click)="openNotes(student)"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+                    <path d="M4 5h16v11H8l-4 4z" />
+                  </svg>
+                  {{ 'workspace.notes' | translate }}
+                  @if (noteCount(student) > 0) {
+                    <span class="note-count">{{ noteCount(student) }}</span>
+                  }
+                </button>
+                <span class="saved-hint" [class.visible]="saved()">{{
+                  'workspace.saved' | translate
+                }}</span>
+              </footer>
+            </article>
+          } @empty {
+            <app-empty-state />
+          }
+        </div>
+
+        @if (errorKey()) {
+          <div class="banner danger" role="alert">{{ errorKey()! | translate }}</div>
+        }
+
+        <div class="save-bar">
+          <span class="dirty-label" [class.visible]="dirty()">{{
+            'workspace.unsaved' | translate
+          }}</span>
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!dirty() || saving() || !canEditAny()"
+            (click)="save()"
+          >
+            @if (saving()) {
+              <app-spinner />
+            } @else {
+              {{ 'workspace.save' | translate }}
+            }
+          </button>
+        </div>
+      </form>
+    } @else {
+      <app-empty-state messageKey="workspace.no_session" />
+    }
+  }
+</section>
+
+@if (openStudent(); as student) {
+  <div class="note-backdrop" (click)="closeNotes()" aria-hidden="true"></div>
+  <aside class="note-drawer" role="dialog" aria-modal="true">
+    <header class="note-head">
+      <div>
+        <span class="eyebrow">{{ 'workspace.note_for' | translate }}</span>
+        <h2>{{ student.full_name }}</h2>
+        <p>{{ 'workspace.note_hint' | translate }}</p>
+      </div>
+      <button
+        type="button"
+        class="icon-close"
+        (click)="closeNotes()"
+        [attr.aria-label]="'workspace.close' | translate"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="note-modules">
+      @for (module of noteModules(); track module.id) {
+        @let note = noteValue(student, module);
+        <section class="note-block" [class.locked]="!canEdit(module)">
+          <label>
+            <span>{{ module.name_ar }}</span>
+            <textarea
+              rows="2"
+              [value]="note.note"
+              [disabled]="!canEdit(module)"
+              [placeholder]="'workspace.note_hint' | translate"
+              (input)="setNote(student, module, $any($event.target).value)"
+            ></textarea>
+          </label>
+          <div class="visibility-row">
+            <span>{{ 'workspace.visibility' | translate }}</span>
+            <button
+              type="button"
+              class="tone-chip"
+              [class.on]="note.visibility === 'staff'"
+              [disabled]="!canEdit(module)"
+              (click)="setVisibility(student, module, 'staff')"
+            >
+              {{ 'workspace.visibility_staff' | translate }}
+            </button>
+            <button
+              type="button"
+              class="tone-chip"
+              [class.on]="note.visibility === 'student'"
+              [disabled]="!canEdit(module)"
+              (click)="setVisibility(student, module, 'student')"
+            >
+              {{ 'workspace.visibility_student' | translate }}
+            </button>
+          </div>
+          <div class="tone-row">
+            <span>{{ 'workspace.tone' | translate }}</span>
+            <button
+              type="button"
+              class="tone-chip good"
+              [class.on]="note.tone === 'good'"
+              [disabled]="!canEdit(module)"
+              (click)="setTone(student, module, note.tone === 'good' ? null : 'good')"
+            >
+              {{ 'timeline.good' | translate }}
+            </button>
+            <button
+              type="button"
+              class="tone-chip focus"
+              [class.on]="note.tone === 'focus'"
+              [disabled]="!canEdit(module)"
+              (click)="setTone(student, module, note.tone === 'focus' ? null : 'focus')"
+            >
+              {{ 'timeline.focus' | translate }}
+            </button>
+            <button
+              type="button"
+              class="tone-chip neutral"
+              [class.on]="note.tone === 'neutral'"
+              [disabled]="!canEdit(module)"
+              (click)="setTone(student, module, note.tone === 'neutral' ? null : 'neutral')"
+            >
+              {{ 'timeline.neutral' | translate }}
+            </button>
+          </div>
+        </section>
+      }
+    </div>
+
+    <footer class="note-foot">
+      <span class="muted">{{ 'workspace.unsaved' | translate }}</span>
+      <button type="button" class="btn btn-primary btn-sm" (click)="closeNotes()">
+        {{ 'workspace.close' | translate }}
+      </button>
+    </footer>
+  </aside>
+}
+
+@if (showAdd()) {
+  <div class="note-backdrop" (click)="closeAdd()" aria-hidden="true"></div>
+  <section class="add-dialog card" role="dialog" aria-modal="true">
+    <header>
+      <h2>{{ 'workspace.add_session' | translate }}</h2>
+      <button type="button" class="icon-close" (click)="closeAdd()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </header>
+    <p class="muted">{{ 'workspace.add_hint' | translate }}</p>
+    <div class="add-grid">
+      <label class="field">
+        <span>{{ 'workspace.date' | translate }}</span>
+        <input type="date" [value]="addDate()" (input)="addDate.set($any($event.target).value)" />
+      </label>
+      <label class="field">
+        <span>{{ 'workspace.start' | translate }}</span>
+        <input type="time" [value]="addStart()" (input)="addStart.set($any($event.target).value)" />
+      </label>
+      <label class="field">
+        <span>{{ 'workspace.end' | translate }}</span>
+        <input type="time" [value]="addEnd()" (input)="addEnd.set($any($event.target).value)" />
+      </label>
+      <label class="field">
+        <span>{{ 'workspace.pick_session' | translate }}</span>
+        <app-dropdown
+          [options]="typeOptions"
+          [value]="addType()"
+          (valueChange)="setType($event)"
+          ariaLabelKey="workspace.pick_session"
+        />
+      </label>
+    </div>
+    @if (addError()) {
+      <div class="banner danger">{{ addError()! | translate }}</div>
+    }
+    <footer class="dialog-actions">
+      <button type="button" class="btn btn-ghost" (click)="closeAdd()">
+        {{ 'workspace.cancel' | translate }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="addSaving()"
+        (click)="createSession()"
+      >
+        @if (addSaving()) {
+          <app-spinner />
+        } @else {
+          {{ 'workspace.create' | translate }}
+        }
+      </button>
+    </footer>
+  </section>
+}

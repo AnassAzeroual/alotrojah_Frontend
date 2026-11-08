@@ -49,9 +49,11 @@ export const routes: Routes = [
         loadChildren: () => import('./features/exams/exams.routes').then((m) => m.EXAMS_ROUTES),
       },
       {
+        // The old student-centric Review page is superseded by the unified
+        // Hifz/Murajaa session workspace at /entry.
         path: 'reviews',
-        loadChildren: () =>
-          import('./features/reviews/reviews.routes').then((m) => m.REVIEWS_ROUTES),
+        redirectTo: 'entry',
+        pathMatch: 'full',
       },
       {
         path: 'results',

@@ -99,13 +99,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
     testId: 'nav-exams',
   },
   {
-    path: '/reviews',
-    key: 'nav.reviews',
-    icon: 'refresh',
-    roles: ['admin', 'supervisor', 'teacher'],
-    testId: 'nav-reviews',
-  },
-  {
     path: '/results/term',
     // One nav item covers both the term and the season view.
     match: '/results',

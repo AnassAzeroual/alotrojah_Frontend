@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { roleGuard } from '../../core/auth/role.guard';
 import { dirtyGuard } from '../../core/guards/dirty.guard';
 
@@ -21,6 +21,13 @@ export const STUDENTS_ROUTES: Routes = [
     // (withComponentInputBinding maps it onto the page's id input — without
     // this the required input throws and the form never renders).
     data: { roles: [...STAFF_ONLY], id: 'new' },
+  },
+  {
+    path: ':id/timeline',
+    loadComponent: () =>
+      import('../timeline/student-timeline.page').then((m) => m.StudentTimelinePage),
+    canActivate: [roleGuard],
+    data: { roles: [...STAFF_FAMILY] },
   },
   {
     path: ':id',

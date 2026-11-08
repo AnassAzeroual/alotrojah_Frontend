@@ -31,6 +31,7 @@ const WEEKDAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 interface GroupEditSeed {
   name: string;
   teacherId: number | null;
+  murajaaTeacherId: number | null;
   capacity: number | null;
   days: string;
   active: boolean;
@@ -59,6 +60,7 @@ export class GroupFormPage {
   protected readonly name = signal('');
   protected readonly centerId = signal<number | null>(null);
   protected readonly teacherId = signal<number | null>(null);
+  protected readonly murajaaTeacherId = signal<number | null>(null);
   protected readonly capacity = signal<number | null>(null);
   protected readonly days = signal<Weekday[]>([]);
   protected readonly active = signal(true);
@@ -93,6 +95,7 @@ export class GroupFormPage {
       return (
         cur.name !== seed.name ||
         cur.teacherId !== seed.teacherId ||
+        cur.murajaaTeacherId !== seed.murajaaTeacherId ||
         cur.capacity !== seed.capacity ||
         cur.days !== seed.days ||
         cur.active !== seed.active
@@ -102,6 +105,7 @@ export class GroupFormPage {
       this.name().trim() !== '' ||
       this.centerId() !== null ||
       this.teacherId() !== null ||
+      this.murajaaTeacherId() !== null ||
       this.capacity() !== null ||
       this.days().length > 0
     );
@@ -154,6 +158,7 @@ export class GroupFormPage {
       this.name.set(g.name);
       this.centerId.set(g.center_id);
       this.teacherId.set(g.teacher?.id ?? null);
+      this.murajaaTeacherId.set(g.murajaa_teacher_id ?? null);
       this.capacity.set(g.capacity);
       this.days.set(
         g.schedule_days
@@ -173,6 +178,7 @@ export class GroupFormPage {
     return {
       name: this.name().trim(),
       teacherId: this.teacherId(),
+      murajaaTeacherId: this.murajaaTeacherId(),
       capacity: this.capacity(),
       days: this.days().join(','),
       active: this.active(),
@@ -189,6 +195,7 @@ export class GroupFormPage {
   protected onCenterChange(v: number | null): void {
     // Teachers are center-scoped, so switching centers invalidates the pick.
     this.teacherId.set(null);
+    this.murajaaTeacherId.set(null);
     this.centerId.set(v);
   }
 
@@ -217,6 +224,7 @@ export class GroupFormPage {
       .update(id, {
         name: this.name().trim(),
         teacher_id: this.teacherId()!,
+        murajaa_teacher_id: this.murajaaTeacherId(),
         capacity: this.capacity(),
         schedule_days: this.days(),
         is_active: this.active(),
@@ -243,6 +251,7 @@ export class GroupFormPage {
         name: this.name().trim(),
         center_id: centerId,
         teacher_id: teacherId,
+        murajaa_teacher_id: this.murajaaTeacherId(),
         capacity: this.capacity(),
         schedule_days: this.days(),
       })
@@ -252,6 +261,7 @@ export class GroupFormPage {
           this.name.set('');
           this.centerId.set(null);
           this.teacherId.set(null);
+          this.murajaaTeacherId.set(null);
           this.capacity.set(null);
           this.days.set([]);
           void this.router.navigate(['/groups']);

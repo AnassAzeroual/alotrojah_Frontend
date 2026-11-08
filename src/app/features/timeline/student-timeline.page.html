@@ -1,0 +1,242 @@
+<section class="timeline-page">
+  <div class="timeline-topbar">
+    <a class="back-link" routerLink="/students">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      {{ 'timeline.back' | translate }}
+    </a>
+    @if (data()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="print()">
+        {{ 'timeline.print' | translate }}
+      </button>
+    }
+  </div>
+
+  @if (timeline.isLoading()) {
+    <div class="skeleton-grid" aria-hidden="true">
+      <div class="skeleton hero-sk"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  } @else if (!data()) {
+    <app-empty-state messageKey="timeline.no_timeline" />
+  } @else if (data(); as d) {
+    <header class="timeline-hero">
+      <div class="hero-orbit" aria-hidden="true"></div>
+      <span class="hero-avatar">{{ d.student.full_name.slice(0, 1) }}</span>
+      <div class="hero-copy">
+        <span class="eyebrow">{{ 'timeline.title' | translate }}</span>
+        <h1>{{ d.student.full_name }}</h1>
+        <p>
+          {{ d.student.group_name ?? '—' }}
+          @if (d.season) {
+            <span class="dot">·</span>
+            {{ d.season.name }}
+          }
+        </p>
+      </div>
+      <div class="hero-season">
+        <small>{{ 'timeline.season' | translate }}</small>
+        <strong>{{ d.season?.name ?? '—' }}</strong>
+      </div>
+    </header>
+
+    <div class="summary-grid">
+      <article class="summary-card">
+        <span class="summary-icon teal">∿</span>
+        <small>{{ 'timeline.murajaa_average' | translate }}</small>
+        <strong class="ltr-num">{{ d.summaries.season.murajaa_average ?? '—' }}</strong>
+        <em>/ 20</em>
+      </article>
+      <article class="summary-card">
+        <span class="summary-icon violet">◫</span>
+        <small>{{ 'timeline.terms' | translate }}</small>
+        <strong class="ltr-num">{{ d.terms.length }}</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-icon blue">◎</span>
+        <small>{{ 'timeline.sessions' | translate }}</small>
+        <strong class="ltr-num">{{ d.sessions.length }}</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-icon amber">✎</span>
+        <small>{{ 'timeline.notes' | translate }}</small>
+        <strong class="ltr-num">{{ noteCount() }}</strong>
+      </article>
+    </div>
+
+    <section class="guidance-card" [class.has-guidance]="latestGuidance()">
+      <div class="guidance-head">
+        <span class="section-eyebrow">{{ 'timeline.latest' | translate }}</span>
+        @if (latestGuidance()?.tone) {
+          <span
+            class="tone-pill"
+            [class.good]="latestGuidance()!.tone === 'good'"
+            [class.focus]="latestGuidance()!.tone === 'focus'"
+            [class.neutral]="latestGuidance()!.tone === 'neutral'"
+          >
+            {{ 'timeline.' + latestGuidance()!.tone | translate }}
+          </span>
+        }
+      </div>
+      @if (latestGuidance(); as last) {
+        <p>“{{ last.note }}”</p>
+        <small>{{ last.module_code | uppercase }} · {{ last.date ?? '—' }}</small>
+      } @else {
+        <p class="muted">{{ 'timeline.no_guidance' | translate }}</p>
+      }
+    </section>
+
+    <div class="timeline-tools">
+      <span class="tools-label">{{ 'timeline.all_modules' | translate }}</span>
+      <div class="module-filter" role="group">
+        @for (module of moduleOptions(); track module.value) {
+          <button
+            type="button"
+            class="filter-chip"
+            [class.on]="moduleFilter() === module.value"
+            (click)="moduleFilter.set(module.value)"
+          >
+            {{ module.value === 'all' ? ('timeline.all_modules' | translate) : module.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="roadmap">
+      @for (term of terms(); track term.id; let ti = $index) {
+        <section class="term-block" [class.open]="openTerm() === term.id">
+          <button type="button" class="term-head" (click)="toggleTerm(term.id)">
+            <span class="term-index">{{ ti + 1 }}</span>
+            <span class="term-name">
+              <strong>{{ term.name }}</strong>
+              <small>
+                {{ 'timeline.term_average' | translate }}:
+                {{ termSummary(term.id)?.murajaa_average ?? '—' }}
+                <span class="dot">·</span>
+                {{ termSummary(term.id)?.murajaa_count ?? 0 }}
+                {{ 'timeline.scores_count' | translate }}
+              </small>
+            </span>
+            <svg
+              class="term-chev"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          @if (openTerm() === term.id) {
+            <div class="term-body">
+              @for (week of weeksFor(term.id); track week.id) {
+                <section class="week-block">
+                  <button
+                    type="button"
+                    class="week-head"
+                    [attr.aria-expanded]="openWeek() === week.id"
+                    (click)="toggleWeek(week.id)"
+                  >
+                    <span class="week-dot" [class.review]="week.week_type === 'review'"></span>
+                    <span class="week-copy">
+                      <strong
+                        >{{ 'timeline.week' | translate }} {{ week.week_number_global }}</strong
+                      >
+                      <small>
+                        {{ weekRange(week) }}
+                        @if (week.week_type === 'review') {
+                          <span class="review-tag">{{ 'timeline.type_revision' | translate }}</span>
+                        }
+                      </small>
+                    </span>
+                    <span class="week-count ltr-num">{{ sessionsFor(week.id).length }}</span>
+                    <svg
+                      class="week-chev"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </button>
+
+                  @if (openWeek() === week.id) {
+                    <div class="session-list">
+                      @for (session of sessionsFor(week.id); track session.id) {
+                        <article
+                          class="session-card"
+                          [class.cancelled]="session.status === 'cancelled'"
+                        >
+                          <header class="session-head">
+                            <span class="session-number ltr-num"
+                              >S{{ session.session_number_global }}</span
+                            >
+                            <span class="session-type">{{
+                              sessionTypeKey(session.session_type) | translate
+                            }}</span>
+                            <span class="session-date ltr-num">{{
+                              session.planned_date ?? '—'
+                            }}</span>
+                            @if (session.attendance) {
+                              <span
+                                class="attendance-chip"
+                                [class.present]="session.attendance.status === 'present'"
+                                [class.late]="session.attendance.status === 'late'"
+                                [class.absent]="session.attendance.status === 'absent'"
+                                [class.excused]="session.attendance.status === 'excused'"
+                              >
+                                {{ 'attendance.' + session.attendance.status | translate }}
+                              </span>
+                            }
+                          </header>
+
+                          <div class="module-grid">
+                            @for (module of visibleModules(); track module.code) {
+                              @let score = scoreFor(session, module);
+                              @let note = noteFor(session, module);
+                              <div class="module-cell" [class.empty]="score === null && !note">
+                                <div class="module-head">
+                                  <span class="module-name">{{ module.name_ar }}</span>
+                                  <span class="module-score ltr-num">
+                                    {{ score ?? '—' }}<small>/{{ maxFor(module) }}</small>
+                                  </span>
+                                </div>
+                                <p class="module-note" [class.missing]="!note">
+                                  {{ note?.note || '—' }}
+                                </p>
+                                @if (note?.tone) {
+                                  <span
+                                    class="tone-pill"
+                                    [class.good]="note!.tone === 'good'"
+                                    [class.focus]="note!.tone === 'focus'"
+                                    [class.neutral]="note!.tone === 'neutral'"
+                                  >
+                                    {{ 'timeline.' + note!.tone | translate }}
+                                  </span>
+                                }
+                              </div>
+                            }
+                          </div>
+                        </article>
+                      } @empty {
+                        <p class="week-empty">{{ 'timeline.no_timeline' | translate }}</p>
+                      }
+                    </div>
+                  }
+                </section>
+              } @empty {
+                <app-empty-state />
+              }
+            </div>
+          }
+        </section>
+      } @empty {
+        <app-empty-state messageKey="timeline.no_timeline" />
+      }
+    </div>
+  }
+</section>

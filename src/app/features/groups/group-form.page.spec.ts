@@ -188,6 +188,7 @@ describe('GroupFormPage', () => {
       name: 'حلقة E2E',
       center_id: 1,
       teacher_id: 3,
+      murajaa_teacher_id: null,
       capacity: 20,
       schedule_days: ['Sat', 'Mon'],
     });
@@ -237,6 +238,7 @@ describe('GroupFormPage', () => {
       name: 'حلقة المشرف',
       center_id: 1,
       teacher_id: 3,
+      murajaa_teacher_id: null,
       capacity: null,
       schedule_days: [],
     });
@@ -333,6 +335,7 @@ describe('GroupFormPage', () => {
       expect(req.request.body).toEqual({
         name: 'حلقة محدثة',
         teacher_id: 3,
+        murajaa_teacher_id: null,
         capacity: 20,
         schedule_days: ['Mon'],
         is_active: true,
